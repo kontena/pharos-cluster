@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+# encoding: UTF-8
+
+# add lib to libpath (only needed when running from the sources)
+require 'pathname'
+lib_path = File.expand_path('../../lib', Pathname.new(__FILE__).realpath)
+$:.unshift lib_path unless $:.include?(lib_path)
+
+STDOUT.sync = true
+
+require 'kuntena'
+Kuntena::RootCommand.run
