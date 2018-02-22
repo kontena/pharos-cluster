@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: unattended-upgrades
+  namespace: kube-system
+spec:
+  template:
+    metadata:
+      labels:
+        name: unattended-upgrades
+    spec:
+      hostPID: true
+      containers:
+        - name: unattended-upgrades
+          image: kontena/nsenter:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - nsenter
+          args:
+            - --target=1
+            - --mount
+            - --uts
+            - --net
+            - --pid
+            - --
+            - sh
+            - -c
+            - "while true; do /usr/bin/unattended-upgrade -d; sleep 86400; done"
+          securityContext:
+            privileged: true
+      restartPolicy: Always
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists

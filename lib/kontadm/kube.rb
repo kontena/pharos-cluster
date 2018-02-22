@@ -1,6 +1,6 @@
 require 'kubeclient'
 
-module Kuntena::Kube
+module Kontadm::Kube
 
   class Client < ::Kubeclient::Client
     def entities
@@ -23,7 +23,7 @@ module Kuntena::Kube
         path_prefix = 'apis'
       end
       api_version, api_group = version.split('/').reverse
-      @kube_client[version] = Kuntena::Kube::Client.new(
+      @kube_client[version] = Kontadm::Kube::Client.new(
         (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
         api_version,
         {

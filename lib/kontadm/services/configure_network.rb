@@ -1,9 +1,8 @@
-module Kuntena::Services
+module Kontadm::Services
   class ConfigureNetwork
 
-    def initialize(ssh, host: )
-      @ssh = ssh
-      @host = host
+    def initialize(master)
+      @master = master
     end
 
     def call
@@ -12,7 +11,7 @@ module Kuntena::Services
     end
 
     def ensure_passwd
-      kube_client = Kuntena.kube_client(@host)
+      kube_client = Kontadm::Kube.client(@master.address)
       begin
         kube_client.get_secret('weave-passwd', 'kube-system')
       rescue Kubeclient::ResourceNotFoundError
@@ -31,7 +30,7 @@ module Kuntena::Services
 
     def ensure_resources
       resources.each do |resource|
-        Kuntena::Kube.apply_resource(@host, resource)
+        Kontadm::Kube.apply_resource(@master.address, resource)
       end
     end
 

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kured
+  namespace: kube-system
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kured            # Must match `--ds-name`
+  namespace: kube-system # Must match `--ds-namespace`
+spec:
+  template:
+    metadata:
+      labels:
+        name: kured
+    spec:
+      serviceAccountName: kured
+      containers:
+        - name: kured
+          image: quay.io/weaveworks/kured:1.0.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - /usr/bin/kured
+#          args:
+#            - --alert-filter-regexp=^RebootRequired$
+#            - --ds-name=kured
+#            - --ds-namespace=kube-system
+#            - --lock-annotation=weave.works/kured-node-lock
+#            - --period=1h
+#            - --prometheus-url=http://prometheus.monitoring.svc.cluster.local
+#            - --reboot-sentinel=/var/run/reboot-required
+#            - --slack-hook-url=https://hooks.slack.com/...
+#            - --slack-username=prod
+#
+# NO USER SERVICEABLE PARTS BEYOND THIS POINT
+          env:
+            # Pass in the name of the node on which this pod is scheduled
+            # for use with drain/uncordon operations and lock acquisition
+            - name: KURED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            # Needed for two purposes:
+            # * Testing for the existence of /var/run/reboot-required
+            # * Accessing /var/run/dbus/system_bus_socket to effect reboot
+            - name: hostrun
+              mountPath: /var/run
+      restartPolicy: Always
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      volumes:
+        - name: hostrun
+          hostPath:
+            path: /var/run

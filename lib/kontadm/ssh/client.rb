@@ -1,11 +1,30 @@
 require 'net/ssh'
 require 'net/scp'
 
-module Kuntena::SSH
+module Kontadm::SSH
 
   class Client
 
     class Error < StandardError
+    end
+
+    # @param host [Kontadm::Configuration::Host]
+    def self.for_host(host)
+      @connections ||= {}
+      unless @connections[host]
+        @connections[host] = new(host.address, host.user)
+        @connections[host].connect
+      end
+
+      @connections[host]
+    end
+
+    def self.disconnect_all
+      return unless @connections
+
+      @connections.each do |host, connection|
+        connection.disconnect
+      end
     end
 
     def initialize(host, user = nil, opts = {})
