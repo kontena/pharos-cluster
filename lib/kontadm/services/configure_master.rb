@@ -7,7 +7,7 @@ module Kontadm::Services
 
     def call
       ssh = Kontadm::SSH::Client.for_host(@master)
-      ssh.exec("sudo kubeadm init --apiserver-cert-extra-sans #{@host}")
+      ssh.exec("sudo kubeadm init --apiserver-cert-extra-sans #{@master.address}")
       ssh.exec('mkdir -p ~/.kube')
       ssh.exec('sudo cat /etc/kubernetes/admin.conf > ~/.kube/config')
     end
