@@ -1,3 +1,4 @@
+require "clamp"
 require_relative "kontadm/autoload"
 require_relative "kontadm/version"
 require_relative "kontadm/command"

@@ -1,10 +1,11 @@
 PATH
   remote: .
   specs:
-    kuntena (0.1.0)
+    kontadm (0.1.0)
       clamp (= 1.2.1)
       dry-struct
       dry-validation
+      fugit
       kubeclient
       net-scp
       net-ssh
@@ -50,6 +51,11 @@ GEM
       dry-equalizer (~> 0.2)
       dry-logic (~> 0.4, >= 0.4.0)
       dry-types (~> 0.12.0)
+    et-orbi (1.0.9)
+      tzinfo
+    fugit (1.0.0)
+      et-orbi (>= 1.0.5)
+      raabro (~> 1.1)
     http (2.2.2)
       addressable (~> 2.3)
       http-cookie (~> 1.0)
@@ -73,12 +79,16 @@ GEM
     net-ssh (4.2.0)
     netrc (0.11.0)
     public_suffix (3.0.2)
+    raabro (1.1.5)
     rake (10.5.0)
     recursive-open-struct (1.0.5)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    thread_safe (0.3.6)
+    tzinfo (1.2.5)
+      thread_safe (~> 0.1)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.5)
@@ -88,7 +98,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16)
-  kuntena!
+  kontadm!
   rake (~> 10.0)
 
 BUNDLED WITH

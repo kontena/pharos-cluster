@@ -1,8 +1,9 @@
 module Kontadm::Services
   class ConfigureNetwork
 
-    def initialize(master)
+    def initialize(master, config)
       @master = master
+      @config = config
     end
 
     def call
@@ -29,6 +30,7 @@ module Kontadm::Services
     end
 
     def ensure_resources
+      resources = Kontadm::Kube.parse_resource_file('weave/weave.yml')
       resources.each do |resource|
         Kontadm::Kube.apply_resource(@master.address, resource)
       end
@@ -36,13 +38,6 @@ module Kontadm::Services
 
     def generate_password
       SecureRandom.hex(24)
-    end
-
-    # @return [Array<Kubeclient::Resource]
-    def resources
-      data = File.read(File.realpath(File.join(__dir__, '../resources/weave/weave.yml')))
-      list = YAML.load(data)
-      list['items'].map { |item| Kubeclient::Resource.new(item) }
     end
   end
 end

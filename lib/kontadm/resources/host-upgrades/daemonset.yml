@@ -25,7 +25,7 @@ spec:
             - --
             - sh
             - -c
-            - "while true; do /usr/bin/unattended-upgrade -d; sleep 86400; done"
+            - "while true; sleep <%= interval %>; do /usr/bin/unattended-upgrade -d; done"
           securityContext:
             privileged: true
       restartPolicy: Always

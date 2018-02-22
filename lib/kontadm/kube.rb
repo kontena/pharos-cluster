@@ -49,6 +49,38 @@ module Kontadm::Kube
     end
   end
 
+  # @param host [String]
+  # @param resource [Kubeclient::Resource]
+  # @return [Kubeclient::Resource]
+  def self.delete_resource(host, resource)
+    resource_client = self.client(host, resource.apiVersion)
+    begin
+      definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
+      resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
+      resource_client.delete_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
+    rescue Kubeclient::ResourceNotFoundError
+      false
+    end
+  end
+
+  # @param path [String]
+  # @return [Array<Kubeclient::Resource>]
+  def self.parse_resource_file(path, vars = {})
+    resources = []
+    data = File.read(File.realpath(File.join(__dir__, 'resources', path)))
+    data.split('---').each do |yaml|
+      digest = Digest::SHA1.hexdigest(yaml)
+      parsed_yaml = Kontadm::Erb.new(yaml).render(
+        vars.merge({
+          resource_digest: digest
+        })
+      )
+      resources << Kubeclient::Resource.new(YAML.load(parsed_yaml))
+    end
+
+    resources
+  end
+
   # @param kind [String]
   # @return [String]
   def self.underscore_entity(kind)

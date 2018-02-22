@@ -7,8 +7,8 @@ metadata:
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: kured            # Must match `--ds-name`
-  namespace: kube-system # Must match `--ds-namespace`
+  name: kured
+  namespace: kube-system
 spec:
   template:
     metadata:
@@ -22,18 +22,12 @@ spec:
           imagePullPolicy: IfNotPresent
           command:
             - /usr/bin/kured
-#          args:
-#            - --alert-filter-regexp=^RebootRequired$
-#            - --ds-name=kured
-#            - --ds-namespace=kube-system
-#            - --lock-annotation=weave.works/kured-node-lock
-#            - --period=1h
-#            - --prometheus-url=http://prometheus.monitoring.svc.cluster.local
-#            - --reboot-sentinel=/var/run/reboot-required
-#            - --slack-hook-url=https://hooks.slack.com/...
-#            - --slack-username=prod
-#
-# NO USER SERVICEABLE PARTS BEYOND THIS POINT
+          args:
+            - --ds-name=kured
+            - --ds-namespace=kube-system
+            - --lock-annotation=kontena.io/kured-node-lock
+            - --period=<%= period %>
+            - --reboot-sentinel=/var/run/reboot-required
           env:
             # Pass in the name of the node on which this pod is scheduled
             # for use with drain/uncordon operations and lock acquisition

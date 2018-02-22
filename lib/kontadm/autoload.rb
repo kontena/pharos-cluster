@@ -3,11 +3,13 @@ autoload :Base64, 'base64'
 autoload :SecureRandom, 'securerandom'
 autoload :YAML, 'yaml'
 autoload :RestClient, 'rest-client'
+autoload :Fugit, 'fugit'
 
 module Kontadm
   autoload :Config, 'kontadm/config'
   autoload :ConfigSchema, 'kontadm/config_schema'
   autoload :Kube, 'kontadm/kube'
+  autoload :Erb, 'kontadm/erb'
 
   module SSH
     autoload :Client, 'kontadm/ssh/client'

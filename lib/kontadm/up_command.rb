@@ -18,7 +18,7 @@ module Kontadm
 
       validate_hosts(config.hosts)
 
-      handle_masters(master_hosts[0])
+      handle_masters(master_hosts[0], config.features)
       handle_workers(master_hosts[0], worker_hosts(config))
     end
 
@@ -71,7 +71,8 @@ module Kontadm
     end
 
     # @param master [Kontadm::Configuration::Node]
-    def handle_masters(master)
+    # @param features [Kontadm::Configuration::Features]
+    def handle_masters(master, features)
       puts "==> [#{master.address}] Installing required packages"
       Kontadm::Services::ConfigureHost.new(master).call
 
@@ -82,10 +83,10 @@ module Kontadm
       Kontadm::Services::ConfigureClient.new(master).call
 
       puts "==> [#{master.address}] Configuring overlay network"
-      Kontadm::Services::ConfigureNetwork.new(master).call
+      Kontadm::Services::ConfigureNetwork.new(master, features.network).call
 
       puts "==> [#{master.address}] Configuring reboot daemon"
-      Kontadm::Services::ConfigureKured.new(master).call
+      Kontadm::Services::ConfigureKured.new(master, features.host_updates).call
     end
 
     # @param master [Kontadm::Configuration::Node]
