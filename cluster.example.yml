@@ -1,0 +1,15 @@
+hosts:
+  - address: 1.1.1.1
+    role: master
+  - address: 2.2.2.2
+    role: worker
+  - address: 3.3.3.3
+    role: worker
+features:
+  host_updates:
+    interval: 7d
+    reboot: false
+  network:
+    settings:
+      trusted_subnets:
+        - 172.31.0.0/16
