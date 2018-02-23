@@ -122,12 +122,7 @@ module Kontadm::Kube
   # @return [Kubeclient::Resource]
   def self.parse_resource_file(path, vars = {})
     yaml = File.read(File.realpath(File.join(__dir__, 'resources', path)))
-    digest = Digest::SHA1.hexdigest(yaml)
-    parsed_yaml = Kontadm::Erb.new(yaml).render(
-      vars.merge({
-        resource_digest: digest
-      })
-    )
+    parsed_yaml = Kontadm::Erb.new(yaml).render(vars)
 
     Kubeclient::Resource.new(YAML.load(parsed_yaml))
   end
