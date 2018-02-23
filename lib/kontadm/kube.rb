@@ -45,9 +45,11 @@ module Kontadm::Kube
 
   # @param host [Kontadm::Configuration::Host]
   # @param stack [String]
-  # @param
+  # @param vars [Hash]
+  # @return [Array<Kubeclient::Resource>]
   def self.apply_stack(host, stack, vars = {})
     checksum = SecureRandom.hex(16)
+    resources = []
     Dir.glob(File.join(__dir__, 'resources', stack, '*.yml')).each do |file|
       resource = parse_resource_file("#{stack}/#{File.basename(file)}", vars)
       resource.metadata.labels ||= {}
@@ -55,11 +57,19 @@ module Kontadm::Kube
       resource.metadata.labels[RESOURCE_LABEL] = stack
       resource.metadata.annotations[RESOURCE_ANNOTATION] = checksum
       apply_resource(host, resource)
+      resources << resource
     end
     prune_stack(host, stack, checksum)
+
+    resources
   end
 
+  # @param host [Kontadm::Configuration::Host]
+  # @param stack [String]
+  # @param checksum [String]
+  # @return [Array<Kubeclient::Resource>]
   def self.prune_stack(host, stack, checksum)
+    pruned = []
     client(host, '').apis.groups.each do |api_group|
       group_client = client(host, api_group.preferredVersion.groupVersion)
       group_client.entities.each do |type, meta|
@@ -67,10 +77,15 @@ module Kontadm::Kube
           objects = group_client.get_entities(type, meta.resource_name, {label_selector: "#{RESOURCE_LABEL}=#{stack}"})
           objects.select { |obj|
             obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
-          }.each { |obj| delete_resource(obj) }
+          }.each { |obj|
+            delete_resource(obj)
+            pruned << obj
+          }
         end
       end
     end
+
+    pruned
   end
 
   # @param host [String]
