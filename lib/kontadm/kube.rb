@@ -78,21 +78,14 @@ module Kontadm::Kube
   # @return [Kubeclient::Resource]
   def self.apply_resource(host, resource)
     resource_client = self.client(host, resource.apiVersion)
-    old_resource = nil
     begin
       definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
       old_resource = resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
-      #merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h))
-      #p merged_resource.to_h
       resource.metadata.resourceVersion = old_resource.metadata.resourceVersion
       merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, {overwrite_arrays: true}))
       resource_client.update_entity(definition.resource_name, merged_resource)
     rescue Kubeclient::ResourceNotFoundError
       resource_client.create_entity(resource.kind, definition.resource_name, resource)
-    rescue Kubeclient::HttpError => exc
-      puts old_resource.to_h
-      $stderr.puts exc.message
-      $stderr.puts resource.to_h
     end
   end
 
