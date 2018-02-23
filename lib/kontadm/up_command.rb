@@ -16,10 +16,14 @@ module Kontadm
       signal_usage_error 'No master hosts defined' if master_hosts.size == 0
       signal_usage_error 'Only one host can be in master role' if master_hosts.size > 1
 
-      validate_hosts(config.hosts)
+      begin
+        validate_hosts(config.hosts)
 
-      handle_masters(master_hosts[0], config.features)
-      handle_workers(master_hosts[0], worker_hosts(config))
+        handle_masters(master_hosts[0], config.features)
+        handle_workers(master_hosts[0], worker_hosts(config))
+      ensure
+        Kontadm::SSH::Client.disconnect_all
+      end
     end
 
     # @param config_file [String]
@@ -87,6 +91,9 @@ module Kontadm
 
       puts "==> [#{master.address}] Configuring reboot daemon"
       Kontadm::Services::ConfigureKured.new(master, features.host_updates).call
+
+      puts "==> [#{master.address}] Configuring metrics server"
+      Kontadm::Services::ConfigureMetrics.new(master).call
     end
 
     # @param master [Kontadm::Configuration::Node]

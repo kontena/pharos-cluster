@@ -30,10 +30,7 @@ module Kontadm::Services
     end
 
     def ensure_resources
-      resources = Kontadm::Kube.parse_resource_file('weave/weave.yml')
-      resources.each do |resource|
-        Kontadm::Kube.apply_resource(@master.address, resource)
-      end
+      Kontadm::Kube.apply_stack(@master.address, 'weave')
     end
 
     def generate_password

@@ -9,8 +9,4 @@ $:.unshift lib_path unless $:.include?(lib_path)
 STDOUT.sync = true
 
 require 'kontadm'
-begin
-  Kontadm::RootCommand.run
-ensure
-  Kontadm::SSH::Client.disconnect_all
-end
+Kontadm::RootCommand.run

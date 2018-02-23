@@ -1,3 +1,4 @@
+require 'fugit'
 require 'dry-validation'
 
 module Kontadm

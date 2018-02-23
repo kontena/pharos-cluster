@@ -1,50 +1,30 @@
 module Kontadm::Services
   class ConfigureKured
 
+    # @param master [Kontadm::Configuration::Host]
+    # @param master [Kontadm::Configuration::Feature::HostUpdate]
     def initialize(master, config)
       @master = master
       @config = config
     end
 
     def call
-      ensure_resources
-      cleanup_resources
-    end
-
-    def ensure_resources
-      resources = []
-
       if @config.interval
         interval = Fugit::Duration.parse(@config.interval).to_sec
-        resources += Kontadm::Kube.parse_resource_file('host-upgrades/daemonset.yml', {
+        Kontadm::Kube.apply_stack(@master.address, 'host-upgrades', {
           interval: interval
         })
+      else
+        Kontadm::Kube.prune_stack(@master.address, 'host-upgrades', '-')
       end
 
       if @config.reboot
         reboot_interval = @config.interval.nil? ? '1d' : @config.interval
-        resources += Kontadm::Kube.parse_resource_file('kured/rbac.yml')
-        resources += Kontadm::Kube.parse_resource_file('kured/daemonset.yml', {
+        Kontadm::Kube.apply_stack(@master.address, 'kured', {
           interval: reboot_interval
         })
-      end
-      resources.each do |resource|
-        Kontadm::Kube.apply_resource(@master.address, resource)
-      end
-    end
-
-    def cleanup_resources
-      resources = []
-      unless @config.interval
-        resources += Kontadm::Kube.parse_resource_file('host-upgrades/daemonset.yml')
-      end
-
-      unless @config.reboot
-        resources += Kontadm::Kube.parse_resource_file('kured/rbac.yml')
-        resources += Kontadm::Kube.parse_resource_file('kured/daemonset.yml')
-      end
-      resources.each do |resource|
-        Kontadm::Kube.delete_resource(@master.address, resource)
+      else
+        Kontadm::Kube.prune_stack(@master.address, 'kured', '-')
       end
     end
   end

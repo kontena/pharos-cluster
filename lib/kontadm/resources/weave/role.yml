@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: weave-net
+  labels:
+    name: weave-net
+  namespace: kube-system
+rules:
+  - apiGroups:
+      - ''
+    resourceNames:
+      - weave-net
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    verbs:
+      - create

@@ -1,5 +1,5 @@
 require 'kubeclient'
-
+require 'deep_merge'
 module Kontadm::Kube
 
   class Client < ::Kubeclient::Client
@@ -9,7 +9,15 @@ module Kontadm::Kube
       end
       @entities
     end
+
+    def apis(options= {})
+      response = rest_client.get(@headers)
+      format_response(options[:as] || @as, response.body)
+    end
   end
+
+  RESOURCE_LABEL = 'kontadm.kontena.io/stack'.freeze
+  RESOURCE_ANNOTATION = 'kontadm.kontena.io/stack-checksum'.freeze
 
   # @param host [String]
   # @return [Kubeclient::Client]
@@ -35,17 +43,56 @@ module Kontadm::Kube
     @kube_client[version]
   end
 
+  # @param host [Kontadm::Configuration::Host]
+  # @param stack [String]
+  # @param
+  def self.apply_stack(host, stack, vars = {})
+    checksum = SecureRandom.hex(16)
+    Dir.glob(File.join(__dir__, 'resources', stack, '*.yml')).each do |file|
+      resource = parse_resource_file("#{stack}/#{File.basename(file)}", vars)
+      resource.metadata.labels ||= {}
+      resource.metadata.annotations ||= {}
+      resource.metadata.labels[RESOURCE_LABEL] = stack
+      resource.metadata.annotations[RESOURCE_ANNOTATION] = checksum
+      apply_resource(host, resource)
+    end
+    prune_stack(host, stack, checksum)
+  end
+
+  def self.prune_stack(host, stack, checksum)
+    client(host, '').apis.groups.each do |api_group|
+      group_client = client(host, api_group.preferredVersion.groupVersion)
+      group_client.entities.each do |type, meta|
+        unless type.end_with?('_review')
+          objects = group_client.get_entities(type, meta.resource_name, {label_selector: "#{RESOURCE_LABEL}=#{stack}"})
+          objects.select { |obj|
+            obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
+          }.each { |obj| delete_resource(obj) }
+        end
+      end
+    end
+  end
+
   # @param host [String]
   # @param resource [Kubeclient::Resource]
   # @return [Kubeclient::Resource]
   def self.apply_resource(host, resource)
     resource_client = self.client(host, resource.apiVersion)
+    old_resource = nil
     begin
       definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
-      resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
-      resource_client.update_entity(definition.resource_name, resource)
+      old_resource = resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
+      #merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h))
+      #p merged_resource.to_h
+      resource.metadata.resourceVersion = old_resource.metadata.resourceVersion
+      merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, {overwrite_arrays: true}))
+      resource_client.update_entity(definition.resource_name, merged_resource)
     rescue Kubeclient::ResourceNotFoundError
       resource_client.create_entity(resource.kind, definition.resource_name, resource)
+    rescue Kubeclient::HttpError => exc
+      puts old_resource.to_h
+      $stderr.puts exc.message
+      $stderr.puts resource.to_h
     end
   end
 
@@ -64,21 +111,20 @@ module Kontadm::Kube
   end
 
   # @param path [String]
-  # @return [Array<Kubeclient::Resource>]
+  # @return [Kubeclient::Resource]
   def self.parse_resource_file(path, vars = {})
-    resources = []
-    data = File.read(File.realpath(File.join(__dir__, 'resources', path)))
-    data.split('---').each do |yaml|
-      digest = Digest::SHA1.hexdigest(yaml)
-      parsed_yaml = Kontadm::Erb.new(yaml).render(
-        vars.merge({
-          resource_digest: digest
-        })
-      )
-      resources << Kubeclient::Resource.new(YAML.load(parsed_yaml))
-    end
+    stack_name, _ = path.split('/')
+    yaml = File.read(File.realpath(File.join(__dir__, 'resources', path)))
+    digest = Digest::SHA1.hexdigest(yaml)
+    parsed_yaml = Kontadm::Erb.new(yaml).render(
+      vars.merge({
+        resource_digest: digest
+      })
+    )
 
-    resources
+    resource = Kubeclient::Resource.new(YAML.load(parsed_yaml))
+
+    resource
   end
 
   # @param kind [String]
