@@ -1,5 +1,8 @@
 hosts:
   - address: 1.1.1.1
+    private_address: 1.0.1.0
+    user: root
+    ssh_key_path: ~/.ssh/my_key
     role: master
   - address: 2.2.2.2
     role: worker
@@ -8,7 +11,7 @@ hosts:
 features:
   host_updates:
     interval: 7d
-    reboot: false
+    reboot: true
   network:
     settings:
       trusted_subnets:

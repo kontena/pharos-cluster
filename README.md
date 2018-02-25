@@ -1,6 +1,6 @@
-# Kontadm
+# Shokunin
 
-Kontena Kubernetes installer, a simple, fast Kubernetes installer that works everywhere.
+Kubernetes cluster artisan, a simple, fast Kubernetes installer that works everywhere.
 
 ## Requirements
 
@@ -10,7 +10,30 @@ Kontena Kubernetes installer, a simple, fast Kubernetes installer that works eve
 ## Usage
 
 ```
-$ kontadm up -c cluster.yml
+$ shokunin build -c cluster.yml
+```
+
+Example cluster YAML:
+
+```yaml
+hosts:
+  - address: "1.1.1.1"
+    private_address: "1.0.1.0"
+    user: root
+    ssh_key_path: ~/.ssh/my_key
+    role: master
+  - address: "2.2.2.2"
+    role: worker
+  - address: "3.3.3.3"
+    role: worker
+features:
+  host_updates:
+    interval: "7d"
+    reboot: true
+  network:
+    settings:
+      trusted_subnets:
+        - "172.31.0.0/16"
 ```
 
 ## Contributing

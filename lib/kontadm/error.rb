@@ -1,2 +1,0 @@
-class Error < StandardError
-end
