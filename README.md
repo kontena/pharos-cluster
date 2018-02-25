@@ -38,7 +38,7 @@ features:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/kontadm.
+Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/shokunin.
 
 ## Licence
 
