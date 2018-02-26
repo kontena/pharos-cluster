@@ -23,10 +23,12 @@ module Shokunin::Services
     end
 
     def install?
-      @ssh.file_exists?("/etc/kubernetes/admin.conf")
+      !@ssh.file_exists?("/etc/kubernetes/admin.conf")
     end
 
     def upgrade?
+      return false unless Shokunin::Kube.config_exists?(@master.address)
+
       client = Shokunin::Kube.client(@master.address)
       configmap = client.get_config_map('kubeadm-config', 'kube-system')
       config = YAML.load(configmap.data[:MasterConfiguration])

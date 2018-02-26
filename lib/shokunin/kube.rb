@@ -43,6 +43,12 @@ module Shokunin::Kube
     @kube_client[version]
   end
 
+  # @param host [String]
+  # @return [Boolean]
+  def self.config_exists?(host)
+    File.exist?(File.join(Dir.home, ".kube/#{host}"))
+  end
+
   # @param host [Shokunin::Configuration::Host]
   # @param stack [String]
   # @param vars [Hash]
