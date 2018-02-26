@@ -23,7 +23,7 @@ module Shokunin::Services
     end
 
     def install?
-      @ssh.exec("[ ! -e /etc/kubernetes/admin.conf ]") == 0
+      @ssh.file_exists?("/etc/kubernetes/admin.conf")
     end
 
     def upgrade?

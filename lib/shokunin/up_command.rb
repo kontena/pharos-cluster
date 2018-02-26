@@ -79,6 +79,7 @@ module Shokunin
     def handle_masters(master, features)
       log_host_header(master)
       Shokunin::Services::ConfigureHost.new(master).call
+      Shokunin::Services::ConfigureKubelet.new(master).call
       Shokunin::Services::ConfigureMaster.new(master).call
       Shokunin::Services::ConfigureClient.new(master).call
       Shokunin::Services::ConfigureNetwork.new(master, features.network).call
@@ -93,6 +94,7 @@ module Shokunin
         log_host_header(node)
         begin
           Shokunin::Services::ConfigureHost.new(node).call
+          Shokunin::Services::ConfigureKubelet.new(master).call
           Shokunin::Services::JoinNode.new(node, master).call
         end
       end

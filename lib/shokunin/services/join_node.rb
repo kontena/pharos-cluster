@@ -12,7 +12,7 @@ module Shokunin::Services
     end
 
     def already_joined?
-      @ssh.exec("[ -e /etc/kubernetes/kubelet.conf ]") == 0
+      @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
     end
 
     def call

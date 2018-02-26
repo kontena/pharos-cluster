@@ -76,6 +76,26 @@ module Shokunin::SSH
       @session.scp.download!(remote_path, local_path, opts)
     end
 
+    # @param path [String]
+    # @return [Boolean]
+    def file_exists?(path)
+      exec("[ -e #{path} ]") == 0
+    end
+
+    # @param path [String]
+    # @return [String,NilClass]
+    def file_contents(path)
+      dropin = ''
+      code = exec("sudo cat #{path}") do |type, data|
+        dropin << data if type == :stdout
+      end
+      if code == 0
+        dropin
+      else
+        nil
+      end
+    end
+
     def disconnect
       @session.close if @session && !@session.closed?
     end

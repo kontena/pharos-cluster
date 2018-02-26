@@ -18,6 +18,7 @@ module Shokunin
 
   module Services
     autoload :ConfigureHost, 'shokunin/services/configure_host'
+    autoload :ConfigureKubelet, 'shokunin/services/configure_kubelet'
     autoload :ConfigureClient, 'shokunin/services/configure_client'
     autoload :ConfigureMaster, 'shokunin/services/configure_master'
     autoload :ConfigureNetwork, 'shokunin/services/configure_network'

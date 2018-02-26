@@ -16,8 +16,8 @@ module Shokunin::Kube
     end
   end
 
-  RESOURCE_LABEL = 'Shokunin.kontena.io/stack'.freeze
-  RESOURCE_ANNOTATION = 'Shokunin.kontena.io/stack-checksum'.freeze
+  RESOURCE_LABEL = 'shokunin.kontena.io/stack'.freeze
+  RESOURCE_ANNOTATION = 'shokunin.kontena.io/stack-checksum'.freeze
 
   # @param host [String]
   # @return [Kubeclient::Client]
