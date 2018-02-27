@@ -1,8 +1,7 @@
-require_relative 'logging'
+require_relative 'base'
 
-module Shokunin::Services
-  class ConfigureMetrics
-    include Shokunin::Services::Logging
+module Shokunin::Phases
+  class ConfigureMetrics < Base
 
     def initialize(master)
       @master = master

@@ -1,8 +1,8 @@
 require_relative 'logging'
 
-module Shokunin::Services
+module Shokunin::Phases
   class JoinNode
-    include Shokunin::Services::Logging
+    include Shokunin::Phases::Logging
 
     def initialize(host, master)
       @host = host
@@ -17,7 +17,6 @@ module Shokunin::Services
 
     def call
       if already_joined?
-        logger.info { "Host is already joined to the master" }
         return
       end
 

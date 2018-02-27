@@ -1,6 +1,6 @@
 require 'logger'
 
-module Shokunin::Services::Logging
+module Shokunin::Phases::Logging
   def self.initialize_logger(log_target = STDOUT, log_level = Logger::INFO)
     @logger = Logger.new(log_target)
     @logger.progname = 'API'
@@ -21,6 +21,6 @@ module Shokunin::Services::Logging
   end
 
   def logger
-    Shokunin::Services::Logging.logger
+    Shokunin::Phases::Logging.logger
   end
 end

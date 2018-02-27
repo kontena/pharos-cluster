@@ -1,8 +1,11 @@
-require_relative 'logging'
+require_relative 'base'
 
-module Shokunin::Services
-  class ConfigureNetwork
-    include Shokunin::Services::Logging
+module Shokunin::Phases
+  class ConfigureNetwork < Base
+
+    register_component(Shokunin::Phases::Component.new(
+      name: 'weave', version: '2.2.0', license: 'Apache License 2.0'
+    ))
 
     def initialize(master, config)
       @master = master

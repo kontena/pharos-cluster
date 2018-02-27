@@ -1,8 +1,11 @@
-require_relative 'logging'
+require_relative 'base'
 
-module Shokunin::Services
-  class ConfigureKured
-    include Shokunin::Services::Logging
+module Shokunin::Phases
+  class ConfigureKured < Base
+
+    register_component(Shokunin::Phases::Component.new(
+      name: 'kured', version: '1.0.0', license: 'Apache License 2.0'
+    ))
 
     # @param master [Shokunin::Configuration::Host]
     # @param master [Shokunin::Configuration::Feature::HostUpdate]

@@ -1,8 +1,7 @@
-require_relative 'logging'
+require_relative 'base'
 
-module Shokunin::Services
-  class ConfigureKubelet
-    include Shokunin::Services::Logging
+module Shokunin::Phases
+  class ConfigureKubelet < Base
 
     DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-shokunin.conf".freeze
 
@@ -13,11 +12,12 @@ module Shokunin::Services
     end
 
     def call
+      logger.info { 'Configuring kubelet ...' }
       dropin = build_systemd_dropin
       if dropin != existing_dropin
-        logger.info { 'Configuring kubelet ...' }
-        @ssh.upload(StringIO.new(dropin), '/tmp/kubelet-dropin')
-        @ssh.exec("sudo mv /tmp/kubelet-dropin #{DROPIN_PATH}")
+        tmp_file = File.join('/tmp', SecureRandom.hex(16))
+        @ssh.upload(StringIO.new(dropin), tmp_file)
+        @ssh.exec("sudo mv #{tmp_file} #{DROPIN_PATH}")
         @ssh.exec("sudo systemctl daemon-reload")
         @ssh.exec("sudo systemctl restart kubelet")
       end

@@ -24,7 +24,7 @@ module Shokunin::Kube
   def self.client(host, version = 'v1')
     @kube_client ||= {}
     unless @kube_client[version]
-      config = Kubeclient::Config.read(File.join(Dir.home, ".kube/#{host}"))
+      config = Kubeclient::Config.read(File.join(Dir.home, ".shokunin/#{host}"))
       if version == 'v1'
         path_prefix = 'api'
       else
@@ -46,7 +46,7 @@ module Shokunin::Kube
   # @param host [String]
   # @return [Boolean]
   def self.config_exists?(host)
-    File.exist?(File.join(Dir.home, ".kube/#{host}"))
+    File.exist?(File.join(Dir.home, ".shokunin/#{host}"))
   end
 
   # @param host [Shokunin::Configuration::Host]

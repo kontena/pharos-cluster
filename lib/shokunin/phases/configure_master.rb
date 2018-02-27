@@ -1,8 +1,7 @@
-require_relative 'logging'
+require_relative 'base'
 
-module Shokunin::Services
-  class ConfigureMaster
-    include Shokunin::Services::Logging
+module Shokunin::Phases
+  class ConfigureMaster < Base
 
     def initialize(master)
       @master = master
@@ -31,8 +30,9 @@ module Shokunin::Services
 
       client = Shokunin::Kube.client(@master.address)
       configmap = client.get_config_map('kubeadm-config', 'kube-system')
+      kube_version = self.class.components.find {|c| c.name == 'kubernetes' }
       config = YAML.load(configmap.data[:MasterConfiguration])
-      config['kubernetesVersion'] != "v#{Shokunin::KUBE_VERSION}"
+      config['kubernetesVersion'] != "v#{kube_version.version}"
     end
 
     def install
@@ -41,9 +41,9 @@ module Shokunin::Services
         "--apiserver-cert-extra-sans #{sans.join(',')}"
       ]
       if @master.private_address
-        options << "--apiserver-advertise-address #{@master.private_address}"
+        options << "--apiserver-advertise-address #{@master.private_address}:6443"
       else
-        options << "--apiserver-advertise-address #{@master.address}"
+        options << "--apiserver-advertise-address #{@master.address}:6443"
       end
       logger.info(@master.address) { "Initializing control plane ..." }
       if @ssh.exec("sudo kubeadm init #{options.join(' ')}") == 0

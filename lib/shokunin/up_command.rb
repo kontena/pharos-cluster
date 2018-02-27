@@ -10,6 +10,7 @@ module Shokunin
         signal_usage_error 'File does not exist'
       end
 
+      puts pastel.green("==> Loading instructions ...")
       config = load_config(config_file)
 
       master_hosts = master_hosts(config)
@@ -17,13 +18,28 @@ module Shokunin
       signal_usage_error 'Only one host can be in master role' if master_hosts.size > 1
 
       begin
+        start_time = Time.now
+        puts pastel.green("==> Sharpening tools ...")
+        load_phases
+        puts pastel.green("==> Starting to craft cluster ...")
         validate_hosts(config.hosts)
 
         handle_masters(master_hosts[0], config.features)
         handle_workers(master_hosts[0], worker_hosts(config))
+        craft_time = Time.now - start_time
+        puts pastel.green("==> Cluster has been crafted, enjoy! (took #{humanize_duration(craft_time.to_i)})")
       ensure
         Shokunin::SSH::Client.disconnect_all
       end
+    end
+
+    def humanize_duration(secs)
+      [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map{ |count, name|
+        if secs > 0
+          secs, n = secs.divmod(count)
+          "#{n.to_i} #{name}"
+        end
+      }.compact.reverse.join(' ')
     end
 
     # @param config_file [String]
@@ -42,6 +58,10 @@ module Shokunin
       Shokunin::Config.new(schema)
     end
 
+    def load_phases
+      Dir.glob(__dir__ + '/phases/*.rb').each { |f| require(f) }
+    end
+
     def show_config_errors(errors)
       puts "==> Invalid configuration file:"
       puts YAML.dump(errors)
@@ -53,8 +73,8 @@ module Shokunin
       hosts.each do |host|
         log_host_header(host)
         begin
-          Shokunin::Services::ValidateHost.new(host).call
-        rescue Shokunin::Services::ValidateHost::InvalidHostError => exc
+          Phases::ValidateHost.new(host).call
+        rescue Shokunin::InvalidHostError => exc
           puts "    - #{exc.message}"
           valid = false
         end
@@ -78,13 +98,14 @@ module Shokunin
     # @param features [Shokunin::Configuration::Features]
     def handle_masters(master, features)
       log_host_header(master)
-      Shokunin::Services::ConfigureHost.new(master).call
-      Shokunin::Services::ConfigureKubelet.new(master).call
-      Shokunin::Services::ConfigureMaster.new(master).call
-      Shokunin::Services::ConfigureClient.new(master).call
-      Shokunin::Services::ConfigureNetwork.new(master, features.network).call
-      Shokunin::Services::ConfigureKured.new(master, features.host_updates).call
-      Shokunin::Services::ConfigureMetrics.new(master).call
+      Phases::ConfigureHost.new(master).call
+      Phases::ConfigureKubelet.new(master).call
+      Phases::ConfigureMaster.new(master).call
+      Phases::ConfigureClient.new(master).call
+      Phases::ConfigureNetwork.new(master, features.network).call
+      Phases::ConfigureKured.new(master, features.host_updates).call
+      Phases::ConfigureMetrics.new(master).call
+      Phases::ConfigureIngress.new(master).call
     end
 
     # @param master [Shokunin::Configuration::Node]
@@ -93,9 +114,9 @@ module Shokunin
       nodes.each do |node|
         log_host_header(node)
         begin
-          Shokunin::Services::ConfigureHost.new(node).call
-          Shokunin::Services::ConfigureKubelet.new(master).call
-          Shokunin::Services::JoinNode.new(node, master).call
+          Phases::ConfigureHost.new(node).call
+          Phases::ConfigureKubelet.new(node).call
+          Phases::JoinNode.new(node, master).call
         end
       end
     end

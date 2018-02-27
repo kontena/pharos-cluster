@@ -1,10 +1,8 @@
 require_relative 'logging'
 
-module Shokunin::Services
+module Shokunin::Phases
   class ValidateHost
-    include Shokunin::Services::Logging
-
-    class InvalidHostError < StandardError; end
+    include Shokunin::Phases::Logging
 
     def initialize(host)
       @host = host
@@ -16,7 +14,7 @@ module Shokunin::Services
       logger.info { "Validating distro and version ..."}
       if ssh.exec('grep "Ubuntu 16.04" /etc/issue') != 0
         logger.error { "Distribution is not supported"}
-        raise InvalidHostError, "Distro not supported"
+        raise Shokunin::InvalidHostError, "Distro not supported"
       end
     end
   end

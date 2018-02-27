@@ -47,11 +47,9 @@ module Shokunin::SSH
       ssh_channel = @session.open_channel do |channel|
         channel.exec cmd do |ech, success|
           ech.on_data do |_, data|
-            #print data if output
             yield(:stdout, data) if block_given?
           end
           ech.on_extended_data do |c, type, data|
-            #$stderr.print data if output
             yield(:stderr, data) if block_given?
           end
           ech.on_request("exit-status") do |_, data|
@@ -66,11 +64,15 @@ module Shokunin::SSH
 
     # @param local_path [String]
     # @param remote_path [String]
+    # @param opts [Hash]
     def upload(local_path, remote_path, opts = {})
       require_session!
       @session.scp.upload!(local_path, remote_path, opts)
     end
 
+    # @param remote_path [String]
+    # @param local_path [String]
+    # @param opts [Hash]
     def download(remote_path, local_path, opts = {})
       require_session!
       @session.scp.download!(remote_path, local_path, opts)

@@ -1,8 +1,14 @@
-require_relative 'logging'
+require_relative 'base'
 
-module Shokunin::Services
-  class ConfigureHost
-    include Shokunin::Services::Logging
+module Shokunin::Phases
+  class ConfigureHost < Base
+
+    register_component(Shokunin::Phases::Component.new(
+      name: 'docker-ce', version: '17.03.2', license: 'Apache License 2.0'
+    ))
+    register_component(Shokunin::Phases::Component.new(
+      name: 'kubernetes', version: '1.9.3', license: 'Apache License 2.0'
+    ))
 
     def initialize(host)
       @host = host
@@ -24,8 +30,9 @@ module Shokunin::Services
 
     def exec_script(script)
       file = File.realpath(File.join(__dir__, '..', 'scripts', script))
-      @ssh.upload(file, "/tmp/exec-#{script}")
-      code = @ssh.exec("sudo /tmp/exec-#{script}") do |type, data|
+      tmp_file = File.join('/tmp', SecureRandom.hex(16))
+      @ssh.upload(file, tmp_file)
+      code = @ssh.exec("sudo #{tmp_file} && sudo rm #{tmp_file}") do |type, data|
         logger.debug { data }
       end
       if code != 0
