@@ -10,7 +10,7 @@ module Shokunin
         signal_usage_error 'File does not exist'
       end
 
-      puts pastel.green("==> Loading instructions ...")
+      puts pastel.green("==> Reading instructions ...")
       config = load_config(config_file)
 
       master_hosts = master_hosts(config)
@@ -106,6 +106,7 @@ module Shokunin
       Phases::ConfigureKured.new(master, features.host_updates).call
       Phases::ConfigureMetrics.new(master).call
       Phases::ConfigureIngress.new(master).call
+      Phases::ConfigureCertManager.new(master).call
     end
 
     # @param master [Shokunin::Configuration::Node]
