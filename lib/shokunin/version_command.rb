@@ -5,13 +5,13 @@ module Shokunin
 
     def execute
       puts "Shokunin version #{Shokunin::VERSION}"
-      #if all?
+      if all?
         load_phases
         puts "3rd party versions:"
         Shokunin::Phases::Base.components.each do |c|
           puts "  - #{c.name}=#{c.version} (#{c.license})"
         end
-      #end
+      end
     end
 
     def load_phases
