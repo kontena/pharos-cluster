@@ -4,7 +4,7 @@ require_relative 'version_command'
 module Shokunin
   class RootCommand < Clamp::Command
 
-    banner "職人 - kubernetes cluster artisan"
+    banner "kupo (クポ) - Kontena Kubernetes distribution installer, kupo!"
 
     subcommand ["build", "up"], "Initialize/upgrade cluster", UpCommand
     subcommand ["version"], "Show version information", VersionCommand
@@ -13,6 +13,7 @@ module Shokunin
       super
     rescue => exc
       $stderr.puts exc.message
+      $stderr.puts exc.backtrace.join("\n")
     end
   end
 end

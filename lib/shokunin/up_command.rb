@@ -24,10 +24,11 @@ module Shokunin
         puts pastel.green("==> Starting to craft cluster ...")
         validate_hosts(config.hosts)
 
-        handle_masters(master_hosts[0], config.features)
+        handle_masters(master_hosts[0], config)
         handle_workers(master_hosts[0], worker_hosts(config))
+        handle_addons(master_hosts[0], config.addons)
         craft_time = Time.now - start_time
-        puts pastel.green("==> Cluster has been crafted, enjoy! (took #{humanize_duration(craft_time.to_i)})")
+        puts pastel.green("==> Cluster has been crafted, kupo! (took #{humanize_duration(craft_time.to_i)})")
       ensure
         Shokunin::SSH::Client.disconnect_all
       end
@@ -50,12 +51,24 @@ module Shokunin
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
       end
-      schema = Shokunin::ConfigSchema.call(yaml)
+      schema_class = Shokunin::ConfigSchema.build
+      schema = schema_class.call(yaml)
       unless schema.success?
         show_config_errors(schema.messages)
         exit 11
       end
-      Shokunin::Config.new(schema)
+
+      config = Shokunin::Config.new(schema)
+      addon_manager.validate(config.addons)
+
+      config
+    end
+
+    # @return [Shokunin::AddonManager]
+    def addon_manager
+      @addon_manager ||= Shokunin::AddonManager.new([
+        __dir__ + '/addons/'
+      ])
     end
 
     def load_phases
@@ -95,18 +108,15 @@ module Shokunin
     end
 
     # @param master [Shokunin::Configuration::Node]
-    # @param features [Shokunin::Configuration::Features]
-    def handle_masters(master, features)
+    # @param features [Shokunin::Config]
+    def handle_masters(master, config)
       log_host_header(master)
       Phases::ConfigureHost.new(master).call
       Phases::ConfigureKubelet.new(master).call
       Phases::ConfigureMaster.new(master).call
       Phases::ConfigureClient.new(master).call
-      Phases::ConfigureNetwork.new(master, features.network).call
-      Phases::ConfigureKured.new(master, features.host_updates).call
+      Phases::ConfigureNetwork.new(master, config.network).call
       Phases::ConfigureMetrics.new(master).call
-      Phases::ConfigureIngress.new(master).call
-      Phases::ConfigureCertManager.new(master).call
     end
 
     # @param master [Shokunin::Configuration::Node]
@@ -120,6 +130,11 @@ module Shokunin
           Phases::JoinNode.new(node, master).call
         end
       end
+    end
+
+    def handle_addons(master, addon_configs)
+      puts pastel.cyan("==> addons: #{master.address}")
+      addon_manager.apply(master, addon_configs)
     end
 
     def log_host_header(host)

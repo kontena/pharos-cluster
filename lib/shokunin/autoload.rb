@@ -12,11 +12,15 @@ module Shokunin
   autoload :ConfigSchema, 'shokunin/config_schema'
   autoload :Kube, 'shokunin/kube'
   autoload :Erb, 'shokunin/erb'
+  autoload :AddonManager, 'shokunin/addon_manager'
 
   module SSH
     autoload :Client, 'shokunin/ssh/client'
   end
 
   module Phases
+  end
+
+  module Addons
   end
 end

@@ -38,8 +38,8 @@ module Shokunin::Phases
 
     def ensure_resources
       trusted_subnets = []
-      if @config.settings && @config.settings[:trusted_subnets]
-        trusted_subnets = @config.settings[:trusted_subnets]
+      if @config.trusted_subnets && @config.trusted_subnets
+        trusted_subnets = @config.trusted_subnets
       else
         trusted_subnets = []
       end

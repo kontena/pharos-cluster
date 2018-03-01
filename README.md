@@ -1,6 +1,6 @@
-# Shokunin
+# Kupo (クポ)
 
-Kubernetes cluster artisan, a simple, fast Kubernetes installer that works everywhere.
+Kontena Kubernetes distribution installer, kupo!
 
 ## Requirements
 
@@ -10,7 +10,7 @@ Kubernetes cluster artisan, a simple, fast Kubernetes installer that works every
 ## Usage
 
 ```
-$ shokunin build -c cluster.yml
+$ kupo build -c cluster.yml
 ```
 
 Example cluster YAML:
@@ -26,19 +26,26 @@ hosts:
     role: worker
   - address: "3.3.3.3"
     role: worker
-features:
-  host_updates:
+network:
+  trusted_subnets:
+    - "172.31.0.0/16"
+addons:
+  metrics-server:
+    enabled: true
+  heapster:
+    enabled: true
+  ingress-nginx:
+    enabled: true
+  host-updates:
+    enabled: true
     interval: "7d"
-    reboot: true
-  network:
-    settings:
-      trusted_subnets:
-        - "172.31.0.0/16"
+  kured:
+    enabled: true
 ```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/shokunin.
+Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/kupo.
 
 ## Licence
 

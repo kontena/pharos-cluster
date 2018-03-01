@@ -2,38 +2,25 @@ require 'fugit'
 require 'dry-validation'
 
 module Shokunin
-  ConfigSchema = Dry::Validation.Form do
 
-    configure do
-      def duration?(value)
-        !Fugit::Duration.parse(value).nil?
-      end
+  class ConfigSchema
 
-      def self.messages
-        super.merge(
-          en: { errors: { duration?: 'is not valid duration' } }
-        )
-      end
-    end
-
-    required(:hosts).each do
-      schema do
-        required(:address).filled
-        required(:role).filled
-        optional(:private_address).filled
-        optional(:user).filled
-        optional(:ssh_key_path).filled
-      end
-    end
-    optional(:features).schema do
-      optional(:host_updates).schema do
-        required(:interval).filled(:str?, :duration?)
-        required(:reboot).filled(:bool?)
-      end
-      optional(:network).schema do
-        required(:settings).schema do
-          required(:trusted_subnets).filled(:array?)
+    # @return [Dry::Validation::Schema]
+    def self.build
+      Dry::Validation.Form do
+        required(:hosts).each do
+          schema do
+            required(:address).filled
+            required(:role).filled
+            optional(:private_address).filled
+            optional(:user).filled
+            optional(:ssh_key_path).filled
+          end
         end
+        optional(:network).schema do
+          optional(:trusted_subnets).each(type?: String)
+        end
+        optional(:addons).filled
       end
     end
   end

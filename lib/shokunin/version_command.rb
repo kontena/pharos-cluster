@@ -11,6 +11,10 @@ module Shokunin
         Shokunin::Phases::Base.components.each do |c|
           puts "  - #{c.name}=#{c.version} (#{c.license})"
         end
+        puts "Addon versions:"
+        Shokunin::AddonManager.new([__dir__ + '/addons']).addon_classes.each do |c|
+          puts "  - #{c.name}=#{c.version} (#{c.license})"
+        end
       end
     end
 

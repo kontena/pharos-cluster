@@ -10,11 +10,23 @@ hosts:
   - address: 3.3.3.3
     private_address: 10.10.1.3
     role: worker
-features:
-  host_updates:
+network:
+  trusted_subnets:
+    - 10.10.0.0/16
+addons:
+  metrics-server:
+    enabled: true
+  heapster:
+    enabled: true
+  ingress-nginx:
+    enabled: true
+    options:
+      # see all supported options: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
+      load-balance: least_conn
+  cert-manager:
+    enabled: true
+  host-upgrades:
+    enabled: true
     interval: 7d
-    reboot: true
-  network:
-    settings:
-      trusted_subnets:
-        - 10.10.0.0/16
+  kured:
+    enabled: true

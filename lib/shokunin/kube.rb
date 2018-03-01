@@ -84,7 +84,8 @@ module Shokunin::Kube
           objects.select { |obj|
             obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
           }.each { |obj|
-            delete_resource(obj)
+            obj.apiVersion = api_group.preferredVersion.groupVersion
+            delete_resource(host, obj)
             pruned << obj
           }
         end
@@ -105,7 +106,6 @@ module Shokunin::Kube
       resource.metadata.resourceVersion = old_resource.metadata.resourceVersion
       merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, {overwrite_arrays: true}))
       resource_client.update_entity(definition.resource_name, merged_resource)
-      #resource_client.patch_entity(definition.resource_name, resource.metadata.name, resource.to_h, resource.metadata.namespace)
     rescue Kubeclient::ResourceNotFoundError
       resource_client.create_entity(resource.kind, definition.resource_name, resource)
     end
@@ -117,9 +117,19 @@ module Shokunin::Kube
   def self.delete_resource(host, resource)
     resource_client = self.client(host, resource.apiVersion)
     begin
-      definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
-      resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
-      resource_client.delete_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
+      if resource.metadata.selfLink
+        api_group = resource.metadata.selfLink.split("/")[1]
+        resource_path = resource.metadata.selfLink.gsub("/#{api_group}/#{resource.apiVersion}", '')
+        resource_client.rest_client[resource_path].delete
+      else
+        definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
+        resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
+        resource_client.delete_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace, {
+          kind: 'DeleteOptions',
+          apiVersion: 'v1',
+          propagationPolicy: 'Foreground'
+        })
+      end
     rescue Kubeclient::ResourceNotFoundError
       false
     end
