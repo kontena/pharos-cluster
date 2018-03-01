@@ -23,7 +23,7 @@ module Kupo::Phases
     end
 
     def config_dir
-      File.join(Dir.home, '.shokunin')
+      File.join(Dir.home, '.kupo')
     end
   end
 end

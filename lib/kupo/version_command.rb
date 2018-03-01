@@ -4,7 +4,7 @@ module Kupo
     option "--all", :flag, "Show all versions"
 
     def execute
-      puts "Shokunin version #{Kupo::VERSION}"
+      puts "kupo version #{Kupo::VERSION}"
       if all?
         load_phases
         puts "3rd party versions:"
