@@ -20,7 +20,7 @@ addons:
     enabled: true
   ingress-nginx:
     enabled: true
-    options:
+    configmap:
       # see all supported options: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
       load-balance: least_conn
   cert-manager:
