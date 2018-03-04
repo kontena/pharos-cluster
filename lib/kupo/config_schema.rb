@@ -18,6 +18,7 @@ module Kupo
           end
         end
         optional(:network).schema do
+          optional(:ipalloc_range).filled(:str?)
           optional(:trusted_subnets).each(type?: String)
         end
         optional(:addons).filled
