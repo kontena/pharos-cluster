@@ -11,5 +11,6 @@ pipeline:
       - apt-get install -y -q squashfs-tools build-essential ruby bison ruby-dev git-core curl
       - curl -L http://enclose.io/rubyc/rubyc-linux-x64.gz | gunzip > /usr/local/bin/rubyc
       - chmod +x /usr/local/bin/rubyc
+      - gem install bundler
       - bundle install --path bundler
       - rubyc -o kupo kupo
