@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -e
+set -ex
 
-if [ $(kubelet --version) == "v1.9.3" ]; then
+if [ "$(kubelet --version)" = "Kubernetes v1.9.3" ]; then
     exit 0
 fi
 

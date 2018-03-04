@@ -16,13 +16,13 @@ module Kupo::Phases
     end
 
     def call
+      logger.info { "Configuring essential packages ..." }
+      exec_script('configure-essentials.sh')
       logger.info { "Configuring netfilter ..." }
       exec_script('configure-netfilter.sh')
-      logger.info { "Configuring ntpd ..." }
-      exec_script('configure-ntp.sh')
-      logger.info { "Configuring container engine ..." }
+      logger.info { "Configuring container runtime packages ..." }
       exec_script('configure-docker.sh')
-      logger.info { "Configuring Kubernetes engine ..." }
+      logger.info { "Configuring Kubernetes packages ..." }
       exec_script('configure-kube.sh')
     rescue Kupo::Error => exc
       logger.error { exc.message }
@@ -32,9 +32,10 @@ module Kupo::Phases
       file = File.realpath(File.join(__dir__, '..', 'scripts', script))
       tmp_file = File.join('/tmp', SecureRandom.hex(16))
       @ssh.upload(file, tmp_file)
-      code = @ssh.exec("sudo #{tmp_file} && sudo rm #{tmp_file}") do |type, data|
-        logger.debug { data }
+      code = @ssh.exec("sudo #{tmp_file}") do |type, data|
+        remote_output(type, data)
       end
+      @ssh.exec("sudo rm #{tmp_file}")
       if code != 0
         raise Kupo::Error, "Script execution failed: #{script}"
       end

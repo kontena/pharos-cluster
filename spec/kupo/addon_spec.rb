@@ -7,9 +7,9 @@ describe Kupo::Addon do
       version "0.2.2"
       license "MIT"
 
-      struct { |s|
-        s.attribute :foo, Kupo::Types::String
-        s.attribute :bar, Kupo::Types::String.default('baz')
+      struct {
+        attribute :foo, Kupo::Types::String
+        attribute :bar, Kupo::Types::String.default('baz')
       }
 
       schema {

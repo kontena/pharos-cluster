@@ -9,7 +9,7 @@ module Kupo::Phases
     end
 
     def call
-      logger.info { "Checking if Kubernetes control plane is already initalized ..." }
+      logger.info { "Checking if Kubernetes control plane is already initialized ..." }
       if install?
         logger.info { "Kubernetes control plane is not initialized, proceeding to initialize ..." }
         install
@@ -46,10 +46,13 @@ module Kupo::Phases
         options << "--apiserver-advertise-address #{@master.address}:6443"
       end
       logger.info(@master.address) { "Initializing control plane ..." }
-      if @ssh.exec("sudo kubeadm init #{options.join(' ')}") == 0
+      code = @ssh.exec("sudo kubeadm init #{options.join(' ')}") do |type, data|
+        remote_output(type, data)
+      end
+      if code == 0
         logger.info(@master.address) { "Initialization of control plane succeeded!" }
       else
-        logger.error(@master.address) { "Initialization of control plane failed!" }
+        raise Kupo::Error, "Initialization of control plane failed!"
       end
 
       @ssh.exec('mkdir -p ~/.kube')
@@ -57,7 +60,9 @@ module Kupo::Phases
     end
 
     def upgrade
-      @ssh.exec("sudo kubeadm upgrade apply #{Kupo::KUBE_VERSION} -y")
+      @ssh.exec("sudo kubeadm upgrade apply #{Kupo::KUBE_VERSION} -y") do |type, data|
+        remote_output(type, data)
+      end
     end
   end
 end
