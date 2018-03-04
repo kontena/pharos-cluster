@@ -5,7 +5,7 @@ module Kupo
     class Struct < Dry::Struct
       constructor_type :schema
 
-      attribute :enabled, Types::Strict::Bool
+      attribute :enabled, Kupo::Types::Strict::Bool
     end
   end
 end
