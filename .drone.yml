@@ -3,4 +3,4 @@ pipeline:
     image: ruby:2.4
     commands:
       - bundle install --path bundler
-      - rspec spec/
+      - bundle exec rspec spec/
