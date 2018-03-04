@@ -7,12 +7,18 @@ module Kupo
       license 'Apache License 2.0'
 
       struct { |s|
-        s.attribute :options, Kupo::Types::Hash
-      }
-      schema {
-        optional(:options).filled(:hash?)
+        s.attribute :configmap, Kupo::Types::Hash
       }
 
+      schema {
+        optional(:configmap).filled(:hash?)
+      }
+
+      def install
+        apply_stack({
+          configmap: config.configmap || {}
+        })
+      end
     end
   end
 end
