@@ -1,8 +1,7 @@
-require_relative 'logging'
+require_relative 'base'
 
 module Kupo::Phases
-  class JoinNode
-    include Kupo::Phases::Logging
+  class JoinNode < Base
 
     def initialize(host, master)
       @host = host
@@ -27,10 +26,9 @@ module Kupo::Phases
       end
 
       code = @ssh.exec(join_command) do |type, data|
-        logger.debug { data }
+        remote_output(type, data)
       end
       if code != 0
-        logger.error { "Failed to join host" }
         raise Kupo::Error, "Failed to join host"
       end
     end
