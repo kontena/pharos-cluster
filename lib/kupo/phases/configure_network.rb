@@ -37,15 +37,11 @@ module Kupo::Phases
     end
 
     def ensure_resources
-      trusted_subnets = []
-      if @config.trusted_subnets && @config.trusted_subnets
-        trusted_subnets = @config.trusted_subnets
-      else
-        trusted_subnets = []
-      end
+      trusted_subnets = @config.trusted_subnets || []
       logger.info { "Configuring overlay network ..." }
       Kupo::Kube.apply_stack(@master.address, 'weave', {
-        trusted_subnets: trusted_subnets
+        trusted_subnets: trusted_subnets,
+        ipalloc_range: @config.ipalloc_range
       })
     end
 

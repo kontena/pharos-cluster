@@ -25,10 +25,12 @@ spec:
               value: "0"
             - name: CHECKPOINT_DISABLE
               value: "1"
-            <% if trusted_subnets && !trusted_subnets.empty? %>
+            <% if !trusted_subnets.empty? %>
             - name: EXTRA_ARGS
               value: "--trusted-subnets <%= trusted_subnets.join(',') %>"
             <% end %>
+            - name: IPALLOC_RANGE
+              value: "<%= ipalloc_range %>"
             - name: WEAVE_PASSWORD
               valueFrom:
                 secretKeyRef:
