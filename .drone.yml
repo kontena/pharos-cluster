@@ -1,0 +1,6 @@
+pipeline:
+  test:
+    image: ruby:2.4
+    commands:
+      - bundle install --path bundler
+      - bundle exec rspec spec/
