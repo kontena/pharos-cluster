@@ -52,10 +52,8 @@ module Kupo
       @schema = Dry::Validation.Form(Schema, &block)
     end
 
-    def self.struct
-      @struct ||= Class.new(Kupo::Addons::Struct) do
-        yield(self) if block_given?
-      end
+    def self.struct(&block)
+      @struct ||= Class.new(Kupo::Addons::Struct, &block)
     end
 
     def self.validation
@@ -94,7 +92,13 @@ module Kupo
     end
 
     def apply_stack(vars = {})
-      Kupo::Kube.apply_stack(host.address, self.class.name, vars)
+      Kupo::Kube.apply_stack(host.address, self.class.name, vars.merge({
+        name: self.class.name, version: self.class.version, config: config
+      }))
+    end
+
+    def apply_resource(resource)
+      Kupo::Kube.apply_resource(host.address)
     end
 
     def prune_stack
