@@ -17,3 +17,5 @@ pipeline:
       - bundle install --path bundler
       - rubyc -o kupo kupo
       - ./kupo version --all
+    when:
+      event: tag
