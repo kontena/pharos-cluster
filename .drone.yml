@@ -16,3 +16,4 @@ pipeline:
       - gem install bundler
       - bundle install --path bundler
       - rubyc -o kupo kupo
+      - ./kupo version --all
