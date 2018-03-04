@@ -1,4 +1,6 @@
 require 'dry-validation'
+require_relative 'types'
+require_relative 'kube'
 require_relative 'addons/struct'
 require_relative 'phases/logging'
 
