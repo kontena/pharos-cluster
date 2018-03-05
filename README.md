@@ -54,7 +54,7 @@ addons:
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/kupo.
 
-## Licence
+## License
 
 Copyright (c) 2018 Kontena, Inc.
 
