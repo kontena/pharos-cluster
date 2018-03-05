@@ -4,3 +4,12 @@ pipeline:
     commands:
       - bundle install --path bundler
       - bundle exec rspec spec/
+  build_xenial:
+    image: ubuntu:xenial
+    secrets: [ github_token ]
+    environment:
+      - CPPFLAGS=-P
+    commands:
+      - ./build/drone/ubuntu_xenial.sh
+    when:
+      event: tag
