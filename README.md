@@ -32,15 +32,20 @@ network:
   trusted_subnets:
     - "172.31.0.0/16"
 addons:
-  metrics-server:
-    enabled: true
-  heapster:
-    enabled: true
   ingress-nginx:
     enabled: true
-  host-updates:
+    configmap:
+      # see all supported options: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
+      load-balance: least_conn
+  cert-manager:
     enabled: true
-    interval: "7d"
+    issuer:
+      name: letsencrypt-staging
+      server: https://acme-staging.api.letsencrypt.org/directory
+      email: me@domain.com
+  host-upgrades:
+    enabled: true
+    interval: 7d
   kured:
     enabled: true
 ```
@@ -49,7 +54,7 @@ addons:
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/kupo.
 
-## Licence
+## License
 
 Copyright (c) 2018 Kontena, Inc.
 
