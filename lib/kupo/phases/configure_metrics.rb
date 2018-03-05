@@ -8,7 +8,7 @@ module Kupo::Phases
     ))
 
     register_component(Kupo::Phases::Component.new(
-      name: 'heapster', version: '0.5.1', license: 'Apache License 2.0'
+      name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
     ))
 
     def initialize(master)
@@ -19,7 +19,7 @@ module Kupo::Phases
       logger.info { "Configuring metrics-server ..." }
       Kupo::Kube.apply_stack(@master.address, 'metrics-server', {version: '0.2.1'})
       logger.info { "Configuring heapster ..." }
-      Kupo::Kube.apply_stack(@master.address, 'heapster', {version: '0.5.1'})
+      Kupo::Kube.apply_stack(@master.address, 'heapster', {version: '1.5.1'})
     end
   end
 end
