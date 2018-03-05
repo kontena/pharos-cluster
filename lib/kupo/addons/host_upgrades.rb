@@ -6,9 +6,10 @@ module Kupo
       version '0.1.0'
       license 'Apache License 2.0'
 
-      struct { |s|
-        s.attribute :interval, Kupo::Types::String
+      struct {
+        attribute :interval, Kupo::Types::String
       }
+
       schema {
         required(:interval).filled(:str?, :duration?)
       }

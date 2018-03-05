@@ -11,13 +11,10 @@ hosts:
     private_address: 10.10.1.3
     role: worker
 network:
+  ipalloc_range: 10.32.0.0/12
   trusted_subnets:
     - 10.10.0.0/16
 addons:
-  metrics-server:
-    enabled: true
-  heapster:
-    enabled: true
   ingress-nginx:
     enabled: true
     configmap:
@@ -25,6 +22,10 @@ addons:
       load-balance: least_conn
   cert-manager:
     enabled: true
+    issuer:
+      name: letsencrypt-staging
+      server: https://acme-staging.api.letsencrypt.org/directory
+      email: me@domain.com
   host-upgrades:
     enabled: true
     interval: 7d

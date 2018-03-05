@@ -6,8 +6,8 @@ module Kupo
       version '0.11.0'
       license 'Apache License 2.0'
 
-      struct { |s|
-        s.attribute :configmap, Kupo::Types::Hash
+      struct {
+        attribute :configmap, Kupo::Types::Hash
       }
 
       schema {
