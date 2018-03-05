@@ -5,7 +5,7 @@ set -ue
 # build binary
 apt-get update -y
 apt-get install -y -q squashfs-tools build-essential ruby bison ruby-dev git-core curl
-curl -L http://enclose.io/rubyc/rubyc-linux-x64.gz | gunzip > /usr/local/bin/rubyc
+curl -sL http://enclose.io/rubyc/rubyc-linux-x64.gz | gunzip > /usr/local/bin/rubyc
 chmod +x /usr/local/bin/rubyc
 gem install bundler
 bundle install --path bundler
@@ -18,6 +18,6 @@ chmod +x /usr/local/bin/github-release
 /usr/local/bin/github-release upload \
     --user kontena \
     --repo kupo \
-    --tag $GIT_TAG \
+    --tag $DRONE_TAG \
     --name "kupo-linux-amd64" \
     --file ./kupo
