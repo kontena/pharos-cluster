@@ -17,7 +17,7 @@ curl -sL https://github.com/aktau/github-release/releases/download/v0.7.2/linux-
 chmod +x /usr/local/bin/github-release
 /usr/local/bin/github-release upload \
     --user kontena \
-    --repo kontena \
+    --repo kupo \
     --tag $GIT_TAG \
     --name "kupo-linux-amd64" \
     --file ./kupo
