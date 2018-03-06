@@ -115,6 +115,7 @@ module Kupo
       Phases::ConfigureKubelet.new(master).call
       Phases::ConfigureMaster.new(master, config.network).call
       Phases::ConfigureClient.new(master).call
+      Phases::ConfigureDNS.new(master, config).call
       Phases::ConfigureNetwork.new(master, config.network).call
       Phases::ConfigureMetrics.new(master).call
     end
