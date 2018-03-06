@@ -24,6 +24,13 @@ module Kupo::Phases
         },
         spec: {
           replicas: replicas,
+          strategy: {
+            type: "RollingUpdate",
+            rollingUpdate: {
+              maxSurge: 0, # cannot have more than two pods for a two-node cluster
+              maxUnavailable: (replicas * 0.5).ceil,
+            },
+          },
           template: {
             spec: {
               affinity: {
