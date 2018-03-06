@@ -18,6 +18,7 @@ module Kupo
           end
         end
         optional(:network).schema do
+          optional(:dns_replicas).filled(:int?)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
           optional(:trusted_subnets).each(type?: String)

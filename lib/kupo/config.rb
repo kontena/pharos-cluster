@@ -13,7 +13,9 @@ module Kupo
 
     # @return [Integer]
     def dns_replicas
-      if hosts.length == 1
+      if network.dns_replicas
+        return network.dns_replicas
+      elsif hosts.length == 1
         return 1
       else
         return 1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
