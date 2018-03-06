@@ -8,10 +8,12 @@ module Kupo
 
       struct {
         attribute :configmap, Kupo::Types::Hash
+        attribute :node_selector, Kupo::Types::Hash
       }
 
       schema {
         optional(:configmap).filled(:hash?)
+        optional(:node_selector).filled(:hash?).each(:str?)
       }
 
       def install
