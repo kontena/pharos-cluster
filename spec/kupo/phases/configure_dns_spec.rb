@@ -85,7 +85,16 @@ describe Kupo::Phases::ConfigureDNS do
 
   describe '#patch_kubedns' do
     it "updates the resource" do
-      expect(Kupo::Kube).to receive(:update_resource).with('test', Kubeclient::Resource)
+      expect(Kupo::Kube).to receive(:update_resource).with('test', Kubeclient::Resource) do |addr, resource|
+        expect(resource.apiVersion).to eq 'extensions/v1beta1'
+        expect(resource.kind).to eq 'Deployment'
+        expect(resource.metadata.name).to eq 'kube-dns'
+        expect(resource.metadata.namespace).to eq 'kube-system'
+        expect(resource.spec.replicas).to eq 1
+        expect(resource.spec.strategy.rollingUpdate.maxSurge).to eq 0
+        expect(resource.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
+        expect(resource.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution).to be_an Array
+      end
 
       subject.call
     end
