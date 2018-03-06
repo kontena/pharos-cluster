@@ -113,7 +113,7 @@ module Kupo
       log_host_header(master)
       Phases::ConfigureHost.new(master).call
       Phases::ConfigureKubelet.new(master).call
-      Phases::ConfigureMaster.new(master).call
+      Phases::ConfigureMaster.new(master, config.network).call
       Phases::ConfigureClient.new(master).call
       Phases::ConfigureNetwork.new(master, config.network).call
       Phases::ConfigureMetrics.new(master).call
