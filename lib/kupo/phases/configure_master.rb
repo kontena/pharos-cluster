@@ -3,8 +3,9 @@ require_relative 'base'
 module Kupo::Phases
   class ConfigureMaster < Base
 
-    def initialize(master)
+    def initialize(master, config)
       @master = master
+      @config = config
       @ssh = Kupo::SSH::Client.for_host(@master)
     end
 
@@ -36,14 +37,16 @@ module Kupo::Phases
     end
 
     def install
-      sans = [@master.address, @master.private_address].compact
+      sans = [@master.address, @master.private_address].compact.uniq
       options = [
-        "--apiserver-cert-extra-sans #{sans.join(',')}"
+        "--apiserver-cert-extra-sans #{sans.join(',')}",
+        "--service-cidr #{@config.service_cidr}",
+        "--pod-network-cidr #{@config.pod_network_cidr}"
       ]
       if @master.private_address
-        options << "--apiserver-advertise-address #{@master.private_address}:6443"
+        options << "--apiserver-advertise-address #{@master.private_address}"
       else
-        options << "--apiserver-advertise-address #{@master.address}:6443"
+        options << "--apiserver-advertise-address #{@master.address}"
       end
       logger.info(@master.address) { "Initializing control plane ..." }
       code = @ssh.exec("sudo kubeadm init #{options.join(' ')}") do |type, data|

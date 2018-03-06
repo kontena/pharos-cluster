@@ -18,7 +18,8 @@ module Kupo
           end
         end
         optional(:network).schema do
-          optional(:ipalloc_range).filled(:str?)
+          optional(:service_cidr).filled(:str?)
+          optional(:pod_network_cidr).filled(:str?)
           optional(:trusted_subnets).each(type?: String)
         end
         optional(:addons).filled

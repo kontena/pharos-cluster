@@ -11,7 +11,8 @@ hosts:
     private_address: 10.10.1.3
     role: worker
 network:
-  ipalloc_range: 10.32.0.0/12
+  service_cidr: 10.96.0.0/12
+  pod_network_cidr: 10.32.0.0/12
   trusted_subnets:
     - 10.10.0.0/16
 addons:
