@@ -13,7 +13,7 @@ module Kupo
 
       schema {
         optional(:configmap).filled(:hash?)
-        optional(:node_selector).filled(:hash?).each(:str?)
+        optional(:node_selector).filled(:hash?)
       }
 
       def install
