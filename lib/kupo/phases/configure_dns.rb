@@ -28,7 +28,7 @@ module Kupo::Phases
             type: "RollingUpdate",
             rollingUpdate: {
               maxSurge: 0, # cannot have more than two pods for a two-node cluster
-              maxUnavailable: (replicas * 0.5).ceil,
+              maxUnavailable: [1, (replicas * 0.5).floor].max, # at least one for a single-node cluster
             },
           },
           template: {
