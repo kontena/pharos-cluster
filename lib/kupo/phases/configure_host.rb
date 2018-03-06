@@ -10,6 +10,7 @@ module Kupo::Phases
       name: 'kubernetes', version: '1.9.3', license: 'Apache License 2.0'
     ))
 
+    # @param host [Kupo::Configuration::Host]
     def initialize(host)
       @host = host
       @ssh = Kupo::SSH::Client.for_host(@host)

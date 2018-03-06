@@ -5,7 +5,7 @@ module Kupo::Phases
 
     DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-kupo.conf".freeze
 
-    # @param master [Kupo::Configuration::Host]
+    # @param host [Kupo::Configuration::Host]
     def initialize(host)
       @host = host
       @ssh = Kupo::SSH::Client.for_host(@host)

@@ -11,6 +11,7 @@ module Kupo::Phases
       name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
     ))
 
+    # @param master [Kupo::Configuration::Host]
     def initialize(master)
       @master = master
     end

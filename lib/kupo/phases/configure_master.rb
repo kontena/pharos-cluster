@@ -3,6 +3,8 @@ require_relative 'base'
 module Kupo::Phases
   class ConfigureMaster < Base
 
+    # @param master [Kupo::Configuration::Host]
+    # @param config [Kupo::Configuration::Network]
     def initialize(master, config)
       @master = master
       @config = config

@@ -7,6 +7,8 @@ module Kupo::Phases
       name: 'weave', version: '2.2.0', license: 'Apache License 2.0'
     ))
 
+    # @param master [Kupo::Configuration::Host]
+    # @param config [Kupo::Configuration::Network]
     def initialize(master, config)
       @master = master
       @config = config
