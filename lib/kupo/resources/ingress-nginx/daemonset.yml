@@ -65,9 +65,9 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
-    <%- if node_selector -%>
+      <%- if node_selector -%>
       nodeSelector:
       <%- node_selector.each do |key, value| -%>
         <%= key %>: <%= value %>
       <%- end -%>
-    <%- end -%>
+      <%- end -%>
