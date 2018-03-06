@@ -3,6 +3,8 @@ require_relative 'base'
 module Kupo::Phases
   class JoinNode < Base
 
+    # @param host [Kupo::Configuration::Host]
+    # @param master [Kupo::Configuration::Host]
     def initialize(host, master)
       @host = host
       @master = master

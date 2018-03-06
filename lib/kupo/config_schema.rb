@@ -8,6 +8,13 @@ module Kupo
     # @return [Dry::Validation::Schema]
     def self.build
       Dry::Validation.Form do
+        configure do
+          def self.messages
+            super.merge(
+              en: { errors: {network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts"}}
+            )
+          end
+        end
         required(:hosts).each do
           schema do
             required(:address).filled
@@ -18,11 +25,16 @@ module Kupo
           end
         end
         optional(:network).schema do
+          optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
           optional(:trusted_subnets).each(type?: String)
         end
         optional(:addons).filled
+
+        validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
+          !network[:dns_replicas] || network[:dns_replicas] <= hosts.length
+        end
       end
     end
   end

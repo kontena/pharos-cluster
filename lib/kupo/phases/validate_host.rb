@@ -4,6 +4,7 @@ module Kupo::Phases
   class ValidateHost
     include Kupo::Phases::Logging
 
+    # @param host [Kupo::Configuration::Host]
     def initialize(host)
       @host = host
     end

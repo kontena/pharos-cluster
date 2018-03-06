@@ -10,9 +10,37 @@ module Kupo::Kube
       @entities
     end
 
+    def entity_for_resource(resource)
+      name = Kubeclient::ClientMixin.underscore_entity(resource.kind.to_s)
+      definition = entities[name]
+
+      fail "Unknown entity for resource #{resource.kind} => #{name}" unless definition
+
+      definition
+    end
+
     def apis(options= {})
       response = rest_client.get(@headers)
       format_response(options[:as] || @as, response.body)
+    end
+
+    # @param resource [Kubeclient::Resource]
+    # @return [Kubeclient::Resource]
+    def update_resource(resource)
+      definition = entity_for_resource(resource)
+      
+      old_resource = get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
+      resource.metadata.resourceVersion = old_resource.metadata.resourceVersion
+      merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, {overwrite_arrays: true}))
+      update_entity(definition.resource_name, merged_resource)
+    end
+
+    # @param resource [Kubeclient::Resource]
+    # @return [Kubeclient::Resource]
+    def create_resource(resource)
+      definition = entity_for_resource(resource)
+
+      create_entity(resource.kind, definition.resource_name, resource)
     end
   end
 
@@ -100,15 +128,20 @@ module Kupo::Kube
   # @return [Kubeclient::Resource]
   def self.apply_resource(host, resource)
     resource_client = self.client(host, resource.apiVersion)
+
     begin
-      definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
-      old_resource = resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
-      resource.metadata.resourceVersion = old_resource.metadata.resourceVersion
-      merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, {overwrite_arrays: true}))
-      resource_client.update_entity(definition.resource_name, merged_resource)
+      resource_client.update_resource(resource)
     rescue Kubeclient::ResourceNotFoundError
-      resource_client.create_entity(resource.kind, definition.resource_name, resource)
+      resource_client.create_resource(resource)
     end
+  end
+
+  # @param host [String]
+  # @param resource [Kubeclient::Resource]
+  # @return [Kubeclient::Resource]
+  def self.update_resource(host, resource)
+    resource_client = self.client(host, resource.apiVersion)
+    resource_client.update_resource(resource)
   end
 
   # @param host [String]
