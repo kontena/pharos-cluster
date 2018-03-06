@@ -2,6 +2,7 @@ require_relative 'base'
 
 module Kupo::Phases
   class ConfigureDNS < Base
+    # @param master [Kupo::Configuration::Node]
     # @param config [Kupo::Config]
     def initialize(master, config)
       @master = master
@@ -9,7 +10,6 @@ module Kupo::Phases
     end
 
     def call
-
       patch_kubedns(
         replicas: @config.dns_replicas,
         max_surge: self.max_surge,
