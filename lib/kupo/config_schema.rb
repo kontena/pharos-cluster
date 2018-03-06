@@ -12,6 +12,7 @@ module Kupo
           schema do
             required(:address).filled
             required(:role).filled
+            optional(:labels).filled
             optional(:private_address).filled
             optional(:user).filled
             optional(:ssh_key_path).filled
