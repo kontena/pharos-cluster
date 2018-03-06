@@ -18,7 +18,8 @@ module Kupo
 
       def install
         apply_stack({
-          configmap: config.configmap || {}
+          configmap: config.configmap || {},
+          node_selector: config.node_selector
         })
       end
     end
