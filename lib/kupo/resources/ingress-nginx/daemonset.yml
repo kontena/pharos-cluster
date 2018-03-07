@@ -15,12 +15,12 @@ spec:
         prometheus.io/port: '10254'
         prometheus.io/scrape: 'true'
     spec:
-      <%- if node_selector -%>
+      <% if node_selector %>
       nodeSelector:
-      <%- node_selector.each do |key, value| -%>
+      <% node_selector.each do |key, value| %>
         <%= key %>: <%= value %>
-      <%- end -%>
-      <%- end -%>
+      <% end %>
+      <% end %>
       serviceAccountName: nginx-ingress-serviceaccount
       hostNetwork: true
       initContainers:
