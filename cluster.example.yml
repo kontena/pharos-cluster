@@ -23,6 +23,9 @@ network:
 addons:
   ingress-nginx:
     enabled: true
+    node_selector:
+      # only provision to nodes having the label "zone: dmz"
+      zone: dmz
     configmap:
       # see all supported options: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
       load-balance: least_conn
