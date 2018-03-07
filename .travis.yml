@@ -1,0 +1,16 @@
+language: ruby
+sudo: required
+cache: bundler
+bundler_args: --without development
+env:
+  global:
+    - GITHUB_TOKEN=xxx
+stages:
+  - name: publish binary
+    if: tag IS present
+jobs:
+  include:
+    - stage: publish binary
+      script: ./build/travis/macos.sh
+      rvm: 2.4
+      os: osx
