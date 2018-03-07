@@ -9,6 +9,10 @@ describe Kupo::Phases::LabelNode do
   let(:subject) { described_class.new(worker, master) }
 
   describe '#find_node' do
+    before(:each) do
+      allow(subject).to receive(:sleep)
+    end
+
     it 'finds node via address' do
       allow(kube).to receive(:get_nodes).and_return([
         Kubeclient::Resource.new({
