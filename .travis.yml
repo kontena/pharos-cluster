@@ -4,9 +4,10 @@ cache: bundler
 bundler_args: --without development
 env:
   global:
-    - GITHUB_TOKEN=xxx
+    - secure: "h3rv0CG+D8Sc1aahpLZlznLMbGoToKL1N9hMMb+IZE0iIWcl9BumjwDSwwGbkkNBTUGRm/cUR+GTV3gcRGoHKKFiD5j/g8UxJr5MU8gCytewqhJOKq0tPf1QxbBX6uG+tU0uP0JnkjUY8DGB+Jbw739Ek0aEaQqwvl19Urq2VlmJ1EDcapLpqfzmTMoIFB7lQNh3cHLytUrTd5jCVf6A5ss5DZyYXC3EHA561RxoD8VpzDQ2+ZOJbInheqfryx4Iv0h9B9iBYLIwOLEhwpSw2RQ37tzq+EcuvaVMj9WOK5igzFZ3Vvarkdy9DfbujYEPl8OFcjIG2MQMbuZksxt2SNaushMxFG3YilzuErj8UreyVJuHmRYQXgo3u4LwjkwK5NWStGOgBjwKnK2rktpVE58DXQD/oXwDOYndubikOUCGAq+XU/khpEFqTxWh9UO7KZeLSbQWozTuwzSW8iPe2yo6OOmIDbsrMONmIuMcPGxZvhKFFB5jGanJEQiOXUv2/pdgtoCsqWG6gvvmQZiIYiq72q0GggWIR6bvhgCp1FIqK++YxMmtaKJ5s55359CW6sFng5SM32dB4KSJ1Xzx2g9UfB1wwVj06+fCdwJ4/J8nMVP/5sNJ56piQ8XB14upaabhcq25uGhE+LpzTj+OnT3gTl8iYbLcNe39kewQA9w="
 stages:
   - name: publish binary
+    if: tag IS present
 jobs:
   include:
     - stage: publish binary
