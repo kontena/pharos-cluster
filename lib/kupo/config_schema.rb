@@ -15,14 +15,16 @@ module Kupo
             )
           end
         end
-        required(:hosts).each do
-          schema do
-            required(:address).filled
-            required(:role).filled
-            optional(:labels).filled
-            optional(:private_address).filled
-            optional(:user).filled
-            optional(:ssh_key_path).filled
+        required(:hosts).filled(min_size?: 1) do
+          each do
+            schema do
+              required(:address).filled
+              required(:role).filled(included_in?: ['master', 'worker'])
+              optional(:labels).filled
+              optional(:private_address).filled
+              optional(:user).filled
+              optional(:ssh_key_path).filled
+            end
           end
         end
         optional(:network).schema do
