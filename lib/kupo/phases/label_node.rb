@@ -31,9 +31,19 @@ module Kupo::Phases
 
     def find_node
       internal_ip = @host.private_address || @host.address
-      kube.get_nodes.find { |n|
-        n.status.addresses.any? { |a| a.type == 'InternalIP' && a.address == internal_ip }
-      }
+      node = nil
+      retries = 0
+      while node.nil? && retries < 10
+        node = kube.get_nodes.find { |n|
+          n.status.addresses.any? { |a| a.type == 'InternalIP' && a.address == internal_ip }
+        }
+        unless node
+          retries += 1
+          sleep 2
+        end
+      end
+
+      node
     end
 
     def kube
