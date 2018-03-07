@@ -118,6 +118,7 @@ module Kupo
       Phases::ConfigureDNS.new(master, config).call
       Phases::ConfigureNetwork.new(master, config.network).call
       Phases::ConfigureMetrics.new(master).call
+      Phases::LabelNode.new(master, master).call
     end
 
     # @param master [Kupo::Configuration::Node]
@@ -129,6 +130,7 @@ module Kupo
           Phases::ConfigureHost.new(node).call
           Phases::ConfigureKubelet.new(node).call
           Phases::JoinNode.new(node, master).call
+          Phases::LabelNode.new(node, master).call
         end
       end
     end
