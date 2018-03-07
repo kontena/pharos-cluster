@@ -4,6 +4,13 @@ pipeline:
     commands:
       - bundle install --path bundler
       - bundle exec rspec spec/
+  create_gh_release:
+    image: ubuntu:xenial
+    secrets: [ github_token ]
+    commands:
+      - ./build/drone/create_release.sh
+    when:
+      event: tag
   build_xenial:
     image: ubuntu:xenial
     secrets: [ github_token ]
