@@ -3,7 +3,7 @@
 set -ue
 
 apt-get update -y
-apt-get install -y -q curl
+apt-get install -y -q curl bzip2
 
 # ship to github
 curl -sL https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2 | tar -xjO > /usr/local/bin/github-release
