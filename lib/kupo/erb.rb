@@ -8,7 +8,7 @@ module Kupo
     end
 
     def render(vars = {})
-      ERB.new(@template).result(OpenStruct.new(vars).instance_eval { binding })
+      ERB.new(@template, nil, '%<>-').result(OpenStruct.new(vars).instance_eval { binding })
     end
   end
 end
