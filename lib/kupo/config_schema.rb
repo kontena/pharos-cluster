@@ -36,10 +36,10 @@ module Kupo
         optional(:addons).value(type?: Hash)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
-          if network.nil?
-            true
+          if network && network[:dns_replicas]
+            network[:dns_replicas] <= hosts.length
           else
-            !network[:dns_replicas] || network[:dns_replicas] <= hosts.length
+            true
           end
         end
       end
