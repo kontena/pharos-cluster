@@ -33,10 +33,14 @@ module Kupo
           optional(:pod_network_cidr).filled(:str?)
           optional(:trusted_subnets).each(type?: String)
         end
-        optional(:addons).filled
+        optional(:addons).value(type?: Hash)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
-          !network[:dns_replicas] || network[:dns_replicas] <= hosts.length
+          if network && network[:dns_replicas]
+            network[:dns_replicas] <= hosts.length
+          else
+            true
+          end
         end
       end
     end
