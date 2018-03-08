@@ -93,7 +93,8 @@ module Kupo
 
     def apply_stack(vars = {})
       Kupo::Kube.apply_stack(host.address, self.class.name, vars.merge({
-        name: self.class.name, version: self.class.version, config: config
+        name: self.class.name, version: self.class.version, config: config,
+        arch: host.cpu_arch
       }))
     end
 
