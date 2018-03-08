@@ -2,20 +2,20 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_path|
+    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
       begin
-        File.realpath(config_path)
+        Kupo::YamlFile.new(File.realpath(config_file))
       rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
+        signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
       end
     end
 
-    def default_config_file
+    def default_config_yaml
       if !$stdin.tty? && !$stdin.eof?
-        :stdin
+        Kupo::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
       else
         begin
-          File.realpath('cluster.yml')
+          Kupo::YamlFile.new(File.realpath('cluster.yml'))
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: cluster.yml'
         end
@@ -24,7 +24,7 @@ module Pharos
 
     def execute
       puts pastel.green("==> Reading instructions ...")
-      configure(load_config(config_content))
+      configure(load_config)
     end
 
     def configure(config)
@@ -40,7 +40,7 @@ module Pharos
         validate_hosts(config)
         # set workdir to the same dir where config was loaded from
         # so that the certs etc. can be referenced more easily
-        Dir.chdir(File.dirname(config_file)) do
+        Dir.chdir(config_yaml.dirname) do
           handle_masters(master_hosts[0], config)
           handle_workers(master_hosts[0], worker_hosts(config), config)
           handle_addons(master_hosts[0], config.addons)
@@ -61,20 +61,14 @@ module Pharos
       }.compact.reverse.join(' ')
     end
 
-    # @return [String] configuration content
-    def config_content
-      config_file == :stdin ? $stdin.read : File.read(config_file)
+    # @param [String] configuration path
+    # @return [Kupo::Config]
+    def load_config
+      parse_config(config_yaml.load(ENV.to_h))
     end
 
-    # @param [String] configuration content
-    # @return [Pharos::Config]
-    def load_config(content)
-      yaml = YAML.safe_load(content)
-      if yaml.is_a?(String)
-        signal_usage_error "File #{config_file} is not in YAML format"
-        exit 10
-      end
-      schema_class = Pharos::ConfigSchema.build
+    def parse_config(yaml)
+      schema_class = Kupo::ConfigSchema.build
       schema = schema_class.call(yaml)
       unless schema.success?
         show_config_errors(schema.messages)

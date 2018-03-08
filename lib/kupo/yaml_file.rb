@@ -1,0 +1,65 @@
+# frozen_string_literal: true
+
+require 'yaml'
+require 'erb'
+require 'ostruct'
+
+module Kupo
+  # Reads YAML files and optionally performs ERB evaluation
+  class YamlFile
+    ParseError = Class.new(StandardError)
+
+    attr_reader :content, :filename
+
+    # @param input [String,IO] A IO/File object, a path to a file or string content
+    # @param override_filename [String] use string as the filename for parse errors
+    # @param force_erb [Boolean] force erb processing even if filename does not end in .yml or is unknown
+    def initialize(input, override_filename: nil, force_erb: false)
+      @filename = override_filename
+      if input.respond_to?(:read)
+        @content = input.read
+        @filename ||= input.respond_to?(:path) ? input.path : nil
+      elsif input.include?("\n")
+        @content = input
+      else
+        @filename ||= input
+        @content = File.read(input)
+      end
+      @force_erb = force_erb
+    end
+
+    def load(variables = {})
+      result = YAML.safe_load(erb? ? erb_result(variables) : @content, [], [], true, @filename)
+      if result.is_a?(String)
+        raise ParseError, "File #{"#{@filename} " if @filename}does not appear to be in YAML format"
+      end
+      result
+    rescue Psych::SyntaxError => ex
+      raise ParseError, ex.message
+    end
+
+    def dirname
+      @filename.nil? ? Dir.pwd : File.dirname(@filename)
+    end
+
+    def basename
+      @filename.nil? ? '<unknown>' : File.basename(@filename)
+    end
+
+    def erb_result(variables = {})
+      ERB.new(@content, nil, '%<>-').result(OpenStruct.new(variables).instance_eval { binding })
+    rescue StandardError, ScriptError => ex
+      raise ParseError, "#{ex} : #{ex.message} in file #{@filename}"
+    end
+
+    private
+
+    def erb?
+      force_erb? || @filename&.end_with?('.erb')
+    end
+
+    def force_erb?
+      @force_erb
+    end
+  end
+end
