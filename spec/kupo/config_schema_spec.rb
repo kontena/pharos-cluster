@@ -17,5 +17,26 @@ describe Kupo::ConfigSchema do
         expect(result.errors[:hosts]).not_to be_empty
       end
     end
+
+    context 'addons' do
+      it 'accepts empty hash' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {}
+        })
+        expect(result.success?).to be_truthy
+      end
+
+      it 'accepts config withoud addons' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ]
+        })
+        expect(result.success?).to be_truthy
+      end
+    end
   end
 end
