@@ -2,7 +2,7 @@ describe Kupo::Kube do
 
   describe '.parse_resource_file' do
     it 'returns resource' do
-      resource = described_class.parse_resource_file('host-upgrades/daemonset.yml', {
+      resource = described_class.parse_resource_file('host-upgrades/daemonset.yml.erb', {
         arch: double(:arch, name: 'amd64')
       })
       expect(resource.metadata.name).to eq('host-upgrades')
