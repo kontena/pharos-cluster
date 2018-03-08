@@ -213,7 +213,7 @@ module Kupo
       yaml = File.read(File.realpath(File.join(__dir__, 'resources', path)))
       parsed_yaml = Kupo::Erb.new(yaml).render(vars)
 
-      Kubeclient::Resource.new(YAML.safe_load(parsed_yaml))
+      Kubeclient::Resource.new(YAML.safe_load(parsed_yaml, [], [], true, path))
     end
 
     # @param kind [String]
