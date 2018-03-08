@@ -10,11 +10,11 @@ module Kupo
     end
 
     def erb?
-      File.fnmatch('*.erb', @path)
+      File.fnmatch?('*.erb', @path)
     end
 
     def template
-      File.read(path)
+      File.read(@path)
     end
 
     def render(vars = {})
