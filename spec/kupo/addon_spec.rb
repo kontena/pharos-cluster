@@ -19,7 +19,7 @@ describe Kupo::Addon do
     end
   end
 
-  let(:host) { double(:host, address: '1.1.1.1') }
+  let(:host) { double(:host, address: '1.1.1.1', cpu_arch: double(:cpu_arch )) }
 
   let(:subject) do
     test_addon.new(host, {foo: 'bar'})
@@ -61,7 +61,7 @@ describe Kupo::Addon do
       expect(Kupo::Kube).to receive(:apply_stack).with(
         host.address, subject.class.name, {
           name: subject.class.name, version: subject.class.version,
-          config: anything
+          config: anything, arch: anything
         }
       )
       subject.apply_stack

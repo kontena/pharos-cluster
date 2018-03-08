@@ -29,17 +29,12 @@ module Kupo::Phases
       logger.error { exc.message }
     end
 
-    def exec_script(script)
+    def exec_script(script, vars = {})
       file = File.realpath(File.join(__dir__, '..', 'scripts', script))
-      tmp_file = File.join('/tmp', SecureRandom.hex(16))
-      @ssh.upload(file, tmp_file)
-      code = @ssh.exec("sudo #{tmp_file}") do |type, data|
-        remote_output(type, data)
-      end
-      @ssh.exec("sudo rm #{tmp_file}")
-      if code != 0
-        raise Kupo::Error, "Script execution failed: #{script}"
-      end
+      parsed_file = Kupo::Erb.new(File.read(file)).render(vars)
+      ssh_exec_file(@ssh, StringIO.new(parsed_file))
+    rescue Kupo::ScriptExecError
+      raise Kupo::ScriptExecError, "Failed to execute #{script}"
     end
   end
 end

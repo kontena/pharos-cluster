@@ -1,4 +1,5 @@
 require 'erb'
+require 'ostruct'
 
 module Kupo
   class Erb
