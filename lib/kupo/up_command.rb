@@ -66,10 +66,11 @@ module Kupo
       config_file == :stdin ? $stdin.read : File.read(config_file)
     end
 
-    # @param [String] configuration content
+    # @param [String] configuration path
     # @return [Kupo::Config]
-    def load_config(content)
-      yaml = YAML.safe_load(content)
+    def load_config(config_file)
+      file_content = Kupo::Erb.new(config_file).render(ENV.to_h)
+      yaml = YAML.safe_load(file_content, [], [], true, config_file)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
