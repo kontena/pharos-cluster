@@ -31,7 +31,7 @@ module Kupo::Phases
     # @return [String]
     def build_systemd_dropin
       config = "[Service]\nEnvironment='KUBELET_EXTRA_ARGS="
-      if @host.container_engine == 'cri-o'
+      if @host.container_runtime == 'cri-o'
         args = [
           '--container-runtime=remote',
           '--runtime-request-timeout=15m',

@@ -26,13 +26,13 @@ module Kupo::Phases
       logger.info { "Configuring netfilter ..." }
       exec_script('configure-netfilter.sh')
 
-      if @host.container_engine == 'docker'
+      if @host.container_runtime == 'docker'
         logger.info { "Configuring container runtime (docker) packages ..." }
         exec_script('configure-docker.sh', {
           docker_package: 'docker-ce',
           docker_version: '17.03.2~ce-0~ubuntu-xenial'
         })
-      elsif @host.container_engine == 'cri-o'
+      elsif @host.container_runtime == 'cri-o'
         logger.info { "Configuring container runtime (cri-o) packages ..." }
         exec_script('configure-cri-o.sh', {
           crio_version: '1.9'

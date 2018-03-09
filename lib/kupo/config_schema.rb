@@ -24,7 +24,7 @@ module Kupo
               optional(:private_address).filled
               optional(:user).filled
               optional(:ssh_key_path).filled
-              optional(:container_engine).filled(included_in?: ['docker', 'cri-o'])
+              optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
             end
           end
         end
