@@ -101,7 +101,7 @@ module Kupo
     end
 
     def self.resource_files(stack)
-      Dir.glob(File.join(__dir__, 'resources', stack, '*.{yml,yml.erb}')).each do |file|
+      Dir.glob(File.join(__dir__, 'resources', stack, '*.{yml,yml.erb}'))
     end
 
     # @param host [Kupo::Configuration::Host]

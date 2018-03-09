@@ -35,4 +35,12 @@ describe Kupo::Kube do
       end
     end
   end
+
+  describe '.resource_files' do
+    it 'returns a list of .yml and .yml.erb files in the stack directory' do
+      file_list = described_class.resource_files('ingress-nginx')
+      expect(file_list.select { | f| f.end_with?('.yml.erb') }).not_to be_empty
+      expect(file_list.select { | f| f.end_with?('.yml') }).not_to be_empty
+    end
+  end
 end
