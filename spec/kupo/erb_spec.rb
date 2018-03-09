@@ -45,7 +45,7 @@ describe Kupo::Erb do
     subject { described_class.new(fixtures_dir('yaml/erb/with_unknown_variable.yml.erb')) }
 
     it 'raises an error with hint about the filename' do
-      expect{subject.render}.to raise_error(Kupo::Erb::Namespace::Error, /unknown local variable.*with_unknown_variable.yml.erb/)
+      expect{subject.render}.to raise_error(Kupo::Erb::Namespace::Error, /undefined local variable.*with_unknown_variable.yml.erb/)
     end
   end
 
