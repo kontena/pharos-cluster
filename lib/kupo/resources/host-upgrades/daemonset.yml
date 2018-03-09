@@ -12,7 +12,7 @@ spec:
       hostPID: true
       containers:
         - name: unattended-upgrades
-          image: kontena/nsenter:latest
+          image: docker.io/kontena/nsenter:latest
           imagePullPolicy: IfNotPresent
           command:
             - nsenter
