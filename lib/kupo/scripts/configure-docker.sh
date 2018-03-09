@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 mkdir -p /etc/docker
 cat <<EOF >/etc/docker/daemon.json
@@ -24,6 +24,6 @@ EOF
 fi
 
 apt-get update
-apt-mark unhold docker-ce
-apt-get install -y docker-ce=17.03.2~ce-0~ubuntu-xenial
-apt-mark hold docker-ce
+apt-mark unhold <%= docker_package %>
+apt-get install -y <%= docker_package %>=<%= docker_version %>
+apt-mark hold <%= docker_package %>

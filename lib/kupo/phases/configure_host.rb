@@ -3,11 +3,11 @@ require_relative 'base'
 module Kupo::Phases
   class ConfigureHost < Base
 
-    #register_component(Kupo::Phases::Component.new(
-    #  name: 'docker-ce', version: '17.03.2', license: 'Apache License 2.0'
-    #))
     register_component(Kupo::Phases::Component.new(
-      name: 'cri-o', version: '1.9.7', license: 'Apache License 2.0'
+      name: 'cri-o', version: '1.9', license: 'Apache License 2.0'
+    ))
+    register_component(Kupo::Phases::Component.new(
+      name: 'docker-ce', version: '17.03.2', license: 'Apache License 2.0'
     ))
     register_component(Kupo::Phases::Component.new(
       name: 'kubernetes', version: '1.9.3', license: 'Apache License 2.0'
@@ -26,13 +26,18 @@ module Kupo::Phases
       logger.info { "Configuring netfilter ..." }
       exec_script('configure-netfilter.sh')
 
-      logger.info { "Configuring container runtime packages ..." }
-      #exec_script('configure-docker.sh', {
-      #  docker_package: 'docker-ce',
-      #  docker_version: '17.03.2~ce-0~ubuntu-xenial'
-      #})
-      exec_script('configure-cri-o.sh')
-
+      if @host.container_engine == 'docker'
+        logger.info { "Configuring container runtime (docker) packages ..." }
+        exec_script('configure-docker.sh', {
+          docker_package: 'docker-ce',
+          docker_version: '17.03.2~ce-0~ubuntu-xenial'
+        })
+      elsif @host.container_engine == 'cri-o'
+        logger.info { "Configuring container runtime (cri-o) packages ..." }
+        exec_script('configure-cri-o.sh', {
+          crio_version: '1.9'
+        })
+      end
 
       logger.info { "Configuring Kubernetes packages ..." }
       exec_script('configure-kube.sh', {

@@ -10,6 +10,6 @@ EOF
 
 add-apt-repository ppa:projectatomic/ppa
 apt-get update -y
-apt-get install -y cri-o-1.9
+apt-get install -y cri-o-<%= crio_version %>
 systemctl enable crio
 systemctl start crio

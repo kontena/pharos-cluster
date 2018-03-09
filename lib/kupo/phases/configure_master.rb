@@ -43,9 +43,11 @@ module Kupo::Phases
       options = [
         "--apiserver-cert-extra-sans #{sans.join(',')}",
         "--service-cidr #{@config.service_cidr}",
-        "--pod-network-cidr #{@config.pod_network_cidr}",
-        "--cri-socket /var/run/crio/crio.sock"
+        "--pod-network-cidr #{@config.pod_network_cidr}"
       ]
+      if @master.container_engine == 'cri-o'
+        options << "--cri-socket /var/run/crio/crio.sock"
+      end
       if @master.private_address
         options << "--apiserver-advertise-address #{@master.private_address}"
       else
