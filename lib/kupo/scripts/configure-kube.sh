@@ -2,7 +2,7 @@
 
 set -ex
 
-if [ "$(kubelet --version)" = "Kubernetes v1.9.3" ]; then
+if [ "$(kubelet --version)" = "Kubernetes v<%= kube_version %>" ]; then
     exit 0
 fi
 
@@ -15,5 +15,5 @@ fi
 
 apt-get update
 apt-mark unhold kubelet kubeadm kubectl
-apt-get install -y kubelet=1.9.3-00 kubeadm=1.9.3-00 kubectl=1.9.3-00
+apt-get install -y kubelet=<%= kube_version %>-00 kubeadm=<%= kube_version %>-00 kubectl=<%= kube_version %>-00
 apt-mark hold kubelet kubeadm kubectl
