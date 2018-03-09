@@ -3,8 +3,11 @@ require_relative 'base'
 module Kupo::Phases
   class ConfigureHost < Base
 
+    #register_component(Kupo::Phases::Component.new(
+    #  name: 'docker-ce', version: '17.03.2', license: 'Apache License 2.0'
+    #))
     register_component(Kupo::Phases::Component.new(
-      name: 'docker-ce', version: '17.03.2', license: 'Apache License 2.0'
+      name: 'cri-o', version: '1.9.7', license: 'Apache License 2.0'
     ))
     register_component(Kupo::Phases::Component.new(
       name: 'kubernetes', version: '1.9.3', license: 'Apache License 2.0'
@@ -19,12 +22,22 @@ module Kupo::Phases
     def call
       logger.info { "Configuring essential packages ..." }
       exec_script('configure-essentials.sh')
+
       logger.info { "Configuring netfilter ..." }
       exec_script('configure-netfilter.sh')
+
       logger.info { "Configuring container runtime packages ..." }
-      exec_script('configure-docker.sh')
+      #exec_script('configure-docker.sh', {
+      #  docker_package: 'docker-ce',
+      #  docker_version: '17.03.2~ce-0~ubuntu-xenial'
+      #})
+      exec_script('configure-cri-o.sh')
+
+
       logger.info { "Configuring Kubernetes packages ..." }
-      exec_script('configure-kube.sh')
+      exec_script('configure-kube.sh', {
+        kube_version: '1.9.3'
+      })
     rescue Kupo::Error => exc
       logger.error { exc.message }
     end

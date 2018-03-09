@@ -26,6 +26,7 @@ module Kupo::Phases
       @master_ssh.exec("sudo kubeadm token create --print-join-command") do |type, output|
         join_command << output
       end
+      join_command = join_command.sub('kubeadm join', "kubeadm join --cri-socket /var/run/crio/crio.sock")
 
       code = @ssh.exec(join_command) do |type, data|
         remote_output(type, data)
