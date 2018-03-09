@@ -2,7 +2,7 @@
 
 require 'yaml'
 require 'erb'
-require 'ostruct'
+require_relative 'yaml_file/namespace'
 
 module Kupo
   # Reads YAML files and optionally performs ERB evaluation
@@ -47,7 +47,11 @@ module Kupo
     end
 
     def erb_result(variables = {})
-      ERB.new(@content, nil, '%<>-').result(OpenStruct.new(variables).instance_eval { binding })
+      Namespace.new(@filename, variables).with_binding do |ns_binding|
+        ERB.new(@content, nil, '%<>-').result(ns_binding)
+      end
+    rescue NameSpace::Error
+      raise
     rescue StandardError, ScriptError => ex
       raise ParseError, "#{ex} : #{ex.message} in file #{@filename}"
     end

@@ -37,7 +37,7 @@ module Pharos
       def install
         apply_stack(
           configmap: config.configmap || {},
-          node_selector: config.node_selector,
+          node_selector: config.node_selector || {}
           image: image_name
         )
       end
