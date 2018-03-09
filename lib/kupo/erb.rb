@@ -7,33 +7,11 @@ module Kupo
     class Namespace
       Error = Class.new(Kupo::Error)
 
-      class NilObject
-        def initialize(name)
-          @name = name
-        end
-
-        def nil?
-          true
-        end
-
-        def class
-          NilClass
-        end
-
-        def to_s
-          raise NameError, "unknown local variable or method '#{@name}'"
-        end
-      end
-
       def initialize(path, hash)
         @path = path
         hash.each do |key, value|
           singleton_class.send(:define_method, key) { value }
         end
-      end
-
-      def method_missing(meth, *arg)
-        NilObject.new(meth)
       end
 
       def inspect
