@@ -26,17 +26,20 @@ module Kupo::Phases
       logger.info { "Configuring netfilter ..." }
       exec_script('configure-netfilter.sh')
 
-      if @host.container_runtime == 'docker'
+      if docker?
         logger.info { "Configuring container runtime (docker) packages ..." }
         exec_script('configure-docker.sh', {
           docker_package: 'docker-ce',
           docker_version: '17.03.2~ce-0~ubuntu-xenial'
         })
-      elsif @host.container_runtime == 'cri-o'
+      elsif crio?
         logger.info { "Configuring container runtime (cri-o) packages ..." }
         exec_script('configure-cri-o.sh', {
-          crio_version: '1.9'
+          crio_version: '1.9',
+          host: @host
         })
+      else
+        raise Kupo::Error, "Unknown container runtime: #{@host.container_runtime}"
       end
 
       logger.info { "Configuring Kubernetes packages ..." }
@@ -53,6 +56,14 @@ module Kupo::Phases
       ssh_exec_file(@ssh, StringIO.new(parsed_file))
     rescue Kupo::ScriptExecError
       raise Kupo::ScriptExecError, "Failed to execute #{script}"
+    end
+
+    def crio?
+      @host.container_runtime == 'cri-o'
+    end
+
+    def docker?
+      @host.container_runtime == 'docker'
     end
   end
 end
