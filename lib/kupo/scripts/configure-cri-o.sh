@@ -5,7 +5,7 @@ set -uex
 mkdir -p /etc/systemd/system/crio.service.d
 cat <<EOF >/etc/systemd/system/crio.service.d/10-cgroup.conf
 [Service]
-Environment='CRIO_STORAGE_OPTIONS=--cgroup-manager=cgroupfs --stream-address=<%= host.private_address ? host.private_address : host.address %>'
+Environment='CRIO_STORAGE_OPTIONS=--cgroup-manager=cgroupfs --stream-address=<%= host.private_address ? host.private_address : host.address %> --pause-image=k8s.gcr.io/pause-<%= host.cpu_arch.name %>:3.1'
 EOF
 
 if [ ! -e /etc/apt/sources.list.d/projectatomic-ubuntu-ppa-xenial.list ]; then

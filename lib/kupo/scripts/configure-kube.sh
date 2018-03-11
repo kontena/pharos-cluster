@@ -11,9 +11,8 @@ if [ ! -e /etc/apt/sources.list.d/kubernetes.list ]; then
     cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
+    apt-get update -y
 fi
-
-apt-get update
 apt-mark unhold kubelet kubeadm kubectl
 apt-get install -y kubelet=<%= kube_version %>-00 kubeadm=<%= kube_version %>-00 kubectl=<%= kube_version %>-00
 apt-mark hold kubelet kubeadm kubectl
