@@ -18,7 +18,7 @@ spec:
       serviceAccountName: metrics-server
       containers:
       - name: metrics-server
-        image: gcr.io/google_containers/metrics-server-amd64:v<%= version %>
+        image: gcr.io/google_containers/metrics-server-<%= arch.name %>:v<%= version %>
         imagePullPolicy: Always
         command:
         - /metrics-server

@@ -43,7 +43,8 @@ module Kupo::Phases
       logger.info { "Configuring overlay network ..." }
       Kupo::Kube.apply_stack(@master.address, 'weave', {
         trusted_subnets: trusted_subnets,
-        ipalloc_range: @config.pod_network_cidr
+        ipalloc_range: @config.pod_network_cidr,
+        arch: @master.cpu_arch
       })
     end
 

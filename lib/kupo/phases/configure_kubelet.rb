@@ -42,7 +42,8 @@ module Kupo::Phases
       end
       node_ip = @host.private_address.nil? ? @host.address : @host.private_address
       args << "--node-ip=#{node_ip}"
-      config + args.join(' ') + "'"
+      config = config + args.join(' ') + "'"
+      config + "\nExecStartPre=-/sbin/swapoff -a"
     end
 
     def crio?

@@ -18,7 +18,6 @@ module Kupo::Phases
       check_distro_version
       logger.info { "Validating host configuration ..." }
       check_cpu_arch
-      check_swap(ssh)
     end
 
     def check_distro_version
@@ -31,14 +30,8 @@ module Kupo::Phases
       unless @host.cpu_arch.supported?
         raise Kupo::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
-    end
-
-    # @param ssh [Kupo::SSH::Client]
-    def check_swap(ssh)
-      swaps = []
-      ssh.exec('cat /proc/swaps') { |_, data| swaps << data }
-      if swaps.size > 1
-        raise Kupo::InvalidHostError, "Swap is enabled"
+      if @host.cpu_arch.name != 'amd64' && @host.container_runtime == 'docker'
+        raise Kupo::InvalidHostError, "Docker is only supported on amd64"
       end
     end
 
