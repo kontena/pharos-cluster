@@ -7,7 +7,6 @@ Kontena Kubernetes distribution installer, kupo!
 ## Requirements
 
 - Minimal Ubuntu 16.04 nodes with SSH access
-- Swap disabled on all nodes
 
 ## Usage
 
