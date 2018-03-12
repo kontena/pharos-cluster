@@ -2,7 +2,7 @@ describe Kupo::Kube do
 
   describe '.parse_resource_file' do
     it 'returns resource' do
-      resource = described_class.parse_resource_file('ingress-nginx/role.yml')
+      resource = described_class.parse_resource_file('ingress-nginx/03-role.yml')
       expect(resource.metadata.name).to eq('nginx-ingress-role')
     end
 
