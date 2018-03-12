@@ -12,7 +12,7 @@ spec:
       hostPID: true
       containers:
         - name: unattended-upgrades
-          image: "docker.io/<%= arch.name == 'amd64' ? 'alpine' : 'arm64v8' %>:3.6"
+          image: "docker.io/<%= arch.name == 'amd64' ? 'alpine' : 'arm64v8/alpine' %>:3.6"
           imagePullPolicy: IfNotPresent
           command:
             - nsenter
