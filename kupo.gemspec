@@ -5,7 +5,7 @@ require "kupo/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "kupo"
-  spec.version       = Kupo::VERSION
+  spec.version       = Kupo::VERSION.sub('-', '.')
   spec.authors       = ["Kontena, Inc."]
   spec.email         = ["info@kontena.io"]
 
