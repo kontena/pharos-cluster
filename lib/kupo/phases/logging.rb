@@ -1,7 +1,7 @@
 require 'logger'
 
 module Kupo::Phases::Logging
-  def self.initialize_logger(log_target = STDOUT, log_level = Logger::INFO)
+  def self.initialize_logger(log_target = $stdout, log_level = Logger::INFO)
     @logger = Logger.new(log_target)
     @logger.progname = 'API'
     @logger.level = ENV["DEBUG"] ? Logger::DEBUG : log_level

@@ -100,4 +100,18 @@ RSpec.configure do |config|
   # as the one that triggered the failure.
   Kernel.srand config.seed
 =end
+  unless ENV['DEBUG'].to_s == 'true'
+    config.around(:each) do |example|
+      stdout = $stdout
+      stderr = $stderr
+      $stdout = $stderr = StringIO.new
+
+      begin
+        example.run
+      ensure
+        $stdout = stdout
+        $stderr = stderr
+      end
+    end
+  end
 end
