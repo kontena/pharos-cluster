@@ -1,18 +1,32 @@
 module Kupo
   class UpCommand < Kupo::Command
 
-    option ['-c', '--config'], 'PATH', 'Path to config file', default: 'cluster.yml'
+    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_path|
+      begin
+        File.realpath(config_path)
+      rescue Errno::ENOENT
+        signal_usage_error 'File does not exist: %s' % config_path
+      end
+    end
+
+    def default_config_file
+      if !$stdin.tty? && !$stdin.eof?
+        :stdin
+      else
+        begin
+          File.realpath('cluster.yml')
+        rescue Errno::ENOENT
+          signal_usage_error 'File does not exist: cluster.yml'
+        end
+      end
+    end
 
     def execute
-      begin
-        config_file = File.realpath(config)
-      rescue Errno::ENOENT
-        signal_usage_error 'File does not exist'
-      end
-
       puts pastel.green("==> Reading instructions ...")
-      config = load_config(config_file)
+      configure(load_config(config_content))
+    end
 
+    def configure(config)
       master_hosts = master_hosts(config)
       signal_usage_error 'No master hosts defined' if master_hosts.size == 0
       signal_usage_error 'Only one host can be in master role' if master_hosts.size > 1
@@ -43,10 +57,15 @@ module Kupo
       }.compact.reverse.join(' ')
     end
 
-    # @param config_file [String]
+    # @return [String] configuration content
+    def config_content
+      config_file == :stdin ? $stdin.read : File.read(config_file)
+    end
+
+    # @param [String] configuration content
     # @return [Kupo::Config]
-    def load_config(config_file)
-      yaml = YAML.load(File.read(config_file))
+    def load_config(content)
+      yaml = YAML.load(content)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
