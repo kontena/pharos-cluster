@@ -34,6 +34,12 @@ module Kupo
           optional(:pod_network_cidr).filled(:str?)
           optional(:trusted_subnets).each(type?: String)
         end
+        optional(:etcd).schema do
+          required(:endpoints).each(type?: String)
+          optional(:certificate).filled(:str?)
+          optional(:ca_certificate).filled(:str?)
+          optional(:key).filled(:str?)
+        end
         optional(:addons).value(type?: Hash)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
