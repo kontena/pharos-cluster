@@ -1,4 +1,5 @@
 require_relative 'logging'
+require 'io/console'
 
 module Kupo::Phases
   class ValidateHost
@@ -18,6 +19,8 @@ module Kupo::Phases
       check_distro_version
       logger.info { "Validating host configuration ..." }
       check_cpu_arch
+      logger.info { "Validating sudo access ..." }
+      check_sudo(ssh)
     end
 
     def check_distro_version
@@ -32,6 +35,14 @@ module Kupo::Phases
       end
       if @host.cpu_arch.name != 'amd64' && @host.container_runtime == 'docker'
         raise Kupo::InvalidHostError, "Docker is only supported on amd64"
+      end
+    end
+
+    def check_sudo(ssh)
+      ssh.exec('sudo -n uptime') do |channel, _|
+       if channel == :stderr
+         raise Kupo::InvalidHostError, "Can't use sudo without password"
+       end
       end
     end
 
