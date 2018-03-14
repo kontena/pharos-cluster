@@ -16,14 +16,6 @@ cat <<EOF >/etc/docker/daemon.json
 }
 EOF
 
-if [ ! -e /etc/apt/sources.list.d/docker.list ]; then
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-    cat <<EOF >/etc/apt/sources.list.d/docker.list
-deb https://download.docker.com/linux/ubuntu xenial stable
-EOF
-fi
-
-apt-get update
 apt-mark unhold <%= docker_package %>
 apt-get install -y <%= docker_package %>=<%= docker_version %>
 apt-mark hold <%= docker_package %>
