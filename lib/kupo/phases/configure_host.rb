@@ -3,14 +3,18 @@ require_relative 'base'
 module Kupo::Phases
   class ConfigureHost < Base
 
+    CRIO_VERSION = '1.9'.freeze
+    KUBE_VERSION = '1.9.4'.freeze
+    DOCKER_VERSION = '1.13.1'.freeze
+
     register_component(Kupo::Phases::Component.new(
-      name: 'cri-o', version: '1.9', license: 'Apache License 2.0'
+      name: 'docker', version: DOCKER_VERSION, license: 'Apache License 2.0'
     ))
     register_component(Kupo::Phases::Component.new(
-      name: 'docker-ce', version: '17.03.2', license: 'Apache License 2.0'
+      name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0'
     ))
     register_component(Kupo::Phases::Component.new(
-      name: 'kubernetes', version: '1.9.3', license: 'Apache License 2.0'
+      name: 'kubernetes', version: KUBE_VERSION, license: 'Apache License 2.0'
     ))
 
     # @param host [Kupo::Configuration::Host]
@@ -32,13 +36,13 @@ module Kupo::Phases
       if docker?
         logger.info { "Configuring container runtime (docker) packages ..." }
         exec_script('configure-docker.sh', {
-          docker_package: 'docker-ce',
-          docker_version: '17.03.2~ce-0~ubuntu-xenial'
+          docker_package: 'docker.io',
+          docker_version: "#{DOCKER_VERSION}-0ubuntu1~16.04.2"
         })
       elsif crio?
         logger.info { "Configuring container runtime (cri-o) packages ..." }
         exec_script('configure-cri-o.sh', {
-          crio_version: '1.9',
+          crio_version: CRIO_VERSION,
           host: @host
         })
       else
@@ -47,7 +51,7 @@ module Kupo::Phases
 
       logger.info { "Configuring Kubernetes packages ..." }
       exec_script('configure-kube.sh', {
-        kube_version: '1.9.3'
+        kube_version: KUBE_VERSION
       })
     rescue Kupo::Error => exc
       logger.error { exc.message }
@@ -55,7 +59,6 @@ module Kupo::Phases
 
     def configure_repos
       exec_script('repos/cri-o.sh') if crio?
-      exec_script('repos/docker.sh') if docker?
       exec_script('repos/kube.sh')
       exec_script('repos/update.sh')
     end
