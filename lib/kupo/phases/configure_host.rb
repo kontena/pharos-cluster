@@ -23,6 +23,9 @@ module Kupo::Phases
       logger.info { "Configuring essential packages ..." }
       exec_script('configure-essentials.sh')
 
+      logger.info { "Configuring package repositories ..." }
+      configure_repos
+
       logger.info { "Configuring netfilter ..." }
       exec_script('configure-netfilter.sh')
 
@@ -50,6 +53,15 @@ module Kupo::Phases
       logger.error { exc.message }
     end
 
+    def configure_repos
+      exec_script('repos/cri-o.sh') if crio?
+      exec_script('repos/docker.sh') if docker?
+      exec_script('repos/kube.sh')
+      exec_script('repos/update.sh')
+    end
+
+    # @param script [String]
+    # @param vars [Hash]
     def exec_script(script, vars = {})
       file = File.realpath(File.join(__dir__, '..', 'scripts', script))
       parsed_file = Kupo::Erb.new(File.read(file)).render(vars)
