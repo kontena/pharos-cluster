@@ -26,6 +26,17 @@ module Kupo
               optional(:user).filled
               optional(:ssh_key_path).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
+              optional(:ssh_opts).schema do
+                optional(:bind_address).filled(:str?)
+                optional(:compression).filled(:bool?)
+                optional(:keepalive).filled(:bool?)
+                optional(:keepalive_interval).filled(:int?, gt?: 0)
+                optional(:verbose).filled(:str?, included_in?: ['debug', 'info', 'warn', 'fatal'])
+                optional(:port).filled(:int?, gt?: 0, lt?: 65536)
+                optional(:host_key_alias).filled(:str?)
+                optional(:global_known_hosts_file).filled(:str?)
+                optional(:user_known_hosts_file).filled(:str?)
+              end
             end
           end
         end
