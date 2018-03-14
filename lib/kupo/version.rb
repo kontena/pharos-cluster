@@ -1,3 +1,3 @@
 module Kupo
-  VERSION = "0.3.0-pre.5"
+  VERSION = "0.3.0-beta.1"
 end
