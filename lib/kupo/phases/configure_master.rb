@@ -33,9 +33,8 @@ module Kupo::Phases
 
       client = Kupo::Kube.client(@master.address)
       configmap = client.get_config_map('kubeadm-config', 'kube-system')
-      kube_version = self.class.components.find {|c| c.name == 'kubernetes' }
       config = YAML.load(configmap.data[:MasterConfiguration])
-      config['kubernetesVersion'] != "v#{kube_version.version}"
+      config['kubernetesVersion'] != "v#{kube_component.version}"
     end
 
     def install
@@ -68,9 +67,19 @@ module Kupo::Phases
     end
 
     def upgrade
-      @ssh.exec("sudo kubeadm upgrade apply #{Kupo::KUBE_VERSION} -y") do |type, data|
+      code = @ssh.exec("sudo kubeadm upgrade apply #{kube_component.version} -y") do |type, data|
         remote_output(type, data)
       end
+
+      if code == 0
+        logger.info(@master.address) { "Control plane upgrade succeeded!" }
+      else
+        raise Kupo::Error, "Control plane upgrade failed!"
+      end
+    end
+
+    def kube_component
+      @kube_component ||= self.class.components.find { |c| c.name == 'kubernetes' }
     end
   end
 end
