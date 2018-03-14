@@ -6,6 +6,7 @@ mkdir -p /etc/docker
 cat <<EOF >/etc/docker/daemon.json
 {
     "storage-driver": "overlay2",
+    "live-restore": true,
     "iptables": false,
     "ip-masq": false,
     "log-driver": "json-file",
