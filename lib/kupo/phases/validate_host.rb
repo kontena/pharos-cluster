@@ -38,10 +38,9 @@ module Kupo::Phases
     end
 
     def check_sudo(ssh)
-      ssh.exec('sudo -n uptime') do |channel, data|
-        return true if channel == :stdout && data.to_s.include?('load')
-      end
-     raise Kupo::InvalidHostError, "Can't use sudo without a password"
+     unless ssh.exec('sudo -n uptime').zero?
+       raise Kupo::InvalidHostError, "Can't use sudo without a password"
+     end
     end
 
     # @param ssh [Kupo::SSH::Client]
