@@ -1,5 +1,4 @@
 require_relative 'logging'
-require 'io/console'
 
 module Kupo::Phases
   class ValidateHost
