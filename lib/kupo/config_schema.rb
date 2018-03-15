@@ -11,7 +11,7 @@ module Kupo
         configure do
           def self.messages
             super.merge(
-              en: { errors: { network_dns_replicas: 'network.dns_replicas cannot be larger than the number of hosts' } }
+              en: { errors: { network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts" } }
             )
           end
         end

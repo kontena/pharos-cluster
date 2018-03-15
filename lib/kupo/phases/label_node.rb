@@ -23,12 +23,10 @@ module Kupo::Phases
 
     # @param node [Kubeclient::Resource]
     def patch_node(node)
-      kube.patch_node(
-        node.metadata.name,
-        metadata: {
-          labels: @host.labels
-        }
-      )
+      kube.patch_node(node.metadata.name,
+                      metadata: {
+                        labels: @host.labels
+                      })
     end
 
     def find_node

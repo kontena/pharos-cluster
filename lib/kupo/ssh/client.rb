@@ -12,10 +12,8 @@ module Kupo::SSH
     def self.for_host(host)
       @connections ||= {}
       unless @connections[host]
-        @connections[host] = new(
-          host.address, host.user,
-          keys: [host.ssh_key_path]
-        )
+        @connections[host] = new(host.address, host.user,
+                                 keys: [host.ssh_key_path])
         @connections[host].connect
       end
 
@@ -92,7 +90,9 @@ module Kupo::SSH
       code = exec("sudo cat #{path}") do |type, data|
         dropin << data if type == :stdout
       end
-      dropin if code == 0
+      if code == 0
+        dropin
+      end
     end
 
     def disconnect

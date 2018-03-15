@@ -52,7 +52,11 @@ module Kupo::Kube
     @kube_client ||= {}
     unless @kube_client[version]
       config = Kubeclient::Config.read(File.join(Dir.home, ".kupo/#{host}"))
-      path_prefix = version == 'v1' ? 'api' : 'apis'
+      path_prefix = if version == 'v1'
+                      'api'
+                    else
+                      'apis'
+                    end
       api_version, api_group = version.split('/').reverse
       @kube_client[version] = Kupo::Kube::Client.new(
         (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
@@ -102,13 +106,13 @@ module Kupo::Kube
       group_client.entities.each do |type, meta|
         next if type.end_with?('_review')
         objects = group_client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{stack}")
-        objects.select do |obj|
+        objects.select { |obj|
           obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
-        end.each do |obj|
+        }.each { |obj|
           obj.apiVersion = api_group.preferredVersion.groupVersion
           delete_resource(host, obj)
           pruned << obj
-        end
+        }
       end
     end
 
@@ -149,12 +153,10 @@ module Kupo::Kube
       else
         definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
         resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
-        resource_client.delete_entity(
-          definition.resource_name, resource.metadata.name, resource.metadata.namespace,
-          kind: 'DeleteOptions',
-          apiVersion: 'v1',
-          propagationPolicy: 'Foreground'
-        )
+        resource_client.delete_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace,
+                                      kind: 'DeleteOptions',
+                                      apiVersion: 'v1',
+                                      propagationPolicy: 'Foreground')
       end
     rescue Kubeclient::ResourceNotFoundError
       false

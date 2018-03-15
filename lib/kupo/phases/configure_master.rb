@@ -46,14 +46,14 @@ module Kupo::Phases
         "--pod-network-cidr #{@config.pod_network_cidr}"
       ]
       if @master.container_runtime == 'cri-o'
-        options << '--cri-socket /var/run/crio/crio.sock'
+        options << "--cri-socket /var/run/crio/crio.sock"
       end
       options << if @master.private_address
                    "--apiserver-advertise-address #{@master.private_address}"
                  else
                    "--apiserver-advertise-address #{@master.address}"
                  end
-      logger.info(@master.address) { 'Initializing control plane ...' }
+      logger.info(@master.address) { "Initializing control plane ..." }
       code = @ssh.exec("sudo kubeadm init #{options.join(' ')}") do |type, data|
         remote_output(type, data)
       end

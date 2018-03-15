@@ -16,9 +16,9 @@ module Kupo::Configuration
     def supported?
       distro = SUPPORTED[id]
       return false unless distro
-      distro.any? do |v|
+      distro.any? { |v|
         version == v
-      end
+      }
     end
   end
 end

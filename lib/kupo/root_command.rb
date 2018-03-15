@@ -5,10 +5,10 @@ require_relative 'version_command'
 
 module Kupo
   class RootCommand < Clamp::Command
-    banner 'kupo (クポ) - Kontena Kubernetes distribution installer, kupo!'
+    banner "kupo (クポ) - Kontena Kubernetes distribution installer, kupo!"
 
-    subcommand %w[build up], 'Initialize/upgrade cluster', UpCommand
-    subcommand ['version'], 'Show version information', VersionCommand
+    subcommand ["build", "up"], "Initialize/upgrade cluster", UpCommand
+    subcommand ["version"], "Show version information", VersionCommand
 
     def self.run
       super

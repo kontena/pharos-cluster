@@ -23,9 +23,9 @@ module Kupo::Phases
 
     def remote_output(_type, data)
       if debug?
-        data.each_line do |line|
+        data.each_line { |line|
           print pastel.dim(REMOTE_OUTPUT_INDENT + line)
-        end
+        }
       end
     end
 

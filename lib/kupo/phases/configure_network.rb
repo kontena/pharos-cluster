@@ -6,12 +6,9 @@ module Kupo::Phases
   class ConfigureNetwork < Base
     WEAVE_VERSION = '2.2.1'
 
-    register_component(
-      Kupo::Phases::Component.new(
-        name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0'
-      )
-    )
-
+    register_component(Kupo::Phases::Component.new(
+                         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0'
+    ))
     # @param master [Kupo::Configuration::Host]
     # @param config [Kupo::Configuration::Network]
     def initialize(master, config)
@@ -29,7 +26,7 @@ module Kupo::Phases
       begin
         kube_client.get_secret('weave-passwd', 'kube-system')
       rescue Kubeclient::ResourceNotFoundError
-        logger.info { 'Configuring overlay network shared secret ...' }
+        logger.info { "Configuring overlay network shared secret ..." }
         weave_passwd = Kubeclient::Resource.new(
           metadata: {
             name: 'weave-passwd',
@@ -45,14 +42,12 @@ module Kupo::Phases
 
     def ensure_resources
       trusted_subnets = @config.trusted_subnets || []
-      logger.info { 'Configuring overlay network ...' }
-      Kupo::Kube.apply_stack(
-        @master.address, 'weave',
-        trusted_subnets: trusted_subnets,
-        ipalloc_range: @config.pod_network_cidr,
-        arch: @master.cpu_arch,
-        version: WEAVE_VERSION
-      )
+      logger.info { "Configuring overlay network ..." }
+      Kupo::Kube.apply_stack(@master.address, 'weave',
+                             trusted_subnets: trusted_subnets,
+                             ipalloc_range: @config.pod_network_cidr,
+                             arch: @master.cpu_arch,
+                             version: WEAVE_VERSION)
     end
 
     def generate_password

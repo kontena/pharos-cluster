@@ -22,7 +22,7 @@ module Kupo::Phases
 
       logger.info { 'Joining host to the master ...' }
       join_command = 'sudo '
-      @master_ssh.exec('sudo kubeadm token create --print-join-command') do |_type, output|
+      @master_ssh.exec("sudo kubeadm token create --print-join-command") do |_type, output|
         join_command << output
       end
       if @host.container_runtime == 'cri-o'
