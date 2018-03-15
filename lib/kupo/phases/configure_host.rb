@@ -61,12 +61,7 @@ module Kupo::Phases
       end
 
       logger.info { 'Configuring Kubernetes packages ...' }
-      exec_script(
-        'configure-kube.sh',
-        kube_version: KUBE_VERSION
-      )
-    rescue Kupo::Error => exc
-      logger.error { exc.message }
+      exec_script('configure-kube.sh', kube_version: KUBE_VERSION)
     end
 
     def configure_repos
