@@ -1,17 +1,17 @@
+# frozen_string_literal: true
+
 require 'fugit'
 require 'dry-validation'
 
 module Kupo
-
   class ConfigSchema
-
     # @return [Dry::Validation::Schema]
     def self.build
       Dry::Validation.Form do
         configure do
           def self.messages
             super.merge(
-              en: { errors: {network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts"}}
+              en: { errors: { network_dns_replicas: 'network.dns_replicas cannot be larger than the number of hosts' } }
             )
           end
         end
@@ -19,7 +19,7 @@ module Kupo
           each do
             schema do
               required(:address).filled
-              required(:role).filled(included_in?: ['master', 'worker'])
+              required(:role).filled(included_in?: %w[master worker])
               optional(:labels).filled
               optional(:private_address).filled
               optional(:user).filled
@@ -36,7 +36,7 @@ module Kupo
         end
         optional(:addons).value(type?: Hash)
 
-        validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
+        validate(network_dns_replicas: %i[network hosts]) do |network, hosts|
           if network && network[:dns_replicas]
             network[:dns_replicas] <= hosts.length
           else

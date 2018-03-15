@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require_relative 'logging'
 
 module Kupo::Phases
   class Base
     include Kupo::Phases::Logging
 
-    REMOTE_OUTPUT_INDENT = (" " * 4).freeze
+    REMOTE_OUTPUT_INDENT = (' ' * 4).freeze
 
     def self.register_component(component)
       @@components ||= Set.new
@@ -19,11 +21,11 @@ module Kupo::Phases
       ENV['DEBUG'].to_s == 'true'
     end
 
-    def remote_output(type, data)
+    def remote_output(_type, data)
       if debug?
-        data.each_line { |line|
-          print pastel.dim(REMOTE_OUTPUT_INDENT  + line)
-        }
+        data.each_line do |line|
+          print pastel.dim(REMOTE_OUTPUT_INDENT + line)
+        end
       end
     end
 

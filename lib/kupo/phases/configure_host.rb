@@ -1,21 +1,30 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
   class ConfigureHost < Base
+    CRIO_VERSION = '1.9'
+    KUBE_VERSION = '1.9.4'
+    DOCKER_VERSION = '1.13.1'
 
-    CRIO_VERSION = '1.9'.freeze
-    KUBE_VERSION = '1.9.4'.freeze
-    DOCKER_VERSION = '1.13.1'.freeze
+    register_component(
+      Kupo::Phases::Component.new(
+        name: 'docker', version: DOCKER_VERSION, license: 'Apache License 2.0'
+      )
+    )
 
-    register_component(Kupo::Phases::Component.new(
-      name: 'docker', version: DOCKER_VERSION, license: 'Apache License 2.0'
-    ))
-    register_component(Kupo::Phases::Component.new(
-      name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0'
-    ))
-    register_component(Kupo::Phases::Component.new(
-      name: 'kubernetes', version: KUBE_VERSION, license: 'Apache License 2.0'
-    ))
+    register_component(
+      Kupo::Phases::Component.new(
+        name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0'
+      )
+    )
+
+    register_component(
+      Kupo::Phases::Component.new(
+        name: 'kubernetes', version: KUBE_VERSION, license: 'Apache License 2.0'
+      )
+    )
 
     # @param host [Kupo::Configuration::Host]
     def initialize(host)
@@ -24,35 +33,38 @@ module Kupo::Phases
     end
 
     def call
-      logger.info { "Configuring essential packages ..." }
+      logger.info { 'Configuring essential packages ...' }
       exec_script('configure-essentials.sh')
 
-      logger.info { "Configuring package repositories ..." }
+      logger.info { 'Configuring package repositories ...' }
       configure_repos
 
-      logger.info { "Configuring netfilter ..." }
+      logger.info { 'Configuring netfilter ...' }
       exec_script('configure-netfilter.sh')
 
       if docker?
-        logger.info { "Configuring container runtime (docker) packages ..." }
-        exec_script('configure-docker.sh', {
+        logger.info { 'Configuring container runtime (docker) packages ...' }
+        exec_script(
+          'configure-docker.sh',
           docker_package: 'docker.io',
           docker_version: "#{DOCKER_VERSION}-0ubuntu1~16.04.2"
-        })
+        )
       elsif crio?
-        logger.info { "Configuring container runtime (cri-o) packages ..." }
-        exec_script('configure-cri-o.sh', {
+        logger.info { 'Configuring container runtime (cri-o) packages ...' }
+        exec_script(
+          'configure-cri-o.sh',
           crio_version: CRIO_VERSION,
           host: @host
-        })
+        )
       else
         raise Kupo::Error, "Unknown container runtime: #{@host.container_runtime}"
       end
 
-      logger.info { "Configuring Kubernetes packages ..." }
-      exec_script('configure-kube.sh', {
+      logger.info { 'Configuring Kubernetes packages ...' }
+      exec_script(
+        'configure-kube.sh',
         kube_version: KUBE_VERSION
-      })
+      )
     rescue Kupo::Error => exc
       logger.error { exc.message }
     end

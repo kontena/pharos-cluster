@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
   class ConfigureKubelet < Base
-
-    DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-kupo.conf".freeze
+    DROPIN_PATH = '/etc/systemd/system/kubelet.service.d/5-kupo.conf'
 
     # @param host [Kupo::Configuration::Host]
     def initialize(host)
@@ -18,8 +19,8 @@ module Kupo::Phases
         tmp_file = File.join('/tmp', SecureRandom.hex(16))
         @ssh.upload(StringIO.new(dropin), tmp_file)
         @ssh.exec("sudo mv #{tmp_file} #{DROPIN_PATH}")
-        @ssh.exec("sudo systemctl daemon-reload")
-        @ssh.exec("sudo systemctl restart kubelet")
+        @ssh.exec('sudo systemctl daemon-reload')
+        @ssh.exec('sudo systemctl restart kubelet')
       end
     end
 

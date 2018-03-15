@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'logging'
 
 module Kupo::Phases
@@ -10,15 +12,15 @@ module Kupo::Phases
     end
 
     def call
-      logger.info(@host.address) { "Connecting to host via SSH ..." }
+      logger.info(@host.address) { 'Connecting to host via SSH ...' }
       ssh = Kupo::SSH::Client.for_host(@host)
-      logger.info { "Checking sudo access ..." }
+      logger.info { 'Checking sudo access ...' }
       check_sudo(ssh)
-      logger.info { "Gathering host facts ..." }
+      logger.info { 'Gathering host facts ...' }
       gather_host_facts(ssh)
-      logger.info { "Validating distro and version ..." }
+      logger.info { 'Validating distro and version ...' }
       check_distro_version
-      logger.info { "Validating host configuration ..." }
+      logger.info { 'Validating host configuration ...' }
       check_cpu_arch
     end
 
@@ -35,9 +37,9 @@ module Kupo::Phases
     end
 
     def check_sudo(ssh)
-     unless ssh.exec('sudo -n uptime').zero?
-       raise Kupo::InvalidHostError, "Can't use sudo without a password"
-     end
+      unless ssh.exec('sudo -n uptime').zero?
+        raise Kupo::InvalidHostError, "Can't use sudo without a password"
+      end
     end
 
     # @param ssh [Kupo::SSH::Client]
@@ -53,7 +55,7 @@ module Kupo::Phases
       ssh.exec('cat /etc/os-release') do |_, data|
         data.split("\n").each do |line|
           match = line.match(/^(.+)=(.+)$/)
-          os_info[match[1]] = match[2].gsub('"', '')
+          os_info[match[1]] = match[2].delete('"')
         end
       end
       Kupo::Configuration::OsRelease.new(

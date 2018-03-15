@@ -1,11 +1,12 @@
+# frozen_string_literal: true
+
 module Kupo
   class UpCommand < Kupo::Command
-
     option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_path|
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %s' % config_path
+        signal_usage_error format('File does not exist: %s', config_path)
       end
     end
 
@@ -22,20 +23,20 @@ module Kupo
     end
 
     def execute
-      puts pastel.green("==> Reading instructions ...")
+      puts pastel.green('==> Reading instructions ...')
       configure(load_config(config_content))
     end
 
     def configure(config)
       master_hosts = master_hosts(config)
-      signal_usage_error 'No master hosts defined' if master_hosts.size == 0
+      signal_usage_error 'No master hosts defined' if master_hosts.empty?
       signal_usage_error 'Only one host can be in master role' if master_hosts.size > 1
 
       begin
         start_time = Time.now
-        puts pastel.green("==> Sharpening tools ...")
+        puts pastel.green('==> Sharpening tools ...')
         load_phases
-        puts pastel.green("==> Starting to craft cluster ...")
+        puts pastel.green('==> Starting to craft cluster ...')
         validate_hosts(config.hosts)
 
         handle_masters(master_hosts[0], config)
@@ -49,12 +50,12 @@ module Kupo
     end
 
     def humanize_duration(secs)
-      [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map{ |count, name|
+      [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map do |count, name|
         if secs > 0
           secs, n = secs.divmod(count)
           "#{n.to_i} #{name}"
         end
-      }.compact.reverse.join(' ')
+      end.compact.reverse.join(' ')
     end
 
     # @return [String] configuration content
@@ -65,7 +66,7 @@ module Kupo
     # @param [String] configuration content
     # @return [Kupo::Config]
     def load_config(content)
-      yaml = YAML.load(content)
+      yaml = YAML.safe_load(content)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
@@ -85,9 +86,7 @@ module Kupo
 
     # @return [Kupo::AddonManager]
     def addon_manager
-      @addon_manager ||= Kupo::AddonManager.new([
-        __dir__ + '/addons/'
-      ])
+      @addon_manager ||= Kupo::AddonManager.new([__dir__ + '/addons/'])
     end
 
     def load_phases
@@ -95,7 +94,7 @@ module Kupo
     end
 
     def show_config_errors(errors)
-      puts "==> Invalid configuration file:"
+      puts '==> Invalid configuration file:'
       puts YAML.dump(errors)
     end
 
