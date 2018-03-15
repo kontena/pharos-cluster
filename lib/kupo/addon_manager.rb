@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'addon'
 require_relative 'phases/logging'
 
@@ -27,7 +29,7 @@ module Kupo
     # @param configs [Hash]
     def apply(host, configs)
       with_enabled_addons(configs) do |addon_class, config|
-        self.logger.info { "Applying addon #{addon_class.name} ..." }
+        logger.info { "Applying addon #{addon_class.name} ..." }
         schema = addon_class.validate(config)
         addon = addon_class.new(host, schema)
         addon.install

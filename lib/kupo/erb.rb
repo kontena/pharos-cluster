@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require 'erb'
 require 'ostruct'
 
 module Kupo
   class Erb
-
     def initialize(template)
       @template = template
     end

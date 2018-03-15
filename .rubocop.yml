@@ -1,3 +1,48 @@
+inherit_from: .rubocop.relaxed.yml
+
 AllCops:
-  Excludes:
+  Exclude:
     - spec/**/*
+    - Gemfile
+    - "*.gemspec"
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    default: ()
+    '%i': '()'
+    '%I': '()'
+    '%r': '{}'
+    '%w': '()'
+    '%W': '()'
+
+Style/FormatString:
+  EnforcedStyle: percent
+
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: always
+
+Style/WordArray:
+  Enabled: true
+  MinSize: 3
+
+Style/SymbolArray:
+  Enabled: true
+  MinSize: 3
+
+Gemspec/OrderedDependencies:
+  Enabled: false
+
+Style/PerlBackrefs:
+  Enabled: true
+
+Layout/SpaceInsideParens:
+  Enabled: true
+
+Style/SpecialGlobalVars:
+  Enabled: true
+
+Style/Alias:
+  Enabled: true
+
+Style/BeginBlock:
+  Enabled: true

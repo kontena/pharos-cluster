@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 require 'net/ssh'
 require 'net/scp'
 
 module Kupo::SSH
-  class Error < StandardError
+  Error = Class.new(StandardError)
 
-  end
   class ExecError < Error
     attr_reader :cmd, :exit_status, :output
 
@@ -126,9 +127,8 @@ module Kupo::SSH
     def self.for_host(host)
       @connections ||= {}
       unless @connections[host]
-        @connections[host] = new(host.address, host.user, {
-          keys: [host.ssh_key_path]
-        })
+        @connections[host] = new(host.address, host.user,
+                                 keys: [host.ssh_key_path])
         @connections[host].connect
       end
 
@@ -138,7 +138,7 @@ module Kupo::SSH
     def self.disconnect_all
       return unless @connections
 
-      @connections.each do |host, connection|
+      @connections.each do |_host, connection|
         connection.disconnect
       end
     end
