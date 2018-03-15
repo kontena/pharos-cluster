@@ -53,8 +53,6 @@ module Kupo::Phases
       exec_script('configure-kube.sh', {
         kube_version: KUBE_VERSION
       })
-    rescue Kupo::Error => exc
-      logger.error { exc.message }
     end
 
     def configure_repos
