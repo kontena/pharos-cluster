@@ -34,19 +34,79 @@ addons:
   ingress-nginx:
     enabled: true
     configmap:
-      # see all supported options: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
       load-balance: least_conn
-  cert-manager:
-    enabled: true
-    issuer:
-      name: letsencrypt-staging
-      server: https://acme-staging.api.letsencrypt.org/directory
-      email: me@domain.com
   host-upgrades:
     enabled: true
     interval: 7d
   kured:
     enabled: true
+```
+
+## Addons
+
+Kupo includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
+
+### Ingress NGINX
+
+NGINX ingress controller daemonset. By default runs on every node on ports 80 & 443.
+
+https://github.com/kubernetes/ingress-nginx
+
+```yaml
+ingress-nginx:
+  enabled: true
+  configmap:
+    load-balance: least_conn
+```
+#### Options
+
+- `node_selector`: if given, deploys ingress to only matching nodes.
+- `configmap`: custom configuration (hash). For all supported `configmap` options, see: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
+
+### Cert Manager
+
+TLS certificate automation (including Let's Encrypt).
+
+https://github.com/jetstack/cert-manager
+
+```yaml
+cert-manager:
+  enabled: true
+  issuer:
+    name: letsencrypt-staging
+    server: https://acme-staging.api.letsencrypt.org/directory
+    email: me@domain.com
+```
+
+#### Options
+
+- `issuer.name`: registered issuer resource name
+- `issuer.server`: ACME server url
+- `issuer.email`: email address used for ACME registration
+
+### Host Upgrades
+
+Automatic host operating system security updates.
+
+```yaml
+host-upgrades:
+  enabled: true
+  interval: "7d"
+```
+
+#### Options
+
+* `interval`: how often upgrades are applied (string)
+
+### Kured
+
+Performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
+
+https://github.com/weaveworks/kured
+
+```yaml
+kured:
+  enabled: true
 ```
 
 ## Contributing
