@@ -9,7 +9,6 @@ module Kupo::Phases
     register_component(Kupo::Phases::Component.new(
                          name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0'
     ))
-
     # @param master [Kupo::Configuration::Host]
     # @param config [Kupo::Configuration::Network]
     def initialize(master, config)

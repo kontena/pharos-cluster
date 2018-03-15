@@ -9,14 +9,14 @@ Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
-Vagrant.configure("2") do |config|
+Vagrant.configure('2') do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = 'ubuntu/xenial64'
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -24,13 +24,13 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
 
   3.times.each do |i|
-    vm_name = "%s-%02d" % ['host', i]
+    vm_name = format('%s-%02d', 'host', i)
     config.vm.define(vm_name) do |host|
       host.vm.hostname = vm_name
       host.ssh.insert_key = false
       host.vm.provider :virtualbox do |vb|
         vb.gui = false
-        vb.memory = "2048"
+        vb.memory = '2048'
         vb.cpus = 1
       end
       host.vm.network "private_network", ip: "192.168.100.#{i + 100}"

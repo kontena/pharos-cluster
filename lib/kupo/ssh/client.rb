@@ -51,7 +51,7 @@ module Kupo::SSH
           ech.on_extended_data do |_c, _type, data|
             yield(:stderr, data) if block_given?
           end
-          ech.on_request("exit-status") do |_, data|
+          ech.on_request('exit-status') do |_, data|
             exit_code = data.read_long
           end
         end
@@ -102,7 +102,7 @@ module Kupo::SSH
     private
 
     def require_session!
-      raise Error, "Connection not established" unless @session
+      raise Error, 'Connection not established' unless @session
     end
   end
 end

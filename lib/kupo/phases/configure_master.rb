@@ -13,20 +13,20 @@ module Kupo::Phases
     end
 
     def call
-      logger.info { "Checking if Kubernetes control plane is already initialized ..." }
+      logger.info { 'Checking if Kubernetes control plane is already initialized ...' }
       if install?
-        logger.info { "Kubernetes control plane is not initialized, proceeding to initialize ..." }
+        logger.info { 'Kubernetes control plane is not initialized, proceeding to initialize ...' }
         install
       elsif upgrade?
-        logger.info { "Upgrading Kubernetes control plane ..." }
+        logger.info { 'Upgrading Kubernetes control plane ...' }
         upgrade
       else
-        logger.info { "Kubernetes control plane is up-to-date." }
+        logger.info { 'Kubernetes control plane is up-to-date.' }
       end
     end
 
     def install?
-      !@ssh.file_exists?("/etc/kubernetes/admin.conf")
+      !@ssh.file_exists?('/etc/kubernetes/admin.conf')
     end
 
     def upgrade?
@@ -58,9 +58,9 @@ module Kupo::Phases
         remote_output(type, data)
       end
       if code == 0
-        logger.info(@master.address) { "Initialization of control plane succeeded!" }
+        logger.info(@master.address) { 'Initialization of control plane succeeded!' }
       else
-        raise Kupo::Error, "Initialization of control plane failed!"
+        raise Kupo::Error, 'Initialization of control plane failed!'
       end
 
       @ssh.exec('mkdir -p ~/.kube')
@@ -73,9 +73,9 @@ module Kupo::Phases
       end
 
       if code == 0
-        logger.info(@master.address) { "Control plane upgrade succeeded!" }
+        logger.info(@master.address) { 'Control plane upgrade succeeded!' }
       else
-        raise Kupo::Error, "Control plane upgrade failed!"
+        raise Kupo::Error, 'Control plane upgrade failed!'
       end
     end
 

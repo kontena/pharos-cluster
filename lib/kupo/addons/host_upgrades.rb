@@ -7,13 +7,13 @@ module Kupo
       version '0.1.0'
       license 'Apache License 2.0'
 
-      struct {
+      struct do
         attribute :interval, Kupo::Types::String
-      }
+      end
 
-      schema {
+      schema do
         required(:interval).filled(:str?, :duration?)
-      }
+      end
 
       def install
         apply_stack(

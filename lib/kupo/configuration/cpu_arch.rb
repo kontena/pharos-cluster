@@ -4,9 +4,9 @@ module Kupo::Configuration
   class CpuArch < Dry::Struct
     constructor_type :schema
 
-    SUPPORTED_IDS = [
-      'amd64', 'x86_64',
-      'arm64', 'aarch64'
+    SUPPORTED_IDS = %w[
+      amd64 x86_64
+      arm64 aarch64
     ].freeze
 
     attribute :id, Kupo::Types::Strict::String

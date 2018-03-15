@@ -5,9 +5,7 @@ require 'deep_merge'
 module Kupo::Kube
   class Client < ::Kubeclient::Client
     def entities
-      if @entities.empty?
-        discover
-      end
+      discover if @entities.empty?
       @entities
     end
 
@@ -15,7 +13,7 @@ module Kupo::Kube
       name = Kubeclient::ClientMixin.underscore_entity(resource.kind.to_s)
       definition = entities[name]
 
-      fail "Unknown entity for resource #{resource.kind} => #{name}" unless definition
+      raise "Unknown entity for resource #{resource.kind} => #{name}" unless definition
 
       definition
     end
@@ -149,7 +147,7 @@ module Kupo::Kube
     resource_client = client(host, resource.apiVersion)
     begin
       if resource.metadata.selfLink
-        api_group = resource.metadata.selfLink.split("/")[1]
+        api_group = resource.metadata.selfLink.split('/')[1]
         resource_path = resource.metadata.selfLink.gsub("/#{api_group}/#{resource.apiVersion}", '')
         resource_client.rest_client[resource_path].delete
       else

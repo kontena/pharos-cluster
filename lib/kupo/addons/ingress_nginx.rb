@@ -7,15 +7,15 @@ module Kupo
       version '0.11.0'
       license 'Apache License 2.0'
 
-      struct {
+      struct do
         attribute :configmap, Kupo::Types::Hash
         attribute :node_selector, Kupo::Types::Hash
-      }
+      end
 
-      schema {
+      schema do
         optional(:configmap).filled(:hash?)
         optional(:node_selector).filled(:hash?)
-      }
+      end
 
       def install
         apply_stack(

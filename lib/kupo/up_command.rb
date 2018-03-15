@@ -6,7 +6,7 @@ module Kupo
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %s' % config_path
+        signal_usage_error format('File does not exist: %s', config_path)
       end
     end
 
@@ -23,7 +23,7 @@ module Kupo
     end
 
     def execute
-      puts pastel.green("==> Reading instructions ...")
+      puts pastel.green('==> Reading instructions ...')
       configure(load_config(config_content))
     end
 
@@ -34,9 +34,9 @@ module Kupo
 
       begin
         start_time = Time.now
-        puts pastel.green("==> Sharpening tools ...")
+        puts pastel.green('==> Sharpening tools ...')
         load_phases
-        puts pastel.green("==> Starting to craft cluster ...")
+        puts pastel.green('==> Starting to craft cluster ...')
         validate_hosts(config.hosts)
 
         handle_masters(master_hosts[0], config)
@@ -50,12 +50,12 @@ module Kupo
     end
 
     def humanize_duration(secs)
-      [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map{ |count, name|
+      [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map do |count, name|
         if secs > 0
           secs, n = secs.divmod(count)
           "#{n.to_i} #{name}"
         end
-      }.compact.reverse.join(' ')
+      end.compact.reverse.join(' ')
     end
 
     # @return [String] configuration content
@@ -96,7 +96,7 @@ module Kupo
     end
 
     def show_config_errors(errors)
-      puts "==> Invalid configuration file:"
+      puts '==> Invalid configuration file:'
       puts YAML.dump(errors)
     end
 

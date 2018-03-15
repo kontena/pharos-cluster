@@ -6,7 +6,7 @@ module Kupo::Phases
   class Base
     include Kupo::Phases::Logging
 
-    REMOTE_OUTPUT_INDENT = (" " * 4).freeze
+    REMOTE_OUTPUT_INDENT = (' ' * 4).freeze
 
     def self.register_component(component)
       @@components ||= Set.new

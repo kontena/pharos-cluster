@@ -25,13 +25,13 @@ module Kupo::Phases
     end
 
     def call
-      logger.info { "Configuring essential packages ..." }
+      logger.info { 'Configuring essential packages ...' }
       exec_script('configure-essentials.sh')
 
-      logger.info { "Configuring package repositories ..." }
+      logger.info { 'Configuring package repositories ...' }
       configure_repos
 
-      logger.info { "Configuring netfilter ..." }
+      logger.info { 'Configuring netfilter ...' }
       exec_script('configure-netfilter.sh')
 
       if docker?

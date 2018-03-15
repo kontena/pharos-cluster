@@ -13,17 +13,17 @@ module Kupo
         attribute :email, Kupo::Types::String.default('https://acme-v01.api.letsencrypt.org/directory')
       end
 
-      struct {
+      struct do
         attribute :issuer, Issuer
-      }
+      end
 
-      schema {
-        required(:issuer).schema {
+      schema do
+        required(:issuer).schema do
           required(:name).filled(:str?)
           required(:email).filled(:str?)
           optional(:server).filled(:str?)
-        }
-      }
+        end
+      end
     end
   end
 end

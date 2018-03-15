@@ -3,24 +3,24 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "kupo/version"
+require 'kupo/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "kupo"
+  spec.name          = 'kupo'
   spec.version       = Kupo::VERSION.sub('-', '.')
-  spec.authors       = ["Kontena, Inc."]
-  spec.email         = ["info@kontena.io"]
+  spec.authors       = ['Kontena, Inc.']
+  spec.email         = ['info@kontena.io']
 
-  spec.summary       = "Kontena Kubernetes distribution installer, kupo!"
-  spec.description   = "Kontena Kubernetes distribution installer, kupo!"
-  spec.homepage      = "https://github.com/kontena/kupo"
+  spec.summary       = 'Kontena Kubernetes distribution installer, kupo!'
+  spec.description   = 'Kontena Kubernetes distribution installer, kupo!'
+  spec.homepage      = 'https://github.com/kontena/kupo'
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
-  spec.bindir        = "bin"
+  spec.bindir        = 'bin'
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
+  spec.require_paths = ['lib']
 
   spec.add_runtime_dependency "clamp", "1.2.1"
   spec.add_runtime_dependency "deep_merge"

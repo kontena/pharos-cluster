@@ -19,7 +19,7 @@ module Kupo
           each do
             schema do
               required(:address).filled
-              required(:role).filled(included_in?: ['master', 'worker'])
+              required(:role).filled(included_in?: %w[master worker])
               optional(:labels).filled
               optional(:private_address).filled
               optional(:user).filled

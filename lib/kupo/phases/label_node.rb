@@ -14,10 +14,10 @@ module Kupo::Phases
 
       node = find_node
       if node
-        logger.info { "Configuring node labels ... " }
+        logger.info { 'Configuring node labels ... ' }
         patch_node(node)
       else
-        raise Kupo::Error, "Cannot set labels, node not found"
+        raise Kupo::Error, 'Cannot set labels, node not found'
       end
     end
 
@@ -34,9 +34,9 @@ module Kupo::Phases
       node = nil
       retries = 0
       while node.nil? && retries < 10
-        node = kube.get_nodes.find { |n|
+        node = kube.get_nodes.find do |n|
           n.status.addresses.any? { |a| a.type == 'InternalIP' && a.address == internal_ip }
-        }
+        end
         unless node
           retries += 1
           sleep 2
