@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'logging'
 
 module Kupo::Phases
@@ -35,9 +37,9 @@ module Kupo::Phases
     end
 
     def check_sudo(ssh)
-     unless ssh.exec('sudo -n uptime').zero?
-       raise Kupo::InvalidHostError, "Can't use sudo without a password"
-     end
+      unless ssh.exec('sudo -n uptime').zero?
+        raise Kupo::InvalidHostError, "Can't use sudo without a password"
+      end
     end
 
     # @param ssh [Kupo::SSH::Client]
@@ -53,7 +55,7 @@ module Kupo::Phases
       ssh.exec('cat /etc/os-release') do |_, data|
         data.split("\n").each do |line|
           match = line.match(/^(.+)=(.+)$/)
-          os_info[match[1]] = match[2].gsub('"', '')
+          os_info[match[1]] = match[2].delete('"')
         end
       end
       Kupo::Configuration::OsRelease.new(

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'logging'
 
 module Kupo::Phases
@@ -19,10 +21,10 @@ module Kupo::Phases
       ENV['DEBUG'].to_s == 'true'
     end
 
-    def remote_output(type, data)
+    def remote_output(_type, data)
       if debug?
         data.each_line { |line|
-          print pastel.dim(REMOTE_OUTPUT_INDENT  + line)
+          print pastel.dim(REMOTE_OUTPUT_INDENT + line)
         }
       end
     end

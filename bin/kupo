@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# encoding: UTF-8
+# frozen_string_literal: true
 
 # add lib to libpath (only needed when running from the sources)
 require 'pathname'

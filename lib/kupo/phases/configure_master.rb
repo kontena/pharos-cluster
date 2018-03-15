@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
   class ConfigureMaster < Base
-
     # @param master [Kupo::Configuration::Host]
     # @param config [Kupo::Configuration::Network]
     def initialize(master, config)
@@ -33,7 +34,7 @@ module Kupo::Phases
 
       client = Kupo::Kube.client(@master.address)
       configmap = client.get_config_map('kubeadm-config', 'kube-system')
-      config = YAML.load(configmap.data[:MasterConfiguration])
+      config = YAML.safe_load(configmap.data[:MasterConfiguration])
       config['kubernetesVersion'] != "v#{kube_component.version}"
     end
 
@@ -47,11 +48,11 @@ module Kupo::Phases
       if @master.container_runtime == 'cri-o'
         options << "--cri-socket /var/run/crio/crio.sock"
       end
-      if @master.private_address
-        options << "--apiserver-advertise-address #{@master.private_address}"
-      else
-        options << "--apiserver-advertise-address #{@master.address}"
-      end
+      options << if @master.private_address
+                   "--apiserver-advertise-address #{@master.private_address}"
+                 else
+                   "--apiserver-advertise-address #{@master.address}"
+                 end
       logger.info(@master.address) { "Initializing control plane ..." }
       code = @ssh.exec("sudo kubeadm init #{options.join(' ')}") do |type, data|
         remote_output(type, data)

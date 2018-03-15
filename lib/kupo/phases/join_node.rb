@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
   class JoinNode < Base
-
     # @param host [Kupo::Configuration::Host]
     # @param master [Kupo::Configuration::Host]
     def initialize(host, master)
@@ -23,7 +24,7 @@ module Kupo::Phases
 
       logger.info { "Joining host to the master ..." }
       join_command = 'sudo '
-      @master_ssh.exec("sudo kubeadm token create --print-join-command") do |type, output|
+      @master_ssh.exec("sudo kubeadm token create --print-join-command") do |_type, output|
         join_command << output
       end
       if @host.container_runtime == 'cri-o'

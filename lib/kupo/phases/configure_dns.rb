@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
@@ -12,8 +14,8 @@ module Kupo::Phases
     def call
       patch_kubedns(
         replicas: @config.dns_replicas,
-        max_surge: self.max_surge,
-        max_unavailable: self.max_unavailable,
+        max_surge: max_surge,
+        max_unavailable: max_unavailable,
       )
     end
 
@@ -49,51 +51,51 @@ module Kupo::Phases
 
     # @param replicas [Integer]
     # @param nodes [Integer]
-    def patch_kubedns(replicas: , max_surge: , max_unavailable: )
+    def patch_kubedns(replicas:, max_surge:, max_unavailable: )
       logger.info(@master.address) { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
-      kube_client = Kupo::Kube.update_resource(@master.address, Kubeclient::Resource.new({
-        apiVersion: 'extensions/v1beta1',
-        kind: 'Deployment',
-        metadata: {
-          namespace: 'kube-system',
-          name: 'kube-dns',
-        },
-        spec: {
-          replicas: replicas,
-          strategy: {
-            type: "RollingUpdate",
-            rollingUpdate: {
-              maxSurge: max_surge, # must be zero for a two-node cluster
-              maxUnavailable: max_unavailable, # must be at least one, even for a single-node cluster
-            },
-          },
-          template: {
-            spec: {
-              affinity: {
-                podAntiAffinity: {
-                  requiredDuringSchedulingIgnoredDuringExecution: [
-                    {
-                      labelSelector: {
-                        matchExpressions: [
-                          {
-                            key: "k8s-app",
-                            operator: "In",
-                            values: [
-                              "kube-dns",
-                            ],
-                          },
-                        ],
-                      },
-                      topologyKey: "kubernetes.io/hostname",
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        },
-      }))
+      kube_client = Kupo::Kube.update_resource(@master.address, Kubeclient::Resource.new(
+                                                                  apiVersion: 'extensions/v1beta1',
+                                                                  kind: 'Deployment',
+                                                                  metadata: {
+                                                                    namespace: 'kube-system',
+                                                                    name: 'kube-dns'
+                                                                  },
+                                                                  spec: {
+                                                                    replicas: replicas,
+                                                                    strategy: {
+                                                                      type: "RollingUpdate",
+                                                                      rollingUpdate: {
+                                                                        maxSurge: max_surge, # must be zero for a two-node cluster
+                                                                        maxUnavailable: max_unavailable, # must be at least one, even for a single-node cluster
+                                                                      }
+                                                                    },
+                                                                    template: {
+                                                                      spec: {
+                                                                        affinity: {
+                                                                          podAntiAffinity: {
+                                                                            requiredDuringSchedulingIgnoredDuringExecution: [
+                                                                              {
+                                                                                labelSelector: {
+                                                                                  matchExpressions: [
+                                                                                    {
+                                                                                      key: "k8s-app",
+                                                                                      operator: "In",
+                                                                                      values: [
+                                                                                        "kube-dns"
+                                                                                      ]
+                                                                                    }
+                                                                                  ]
+                                                                                },
+                                                                                topologyKey: "kubernetes.io/hostname"
+                                                                              }
+                                                                            ]
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+      ))
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kupo::Configuration
   class CpuArch < Dry::Struct
     constructor_type :schema
@@ -11,17 +13,17 @@ module Kupo::Configuration
 
     # @return [Boolean]
     def supported?
-      SUPPORTED_IDS.include?(self.id)
+      SUPPORTED_IDS.include?(id)
     end
 
     def name
-      case self.id
+      case id
       when 'x86_64'
         'amd64'
       when 'aarch64'
         'arm64'
       else
-        self.id
+        id
       end
     end
   end

@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 module Kupo
   class VersionCommand < Kupo::Command
-
     option "--all", :flag, "Show all versions"
 
     def execute
