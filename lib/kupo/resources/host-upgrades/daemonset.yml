@@ -1,18 +1,20 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: unattended-upgrades
+  name: host-upgrades
   namespace: kube-system
 spec:
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
-        name: unattended-upgrades
+        name: host-upgrades
     spec:
       hostPID: true
       containers:
-        - name: unattended-upgrades
-          image: "docker.io/<%= arch.name == 'amd64' ? 'alpine' : 'arm64v8/alpine' %>:3.6"
+        - name: host-upgrades
+          image: "docker.io/<%= arch.name == 'amd64' ? 'debian' : 'arm64v8/debian' %>:9"
           imagePullPolicy: IfNotPresent
           command:
             - nsenter
