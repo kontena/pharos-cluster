@@ -42,6 +42,14 @@ addons:
     enabled: true
 ```
 
+You can view full sample of cluster.yml [here](./cluster.example.yml).
+
+## Network Options
+
+- `service_cidr` - IP address range for service VIPs. (default "10.96.0.0/12")
+- `pod_network_cidr` - IP address range for the pod network. (default "10.32.0.0/12")
+- `trusted_subnets` - array of trusted subnets where overlay network can be used without IPSEC.
+
 ## Addons
 
 Kupo includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
@@ -55,13 +63,15 @@ https://github.com/kubernetes/ingress-nginx
 ```yaml
 ingress-nginx:
   enabled: true
+  node_selector:
+    disk: ssd
   configmap:
     load-balance: least_conn
 ```
 #### Options
 
-- `node_selector`: if given, deploys ingress to only matching nodes.
-- `configmap`: custom configuration (hash). For all supported `configmap` options, see: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
+- `node_selector` - deployment node selector (map), deploys ingress only to matching nodes.
+- `configmap` - custom configuration (map). For all supported `configmap` options, see: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
 
 ### Cert Manager
 
@@ -80,9 +90,9 @@ cert-manager:
 
 #### Options
 
-- `issuer.name`: registered issuer resource name
-- `issuer.server`: ACME server url
-- `issuer.email`: email address used for ACME registration
+- `issuer.name` - registered issuer resource name
+- `issuer.server`-  ACME server url
+- `issuer.email` - email address used for ACME registration
 
 ### Host Upgrades
 
@@ -96,7 +106,7 @@ host-upgrades:
 
 #### Options
 
-* `interval`: how often upgrades are applied (string)
+* `interval` - how often upgrades are applied (string)
 
 ### Kured
 
