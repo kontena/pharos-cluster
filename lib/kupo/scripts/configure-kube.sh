@@ -8,12 +8,17 @@ if [ "$(kubelet --version)" = "Kubernetes v<%= kube_version %>" ]; then
 fi
 
 apt-mark unhold kubelet kubeadm kubectl
-apt-get install -y kubelet=<%= kube_version %>-00 kubeadm=<%= kube_version %>-00 kubectl=<%= kube_version %>-00
+apt-get install -y kubelet=<%= kube_version %>-00 kubectl=<%= kube_version %>-00
 apt-mark hold kubelet kubelet kubeadm kubectl
 
-# Hack to get 1.10.beta.3 kubeadm in place
-# Needed to be able to configure cri socket in the config file
-# See: https://github.com/kubernetes/kubernetes/pull/59057
-# FIXME Remove when we're using official 1.10 kubeadm
-curl -o /usr/bin/kubeadm https://storage.googleapis.com/kubernetes-release/release/v1.10.0-beta.3/bin/linux/amd64/kubeadm
+# Get kubeadm binary directly
+arch=`uname -m`
+case "$arch" in
+    x86_64) arch="amd64" ;;
+    aarch64) arch="arm64" ;;
+    *) echo "$arch not supported architecture, exiting..."
+        exit 11
+        ;;
+esac
+curl -o /usr/bin/kubeadm https://storage.googleapis.com/kubernetes-release/release/<%= kubeadm_version %>/bin/linux/$arch/kubeadm
 chmod +x /usr/bin/kubeadm
