@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'addon'
 require_relative 'phases/logging'
 
@@ -17,9 +19,7 @@ module Kupo
     def validate(configs)
       with_enabled_addons(configs) do |addon_class, config|
         outcome = addon_class.validate(config)
-        unless outcome.success?
-          raise InvalidConfig, outcome.errors
-        end
+        raise InvalidConfig, outcome.errors unless outcome.success?
       end
     end
 
@@ -27,7 +27,7 @@ module Kupo
     # @param configs [Hash]
     def apply(host, configs)
       with_enabled_addons(configs) do |addon_class, config|
-        self.logger.info { "Applying addon #{addon_class.name} ..." }
+        logger.info { "Applying addon #{addon_class.name} ..." }
         schema = addon_class.validate(config)
         addon = addon_class.new(host, schema)
         addon.install
@@ -43,7 +43,7 @@ module Kupo
     def with_enabled_addons(configs)
       configs.each do |name, config|
         klass = addon_classes.find { |a| a.name == name }
-        if klass && config["enabled"]
+        if klass && config['enabled']
           yield(klass, config)
         elsif klass.nil?
           raise UnknownAddon, "unknown addon: #{name}"
@@ -55,9 +55,7 @@ module Kupo
     def with_disabled_addons(configs)
       addon_classes.each do |addon_class|
         config = configs[addon_class.name]
-        if config.nil? || !config["enabled"]
-          yield(addon_class)
-        end
+        yield(addon_class) if config.nil? || !config['enabled']
       end
     end
 

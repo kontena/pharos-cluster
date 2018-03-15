@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'dry-struct'
 require_relative 'types'
 require_relative 'configuration/host'
@@ -14,11 +16,11 @@ module Kupo
     # @return [Integer]
     def dns_replicas
       if network.dns_replicas
-        return network.dns_replicas
+        network.dns_replicas
       elsif hosts.length == 1
-        return 1
+        1
       else
-        return 1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
+        1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
       end
     end
   end

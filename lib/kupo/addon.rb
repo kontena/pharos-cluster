@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'dry-validation'
 require_relative 'addons/struct'
 require_relative 'phases/logging'
@@ -92,13 +94,19 @@ module Kupo
     end
 
     def apply_stack(vars = {})
-      Kupo::Kube.apply_stack(host.address, self.class.name, vars.merge({
-        name: self.class.name, version: self.class.version, config: config,
-        arch: host.cpu_arch
-      }))
+      Kupo::Kube.apply_stack(
+        host.address,
+        self.class.name,
+        vars.merge(
+          name: self.class.name,
+          version: self.class.version,
+          config: config,
+          arch: host.cpu_arch
+        )
+      )
     end
 
-    def apply_resource(resource)
+    def apply_resource(_resource)
       Kupo::Kube.apply_resource(host.address)
     end
 
