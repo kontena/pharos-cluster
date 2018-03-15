@@ -5,7 +5,7 @@ describe Kupo::Kube do
       resource = described_class.parse_resource_file('host-upgrades/daemonset.yml', {
         arch: double(:arch, name: 'amd64')
       })
-      expect(resource.metadata.name).to eq('unattended-upgrades')
+      expect(resource.metadata.name).to eq('host-upgrades')
     end
 
     it 'throws error if resource does not exist' do
