@@ -3,8 +3,10 @@ require_relative 'base'
 module Kupo::Phases
   class ConfigureNetwork < Base
 
+    WEAVE_VERSION = '2.2.1'
+
     register_component(Kupo::Phases::Component.new(
-      name: 'weave', version: '2.2.0', license: 'Apache License 2.0'
+      name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0'
     ))
 
     # @param master [Kupo::Configuration::Host]
@@ -44,7 +46,8 @@ module Kupo::Phases
       Kupo::Kube.apply_stack(@master.address, 'weave', {
         trusted_subnets: trusted_subnets,
         ipalloc_range: @config.pod_network_cidr,
-        arch: @master.cpu_arch
+        arch: @master.cpu_arch,
+        version: WEAVE_VERSION
       })
     end
 

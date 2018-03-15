@@ -6,6 +6,8 @@ metadata:
     name: weave-net
   namespace: kube-system
 spec:
+  # Wait 5 seconds to let pod connect before rolling next pod
+  minReadySeconds: 5
   template:
     metadata:
       labels:
@@ -36,7 +38,7 @@ spec:
                 secretKeyRef:
                   name: weave-passwd
                   key: weave-passwd
-          image: 'docker.io/weaveworks/weave-kube-<%= arch.name %>:2.2.0'
+          image: 'docker.io/weaveworks/weave-kube-<%= arch.name %>:<%= version %>'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -71,7 +73,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'docker.io/weaveworks/weave-npc-<%= arch.name %>:2.2.0'
+          image: 'docker.io/weaveworks/weave-npc-<%= arch.name %>:<%= version %>'
           resources:
             requests:
               cpu: 10m
