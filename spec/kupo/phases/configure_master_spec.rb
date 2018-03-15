@@ -1,8 +1,6 @@
 require "kupo/config"
 require "kupo/phases/configure_master"
 
-require 'tempfile'
-
 describe Kupo::Phases::ConfigureMaster do
   let(:master) { Kupo::Configuration::Host.new(address: 'test', private_address: 'private') }
   let(:config_hosts_count) { 1 }
@@ -20,11 +18,6 @@ describe Kupo::Phases::ConfigureMaster do
 
   before :each do
     allow(Kupo::SSH::Client).to receive(:for_host)
-  end
-
-
-  describe '#call' do
-
   end
 
   describe '#config_yaml' do
