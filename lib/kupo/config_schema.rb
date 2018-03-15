@@ -34,7 +34,7 @@ module Kupo
           optional(:pod_network_cidr).filled(:str?)
           optional(:trusted_subnets).each(type?: String)
         end
-        optional(:etcd).schema do
+        optional(:etcd).maybe.schema do
           required(:endpoints).each(type?: String)
           optional(:certificate).filled(:str?)
           optional(:ca_certificate).filled(:str?)

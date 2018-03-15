@@ -8,6 +8,8 @@ module Kupo
   class Config < Dry::Struct
     HOSTS_PER_DNS_REPLICA = 10
 
+    constructor_type :schema
+
     attribute :hosts, Types::Coercible::Array.of(Kupo::Configuration::Host)
     attribute :network, Kupo::Configuration::Network
     attribute :addons, Kupo::Types::Hash

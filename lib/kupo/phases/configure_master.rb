@@ -48,7 +48,7 @@ module Kupo::Phases
         certificate: File.read(@config.etcd.certificate),
         certificate_key: File.read(@config.etcd.key)
 
-      }) if @config.etcd.certificate
+      }) if @config.etcd && @config.etcd.certificate
 
       logger.info(@master.address) { "Initializing control plane ..." }
 
@@ -60,7 +60,7 @@ module Kupo::Phases
       else
         raise Kupo::Error, "Initialization of control plane failed!"
       end
-
+      @ssh.exec("rm #{tmp_file}")
       @ssh.exec('mkdir -p ~/.kube')
       @ssh.exec('sudo cat /etc/kubernetes/admin.conf > ~/.kube/config')
     end
@@ -89,7 +89,7 @@ module Kupo::Phases
       end
 
       # Only configure etcd if the external endpoints are given
-      if @config.etcd.endpoints
+      if @config.etcd && @config.etcd.endpoints
         config['etcd'] = {
           'endpoints' => @config.etcd.endpoints
         }
