@@ -32,9 +32,6 @@ module Kupo::Phases
       unless @host.cpu_arch.supported?
         raise Kupo::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
-      if @host.cpu_arch.name != 'amd64' && @host.container_runtime == 'docker'
-        raise Kupo::InvalidHostError, "Docker is only supported on amd64"
-      end
     end
 
     def check_sudo(ssh)
