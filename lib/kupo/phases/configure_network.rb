@@ -44,11 +44,13 @@ module Kupo::Phases
     def ensure_resources
       trusted_subnets = @config.trusted_subnets || []
       logger.info { "Configuring overlay network ..." }
-      Kupo::Kube.apply_stack(@master.address, 'weave',
-                             trusted_subnets: trusted_subnets,
-                             ipalloc_range: @config.pod_network_cidr,
-                             arch: @master.cpu_arch,
-                             version: WEAVE_VERSION)
+      Kupo::Kube.apply_stack(
+        @master.address, 'weave',
+        trusted_subnets: trusted_subnets,
+        ipalloc_range: @config.pod_network_cidr,
+        arch: @master.cpu_arch,
+        version: WEAVE_VERSION
+      )
     end
 
     def generate_password
