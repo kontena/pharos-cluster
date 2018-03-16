@@ -55,8 +55,6 @@ module Kupo::Phases
         kubeadm_version: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
         arch: @host.cpu_arch.name
       })
-    rescue Kupo::Error => exc
-      logger.error { exc.message }
     end
 
     def configure_repos
