@@ -43,12 +43,13 @@ module Kupo::Phases
       @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
 
       # Copy etcd certs over if needed
-      exec_script('configure-etcd-certs.sh', {
-        ca_certificate: File.read(@config.etcd.ca_certificate),
-        certificate: File.read(@config.etcd.certificate),
-        certificate_key: File.read(@config.etcd.key)
-
-      }) if @config.etcd && @config.etcd.certificate
+      if @config.etcd && @config.etcd.certificate
+        # XXX: permission bits?
+        @ssh.exec('mkdir -p /etc/kupo/etcd')
+        @ssh.write_file('/etc/kupo/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
+        @ssh.write_file('/etc/kupo/etcd/certificate.pem', File.read(@config.etcd.certificate))
+        @ssh.write_file('/etc/kupo/etcd/certificate-key.pem', File.read(@config.etcd.key))
+      end
 
       logger.info(@master.address) { "Initializing control plane ..." }
 

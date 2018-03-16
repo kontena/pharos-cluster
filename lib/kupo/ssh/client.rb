@@ -245,6 +245,12 @@ module Kupo::SSH
       exec!("cat #{path}")
     end
 
+    # @param path [String]
+    # @return [String]
+    def write_file(path, contents)
+      exec!("cat > #{path}", stdin: contents)
+    end
+
     def disconnect
       @session.close if @session && !@session.closed?
     end
