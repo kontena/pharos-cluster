@@ -35,7 +35,15 @@ module Kupo::SSH
       @opts = opts
     end
 
+    def logger
+      @logger ||= Logger.new($stderr).tap do |logger|
+        logger.progname = "SSH[#{@host}]"
+        logger.level = ENV["DEBUG_SSH"] ? Logger::DEBUG : Logger::INFO
+      end
+    end
+
     def connect
+      logger.debug { "Connect #{@user}@#{@host} (#{@opts})" }
       @session = Net::SSH.start(@host, @user, @opts)
     end
 
@@ -43,23 +51,32 @@ module Kupo::SSH
     # @return [Int] exit code
     def exec(cmd)
       require_session!
-      exit_code = 0
+      exit_status = 0
       ssh_channel = @session.open_channel do |channel|
+        logger.debug "exec: #{cmd}"
         channel.exec cmd do |ech, success|
+          raise Error, "Failed to exec #{cmd}" unless success
+
           ech.on_data do |_, data|
+            logger.debug { "exec stdout:\n#{data}" }
+
             yield(:stdout, data) if block_given?
           end
           ech.on_extended_data do |c, type, data|
+            logger.debug { "exec stderr: #{data}" }
+
             yield(:stderr, data) if block_given?
           end
           ech.on_request("exit-status") do |_, data|
-            exit_code = data.read_long
+            exit_status = data.read_long
+
+            logger.debug { "exec exit-status: #{exit_status}" }
           end
         end
       end
       ssh_channel.wait
 
-      exit_code
+      exit_status
     end
 
     # @param local_path [String]
@@ -67,6 +84,7 @@ module Kupo::SSH
     # @param opts [Hash]
     def upload(local_path, remote_path, opts = {})
       require_session!
+      logger.debug "upload from #{local_path}: #{remote_path}"
       @session.scp.upload!(local_path, remote_path, opts)
     end
 
@@ -75,6 +93,7 @@ module Kupo::SSH
     # @param opts [Hash]
     def download(remote_path, local_path, opts = {})
       require_session!
+      logger.debug "download to #{local_path}: #{remote_path}"
       @session.scp.download!(remote_path, local_path, opts)
     end
 
