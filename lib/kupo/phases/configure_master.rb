@@ -44,7 +44,7 @@ module Kupo::Phases
       @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
 
       # Copy etcd certs over if needed
-      if @config.etcd && @config.etcd.certificate
+      if @config.etcd&.certificate
         exec_script(
           'configure-etcd-certs.sh',
           ca_certificate: File.read(@config.etcd.ca_certificate),
@@ -65,7 +65,6 @@ module Kupo::Phases
     end
 
     def generate_config
-
       config = {
         'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
         'kind' => 'MasterConfiguration',
@@ -77,18 +76,18 @@ module Kupo::Phases
         }
       }
 
-      if @master.private_address
-        config['api'] = {'advertiseAddress' => @master.private_address}
-      else
-        config['api'] = {'advertiseAddress' => @master.address}
-      end
+      config['api'] = if @master.private_address
+                        { 'advertiseAddress' => @master.private_address }
+                      else
+                        { 'advertiseAddress' => @master.address }
+                      end
 
       if @master.container_runtime == 'cri-o'
         config['criSocket'] = '/var/run/crio/crio.sock'
       end
 
       # Only configure etcd if the external endpoints are given
-      if @config.etcd && @config.etcd.endpoints
+      if @config.etcd&.endpoints
         config['etcd'] = {
           'endpoints' => @config.etcd.endpoints
         }
@@ -99,7 +98,6 @@ module Kupo::Phases
       end
       config
     end
-
 
     def upgrade
       @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y")
