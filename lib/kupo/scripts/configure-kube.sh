@@ -22,8 +22,6 @@ ExecStart=
 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS
 EOF
 
-sleep 60
-
 apt-mark unhold kubelet kubectl
 apt-get install -y kubelet=<%= kube_version %>-00 kubectl=<%= kube_version %>-00
 apt-mark hold kubelet kubelet kubectl
