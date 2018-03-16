@@ -1,5 +1,8 @@
 require "kupo/config"
 require "kupo/phases/configure_master"
+require "kupo/phases/component"
+require "kupo/phases/configure_host"
+
 
 describe Kupo::Phases::ConfigureMaster do
   let(:master) { Kupo::Configuration::Host.new(address: 'test', private_address: 'private') }
@@ -18,6 +21,9 @@ describe Kupo::Phases::ConfigureMaster do
 
   before :each do
     allow(Kupo::SSH::Client).to receive(:for_host)
+    allow(subject).to receive(:kube_component).and_return(Kupo::Phases::Component.new(
+      name: 'kubernetes', version: Kupo::Phases::ConfigureHost::KUBE_VERSION, license: 'Apache License 2.0'
+    ))
   end
 
   describe '#config_yaml' do
