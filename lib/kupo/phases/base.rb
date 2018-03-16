@@ -19,8 +19,6 @@ module Kupo::Phases
         env: vars,
         path: File.realpath(File.join(__dir__, '..', 'scripts', script)),
       )
-    rescue SSH::ExecError => exc
-      raise Kupo::ScriptExecError, "Failed to execute #{script}:\n#{exc.output}"
     end
   end
 end
