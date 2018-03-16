@@ -1,5 +1,10 @@
 #!/bin/sh
 
+set -ue
+
+apt-get update -y
+apt-get install -y -q cmake
+
 bundle install --path bundler
 bundle exec rspec spec/
 SPEC_RETURN=$?
