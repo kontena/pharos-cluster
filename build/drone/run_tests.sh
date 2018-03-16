@@ -1,6 +1,5 @@
 #!/bin/sh
 
-bundle config build.rugged --use-system-libraries
 bundle install --path bundler
 bundle exec rspec spec/
 SPEC_RETURN=$?
