@@ -50,9 +50,9 @@ You can view full sample of cluster.yml [here](./cluster.example.yml).
 - `pod_network_cidr` - IP address range for the pod network. (default "10.32.0.0/12")
 - `trusted_subnets` - array of trusted subnets where overlay network can be used without IPSEC.
 
-## Using external Etcd
+## Using external etcd
 
-Kupo can spin up Kubernetes using an externally managed Etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
+Kupo can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
 
 ```yaml
 etcd:
@@ -65,9 +65,9 @@ etcd:
   ca_certificate: ./etcd_certs/ca.pem
 ```
 
-You need to specify all Etcd peer endpoints in the list.
+You need to specify all etcd peer endpoints in the list.
 
-Certificate and corresponding key is used to authenticate the access to Etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
+Certificate and corresponding key is used to authenticate the access to etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
 
 ## Addons
 
