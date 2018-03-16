@@ -52,7 +52,8 @@ module Kupo::Phases
       logger.info { "Configuring Kubernetes packages ..." }
       exec_script('configure-kube.sh', {
         kube_version: KUBE_VERSION,
-        kubeadm_version: ENV['KUBEADM_VERSION'] || KUBE_VERSION
+        kubeadm_version: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
+        arch: @host.cpu_arch.name
       })
     rescue Kupo::Error => exc
       logger.error { exc.message }
