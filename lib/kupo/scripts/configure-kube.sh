@@ -9,7 +9,7 @@ fi
 
 # Put in the basic kubelet config, later kubeadm commands will make things work properly
 mkdir -p /etc/systemd/system/kubelet.service.d/
-cat <<EOF >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+cat <<"EOF" >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 [Service]
 Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
 Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
