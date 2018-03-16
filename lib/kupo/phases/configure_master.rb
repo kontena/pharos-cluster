@@ -70,7 +70,7 @@ module Kupo::Phases
       config = {
         'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
         'kind' => 'MasterConfiguration',
-        'kubernetesVersion' => ConfigureHost::KUBE_VERSION,
+        'kubernetesVersion' => kube_component.version,
         'apiServerCertSANs' => [@master.address, @master.private_address].compact.uniq,
         'networking' => {
           'serviceSubnet' => @config.network.service_cidr,
