@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -uex
+set -ue
 
 mkdir -p /etc/systemd/system/crio.service.d
 cat <<EOF >/etc/systemd/system/crio.service.d/10-cgroup.conf

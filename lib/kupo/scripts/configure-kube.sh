@@ -1,7 +1,6 @@
 #!/bin/bash
 
-set -ex
-
+set -e
 
 if [ "$(kubelet --version)" = "Kubernetes v<%= kube_version %>" ]; then
     exit 0
@@ -29,4 +28,3 @@ apt-mark hold kubelet kubectl
 # Get kubeadm binary directly
 curl -o /usr/bin/kubeadm https://storage.googleapis.com/kubernetes-release/release/v<%= kubeadm_version %>/bin/linux/<%= arch %>/kubeadm
 chmod +x /usr/bin/kubeadm
-

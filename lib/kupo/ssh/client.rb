@@ -28,9 +28,11 @@ module Kupo::SSH
 
     attr_reader :cmd, :exit_status, :stdout, :stderr, :output
 
-    def initialize(cmd, debug: self.class.debug?)
+    def initialize(cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
       @cmd = cmd
       @debug = debug
+      @stdin = stdin
+      @debug_source = debug_source
 
       @exit_status = nil
       @stdout = ''
@@ -51,7 +53,7 @@ module Kupo::SSH
 
     # @param channel [Net::SSH::Connection::Channel]
     def start(channel)
-      debug_cmd(@cmd) if debug?
+      debug_cmd(@cmd, source: @debug_source) if debug?
 
       channel.exec @cmd do |_, success|
         raise Error, "Failed to exec #{cmd}" unless success
@@ -72,6 +74,11 @@ module Kupo::SSH
           @exit_status = data.read_long
 
           debug_exit(@exit_status) if debug?
+        end
+
+        if @stdin
+          channel.send_data(@stdin)
+          channel.eof!
         end
       end
     end
@@ -99,8 +106,8 @@ module Kupo::SSH
       @pastel ||= Pastel.new
     end
 
-    def debug_cmd(cmd)
-      $stdout.write(INDENT + pastel.cyan("$ #{cmd}") + "\n")
+    def debug_cmd(cmd, source: nil)
+      $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
     end
 
     def debug_stdout(data)
@@ -163,12 +170,12 @@ module Kupo::SSH
 
     # @param cmd [String] command to execute
     # @return [Exec]
-    def exec(cmd)
+    def exec(cmd, **options)
       require_session!
 
       logger.debug { "exec: #{cmd}" }
 
-      ex = Exec.new(cmd)
+      ex = Exec.new(cmd, **options)
       ex.open(@session)
       ex.wait
       ex
@@ -179,6 +186,19 @@ module Kupo::SSH
     # @return [String] stdout
     def exec!(cmd)
       ex = exec(cmd)
+
+      if ex.error?
+        raise ex.error
+      else
+        return ex.stdout
+      end
+    end
+
+    # @param script [String] command to execute
+    # @raise [ExecError]
+    # @return [String] stdout
+    def exec_script!(script, **options)
+      ex = exec('sh -x', stdin: script, **options)
 
       if ex.error?
         raise ex.error

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 mkdir -p /etc/docker
 cat <<EOF >/etc/docker/daemon.json

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 modprobe br_netfilter
 echo "br_netfilter" > /etc/modules-load.d/br_netfilter.conf

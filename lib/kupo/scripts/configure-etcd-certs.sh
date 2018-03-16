@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 mkdir -p /etc/kupo/etcd
 cat <<EOF >/etc/kupo/etcd/ca-certificate.pem
