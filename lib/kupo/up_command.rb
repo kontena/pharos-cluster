@@ -89,9 +89,7 @@ module Kupo
 
     # @return [Kupo::AddonManager]
     def addon_manager
-      @addon_manager ||= Kupo::AddonManager.new([
-                                                  __dir__ + '/addons/'
-                                                ])
+      @addon_manager ||= Kupo::AddonManager.new([__dir__ + '/addons/'])
     end
 
     def load_phases
