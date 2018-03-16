@@ -2,8 +2,7 @@ pipeline:
   test:
     image: ruby:2.4
     commands:
-      - bundle install --path bundler
-      - bundle exec rspec spec/
+      - ./build/drone/run_tests.sh
   create_gh_release:
     image: ubuntu:xenial
     secrets: [ github_token ]
