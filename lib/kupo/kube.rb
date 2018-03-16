@@ -54,11 +54,7 @@ module Kupo::Kube
     @kube_client ||= {}
     unless @kube_client[version]
       config = Kubeclient::Config.read(File.join(Dir.home, ".kupo/#{host}"))
-      path_prefix = if version == 'v1'
-                      'api'
-                    else
-                      'apis'
-                    end
+      path_prefix = version == 'v1' ? 'api' : 'apis'
       api_version, api_group = version.split('/').reverse
       @kube_client[version] = Kupo::Kube::Client.new(
         (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
@@ -155,10 +151,12 @@ module Kupo::Kube
       else
         definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
         resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
-        resource_client.delete_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace,
-                                      kind: 'DeleteOptions',
-                                      apiVersion: 'v1',
-                                      propagationPolicy: 'Foreground')
+        resource_client.delete_entity(
+          definition.resource_name, resource.metadata.name, resource.metadata.namespace,
+          kind: 'DeleteOptions',
+          apiVersion: 'v1',
+          propagationPolicy: 'Foreground'
+        )
       end
     rescue Kubeclient::ResourceNotFoundError
       false
