@@ -52,17 +52,14 @@ module Kupo::Phases
 
       logger.info(@master.address) { "Initializing control plane ..." }
 
-      code = @ssh.exec("sudo kubeadm init --config #{tmp_file}") do |type, data|
+      @ssh.exec!("sudo kubeadm init --config #{tmp_file}") do |type, data|
         remote_output(type, data)
       end
-      if code == 0
-        logger.info(@master.address) { "Initialization of control plane succeeded!" }
-      else
-        raise Kupo::Error, "Initialization of control plane failed!"
-      end
-      @ssh.exec("rm #{tmp_file}")
-      @ssh.exec('mkdir -p ~/.kube')
-      @ssh.exec('sudo cat /etc/kubernetes/admin.conf > ~/.kube/config')
+      logger.info(@master.address) { "Initialization of control plane succeeded!" }
+
+      @ssh.exec!("rm #{tmp_file}")
+      @ssh.exec!('mkdir -p ~/.kube')
+      @ssh.exec!('sudo cat /etc/kubernetes/admin.conf > ~/.kube/config')
     end
 
     def generate_config
@@ -103,15 +100,11 @@ module Kupo::Phases
 
 
     def upgrade
-      code = @ssh.exec("sudo kubeadm upgrade apply #{kube_component.version} -y") do |type, data|
+      @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y") do |type, data|
         remote_output(type, data)
       end
 
-      if code == 0
-        logger.info(@master.address) { "Control plane upgrade succeeded!" }
-      else
-        raise Kupo::Error, "Control plane upgrade failed!"
-      end
+      logger.info(@master.address) { "Control plane upgrade succeeded!" }
     end
 
     def kube_component

@@ -34,13 +34,11 @@ module Kupo::Phases
     def ssh_exec_file(ssh, file)
       tmp_file = File.join('/tmp', SecureRandom.hex(16))
       ssh.upload(file, tmp_file)
-      code = ssh.exec("sudo chmod +x #{tmp_file} && sudo #{tmp_file}") do |type, data|
+      ssh.exec!("sudo chmod +x #{tmp_file} && sudo #{tmp_file}") do |type, data|
         remote_output(type, data)
       end
-      ssh.exec("sudo rm #{tmp_file}")
-      if code != 0
-        raise Kupo::ScriptExecError, "Script execution failed: #{file}"
-      end
+    ensure
+      ssh.exec("sudo rm #{tmp_file}") if tmp_file
     end
 
     def exec_script(script, vars = {})

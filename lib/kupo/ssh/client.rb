@@ -134,7 +134,7 @@ module Kupo::SSH
     # @param path [String]
     # @return [Boolean]
     def file_exists?(path)
-      exec("[ -e #{path} ]") == 0
+      exec?("[ -e #{path} ]")
     end
 
     # @param path [String]
