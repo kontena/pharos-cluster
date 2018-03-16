@@ -13,10 +13,12 @@ module Kupo::Phases
       @@components
     end
 
+    # @param script [String] name of file under ../scripts/
     def exec_script(script, vars = {})
-      file = File.realpath(File.join(__dir__, '..', 'scripts', script))
-      parsed_file = Kupo::Erb.new(File.read(file)).render(vars)
-      @ssh.exec_script!(parsed_file, debug_source: "scripts/#{script}")
+      @ssh.exec_script!(script,
+        env: vars,
+        path: File.realpath(File.join(__dir__, '..', 'scripts', script)),
+      )
     rescue SSH::ExecError => exc
       raise Kupo::ScriptExecError, "Failed to execute #{script}:\n#{exc.output}"
     end

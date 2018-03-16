@@ -5,6 +5,7 @@ module Kupo::SSH
   class Error < StandardError
 
   end
+
   class ExecError < Error
     attr_reader :cmd, :exit_status, :output
 
@@ -30,8 +31,8 @@ module Kupo::SSH
 
     def initialize(cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
       @cmd = cmd
-      @debug = debug
       @stdin = stdin
+      @debug = debug
       @debug_source = debug_source
 
       @exit_status = nil
@@ -86,16 +87,6 @@ module Kupo::SSH
     # @return [Boolean]
     def error?
       !@exit_status.zero?
-    end
-
-    # @return [ExecError]
-    def error
-      ExecError.new(@cmd, @exit_status, @output)
-    end
-
-    # @raise [ExecError]
-    def error!
-      raise error
     end
 
     def debug?
@@ -188,20 +179,29 @@ module Kupo::SSH
       ex = exec(cmd)
 
       if ex.error?
-        raise ex.error
+        raise ExecError.new(cmd, ex.exit_status, ex.output)
       else
         return ex.stdout
       end
     end
 
-    # @param script [String] command to execute
+    # @param script [String] name of script
+    # @param path [String] real path to file, defaults to script
     # @raise [ExecError]
     # @return [String] stdout
-    def exec_script!(script, **options)
-      ex = exec('sh -x', stdin: script, **options)
+    def exec_script!(name, env: {}, path: nil, **options)
+      script = File.read(path || name)
+      setenvs = []
+
+      env.each_pair do |env, value|
+        # XXX: quoting?
+        setenvs << "#{env}='#{value}'"
+      end
+
+      ex = exec("#{setenvs.join ' '} sh -x", stdin: script, debug_source: name, **options)
 
       if ex.error?
-        raise ex.error
+        raise ExecError.new(path, ex.exit_status, ex.output)
       else
         return ex.stdout
       end

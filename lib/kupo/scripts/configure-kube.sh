@@ -2,7 +2,7 @@
 
 set -e
 
-if [ "$(kubelet --version)" = "Kubernetes v<%= kube_version %>" ]; then
+if [ "$(kubelet --version)" = "Kubernetes v$KUBE_VERSION" ]; then
     exit 0
 fi
 
@@ -22,9 +22,9 @@ ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $K
 EOF
 
 apt-mark unhold kubelet kubectl
-apt-get install -y kubelet=<%= kube_version %>-00 kubectl=<%= kube_version %>-00
+apt-get install -y kubelet=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00
 apt-mark hold kubelet kubectl
 
 # Get kubeadm binary directly
-curl -o /usr/bin/kubeadm https://storage.googleapis.com/kubernetes-release/release/v<%= kubeadm_version %>/bin/linux/<%= arch %>/kubeadm
+curl -o /usr/bin/kubeadm https://storage.googleapis.com/kubernetes-release/release/v$KUBEADM_VERSION/bin/linux/$CPU_ARCH/kubeadm
 chmod +x /usr/bin/kubeadm
