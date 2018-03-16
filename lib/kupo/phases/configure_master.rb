@@ -52,9 +52,8 @@ module Kupo::Phases
 
       logger.info(@master.address) { "Initializing control plane ..." }
 
-      @ssh.exec!("sudo kubeadm init --config #{tmp_file}") do |type, data|
-        remote_output(type, data)
-      end
+      @ssh.exec!("sudo kubeadm init --config #{tmp_file}")
+
       logger.info(@master.address) { "Initialization of control plane succeeded!" }
 
       @ssh.exec!("rm #{tmp_file}")
@@ -100,9 +99,7 @@ module Kupo::Phases
 
 
     def upgrade
-      @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y") do |type, data|
-        remote_output(type, data)
-      end
+      @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y")
 
       logger.info(@master.address) { "Control plane upgrade succeeded!" }
     end

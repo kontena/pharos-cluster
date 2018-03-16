@@ -50,13 +50,9 @@ module Kupo::Phases
     # @return [Kupo::Configuration::OsRelease]
     def os_release(ssh)
       os_info = {}
-      ssh.exec!('cat /etc/os-release') do |type, data|
-        if type == :stdout
-          data.split("\n").each do |line|
-            match = line.match(/^(.+)=(.+)$/)
-            os_info[match[1]] = match[2].gsub('"', '')
-          end
-        end
+      ssh.file_contents('/etc/os-release').split("\n").each do |line|
+        match = line.match(/^(.+)=(.+)$/)
+        os_info[match[1]] = match[2].gsub('"', '')
       end
       Kupo::Configuration::OsRelease.new(
         id: os_info['ID'],
@@ -70,13 +66,9 @@ module Kupo::Phases
     # @return [Kupo::Configuration::CpuArch]
     def cpu_arch(ssh)
       cpu = {}
-      ssh.exec!('lscpu') do |type, data|
-        if type == :stdout
-          data.split("\n").each do |line|
-            match = line.match(/^(.+):\s+(.+)$/)
-            cpu[match[1]] = match[2]
-          end
-        end
+      ssh.exec!('lscpu').split("\n").each do |line|
+        match = line.match(/^(.+):\s+(.+)$/)
+        cpu[match[1]] = match[2]
       end
       Kupo::Configuration::CpuArch.new(
         id: cpu['Architecture']
