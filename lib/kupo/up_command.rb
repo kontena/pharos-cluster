@@ -25,7 +25,6 @@ module Kupo
       puts pastel.green("==> Reading instructions ...")
       configure(load_config(config_content))
     end
-
     def configure(config)
       master_hosts = master_hosts(config)
       signal_usage_error 'No master hosts defined' if master_hosts.size == 0
@@ -37,10 +36,13 @@ module Kupo
         load_phases
         puts pastel.green("==> Starting to craft cluster ...")
         validate_hosts(config.hosts)
-
-        handle_masters(master_hosts[0], config)
-        handle_workers(master_hosts[0], worker_hosts(config))
-        handle_addons(master_hosts[0], config.addons)
+        # set workdir to the same dir where config was loaded from
+        # so that the certs etc. can be referenced more easily
+        Dir.chdir(File.dirname(config_file)) do
+          handle_masters(master_hosts[0], config)
+          handle_workers(master_hosts[0], worker_hosts(config))
+          handle_addons(master_hosts[0], config.addons)
+        end
         craft_time = Time.now - start_time
         puts pastel.green("==> Cluster has been crafted, kupo! (took #{humanize_duration(craft_time.to_i)})")
       ensure
@@ -132,7 +134,7 @@ module Kupo
       log_host_header(master)
       Phases::ConfigureHost.new(master).call
       Phases::ConfigureKubelet.new(master).call
-      Phases::ConfigureMaster.new(master, config.network).call
+      Phases::ConfigureMaster.new(master, config).call
       Phases::ConfigureClient.new(master).call
       Phases::ConfigureDNS.new(master, config).call
       Phases::ConfigureNetwork.new(master, config.network).call

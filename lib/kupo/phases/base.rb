@@ -42,5 +42,13 @@ module Kupo::Phases
         raise Kupo::ScriptExecError, "Script execution failed: #{file}"
       end
     end
+
+    def exec_script(script, vars = {})
+      file = File.realpath(File.join(__dir__, '..', 'scripts', script))
+      parsed_file = Kupo::Erb.new(File.read(file)).render(vars)
+      ssh_exec_file(@ssh, StringIO.new(parsed_file))
+    rescue Kupo::ScriptExecError
+      raise Kupo::ScriptExecError, "Failed to execute #{script}"
+    end
   end
 end

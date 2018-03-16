@@ -11,6 +11,7 @@ describe Kupo::Phases::ConfigureDNS do
         dns_replicas: config_dns_replicas,
       },
       addons: {},
+      etcd: {}
   ) }
   subject { described_class.new(master, config) }
 

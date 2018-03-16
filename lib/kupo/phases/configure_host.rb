@@ -51,7 +51,9 @@ module Kupo::Phases
 
       logger.info { "Configuring Kubernetes packages ..." }
       exec_script('configure-kube.sh', {
-        kube_version: KUBE_VERSION
+        kube_version: KUBE_VERSION,
+        kubeadm_version: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
+        arch: @host.cpu_arch.name
       })
     end
 
@@ -63,14 +65,6 @@ module Kupo::Phases
 
     # @param script [String]
     # @param vars [Hash]
-    def exec_script(script, vars = {})
-      file = File.realpath(File.join(__dir__, '..', 'scripts', script))
-      parsed_file = Kupo::Erb.new(File.read(file)).render(vars)
-      ssh_exec_file(@ssh, StringIO.new(parsed_file))
-    rescue Kupo::ScriptExecError
-      raise Kupo::ScriptExecError, "Failed to execute #{script}"
-    end
-
     def crio?
       @host.container_runtime == 'cri-o'
     end
