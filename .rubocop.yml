@@ -5,6 +5,7 @@ AllCops:
     - spec/**/*
     - Gemfile
     - "*.gemspec"
+  TargetRubyVersion: 2.4
 
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:
