@@ -2,12 +2,24 @@ require 'net/ssh'
 require 'net/scp'
 
 module Kupo::SSH
+  class Error < StandardError
 
-  class Client
+  end
+  class ExecError < Error
+    attr_reader :cmd, :exit_status, :output
 
-    class Error < StandardError
+    def initialize(cmd, exit_status, output)
+      @cmd = cmd
+      @exit_status = exit_status
+      @output = output
     end
 
+    def message
+      "SSH exec failed with code #{@exit_status}: #{@cmd}\n#{@output}"
+    end
+  end
+
+  class Client
     # @param host [Kupo::Configuration::Host]
     def self.for_host(host)
       @connections ||= {}
@@ -48,7 +60,7 @@ module Kupo::SSH
     end
 
     # @param cmd [String] command to execute
-    # @return [Int] exit code
+    # @return [Integer] exit status
     def exec(cmd)
       require_session!
       exit_status = 0
@@ -77,6 +89,28 @@ module Kupo::SSH
       ssh_channel.wait
 
       exit_status
+    end
+
+    # @param cmd [String] command to execute
+    # @raise [ExecError]
+    def exec!(cmd, &block)
+      output = ''
+
+      exit_status = exec(cmd) do |type, data|
+        output += data
+
+        yield type, data if block_given?
+      end
+
+      unless exit_status.zero?
+        raise ExecError.new(cmd, exit_status, output)
+      end
+    end
+
+    # @param cmd [String] command to execute
+    # @return [Boolean]
+    def exec?(cmd, &block)
+      exec(cmd, &block).zero?
     end
 
     # @param local_path [String]
