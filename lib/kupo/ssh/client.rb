@@ -138,17 +138,13 @@ module Kupo::SSH
     end
 
     # @param path [String]
-    # @return [String,NilClass]
+    # @return [String]
     def file_contents(path)
-      dropin = ''
-      code = exec("sudo cat #{path}") do |type, data|
-        dropin << data if type == :stdout
-      end
-      if code == 0
-        dropin
-      else
-        nil
-      end
+      local = StringIO.new
+
+      download(path, local)
+
+      local.string
     end
 
     def disconnect
