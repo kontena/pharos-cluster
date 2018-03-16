@@ -26,7 +26,7 @@ module Kupo::Phases
 
     # @return [String]
     def existing_dropin
-      @ssh.file_contents(DROPIN_PATH).to_s
+      @ssh.exec!("test -e #{DROPIN_PATH} && cat #{DROPIN_PATH}")
     end
 
     # @return [String]

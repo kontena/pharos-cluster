@@ -6,14 +6,14 @@ module Kupo::Phases
     # @param master [Kupo::Configuration::Host]
     def initialize(master)
       @master = master
+      @ssh = Kupo::SSH::Client.for_host(@master)
     end
 
     def call
-      ssh = Kupo::SSH::Client.for_host(@master)
       Dir.mkdir(config_dir, 0700) unless Dir.exists?(config_dir)
       config_file = File.join(config_dir, @master.address)
       logger.info { "Fetching kubectl config ..." }
-      config_data = ssh.file_contents("/etc/kubernetes/admin.conf")
+      config_data = @ssh.read_file("/etc/kubernetes/admin.conf")
       if config_data.nil?
         logger.error { "Failed to fetch configuration file via SSH" }
         raise "Failed to configure client"

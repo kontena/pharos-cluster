@@ -241,7 +241,7 @@ module Kupo::SSH
 
     # @param path [String]
     # @return [String]
-    def file_contents(path)
+    def read_file(path)
       exec!("cat #{path}")
     end
 
