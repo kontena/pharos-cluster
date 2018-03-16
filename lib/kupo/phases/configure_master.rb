@@ -76,11 +76,7 @@ module Kupo::Phases
         }
       }
 
-      config['api'] = if @master.private_address
-                        { 'advertiseAddress' => @master.private_address }
-                      else
-                        { 'advertiseAddress' => @master.address }
-                      end
+      config['api'] = { 'advertiseAddress' => @master.private_address || @master.address }
 
       if @master.container_runtime == 'cri-o'
         config['criSocket'] = '/var/run/crio/crio.sock'
