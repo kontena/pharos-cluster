@@ -65,6 +65,8 @@ etcd:
   ca_certificate: ./etcd_certs/ca.pem
 ```
 
+You need to specify all Etcd peer endpoints in the list.
+
 Certificate and corresponding key is used to authenticate the access to Etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
 
 ## Addons
