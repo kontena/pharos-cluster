@@ -19,11 +19,18 @@ module Kupo::Phases
 
     def call
       logger.info { "Configuring metrics-server ..." }
-      Kupo::Kube.apply_stack(@master.address, 'metrics-server',
-                             version: '0.2.1', arch: @master.cpu_arch)
+      Kupo::Kube.apply_stack(
+        @master.address, 'metrics-server',
+        version: '0.2.1',
+        arch: @master.cpu_arch
+      )
+
       logger.info { "Configuring heapster ..." }
-      Kupo::Kube.apply_stack(@master.address, 'heapster',
-                             version: '1.5.1', arch: @master.cpu_arch)
+      Kupo::Kube.apply_stack(
+        @master.address, 'heapster',
+        version: '1.5.1',
+        arch: @master.cpu_arch
+      )
     end
   end
 end
