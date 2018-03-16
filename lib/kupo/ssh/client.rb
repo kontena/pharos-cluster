@@ -127,8 +127,7 @@ module Kupo::SSH
     def self.for_host(host)
       @connections ||= {}
       unless @connections[host]
-        @connections[host] = new(host.address, host.user,
-                                 keys: [host.ssh_key_path])
+        @connections[host] = new(host.address, host.user, keys: [host.ssh_key_path])
         @connections[host].connect
       end
 
