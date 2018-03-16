@@ -26,6 +26,7 @@ module Kupo
       puts pastel.green("==> Reading instructions ...")
       configure(load_config(config_content))
     end
+
     def configure(config)
       master_hosts = master_hosts(config)
       signal_usage_error 'No master hosts defined' if master_hosts.empty?
