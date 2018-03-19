@@ -245,7 +245,7 @@ module Kupo::SSH
     # @param path [String]
     # @return [String]
     def read_file(path)
-      exec!("cat #{path}")
+      exec!("sudo cat #{path}")
     end
 
     # @param path [String]
