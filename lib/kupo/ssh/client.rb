@@ -1,5 +1,6 @@
 require 'net/ssh'
 require 'net/scp'
+require 'shellwords'
 
 module Kupo::SSH
   class Error < StandardError
@@ -191,14 +192,16 @@ module Kupo::SSH
     # @return [String] stdout
     def exec_script!(name, env: {}, path: nil, **options)
       script = File.read(path || name)
-      setenvs = []
+      cmd = []
 
       env.each_pair do |env, value|
-        # XXX: quoting?
-        setenvs << "#{env}='#{value}'"
+        cmd << "#{env}=#{Shellwords.escape(value)}"
       end
 
-      ex = exec("#{setenvs.join ' '} sh -x", stdin: script, debug_source: name, **options)
+      cmd << 'sh'
+      cmd << '-x'
+
+      ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
 
       if ex.error?
         raise ExecError.new(path, ex.exit_status, ex.output)
