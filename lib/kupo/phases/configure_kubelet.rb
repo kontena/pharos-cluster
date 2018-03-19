@@ -31,8 +31,13 @@ module Kupo::Phases
 
     # @return [String]
     def build_systemd_dropin
+      node_ip = @host.private_address.nil? ? @host.address : @host.private_address
       config = "[Service]\nEnvironment='KUBELET_EXTRA_ARGS="
-      args = ['--read-only-port=0']
+      args = [
+        '--read-only-port=0',
+        '--feature-gates=MountPropagation=true',
+        "--node-ip=#{node_ip}"
+      ]
       if crio?
         args += [
           '--container-runtime=remote',
@@ -40,8 +45,6 @@ module Kupo::Phases
           '--container-runtime-endpoint=/var/run/crio/crio.sock'
         ]
       end
-      node_ip = @host.private_address.nil? ? @host.address : @host.private_address
-      args << "--node-ip=#{node_ip}"
       config = config + args.join(' ') + "'"
       config + "\nExecStartPre=-/sbin/swapoff -a"
     end

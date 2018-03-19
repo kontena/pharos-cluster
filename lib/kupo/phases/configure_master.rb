@@ -72,6 +72,9 @@ module Kupo::Phases
         'kind' => 'MasterConfiguration',
         'kubernetesVersion' => kube_component.version,
         'apiServerCertSANs' => [@master.address, @master.private_address].compact.uniq,
+        'apiServerExtraArgs' => {
+          'feature-gates' => 'PersistentLocalVolumes=true,VolumeScheduling=true,MountPropagation=true'
+        },
         'networking' => {
           'serviceSubnet' => @config.network.service_cidr,
           'podSubnet' => @config.network.pod_network_cidr
