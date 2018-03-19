@@ -15,10 +15,8 @@ module Kupo::Phases
       logger.info { 'Configuring kubelet ...' }
       dropin = build_systemd_dropin
       if dropin != existing_dropin
-        tmp_file = File.join('/tmp', SecureRandom.hex(16))
-        @ssh.upload(StringIO.new(dropin), tmp_file)
         @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
-        @ssh.exec!("sudo mv #{tmp_file} #{DROPIN_PATH}")
+        @ssh.write_file(DROPIN_PATH, dropin)
         @ssh.exec!("sudo systemctl daemon-reload")
         @ssh.exec!("sudo systemctl restart kubelet")
       end

@@ -248,6 +248,7 @@ module Kupo::SSH
     # @param path [String]
     # @return [String]
     def write_file(path, contents)
+      # TODO: atomic write via cat > /tmp/... && mv /tmp/... $path?
       exec!("cat > #{path}", stdin: contents)
     end
 
