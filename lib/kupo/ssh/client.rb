@@ -250,9 +250,13 @@ module Kupo::SSH
 
     # @param path [String]
     # @return [String]
-    def write_file(path, contents)
-      # TODO: atomic write via cat > /tmp/... && mv /tmp/... $path?
-      exec!("cat > #{path}", stdin: contents)
+    def write_file(path, contents, prefix: 'kupo')
+      tmp_path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
+
+      upload(StringIO.new(contents), tmp_path)
+
+      # TODO: cleanup tmp_path if mv fails?
+      exec!("sudo mv #{tmp_path} #{path}")
     end
 
     # @param contents [String]
@@ -261,7 +265,7 @@ module Kupo::SSH
     def with_tmpfile(contents, prefix: "kupo")
       path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
 
-      write_file(path, contents)
+      upload(StringIO.new(contents), path)
 
       yield path
     ensure
