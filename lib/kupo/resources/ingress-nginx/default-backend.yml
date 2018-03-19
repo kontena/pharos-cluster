@@ -18,7 +18,7 @@ spec:
         # Any image is permissable as long as:
         # 1. It serves a 404 page at /
         # 2. It serves 200 on a /healthz endpoint
-        image: gcr.io/google_containers/defaultbackend-<%= arch.name %>:1.4
+        image: <%= image || (arch.name == 'arm64' ? 'kontena/pharos-default-backend-arm64:0.0.2' : 'kontena/pharos-default-backend:0.0.2') %>
         livenessProbe:
           httpGet:
             path: /healthz
