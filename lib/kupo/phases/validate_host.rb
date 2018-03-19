@@ -35,9 +35,9 @@ module Kupo::Phases
     end
 
     def check_sudo(ssh)
-     unless ssh.exec('sudo -n uptime').zero?
-       raise Kupo::InvalidHostError, "Can't use sudo without a password"
-     end
+      ssh.exec!('sudo -n true')
+    rescue Kupo::SSH::ExecError => exc
+      raise Kupo::InvalidHostError, "Unable to sudo: #{exc.output}"
     end
 
     # @param ssh [Kupo::SSH::Client]
@@ -50,11 +50,9 @@ module Kupo::Phases
     # @return [Kupo::Configuration::OsRelease]
     def os_release(ssh)
       os_info = {}
-      ssh.exec('cat /etc/os-release') do |_, data|
-        data.split("\n").each do |line|
-          match = line.match(/^(.+)=(.+)$/)
-          os_info[match[1]] = match[2].gsub('"', '')
-        end
+      ssh.file_contents('/etc/os-release').split("\n").each do |line|
+        match = line.match(/^(.+)=(.+)$/)
+        os_info[match[1]] = match[2].gsub('"', '')
       end
       Kupo::Configuration::OsRelease.new(
         id: os_info['ID'],
@@ -68,11 +66,9 @@ module Kupo::Phases
     # @return [Kupo::Configuration::CpuArch]
     def cpu_arch(ssh)
       cpu = {}
-      ssh.exec('lscpu') do |_, data|
-        data.split("\n").each do |line|
-          match = line.match(/^(.+):\s+(.+)$/)
-          cpu[match[1]] = match[2]
-        end
+      ssh.exec!('lscpu').split("\n").each do |line|
+        match = line.match(/^(.+):\s+(.+)$/)
+        cpu[match[1]] = match[2]
       end
       Kupo::Configuration::CpuArch.new(
         id: cpu['Architecture']

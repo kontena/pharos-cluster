@@ -22,20 +22,12 @@ module Kupo::Phases
       end
 
       logger.info { "Joining host to the master ..." }
-      join_command = 'sudo '
-      @master_ssh.exec("sudo kubeadm token create --print-join-command") do |type, output|
-        join_command << output
-      end
+      join_command = @master_ssh.exec!("sudo kubeadm token create --print-join-command")
       if @host.container_runtime == 'cri-o'
         join_command = join_command.sub('kubeadm join', "kubeadm join --cri-socket /var/run/crio/crio.sock")
       end
 
-      code = @ssh.exec(join_command) do |type, data|
-        remote_output(type, data)
-      end
-      if code != 0
-        raise Kupo::Error, "Failed to join host"
-      end
+      @ssh.exec!('sudo ' + join_command)
     end
   end
 end
