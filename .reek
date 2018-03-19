@@ -1,0 +1,131 @@
+---
+Attribute:
+  enabled: true
+  exclude: []
+BooleanParameter:
+  enabled: true
+  exclude: []
+ClassVariable:
+  enabled: true
+  exclude: []
+ControlParameter:
+  enabled: true
+  exclude: []
+DataClump:
+  enabled: true
+  exclude: []
+  max_copies: 2
+  min_clump_size: 2
+DuplicateMethodCall:
+  enabled: true
+  exclude: []
+  max_calls: 3
+  allow_calls: []
+FeatureEnvy:
+  enabled: true
+  exclude: []
+InstanceVariableAssumption:
+  enabled: false
+  exclude: []
+IrresponsibleModule:
+  enabled: false
+  exclude: []
+LongParameterList:
+  enabled: true
+  exclude: []
+  max_params: 3
+  overrides:
+    initialize:
+      max_params: 5
+LongYieldList:
+  enabled: true
+  exclude: []
+  max_params: 3
+ManualDispatch:
+  enabled: true
+  exclude: []
+ModuleInitialize:
+  enabled: true
+  exclude: []
+NestedIterators:
+  enabled: true
+  exclude: []
+  max_allowed_nesting: 1
+  ignore_iterators:
+  - tap
+NilCheck:
+  enabled: false
+  exclude: []
+PrimaDonnaMethod:
+  enabled: true
+  exclude: []
+RepeatedConditional:
+  enabled: true
+  exclude: []
+  max_ifs: 2
+SubclassedFromCoreClass:
+  enabled: true
+  exclude: []
+Syntax:
+  enabled: true
+  exclude: []
+TooManyConstants:
+  enabled: false
+  exclude: []
+  max_constants: 5
+TooManyInstanceVariables:
+  enabled: false
+  exclude: []
+  max_instance_variables: 4
+TooManyMethods:
+  enabled: true
+  exclude: []
+  max_methods: 15
+TooManyStatements:
+  enabled: true
+  exclude:
+  - initialize
+  max_statements: 5
+UncommunicativeMethodName:
+  enabled: true
+  exclude: []
+  reject:
+  - !ruby/regexp /^[a-z]$/
+  - !ruby/regexp /[0-9]$/
+  - !ruby/regexp /[A-Z]/
+  accept: []
+UncommunicativeModuleName:
+  enabled: true
+  exclude: []
+  reject:
+  - !ruby/regexp /^.$/
+  - !ruby/regexp /[0-9]$/
+  accept: []
+UncommunicativeParameterName:
+  enabled: false
+  exclude: []
+  reject:
+  - !ruby/regexp /^.$/
+  - !ruby/regexp /[0-9]$/
+  - !ruby/regexp /[A-Z]/
+  - !ruby/regexp /^_/
+  accept: []
+UncommunicativeVariableName:
+  enabled: false
+  exclude: []
+  reject:
+  - !ruby/regexp /^.$/
+  - !ruby/regexp /[0-9]$/
+  - !ruby/regexp /[A-Z]/
+  accept:
+  - !ruby/regexp /^_$/
+UnusedParameters:
+  enabled: true
+  exclude: []
+UnusedPrivateMethod:
+  enabled: true
+  exclude: []
+UtilityFunction:
+  enabled: true
+  exclude: []
+  public_methods_only: true
