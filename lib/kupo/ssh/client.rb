@@ -63,7 +63,7 @@ module Kupo::SSH
 
           debug_stdout(data) if debug?
         end
-        channel.on_extended_data do |c, type, data|
+        channel.on_extended_data do |_c, _type, data|
           @stderr += data
           @output += data
 
@@ -106,14 +106,14 @@ module Kupo::SSH
 
     def debug_stdout(data)
       data.each_line do |line|
-        $stdout.write(INDENT + pastel.dim("#{line}"))
+        $stdout.write(INDENT + pastel.dim(line.to_s))
       end
     end
 
     def debug_stderr(data)
       data.each_line do |line|
         # TODO: stderr is not line-buffered, this indents each write
-        $stdout.write(INDENT + pastel.red("#{line}"))
+        $stdout.write(INDENT + pastel.red(line.to_s))
       end
     end
 

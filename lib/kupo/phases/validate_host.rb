@@ -54,7 +54,7 @@ module Kupo::Phases
       os_info = {}
       ssh.file_contents('/etc/os-release').split("\n").each do |line|
         match = line.match(/^(.+)=(.+)$/)
-        os_info[match[1]] = match[2].gsub('"', '')
+        os_info[match[1]] = match[2].delete('"')
       end
       Kupo::Configuration::OsRelease.new(
         id: os_info['ID'],

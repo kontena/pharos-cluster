@@ -17,7 +17,7 @@ module Kupo::Phases
       config_data = ssh.file_contents("/etc/kubernetes/admin.conf")
 
       File.write(config_file, config_data.gsub(/(server: https:\/\/)(.+)(:6443)/, "\\1#{@master.address}\\3"))
-      logger.info { "Configuration saved to #{config_file}"}
+      logger.info { "Configuration saved to #{config_file}" }
     end
 
     def config_dir
