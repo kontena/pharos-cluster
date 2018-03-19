@@ -255,8 +255,7 @@ module Kupo::SSH
 
       upload(StringIO.new(contents), tmp_path)
 
-      # TODO: cleanup tmp_path if mv fails?
-      exec!("sudo mv #{tmp_path} #{path}")
+      exec!("sudo mv #{tmp_path} #{path} || rm #{tmp_path}")
     end
 
     # @param contents [String]
