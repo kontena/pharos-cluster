@@ -39,8 +39,6 @@ module Kupo::Phases
 
     def install
       cfg = generate_config
-      tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))
-      @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
 
       # Copy etcd certs over if needed
       if @config.etcd && @config.etcd.certificate
@@ -53,11 +51,12 @@ module Kupo::Phases
 
       logger.info(@master.address) { "Initializing control plane ..." }
 
-      @ssh.exec!("sudo kubeadm init --config #{tmp_file}")
+      @ssh.with_tmpfile(cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        @ssh.exec!("sudo kubeadm init --config #{tmp_file}")
+      end
 
       logger.info(@master.address) { "Initialization of control plane succeeded!" }
 
-      @ssh.exec!("rm #{tmp_file}")
       @ssh.exec!('mkdir -p ~/.kube')
       @ssh.exec!('sudo cat /etc/kubernetes/admin.conf > ~/.kube/config')
     end

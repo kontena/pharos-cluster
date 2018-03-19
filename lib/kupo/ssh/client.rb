@@ -252,6 +252,19 @@ module Kupo::SSH
       exec!("cat > #{path}", stdin: contents)
     end
 
+    # @param contents [String]
+    # @yield [path]
+    # @yieldparam path [String] /tmp/...
+    def with_tmpfile(contents, prefix: "kupo")
+      path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
+
+      write_file(path, contents)
+
+      yield path
+    ensure
+      exec("rm #{path}") if path
+    end
+
     def disconnect
       @session.close if @session && !@session.closed?
     end
