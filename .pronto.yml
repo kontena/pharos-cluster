@@ -1,5 +1,0 @@
-all:
-  exclude:
-    - spec/**/*
-github:
-  slug: kontena/kupo
