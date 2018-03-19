@@ -24,9 +24,9 @@ module Kupo::Phases
       end
     end
 
-    # @return [String]
+    # @return [String, nil]
     def existing_dropin
-      @ssh.file_contents(DROPIN_PATH).to_s
+      @ssh.file_contents(DROPIN_PATH) if @ssh.file_exists?(DROPIN_PATH)
     end
 
     # @return [String]
