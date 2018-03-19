@@ -43,7 +43,7 @@ module Kupo::Phases
       # Copy etcd certs over if needed
       if @config.etcd && @config.etcd.certificate
         # XXX: permission bits?
-        @ssh.exec('mkdir -p /etc/kupo/etcd')
+        @ssh.exec!('mkdir -p /etc/kupo/etcd')
         @ssh.write_file('/etc/kupo/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
         @ssh.write_file('/etc/kupo/etcd/certificate.pem', File.read(@config.etcd.certificate))
         @ssh.write_file('/etc/kupo/etcd/certificate-key.pem', File.read(@config.etcd.key))
