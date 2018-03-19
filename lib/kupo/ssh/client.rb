@@ -222,7 +222,7 @@ module Kupo::SSH
     # @param path [String]
     # @return [String]
     def file_contents(path)
-      exec!("cat #{path}")
+      exec!("sudo cat #{path}")
     end
 
     def disconnect
