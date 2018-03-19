@@ -239,6 +239,7 @@ module Kupo::SSH
     # @param path [String]
     # @return [Boolean]
     def file_exists?(path)
+      # TODO: this gives a false negative if we don't have access to the directory
       exec?("[ -e #{path} ]")
     end
 
