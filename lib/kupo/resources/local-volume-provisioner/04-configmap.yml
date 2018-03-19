@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 data:
   storageClassMap: |
-    fast-disks:
+    local-storage:
        hostDir: /storage
        mountDir: /storage
        blockCleanerCommand:
