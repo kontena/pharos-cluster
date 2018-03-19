@@ -138,6 +138,17 @@ kured:
   enabled: true
 ```
 
+### Local Volume Provisioner
+
+Local Volume Provisioner runs on each node in the cluster and monitors `/storage` directory to look for new local file-based volumes. The volumes can be a mount point or a directory in a shared filesystem. It then statically creates a Local PersistentVolume for each local volume. It also monitors when the PersistentVolumes have been released, and will clean up the volume, and recreate the PV.
+
+https://github.com/kubernetes-incubator/external-storage/tree/master/local-volume/provisioner
+
+```yaml
+local-volume-provisioner:
+  enabled: true
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/kupo.
