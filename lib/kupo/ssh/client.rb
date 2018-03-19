@@ -175,8 +175,8 @@ module Kupo::SSH
     # @param cmd [String] command to execute
     # @raise [ExecError]
     # @return [String] stdout
-    def exec!(cmd)
-      ex = exec(cmd)
+    def exec!(cmd, **options)
+      ex = exec(cmd, **options)
 
       if ex.error?
         raise ExecError.new(cmd, ex.exit_status, ex.output)
@@ -209,8 +209,8 @@ module Kupo::SSH
 
     # @param cmd [String] command to execute
     # @return [Boolean]
-    def exec?(cmd, &block)
-      ex = exec(cmd, &block)
+    def exec?(cmd, **options, &block)
+      ex = exec(cmd, **options, &block)
 
       !ex.error?
     end
