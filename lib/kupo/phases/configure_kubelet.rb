@@ -22,9 +22,9 @@ module Kupo::Phases
       end
     end
 
-    # @return [String]
+    # @return [String, nil]
     def existing_dropin
-      @ssh.exec!("if test -e #{DROPIN_PATH}; then cat #{DROPIN_PATH}; else true; fi")
+      @ssh.read_file(DROPIN_PATH) if @ssh.file_exists?(DROPIN_PATH)
     end
 
     # @return [String]
