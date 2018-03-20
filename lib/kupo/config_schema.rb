@@ -9,7 +9,7 @@ module Kupo
     def self.build
       Dry::Validation.Form do
         configure do
-          def self.messages
+          def self.messages # rubocop:disable Lint/NestedMethodDefinition
             super.merge(
               en: { errors: { network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts" } }
             )
