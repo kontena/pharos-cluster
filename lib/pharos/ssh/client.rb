@@ -71,12 +71,11 @@ module Pharos
             @stderr += data
             @output += data
 
-            debug_stderr(data) if debug?
+            debug { debug_stderr(data) }
           end
           channel.on_request("exit-status") do |_, data|
             @exit_status = data.read_long
-
-            debug_exit(@exit_status) if debug?
+            debug { debug_exit(@exit_status) }
           end
 
           if @stdin
@@ -105,14 +104,14 @@ module Pharos
 
       def debug_stdout(data)
         data.each_line do |line|
-          $stdout.write(INDENT + pastel.dim(line.to_s))
+          $stdout << INDENT << pastel.dim(line)
         end
       end
 
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stdout.write(INDENT + pastel.red(line.to_s))
+          $stdout << INDENT << pastel.red(line)
         end
       end
 

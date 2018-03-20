@@ -105,6 +105,7 @@ RSpec.configure do |config|
       stdout = $stdout
       stderr = $stderr
       $stdout = $stderr = StringIO.new
+      Kupo::Phases::Logging.send(:__init__)
 
       begin
         example.run

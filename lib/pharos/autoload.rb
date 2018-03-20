@@ -8,17 +8,18 @@ autoload :RestClient, 'rest-client'
 autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
 
-module Pharos
-  autoload :Types, 'pharos/types'
-  autoload :Config, 'pharos/config'
-  autoload :ConfigSchema, 'pharos/config_schema'
-  autoload :Kube, 'pharos/kube'
-  autoload :Erb, 'pharos/erb'
-  autoload :AddonManager, 'pharos/addon_manager'
-  autoload :Phases, 'pharos/phases'
+module Kupo
+  autoload :Debug, 'kupo/debug'
+  autoload :Types, 'kupo/types'
+  autoload :Config, 'kupo/config'
+  autoload :ConfigSchema, 'kupo/config_schema'
+  autoload :Kube, 'kupo/kube'
+  autoload :Erb, 'kupo/erb'
+  autoload :AddonManager, 'kupo/addon_manager'
+  autoload :Phases, 'kupo/phases'
 
   module SSH
-    autoload :Client, 'pharos/ssh/client'
+    autoload :Client, 'kupo/ssh/client'
   end
 
   module Addons
