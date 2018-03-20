@@ -7,9 +7,10 @@ module Kupo
   class ConfigSchema
     # @return [Dry::Validation::Schema]
     def self.build
+      # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition
       Dry::Validation.Form do
         configure do
-          def self.messages # rubocop:disable Lint/NestedMethodDefinition
+          def self.messages
             super.merge(
               en: { errors: { network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts" } }
             )
@@ -50,6 +51,7 @@ module Kupo
           end
         end
       end
+      # rubocop:enable Metrics/BlockLength, Lint/NestedMethodDefinition
     end
   end
 end
