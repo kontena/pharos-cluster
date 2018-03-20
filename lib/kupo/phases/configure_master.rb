@@ -103,7 +103,7 @@ module Kupo
       end
 
       def kube_component
-        @kube_component ||= self.class.components.find { |c| c.name == 'kubernetes' }
+        @kube_component ||= Kupo::Phases.find_component(name: 'kubernetes')
       end
     end
   end

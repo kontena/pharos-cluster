@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'logging'
+require_relative '../phases'
 
 module Kupo
   module Phases
@@ -8,12 +9,7 @@ module Kupo
       include Kupo::Phases::Logging
 
       def self.register_component(component)
-        @@components ||= Set.new
-        @@components << component
-      end
-
-      def self.components
-        @@components
+        Kupo::Phases.components << component
       end
 
       def ssh_exec_file(ssh, file)

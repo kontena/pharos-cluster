@@ -12,7 +12,7 @@ module Kupo
     def report_all
       load_phases
       puts "3rd party versions:"
-      Kupo::Phases::Base.components.each do |c|
+      Kupo::Phases.components.each do |c|
         puts "  - #{c.name}=#{c.version} (#{c.license})"
       end
       puts "Addon versions:"
