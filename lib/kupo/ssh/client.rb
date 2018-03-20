@@ -179,11 +179,9 @@ module Kupo::SSH
     def exec!(cmd)
       ex = exec(cmd)
 
-      if ex.error?
-        raise ex.error
-      else
-        return ex.stdout
-      end
+      raise ex.error if ex.error?
+
+      ex.stdout
     end
 
     # @param cmd [String] command to execute

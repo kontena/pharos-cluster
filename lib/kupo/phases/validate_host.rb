@@ -25,15 +25,13 @@ module Kupo::Phases
     end
 
     def check_distro_version
-      unless @host.os_release.supported?
-        raise Kupo::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
-      end
+      return if @host.os_release.supported?
+      raise Kupo::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
     end
 
     def check_cpu_arch
-      unless @host.cpu_arch.supported?
-        raise Kupo::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
-      end
+      return if @host.cpu_arch.supported?
+      raise Kupo::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
     end
 
     def check_sudo(ssh)

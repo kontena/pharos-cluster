@@ -13,12 +13,10 @@ module Kupo::Phases
       return unless @host.labels
 
       node = find_node
-      if node
-        logger.info { "Configuring node labels ... " }
-        patch_node(node)
-      else
-        raise Kupo::Error, "Cannot set labels, node not found"
-      end
+      raise Kupo::Error, "Cannot set labels, node not found" if node.nil?
+
+      logger.info { "Configuring node labels ... " }
+      patch_node(node)
     end
 
     # @param node [Kubeclient::Resource]

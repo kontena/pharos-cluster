@@ -6,16 +6,18 @@ module Kupo
 
     def execute
       puts "kupo version #{Kupo::VERSION}"
-      if all?
-        load_phases
-        puts "3rd party versions:"
-        Kupo::Phases::Base.components.each do |c|
-          puts "  - #{c.name}=#{c.version} (#{c.license})"
-        end
-        puts "Addon versions:"
-        Kupo::AddonManager.new([__dir__ + '/addons']).addon_classes.each do |c|
-          puts "  - #{c.name}=#{c.version} (#{c.license})"
-        end
+      report_all if all?
+    end
+
+    def report_all
+      load_phases
+      puts "3rd party versions:"
+      Kupo::Phases::Base.components.each do |c|
+        puts "  - #{c.name}=#{c.version} (#{c.license})"
+      end
+      puts "Addon versions:"
+      Kupo::AddonManager.new([__dir__ + '/addons']).addon_classes.each do |c|
+        puts "  - #{c.name}=#{c.version} (#{c.license})"
       end
     end
 
