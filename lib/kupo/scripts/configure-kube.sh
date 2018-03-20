@@ -6,6 +6,8 @@ if [ "$(kubelet --version)" = "Kubernetes v$KUBE_VERSION" ]; then
     exit 0
 fi
 
+apt-get install -y iproute2 socat util-linux mount ebtables ethtool
+
 cat <<"EOF" >/etc/systemd/system/kubelet.service
 [Unit]
 Description=kubelet: The Kubernetes Node Agent
