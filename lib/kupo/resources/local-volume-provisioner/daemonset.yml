@@ -45,7 +45,7 @@ spec:
             - mountPath: /etc/provisioner/config
               name: provisioner-config
               readOnly: true
-            - mountPath:  /storage
+            - mountPath:  /mnt
               name: local-storage
       volumes:
         - name: provisioner-config
@@ -53,4 +53,4 @@ spec:
             name: local-provisioner-config
         - name: local-storage
           hostPath:
-            path: /storage
+            path: /mnt
