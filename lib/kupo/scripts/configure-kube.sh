@@ -6,6 +6,21 @@ if [ "$(kubelet --version)" = "Kubernetes v$KUBE_VERSION" ]; then
     exit 0
 fi
 
+cat <<"EOF" >/etc/systemd/system/kubelet.service
+[Unit]
+Description=kubelet: The Kubernetes Node Agent
+Documentation=http://kubernetes.io/docs/
+
+[Service]
+ExecStart=/usr/bin/kubelet
+Restart=always
+StartLimitInterval=0
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Put in the basic kubelet config, later kubeadm commands will make things work properly
 mkdir -p /etc/systemd/system/kubelet.service.d/
 cat <<"EOF" >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
@@ -21,10 +36,15 @@ ExecStart=
 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS
 EOF
 
-apt-mark unhold kubelet kubectl
-apt-get install -y kubelet=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00
-apt-mark hold kubelet kubectl
+cd /usr/bin
+curl -sSL https://dl.bintray.com/kontena/kupo/kube/${KUBE_VERSION}/bundle-${ARCH}.tar.gz | tar zx
+chmod +x kube*
 
-# Get kubeadm binary directly
-curl -o /usr/bin/kubeadm https://storage.googleapis.com/kubernetes-release/release/v$KUBEADM_VERSION/bin/linux/$CPU_ARCH/kubeadm
-chmod +x /usr/bin/kubeadm
+mkdir -p /opt/cni/bin
+cd /opt/cni/bin
+curl -sSL https://dl.bintray.com/kontena/kupo/cni-plugins/cni-plugins-${ARCH}-v0.7.0.tgz | tar zx
+
+systemctl daemon-reload
+systemctl enable kubelet
+systemctl start kubelet
+
