@@ -140,14 +140,20 @@ kured:
 
 ### Local Volume Provisioner
 
-Local Volume Provisioner runs on each node in the cluster and monitors `/storage` directory to look for new local file-based volumes. The volumes can be a mount point or a directory in a shared filesystem. It then statically creates a Local PersistentVolume for each local volume. It also monitors when the PersistentVolumes have been released, and will clean up the volume, and recreate the PV.
+Local Volume Provisioner runs on each node in the cluster and monitors `/mnt` directory to look for new local file-based volumes. The volumes can be a symbolic link to a block device or a directory in a shared filesystem. It then statically creates a Local PersistentVolume for each local volume. It also monitors when the PersistentVolumes have been released, and will clean up the volume, and recreate the PV.
 
 https://github.com/kubernetes-incubator/external-storage/tree/master/local-volume/provisioner
 
 ```yaml
 local-volume-provisioner:
   enabled: true
+  node_selector:
+    disk: fast
 ```
+
+#### Options
+
+* `node_selector` - optional node selector (hash)
 
 ## Contributing
 

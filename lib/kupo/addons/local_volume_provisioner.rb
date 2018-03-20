@@ -6,6 +6,14 @@ module Kupo
       version '2.0.0'
       license 'Apache License 2.0'
 
+      struct {
+        attribute :node_selector, Kupo::Types::Hash
+      }
+
+      schema {
+        optional(:node_selector).filled(:hash?)
+      }
+
     end
   end
 end

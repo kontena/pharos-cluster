@@ -6,8 +6,8 @@ metadata:
 data:
   storageClassMap: |
     local-storage:
-       hostDir: /storage
-       mountDir: /storage
+       hostDir: /mnt
+       mountDir: /mnt
        blockCleanerCommand:
          - "/scripts/shred.sh"
          - "2"

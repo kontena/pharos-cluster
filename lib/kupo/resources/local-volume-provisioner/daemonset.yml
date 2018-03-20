@@ -16,11 +16,24 @@ spec:
       labels:
         app: local-volume-provisioner
     spec:
+      <%- if config.node_selector -%>
+      nodeSelector:
+      <%- config.node_selector.each do |key, value| -%>
+        <%= key %>: <%= value %>
+      <%- end -%>
+      <%- end -%>
       serviceAccountName: local-storage-admin
       containers:
-        - image: "quay.io/external_storage/local-volume-provisioner:v2.0.0"
+        - image: "quay.io/external_storage/local-volume-provisioner:v<%= version %>"
           imagePullPolicy: "IfNotPresent"
           name: provisioner
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
           securityContext:
             privileged: true
           env:
