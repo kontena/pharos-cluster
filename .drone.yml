@@ -3,7 +3,7 @@ pipeline:
     image: ruby:2.4
     commands:
       - bundle install --path bundler
-      - bundle exec rspec spec/ && bundle exec rubocop --fail-level A -S --format c
+      - bundle exec rspec spec/ && bundle exec rubocop --fail-level A -S --format c --parallel
   create_gh_release:
     image: ubuntu:xenial
     secrets: [ github_token ]
