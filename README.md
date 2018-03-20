@@ -153,7 +153,7 @@ local-volume-provisioner:
 
 #### Options
 
-* `node_selector` - optional node selector (hash)
+* `node_selector` - optional node selector (map)
 
 ## Contributing
 
