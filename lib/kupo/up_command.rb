@@ -6,7 +6,7 @@ module Kupo
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %s' % config_path
+        signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
       end
     end
 

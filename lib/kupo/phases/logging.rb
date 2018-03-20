@@ -10,7 +10,7 @@ module Kupo
         @logger.progname = 'API'
         @logger.level = ENV["DEBUG"] ? Logger::DEBUG : log_level
         logger.formatter = proc do |_severity, _datetime, _progname, msg|
-          "    %s\n" % msg
+          "    %<msg>s\n" % { msg: msg }
         end
 
         @logger
