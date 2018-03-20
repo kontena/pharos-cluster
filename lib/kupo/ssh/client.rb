@@ -138,7 +138,7 @@ module Kupo
       def self.disconnect_all
         return unless @connections
 
-        @connections.each_value.map(&:disconnect)
+        @connections.values.map(&:disconnect)
       end
 
       def initialize(host, user = nil, opts = {})
