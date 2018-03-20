@@ -22,4 +22,4 @@ spec:
         imagePullPolicy: Always
         command:
         - /metrics-server
-        - --source=kubernetes.summary_api:https://kubernetes.default.svc?kubeletHttps=true&kubeletPort=10250&useServiceAccount=true
+        - --source=kubernetes.summary_api:''

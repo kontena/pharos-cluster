@@ -18,4 +18,4 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
         - /heapster
-        - --source=kubernetes.summary_api:https://kubernetes.default.svc?kubeletHttps=true&kubeletPort=10250&useServiceAccount=true
+        - --source=kubernetes.summary_api:''
