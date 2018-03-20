@@ -55,7 +55,7 @@ module Kupo
       def patch_kubedns(replicas:, max_surge:, max_unavailable:)
         logger.info(@master.address) { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
-        kube_client = Kupo::Kube.update_resource(
+        Kupo::Kube.update_resource(
           @master.address,
           Kubeclient::Resource.new(
             apiVersion: 'extensions/v1beta1',
