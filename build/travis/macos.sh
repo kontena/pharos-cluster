@@ -3,7 +3,7 @@
 set -ue
 
 brew install squashfs
-curl -L http://enclose.io/rubyc/rubyc-darwin-x64.gz | gunzip > /usr/local/bin/rubyc
+curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-darwin-amd64.gz | gunzip > /usr/local/bin/rubyc
 chmod +x /usr/local/bin/rubyc
 rubyc -o kupo kupo
 ./kupo version --all
