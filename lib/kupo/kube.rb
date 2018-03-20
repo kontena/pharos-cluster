@@ -43,6 +43,14 @@ module Kupo::Kube
 
       create_entity(resource.kind, definition.resource_name, resource)
     end
+
+    # @param resource [Kubeclient::Resource]
+    # @return [Kubeclient::Resource]
+    def get_resource(resource)
+      definition = entity_for_resource(resource)
+
+      get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
+    end
   end
 
   RESOURCE_LABEL = 'kupo.kontena.io/stack'
@@ -133,9 +141,25 @@ module Kupo::Kube
   # @param host [String]
   # @param resource [Kubeclient::Resource]
   # @return [Kubeclient::Resource]
+  def self.create_resource(host, resource)
+    resource_client = client(host, resource.apiVersion)
+    resource_client.create_resource(resource)
+  end
+
+  # @param host [String]
+  # @param resource [Kubeclient::Resource]
+  # @return [Kubeclient::Resource]
   def self.update_resource(host, resource)
     resource_client = client(host, resource.apiVersion)
     resource_client.update_resource(resource)
+  end
+
+  # @param host [String]
+  # @param resource [Kubeclient::Resource]
+  # @return [Kubeclient::Resource]
+  def self.get_resource(host, resource)
+    resource_client = client(host, resource.apiVersion)
+    resource_client.get_resource(resource)
   end
 
   # @param host [String]
