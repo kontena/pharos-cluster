@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kupo::Configuration
   class Etcd < Dry::Struct
     constructor_type :schema

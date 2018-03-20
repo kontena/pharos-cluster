@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
   class ConfigureKubelet < Base
-
-    DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-kupo.conf".freeze
+    DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-kupo.conf"
 
     # @param host [Kupo::Configuration::Host]
     def initialize(host)

@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
   class ConfigureMaster < Base
-
     # @param master [Kupo::Configuration::Host]
     # @param config [Kupo::Configuration::Network]
     def initialize(master, config)
@@ -33,7 +34,7 @@ module Kupo::Phases
 
       client = Kupo::Kube.client(@master.address)
       configmap = client.get_config_map('kubeadm-config', 'kube-system')
-      config = YAML.load(configmap.data[:MasterConfiguration])
+      config = YAML.safe_load(configmap.data[:MasterConfiguration])
       config['kubernetesVersion'] != "v#{kube_component.version}"
     end
 
@@ -43,12 +44,14 @@ module Kupo::Phases
       @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
 
       # Copy etcd certs over if needed
-      exec_script('configure-etcd-certs.sh', {
-        ca_certificate: File.read(@config.etcd.ca_certificate),
-        certificate: File.read(@config.etcd.certificate),
-        certificate_key: File.read(@config.etcd.key)
-
-      }) if @config.etcd && @config.etcd.certificate
+      if @config.etcd&.certificate
+        exec_script(
+          'configure-etcd-certs.sh',
+          ca_certificate: File.read(@config.etcd.ca_certificate),
+          certificate: File.read(@config.etcd.certificate),
+          certificate_key: File.read(@config.etcd.key)
+        )
+      end
 
       logger.info(@master.address) { "Initializing control plane ..." }
 
@@ -62,7 +65,6 @@ module Kupo::Phases
     end
 
     def generate_config
-
       config = {
         'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
         'kind' => 'MasterConfiguration',
@@ -74,18 +76,14 @@ module Kupo::Phases
         }
       }
 
-      if @master.private_address
-        config['api'] = {'advertiseAddress' => @master.private_address}
-      else
-        config['api'] = {'advertiseAddress' => @master.address}
-      end
+      config['api'] = { 'advertiseAddress' => @master.private_address || @master.address }
 
       if @master.container_runtime == 'cri-o'
         config['criSocket'] = '/var/run/crio/crio.sock'
       end
 
       # Only configure etcd if the external endpoints are given
-      if @config.etcd && @config.etcd.endpoints
+      if @config.etcd&.endpoints
         config['etcd'] = {
           'endpoints' => @config.etcd.endpoints
         }
@@ -96,7 +94,6 @@ module Kupo::Phases
       end
       config
     end
-
 
     def upgrade
       @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y")

@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 require 'net/ssh'
 require 'net/scp'
 
 module Kupo::SSH
-  class Error < StandardError
+  Error = Class.new(StandardError)
 
-  end
   class ExecError < Error
     attr_reader :cmd, :exit_status, :output
 
@@ -62,7 +63,7 @@ module Kupo::SSH
 
           debug_stdout(data) if debug?
         end
-        channel.on_extended_data do |c, type, data|
+        channel.on_extended_data do |_c, _type, data|
           @stderr += data
           @output += data
 
@@ -105,14 +106,14 @@ module Kupo::SSH
 
     def debug_stdout(data)
       data.each_line do |line|
-        $stdout.write(INDENT + pastel.dim("#{line}"))
+        $stdout.write(INDENT + pastel.dim(line.to_s))
       end
     end
 
     def debug_stderr(data)
       data.each_line do |line|
         # TODO: stderr is not line-buffered, this indents each write
-        $stdout.write(INDENT + pastel.red("#{line}"))
+        $stdout.write(INDENT + pastel.red(line.to_s))
       end
     end
 
@@ -126,9 +127,7 @@ module Kupo::SSH
     def self.for_host(host)
       @connections ||= {}
       unless @connections[host]
-        @connections[host] = new(host.address, host.user, {
-          keys: [host.ssh_key_path]
-        })
+        @connections[host] = new(host.address, host.user, keys: [host.ssh_key_path])
         @connections[host].connect
       end
 
@@ -138,7 +137,7 @@ module Kupo::SSH
     def self.disconnect_all
       return unless @connections
 
-      @connections.each do |host, connection|
+      @connections.each do |_host, connection|
         connection.disconnect
       end
     end

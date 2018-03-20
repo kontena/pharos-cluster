@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'logger'
 
 module Kupo::Phases::Logging
@@ -5,7 +7,7 @@ module Kupo::Phases::Logging
     @logger = Logger.new(log_target)
     @logger.progname = 'API'
     @logger.level = ENV["DEBUG"] ? Logger::DEBUG : log_level
-    logger.formatter = proc do |severity, datetime, progname, msg|
+    logger.formatter = proc do |_severity, _datetime, _progname, msg|
       "    #{msg}\n"
     end
 
