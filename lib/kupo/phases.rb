@@ -2,7 +2,6 @@
 
 module Kupo
   module Phases
-
     # List of registered components
     # @return [Set]
     def self.components
