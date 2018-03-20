@@ -11,6 +11,16 @@ module Kupo::Kube
       @entities
     end
 
+    def update_entity_approval(resource_name, entity_config)
+      name      = entity_config[:metadata][:name]
+      ns_prefix = build_namespace_prefix(entity_config[:metadata][:namespace])
+      response = handle_exception do
+        rest_client[ns_prefix + resource_name + "/#{name}/approval"]
+          .put(entity_config.to_h.to_json, { 'Content-Type' => 'application/json' }.merge(@headers))
+      end
+      format_response(@as, response.body)
+    end
+
     def entity_for_resource(resource)
       name = Kubeclient::ClientMixin.underscore_entity(resource.kind.to_s)
       definition = entities[name]
@@ -34,6 +44,14 @@ module Kupo::Kube
       resource.metadata.resourceVersion = old_resource.metadata.resourceVersion
       merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, overwrite_arrays: true))
       update_entity(definition.resource_name, merged_resource)
+    end
+
+    # @param resource [Kubeclient::Resource]
+    # @return [Kubeclient::Resource]
+    def update_resource_approval(resource)
+      definition = entity_for_resource(resource)
+
+      update_entity_approval(definition.resource_name, resource)
     end
 
     # @param resource [Kubeclient::Resource]
