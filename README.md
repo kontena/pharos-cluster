@@ -2,7 +2,7 @@
 
 [![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/kupo/status.svg)](https://cloud-drone-07.kontena.io/kontena/kupo)
 
-Kontena Kubernetes distribution installer, kupo!
+Kontena Pharos installer, kupo!
 
 ## Requirements
 
