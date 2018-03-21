@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require 'kubeclient'
 require 'deep_merge'
 module Kupo::Kube
-
   class Client < ::Kubeclient::Client
     def entities
       if @entities.empty?
@@ -19,7 +20,7 @@ module Kupo::Kube
       definition
     end
 
-    def apis(options= {})
+    def apis(options = {})
       response = rest_client.get(@headers)
       format_response(options[:as] || @as, response.body)
     end
@@ -28,10 +29,10 @@ module Kupo::Kube
     # @return [Kubeclient::Resource]
     def update_resource(resource)
       definition = entity_for_resource(resource)
-      
+
       old_resource = get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
       resource.metadata.resourceVersion = old_resource.metadata.resourceVersion
-      merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, {overwrite_arrays: true}))
+      merged_resource = Kubeclient::Resource.new(old_resource.to_h.deep_merge!(resource.to_h, overwrite_arrays: true))
       update_entity(definition.resource_name, merged_resource)
     end
 
@@ -44,8 +45,8 @@ module Kupo::Kube
     end
   end
 
-  RESOURCE_LABEL = 'kupo.kontena.io/stack'.freeze
-  RESOURCE_ANNOTATION = 'kupo.kontena.io/stack-checksum'.freeze
+  RESOURCE_LABEL = 'kupo.kontena.io/stack'
+  RESOURCE_ANNOTATION = 'kupo.kontena.io/stack-checksum'
 
   # @param host [String]
   # @return [Kubeclient::Client]
@@ -53,19 +54,13 @@ module Kupo::Kube
     @kube_client ||= {}
     unless @kube_client[version]
       config = Kubeclient::Config.read(File.join(Dir.home, ".kupo/#{host}"))
-      if version == 'v1'
-        path_prefix = 'api'
-      else
-        path_prefix = 'apis'
-      end
+      path_prefix = version == 'v1' ? 'api' : 'apis'
       api_version, api_group = version.split('/').reverse
       @kube_client[version] = Kupo::Kube::Client.new(
         (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
         api_version,
-        {
-          ssl_options: config.context.ssl_options,
-          auth_options: config.context.auth_options
-        }
+        ssl_options: config.context.ssl_options,
+        auth_options: config.context.auth_options
       )
     end
     @kube_client[version]
@@ -107,16 +102,15 @@ module Kupo::Kube
     client(host, '').apis.groups.each do |api_group|
       group_client = client(host, api_group.preferredVersion.groupVersion)
       group_client.entities.each do |type, meta|
-        unless type.end_with?('_review')
-          objects = group_client.get_entities(type, meta.resource_name, {label_selector: "#{RESOURCE_LABEL}=#{stack}"})
-          objects.select { |obj|
-            obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
-          }.each { |obj|
-            obj.apiVersion = api_group.preferredVersion.groupVersion
-            delete_resource(host, obj)
-            pruned << obj
-          }
-        end
+        next if type.end_with?('_review')
+        objects = group_client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{stack}")
+        objects.select { |obj|
+          obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
+        }.each { |obj|
+          obj.apiVersion = api_group.preferredVersion.groupVersion
+          delete_resource(host, obj)
+          pruned << obj
+        }
       end
     end
 
@@ -127,7 +121,7 @@ module Kupo::Kube
   # @param resource [Kubeclient::Resource]
   # @return [Kubeclient::Resource]
   def self.apply_resource(host, resource)
-    resource_client = self.client(host, resource.apiVersion)
+    resource_client = client(host, resource.apiVersion)
 
     begin
       resource_client.update_resource(resource)
@@ -140,7 +134,7 @@ module Kupo::Kube
   # @param resource [Kubeclient::Resource]
   # @return [Kubeclient::Resource]
   def self.update_resource(host, resource)
-    resource_client = self.client(host, resource.apiVersion)
+    resource_client = client(host, resource.apiVersion)
     resource_client.update_resource(resource)
   end
 
@@ -148,7 +142,7 @@ module Kupo::Kube
   # @param resource [Kubeclient::Resource]
   # @return [Kubeclient::Resource]
   def self.delete_resource(host, resource)
-    resource_client = self.client(host, resource.apiVersion)
+    resource_client = client(host, resource.apiVersion)
     begin
       if resource.metadata.selfLink
         api_group = resource.metadata.selfLink.split("/")[1]
@@ -157,11 +151,12 @@ module Kupo::Kube
       else
         definition = resource_client.entities[underscore_entity(resource.kind.to_s)]
         resource_client.get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
-        resource_client.delete_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace, {
+        resource_client.delete_entity(
+          definition.resource_name, resource.metadata.name, resource.metadata.namespace,
           kind: 'DeleteOptions',
           apiVersion: 'v1',
           propagationPolicy: 'Foreground'
-        })
+        )
       end
     rescue Kubeclient::ResourceNotFoundError
       false
@@ -174,7 +169,7 @@ module Kupo::Kube
     yaml = File.read(File.realpath(File.join(__dir__, 'resources', path)))
     parsed_yaml = Kupo::Erb.new(yaml).render(vars)
 
-    Kubeclient::Resource.new(YAML.load(parsed_yaml))
+    Kubeclient::Resource.new(YAML.safe_load(parsed_yaml))
   end
 
   # @param kind [String]

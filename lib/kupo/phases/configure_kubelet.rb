@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require_relative 'base'
 
 module Kupo::Phases
   class ConfigureKubelet < Base
-
-    DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-kupo.conf".freeze
+    DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-kupo.conf"
 
     # @param host [Kupo::Configuration::Host]
     def initialize(host)
@@ -30,13 +31,14 @@ module Kupo::Phases
     # @return [String]
     def build_systemd_dropin
       config = "[Service]\nEnvironment='KUBELET_EXTRA_ARGS="
-      args = ['--read-only-port=0']
       if crio?
-        args += [
+        args = [
           '--container-runtime=remote',
           '--runtime-request-timeout=15m',
           '--container-runtime-endpoint=/var/run/crio/crio.sock'
         ]
+      else
+        args = []
       end
       node_ip = @host.private_address.nil? ? @host.address : @host.private_address
       args << "--node-ip=#{node_ip}"

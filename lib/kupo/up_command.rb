@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 module Kupo
   class UpCommand < Kupo::Command
-
     option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_path|
       begin
         File.realpath(config_path)
@@ -25,9 +26,10 @@ module Kupo
       puts pastel.green("==> Reading instructions ...")
       configure(load_config(config_content))
     end
+
     def configure(config)
       master_hosts = master_hosts(config)
-      signal_usage_error 'No master hosts defined' if master_hosts.size == 0
+      signal_usage_error 'No master hosts defined' if master_hosts.empty?
       signal_usage_error 'Only one host can be in master role' if master_hosts.size > 1
 
       begin
@@ -67,7 +69,7 @@ module Kupo
     # @param [String] configuration content
     # @return [Kupo::Config]
     def load_config(content)
-      yaml = YAML.load(content)
+      yaml = YAML.safe_load(content)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
@@ -87,9 +89,7 @@ module Kupo
 
     # @return [Kupo::AddonManager]
     def addon_manager
-      @addon_manager ||= Kupo::AddonManager.new([
-        __dir__ + '/addons/'
-      ])
+      @addon_manager ||= Kupo::AddonManager.new([__dir__ + '/addons/'])
     end
 
     def load_phases

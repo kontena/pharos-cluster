@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'logging'
 
 module Kupo::Phases
@@ -52,7 +54,7 @@ module Kupo::Phases
       os_info = {}
       ssh.read_file('/etc/os-release').split("\n").each do |line|
         match = line.match(/^(.+)=(.+)$/)
-        os_info[match[1]] = match[2].gsub('"', '')
+        os_info[match[1]] = match[2].delete('"')
       end
       Kupo::Configuration::OsRelease.new(
         id: os_info['ID'],
