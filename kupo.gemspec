@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Kontena, Inc."]
   spec.email         = ["info@kontena.io"]
 
-  spec.summary       = "Kontena Kubernetes distribution installer, kupo!"
-  spec.description   = "Kontena Kubernetes distribution installer, kupo!"
+  spec.summary       = "Kontena Pharos installer, kupo!"
+  spec.description   = "Kontena Pharos installer, kupo!"
   spec.homepage      = "https://github.com/kontena/kupo"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
