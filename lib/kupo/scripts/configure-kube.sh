@@ -38,15 +38,23 @@ ExecStart=
 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS
 EOF
 
-cd /usr/bin
-curl -sSL https://dl.bintray.com/kontena/kupo/kube/${KUBE_VERSION}/bundle-${ARCH}.tar.gz | tar zx
-chmod +x kube*
+systemctl daemon-reload
+
+if systemctl is-active --quiet kubelet ; then
+    systemctl stop kubelet
+fi
+
+binaries=(kubelet kubectl kubeadm)
+for bin in "${binaries[@]}"
+do
+    curl -sSL https://dl.bintray.com/kontena/pharos-bin/kube/${KUBE_VERSION}/${bin}-${ARCH}.gz | gunzip > /usr/bin/${bin}
+    chmod +x /usr/bin/${bin}
+done
 
 mkdir -p /opt/cni/bin
 cd /opt/cni/bin
-curl -sSL https://dl.bintray.com/kontena/kupo/cni-plugins/cni-plugins-${ARCH}-v0.7.0.tgz | tar zx
+curl -sSL https://dl.bintray.com/kontena/pharos-bin/cni-plugins/cni-plugins-${ARCH}-v0.6.0.tgz | tar zx
 
-systemctl daemon-reload
 systemctl enable kubelet
 systemctl start kubelet
 

@@ -94,11 +94,38 @@ module Kupo
         config
       end
 
+<<<<<<< e0bcecb055357ce041396809bd92e05a989a3d46
       def upgrade
         @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y")
 
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
       end
+=======
+    def upgrade
+      logger.info(@master.address) { "Upgrading control plane ..." }
+      exec_script("install-kubeadm.sh", {
+        version: ENV['KUBEADM_VERSION'] || kube_component.version,
+        arch: @master.cpu_arch.name
+      })
+
+      cfg = generate_config
+      tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))
+      begin
+        @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
+        @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y --force --config #{tmp_file}")
+      ensure
+        @ssh.exec!("rm #{tmp_file}")
+      end
+      logger.info(@master.address) { "Control plane upgrade succeeded!" }
+
+      exec_script(
+        'configure-kube.sh',
+        kube_version: kube_component.version,
+        kubeadm_version: ENV['KUBEADM_VERSION'] || kube_component.version,
+        arch: @master.cpu_arch.name
+      )
+    end
+>>>>>>> fix upgrades
 
       def kube_component
         @kube_component ||= Kupo::Phases.find_component(name: 'kubernetes')

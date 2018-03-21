@@ -6,7 +6,7 @@ module Kupo
   module Phases
     class ConfigureHost < Base
       CRIO_VERSION = '1.9'
-      KUBE_VERSION = '1.9.5'
+      KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.9.5' }
       DOCKER_VERSION = '1.13.1'
 
       register_component(
@@ -59,10 +59,15 @@ module Kupo
         end
 
         logger.info { "Configuring Kubernetes packages ..." }
-        exec_script('configure-kube.sh',
-                    KUBE_VERSION: KUBE_VERSION,
-                    KUBEADM_VERSION: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
-                    CPU_ARCH: @host.cpu_arch.name)
+        if !@ssh.file_exists?('/etc/kubernetes/kubelet.conf') || @host.role != 'master'
+          # we cannot update whole kube here if upgrading master host(s)
+          exec_script(
+            'configure-kube.sh',
+            kube_version: KUBE_VERSION,
+            kubeadm_version: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
+            arch: @host.cpu_arch.name
+          )
+        end
       end
 
       def configure_repos
