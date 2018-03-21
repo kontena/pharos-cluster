@@ -10,3 +10,6 @@ subjects:
 - kind: ServiceAccount
   name: metrics-server
   namespace: kube-system
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: metrics-server
