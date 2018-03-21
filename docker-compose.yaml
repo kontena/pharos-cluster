@@ -1,0 +1,8 @@
+dev:
+  build: .
+  volumes:
+  - .:/app
+  - $SSH_AUTH_SOCK:/run/ssh-agent.sock
+  environment:
+  - SSH_AUTH_SOCK=/run/ssh-agent.sock
+  command: bin/kupo up
