@@ -249,40 +249,59 @@ module Kupo::Kube
           name: @name,
         }
       )
+      resource_client = Kupo::Kube.client(@host.address, resource.apiVersion)
 
       begin
-        resource = Kupo::Kube.get_resource(@host.address, resource)
+        resource = resource_client.get_resource(resource)
       rescue Kubeclient::ResourceNotFoundError
         resource[:data] = yield
-        resource = Kupo::Kube.create_resource(@host.address, resource)
+        resource = resource_client.create_resource(resource)
       end
 
       resource
     end
 
-    # @param key [OpenSSL::PKey]
-    # @param subject_cn [String]
-    # @return [Kubeclient::Resource]
-    def ensure_csr(key, subject_cn: , usages: )
-      request = OpenSSL::X509::Request.new
-      request.version = 0
-      request.subject = OpenSSL::X509::Name.new([
-        ['CN', subject_cn, OpenSSL::ASN1::UTF8STRING],
+    def build_subject(cn:)
+      name = OpenSSL::X509::Name.new([
+        ['CN', cn, OpenSSL::ASN1::UTF8STRING],
       ])
-      request.public_key = key.public_key
-      request.sign(key, OpenSSL::Digest::SHA256.new)
+      name
+    end
 
-      Kupo::Kube.apply_resource(@host.address, Kubeclient::Resource.new(
+    def build_request(key, subject)
+      req = OpenSSL::X509::Request.new
+      req.version = 0
+      req.subject = subject
+      req.public_key = key.public_key
+      req.sign(key, OpenSSL::Digest::SHA256.new)
+      req
+    end
+
+    # @param req [OpenSSL::X509::Request]
+    # @param usages [Array<String>]
+    # @return [Kubeclient::Resource]
+    def ensure_csr(req, usages: )
+      resource = Kubeclient::Resource.new(
         apiVersion: 'certificates.k8s.io/v1beta1',
         kind: 'CertificateSigningRequest',
         metadata: {
           name: @name,
         },
         spec: {
-          request: Base64.strict_encode64(request.to_pem),
+          request: Base64.strict_encode64(req.to_pem),
           usages: usages,
         }
-      ))
+      )
+      resource_client = Kupo::Kube.client(@host.address, resource.apiVersion)
+
+      begin
+        # TODO: update/re-create if spec.request does not match, or cert is expiring...?
+        resource = resource_client.get_resource(resource)
+      rescue Kubeclient::ResourceNotFoundError
+        resource = resource_client.create_resource(resource)
+      end
+
+      resource
     end
 
     # @param resource [Kubeclient::Resource]
@@ -306,27 +325,45 @@ module Kupo::Kube
       resource
     end
 
-    # @return [OpenSSL::X509::Certificate, Kubeclient::Resource]
-    def ensure_client_certificate
+    # @return [OpenSSL::PKey]
+    def ensure_key(secret_filename: )
       secret = ensure_secret do
         key = generate_private_key
 
-        {'client-key.pem' => Base64.strict_encode64(key.to_pem)}
+        {secret_filename => Base64.strict_encode64(key.to_pem)}
       end
-      key = OpenSSL::PKey.read(Base64.strict_decode64(secret[:data]['client-key.pem']))
 
-      resource = ensure_csr(key,
-        subject_cn: @name,
+      key = OpenSSL::PKey.read(Base64.strict_decode64(secret[:data][secret_filename]))
+    end
+
+    # @param key [OpenSSL::PKey]
+    # @param subject [OpenSSL::X509::Name]
+    # @param usages [Array<String>]
+    # @return [OpenSSL::X509::Certificate]
+    def ensure_certificate(key, subject, usages: )
+      req = build_request(key, subject)
+      resource = ensure_csr(req,
+        usages: usages,
+      )
+      resource = ensure_csr_approved(resource)
+
+      cert = OpenSSL::X509::Certificate.new Base64.strict_decode64(resource[:status][:certificate])
+      cert
+    end
+
+    # @return [OpenSSL::X509::Certificate, OpenSSL::PKey]
+    def ensure_client_certificate
+      key = ensure_key(secret_filename: 'client-key.pem')
+      subject = build_subject(cn: @name)
+      cert = ensure_certificate(key, subject,
         usages: [
           'digital signature',
           'key encipherment',
           'client auth',
         ],
       )
-      resource = ensure_csr_approved(resource)
 
-      cert = OpenSSL::X509::Certificate.new Base64.strict_decode64(resource[:status][:certificate])
-      cert
+      return [cert, key]
     end
   end
 end

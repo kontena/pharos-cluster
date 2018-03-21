@@ -25,7 +25,7 @@ module Kupo::Phases
     def configure_metrics_server
       logger.info { "Provisioning client certificate for metrics-server ..." }
       cert_manager = Kupo::Kube::CertManager.new(@master, 'metrics-server', namespace: 'kube-system')
-      cert = cert_manager.ensure_client_certificate
+      cert, key = cert_manager.ensure_client_certificate
 
       logger.info { "Configuring metrics-server ..." }
       Kupo::Kube.apply_stack(@master.address, 'metrics-server',
@@ -38,7 +38,7 @@ module Kupo::Phases
     def configure_heapster
       logger.info { "Provisioning client certificate for heapster ..." }
       cert_manager = Kupo::Kube::CertManager.new(@master, 'heapster', namespace: 'kube-system')
-      cert = cert_manager.ensure_client_certificate
+      cert, key = cert_manager.ensure_client_certificate
 
       logger.info { "Configuring heapster ..." }
       Kupo::Kube.apply_stack(@master.address, 'heapster',
