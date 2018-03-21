@@ -2,6 +2,8 @@ pipeline:
   test:
     image: ruby:2.4
     commands:
+      - /bin/sh --version
+      - /bin/bash --version
       - bundle install --path bundler
       - bundle exec rspec spec/
   create_gh_release:
