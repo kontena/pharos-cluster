@@ -15,7 +15,7 @@ if [[ $DRONE_TAG =~ .+-.+ ]]; then
         --repo kupo \
         --tag $DRONE_TAG \
         --name $DRONE_TAG \
-        --description "Pre-release, only for testing"
+        --description "Pre-release, only for testing" \
         --pre-release
 else
     /usr/local/bin/github-release release \
