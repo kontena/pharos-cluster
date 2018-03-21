@@ -309,19 +309,19 @@ module Kupo::Kube
     def ensure_csr_approved(resource)
       resource_client = Kupo::Kube.client(@host.address, resource.apiVersion)
 
-      unless resource[:status] && resource[:status][:conditions] && resource[:status][:conditions].any?{|c| c[:type] == 'Approved' }
-        (resource[:status] ||= {})[:conditions] = [
-          {
-            type: 'Approved',
-            reason: 'KupoApproved',
-            message: "Self-approving #{@name} certificate",
-          }
-        ]
+      resource.status.conditions ||= []
+
+      unless resource.status.conditions.any?{|c| c[:type] == 'Approved' }
+        resource.status.conditions << {
+          type: 'Approved',
+          reason: 'KupoApproved',
+          message: "Self-approving #{@name} certificate",
+        }
 
         resource_client.update_resource_approval(resource)
       end
 
-      until resource[:status] && resource[:status][:certificate]
+      until resource.status.certificate
         sleep 1
         resource = resource_client.get_resource(resource)
       end
