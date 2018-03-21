@@ -244,9 +244,8 @@ module Kupo::Kube
 
     # @return [OpenSSL::X509::Name]
     def build_subject(cn:)
-      name = OpenSSL::X509::Name.new([
-        ['CN', cn, OpenSSL::ASN1::UTF8STRING],
-      ])
+      name = OpenSSL::X509::Name.new
+      name.add_entry('CN', cn)
       name
     end
 
@@ -364,6 +363,8 @@ module Kupo::Kube
       cert
     end
 
+    # Generates a secret containing the `client-key.pem` for use with the returned client cert.
+    #
     # @return [OpenSSL::X509::Certificate, OpenSSL::PKey]
     def ensure_client_certificate
       key = ensure_key(secret_filename: 'client-key.pem')
