@@ -5,12 +5,15 @@ require 'ostruct'
 
 module Kupo
   class Erb
-    def initialize(template)
+    def initialize(template, path: )
       @template = template
+      @path = path
     end
 
     def render(vars = {})
-      ERB.new(@template, nil, '%<>-').result(OpenStruct.new(vars).instance_eval { binding })
+      erb = ERB.new(@template, nil, '%<>-')
+      erb.location = [@path, nil]
+      erb.result(OpenStruct.new(vars).instance_eval { binding })
     end
   end
 end
