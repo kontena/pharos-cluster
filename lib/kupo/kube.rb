@@ -227,10 +227,7 @@ module Kupo
     # @return [Kubeclient::Resource]
     def self.parse_resource_file(path, vars = {})
       Kubeclient::Resource.new(
-        YAML.safe_load(
-          Kupo::Erb.new(File.realpath(resource_path(path))).render(vars),
-          [], [], true, path
-        )
+        Kupo::Erb.new(File.realpath(resource_path(path))).load_yaml(vars)
       )
     end
 

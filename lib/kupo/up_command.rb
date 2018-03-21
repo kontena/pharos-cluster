@@ -69,12 +69,7 @@ module Kupo
     # @param [String] configuration path
     # @return [Kupo::Config]
     def load_config(config_file)
-      file_content = Kupo::Erb.new(config_file).render(ENV.to_h)
-<<<<<<< HEAD
-      yaml = YAML.safe_load(file_content, [], [], true, config_file)
-=======
-      yaml = YAML.load(file_content, config_file)
->>>>>>> 766d450... Pass filename to YAML.load to display which file failed to parse
+      yaml = Kupo::Erb.new(config_file).load_yaml(ENV.to_h)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10

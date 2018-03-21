@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'erb'
+require 'yaml'
 
 module Kupo
   class Erb
@@ -27,6 +28,10 @@ module Kupo
 
     def initialize(path)
       @path = path
+    end
+
+    def load_yaml(vars = {})
+      YAML.safe_load(render(vars), [], [], true, @path)
     end
 
     def render(vars = {})

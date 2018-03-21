@@ -36,7 +36,6 @@ module Kupo
 
       def upgrade?
         return false unless Kupo::Kube.config_exists?(@master.address)
-
         kubeadm_configmap['kubernetesVersion'] != "v#{Kupo::KUBE_VERSION}"
       end
 
