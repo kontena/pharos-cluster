@@ -223,6 +223,10 @@ module Kupo::Kube
     Kubeclient::ClientMixin.underscore_entity(kind.to_s)
   end
 
+  # Manage kube certificates and private key secrets.
+  #
+  # Generates a v1 secret and certificates.k8s.io/v1beta1 csr with the given name.
+  # The secret is used to persist the private key, and the csr is used to obtain the signed certificate.
   class CertManager
     # @param host [Kupo::Configuration::Host]
     # @param name [String]
@@ -236,6 +240,26 @@ module Kupo::Kube
     # @return [OpenSSL::PKey]
     def generate_private_key()
       OpenSSL::PKey::RSA.generate(2048)
+    end
+
+    # @return [OpenSSL::X509::Name]
+    def build_subject(cn:)
+      name = OpenSSL::X509::Name.new([
+        ['CN', cn, OpenSSL::ASN1::UTF8STRING],
+      ])
+      name
+    end
+
+    # @param key [OpenSSL::PKey]
+    # @param subject [OpenSSL::X509::Name]
+    # @return [OpenSSL::X509::Request]
+    def build_request(key, subject)
+      req = OpenSSL::X509::Request.new
+      req.version = 0
+      req.subject = subject
+      req.public_key = key.public_key
+      req.sign(key, OpenSSL::Digest::SHA256.new)
+      req
     end
 
     # @yieldreturn [Hash] generated secret data
@@ -259,22 +283,6 @@ module Kupo::Kube
       end
 
       resource
-    end
-
-    def build_subject(cn:)
-      name = OpenSSL::X509::Name.new([
-        ['CN', cn, OpenSSL::ASN1::UTF8STRING],
-      ])
-      name
-    end
-
-    def build_request(key, subject)
-      req = OpenSSL::X509::Request.new
-      req.version = 0
-      req.subject = subject
-      req.public_key = key.public_key
-      req.sign(key, OpenSSL::Digest::SHA256.new)
-      req
     end
 
     # @param req [OpenSSL::X509::Request]
@@ -329,6 +337,7 @@ module Kupo::Kube
       resource
     end
 
+    # @param secret_filename [String] secret.data key, filename when the secret is mounted as a volume
     # @return [OpenSSL::PKey]
     def ensure_key(secret_filename: )
       secret = ensure_secret do
