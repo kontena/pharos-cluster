@@ -311,7 +311,11 @@ module Kupo::Kube
 
       unless resource[:status] && resource[:status][:conditions] && resource[:status][:conditions].any?{|c| c[:type] == 'Approved' }
         (resource[:status] ||= {})[:conditions] = [
-          {'Type' => 'Approved'}
+          {
+            type: 'Approved',
+            reason: 'KupoApproved',
+            message: "Self-approving #{@name} certificate",
+          }
         ]
 
         resource_client.update_resource_approval(resource)
