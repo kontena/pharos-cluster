@@ -202,7 +202,7 @@ module Kupo::SSH
       ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
 
       if ex.error?
-        raise ExecError.new(path, ex.exit_status, ex.output)
+        raise ExecError.new(name, ex.exit_status, ex.output)
       else
         return ex.stdout
       end
