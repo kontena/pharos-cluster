@@ -44,7 +44,7 @@ module Kupo::Phases
       # Copy etcd certs over if needed
       if @config.etcd&.certificate
         # TODO: lock down permissions on key
-        @ssh.exec!('mkdir -p /etc/kupo/etcd')
+        @ssh.exec!('sudo mkdir -p /etc/kupo/etcd')
         @ssh.write_file('/etc/kupo/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
         @ssh.write_file('/etc/kupo/etcd/certificate.pem', File.read(@config.etcd.certificate))
         @ssh.write_file('/etc/kupo/etcd/certificate-key.pem', File.read(@config.etcd.key))
