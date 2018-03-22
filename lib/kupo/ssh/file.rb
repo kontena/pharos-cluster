@@ -20,7 +20,10 @@ module Kupo
           content.respond_to?(:read) ? content : StringIO.new(content),
           temp_path
         )
-        @client.exec!("sudo mv #{temp_path} #{escaped_path} || rm #{temp_path}")
+        @client.exec!("sudo mv #{temp_path} #{escaped_path}")
+      rescue
+        exec("rm #{temp_path}")
+        raise
       end
 
       def read
