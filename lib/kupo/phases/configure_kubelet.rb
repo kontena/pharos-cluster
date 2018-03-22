@@ -20,7 +20,7 @@ module Kupo
 
       # @param dropin [String]
       def ensure_dropin(dropin)
-        return unless dropin == existing_dropin
+        return if dropin == existing_dropin
 
         @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
         @ssh.write_file(DROPIN_PATH, dropin)
