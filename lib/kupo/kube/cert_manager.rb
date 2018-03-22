@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'openssl'
 require 'base64'
 
@@ -10,14 +12,14 @@ module Kupo::Kube
     # @param host [Kupo::Configuration::Host]
     # @param name [String]
     # @param namespace [String]
-    def initialize(host, name, namespace: )
+    def initialize(host, name, namespace:)
       @host = host
       @name = name
       @namespace = namespace
     end
 
     # @return [OpenSSL::PKey]
-    def generate_private_key()
+    def generate_private_key
       OpenSSL::PKey::RSA.generate(2048)
     end
 
@@ -48,7 +50,7 @@ module Kupo::Kube
         kind: 'Secret',
         metadata: {
           namespace: @namespace,
-          name: @name,
+          name: @name
         }
       )
       resource_client = Kupo::Kube.client(@host.address, resource.apiVersion)
@@ -66,16 +68,16 @@ module Kupo::Kube
     # @param req [OpenSSL::X509::Request]
     # @param usages [Array<String>]
     # @return [Kubeclient::Resource]
-    def ensure_csr(req, usages: )
+    def ensure_csr(req, usages:)
       resource = Kubeclient::Resource.new(
         apiVersion: 'certificates.k8s.io/v1beta1',
         kind: 'CertificateSigningRequest',
         metadata: {
-          name: @name,
+          name: @name
         },
         spec: {
           request: Base64.strict_encode64(req.to_pem),
-          usages: usages,
+          usages: usages
         }
       )
       resource_client = Kupo::Kube.client(@host.address, resource.apiVersion)
@@ -97,11 +99,11 @@ module Kupo::Kube
 
       resource.status.conditions ||= []
 
-      unless resource.status.conditions.any?{|c| c[:type] == 'Approved' }
+      unless resource.status.conditions.any?{ |c| c[:type] == 'Approved' }
         resource.status.conditions << {
           type: 'Approved',
           reason: 'KupoApproved',
-          message: "Self-approving #{@name} certificate",
+          message: "Self-approving #{@name} certificate"
         }
 
         resource_client.update_resource_approval(resource)
@@ -117,11 +119,11 @@ module Kupo::Kube
 
     # @param secret_filename [String] secret.data key, filename when the secret is mounted as a volume
     # @return [OpenSSL::PKey]
-    def ensure_key(secret_filename: )
+    def ensure_key(secret_filename:)
       secret = ensure_secret do
         key = generate_private_key
 
-        {secret_filename => Base64.strict_encode64(key.to_pem)}
+        { secret_filename => Base64.strict_encode64(key.to_pem) }
       end
 
       key = OpenSSL::PKey.read(Base64.strict_decode64(secret[:data][secret_filename]))
@@ -132,11 +134,10 @@ module Kupo::Kube
     # @param subject [OpenSSL::X509::Name]
     # @param usages [Array<String>]
     # @return [OpenSSL::X509::Certificate]
-    def ensure_certificate(key, subject, usages: )
+    def ensure_certificate(key, subject, usages:)
       req = build_request(key, subject)
       resource = ensure_csr(req,
-        usages: usages,
-      )
+                            usages: usages)
       resource = ensure_csr_approved(resource)
 
       cert = OpenSSL::X509::Certificate.new Base64.strict_decode64(resource[:status][:certificate])
@@ -150,14 +151,13 @@ module Kupo::Kube
       key = ensure_key(secret_filename: 'client-key.pem')
       subject = build_subject(cn: @name)
       cert = ensure_certificate(key, subject,
-        usages: [
-          'digital signature',
-          'key encipherment',
-          'client auth',
-        ],
-      )
+                                usages: [
+                                  'digital signature',
+                                  'key encipherment',
+                                  'client auth'
+                                ])
 
-      return [cert, key]
+      [cert, key]
     end
   end
 end
