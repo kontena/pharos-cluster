@@ -65,7 +65,7 @@ module Kupo
 
     # @return [Array<Kupo::Addon>]
     def addon_classes
-      @classes ||= Kupo::Addon.descendants
+      @addon_classes ||= Kupo::Addon.descendants
     end
 
     # @param dirs [Array<String>]

@@ -35,19 +35,20 @@ module Kupo
       # @return [String]
       def build_systemd_dropin
         config = "[Service]\nEnvironment='KUBELET_EXTRA_ARGS="
-        if crio?
-          args = %w(
-            --container-runtime=remote
-            --runtime-request-timeout=15m
-            --container-runtime-endpoint=/var/run/crio/crio.sock
-          )
-        else
-          args = []
-        end
+        args = kubelet_extra_args
         node_ip = @host.private_address.nil? ? @host.address : @host.private_address
         args << "--node-ip=#{node_ip}"
         config = config + args.join(' ') + "'"
         config + "\nExecStartPre=-/sbin/swapoff -a"
+      end
+
+      def kubelet_extra_args
+        return [] unless crio?
+        %w(
+          --container-runtime=remote
+          --runtime-request-timeout=15m
+          --container-runtime-endpoint=/var/run/crio/crio.sock
+        )
       end
 
       def crio?
