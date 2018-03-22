@@ -1,10 +1,8 @@
 #!/bin/bash
 
-set -x
+set -e
 
-dpkg -l apt-transport-https software-properties-common > /dev/null
-
-if [  $? != 0 ]; then
+if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
     apt-get update -y
     apt-get install -y apt-transport-https software-properties-common
 fi

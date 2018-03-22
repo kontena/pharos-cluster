@@ -2,6 +2,7 @@
 
 require 'net/ssh'
 require 'net/scp'
+require 'shellwords'
 
 module Kupo
   module SSH
@@ -30,9 +31,11 @@ module Kupo
 
       attr_reader :cmd, :exit_status, :stdout, :stderr, :output
 
-      def initialize(cmd, debug: self.class.debug?)
+      def initialize(cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
         @cmd = cmd
+        @stdin = stdin
         @debug = debug
+        @debug_source = debug_source
 
         @exit_status = nil
         @stdout = ''
@@ -53,7 +56,7 @@ module Kupo
 
       # @param channel [Net::SSH::Connection::Channel]
       def start(channel)
-        debug_cmd(@cmd) if debug?
+        debug_cmd(@cmd, source: @debug_source) if debug?
 
         channel.exec @cmd do |_, success|
           raise Error, "Failed to exec #{cmd}" unless success
@@ -75,22 +78,17 @@ module Kupo
 
             debug_exit(@exit_status) if debug?
           end
+
+          if @stdin
+            channel.send_data(@stdin)
+            channel.eof!
+          end
         end
       end
 
       # @return [Boolean]
       def error?
         !@exit_status.zero?
-      end
-
-      # @return [ExecError]
-      def error
-        ExecError.new(@cmd, @exit_status, @output)
-      end
-
-      # @raise [ExecError]
-      def error!
-        raise error
       end
 
       def debug?
@@ -101,8 +99,8 @@ module Kupo
         @pastel ||= Pastel.new
       end
 
-      def debug_cmd(cmd)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}") + "\n")
+      def debug_cmd(cmd, source: nil)
+        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
       end
 
       def debug_stdout(data)
@@ -161,12 +159,12 @@ module Kupo
 
       # @param cmd [String] command to execute
       # @return [Exec]
-      def exec(cmd)
+      def exec(cmd, **options)
         require_session!
 
         logger.debug { "exec: #{cmd}" }
 
-        ex = Exec.new(cmd)
+        ex = Exec.new(cmd, **options)
         ex.open(@session)
         ex.wait
         ex
@@ -175,18 +173,40 @@ module Kupo
       # @param cmd [String] command to execute
       # @raise [ExecError]
       # @return [String] stdout
-      def exec!(cmd)
-        ex = exec(cmd)
+      def exec!(cmd, **options)
+        ex = exec(cmd, **options)
 
-        raise ex.error if ex.error?
+        raise ExecError.new(cmd, ex.exit_status, ex.output) if ex.error?
+
+        ex.stdout
+      end
+
+      # @param script [String] name of script
+      # @param path [String] real path to file, defaults to script
+      # @raise [ExecError]
+      # @return [String] stdout
+      def exec_script!(name, env: {}, path: nil, **options)
+        script = File.read(path || name)
+        cmd = []
+
+        env.each_pair do |e, value|
+          cmd << "#{e}=#{Shellwords.escape(value)}"
+        end
+
+        cmd << 'sh'
+        cmd << '-x'
+
+        ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
+
+        raise ExecError.new(name, ex.exit_status, ex.output) if ex.error?
 
         ex.stdout
       end
 
       # @param cmd [String] command to execute
       # @return [Boolean]
-      def exec?(cmd, &block)
-        ex = exec(cmd, &block)
+      def exec?(cmd, **options, &block)
+        ex = exec(cmd, **options, &block)
 
         !ex.error?
       end
@@ -212,13 +232,37 @@ module Kupo
       # @param path [String]
       # @return [Boolean]
       def file_exists?(path)
+        # TODO: this gives a false negative if we don't have access to the directory
         exec?("[ -e #{path} ]")
       end
 
       # @param path [String]
       # @return [String]
-      def file_contents(path)
+      def read_file(path)
         exec!("sudo cat #{path}")
+      end
+
+      # @param path [String]
+      # @return [String]
+      def write_file(path, contents, prefix: 'kupo')
+        tmp_path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
+
+        upload(StringIO.new(contents), tmp_path)
+
+        exec!("sudo mv #{tmp_path} #{path} || rm #{tmp_path}")
+      end
+
+      # @param contents [String]
+      # @yield [path]
+      # @yieldparam path [String] /tmp/...
+      def with_tmpfile(contents, prefix: "kupo")
+        path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
+
+        upload(StringIO.new(contents), path)
+
+        yield path
+      ensure
+        exec("rm #{path}") if path
       end
 
       def disconnect

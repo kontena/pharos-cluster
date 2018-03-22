@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -eux
+set -eu
 
 if [ ! -e /etc/apt/sources.list.d/kubernetes.list ]; then
     curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -

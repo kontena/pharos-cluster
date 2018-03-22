@@ -46,24 +46,23 @@ module Kupo
         if docker?
           logger.info { "Configuring container runtime (docker) packages ..." }
           exec_script('configure-docker.sh',
-                      docker_package: 'docker.io',
-                      docker_version: "#{DOCKER_VERSION}-0ubuntu1~16.04.2")
+                      DOCKER_PACKAGE: 'docker.io',
+                      DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1~16.04.2")
         elsif crio?
           logger.info { "Configuring container runtime (cri-o) packages ..." }
           exec_script('configure-cri-o.sh',
-                      crio_version: CRIO_VERSION,
-                      host: @host)
+                      CRIO_VERSION: CRIO_VERSION,
+                      CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
+                      CPU_ARCH: @host.cpu_arch.name)
         else
           raise Kupo::Error, "Unknown container runtime: #{@host.container_runtime}"
         end
 
         logger.info { "Configuring Kubernetes packages ..." }
-        exec_script(
-          'configure-kube.sh',
-          kube_version: KUBE_VERSION,
-          kubeadm_version: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
-          arch: @host.cpu_arch.name
-        )
+        exec_script('configure-kube.sh',
+                    KUBE_VERSION: KUBE_VERSION,
+                    KUBEADM_VERSION: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
+                    CPU_ARCH: @host.cpu_arch.name)
       end
 
       def configure_repos

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 mkdir -p /etc/docker
 cat <<EOF >/etc/docker/daemon.json
@@ -17,6 +17,6 @@ cat <<EOF >/etc/docker/daemon.json
 }
 EOF
 
-apt-mark unhold <%= docker_package %>
-apt-get install -y <%= docker_package %>=<%= docker_version %>
-apt-mark hold <%= docker_package %>
+apt-mark unhold $DOCKER_PACKAGE
+apt-get install -y $DOCKER_PACKAGE=$DOCKER_VERSION
+apt-mark hold $DOCKER_PACKAGE

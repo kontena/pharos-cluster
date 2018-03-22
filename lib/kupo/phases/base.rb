@@ -12,20 +12,11 @@ module Kupo
         Kupo::Phases.components << component
       end
 
-      def ssh_exec_file(ssh, file)
-        tmp_file = File.join('/tmp', SecureRandom.hex(16))
-        ssh.upload(file, tmp_file)
-        ssh.exec!("sudo chmod +x #{tmp_file} && sudo #{tmp_file}")
-      ensure
-        ssh.exec("sudo rm #{tmp_file}") if tmp_file
-      end
-
+      # @param script [String] name of file under ../scripts/
       def exec_script(script, vars = {})
-        file = File.realpath(File.join(__dir__, '..', 'scripts', script))
-        parsed_file = Kupo::Erb.new(File.read(file)).render(vars)
-        ssh_exec_file(@ssh, StringIO.new(parsed_file))
-      rescue Kupo::ScriptExecError
-        raise Kupo::ScriptExecError, "Failed to execute #{script}"
+        @ssh.exec_script!(script,
+                          env: vars,
+                          path: File.realpath(File.join(__dir__, '..', 'scripts', script)))
       end
     end
   end
