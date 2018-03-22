@@ -22,7 +22,7 @@ module Kupo
       def with_binding(&block)
         yield binding
       rescue NameError => ex
-        raise Error.new("#{ex.message} in file #{@path}")
+        raise Error, "#{ex.message} in file #{@path}"
       end
     end
 

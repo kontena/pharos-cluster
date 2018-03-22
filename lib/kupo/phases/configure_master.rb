@@ -42,7 +42,8 @@ module Kupo
       # @return [Hash]
       def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        YAML.safe_load(configmap.data[:MasterConfiguration])
+        config = YAML.safe_load(configmap.data[:MasterConfiguration], [], [], true, "#{@master.address}::kubeadm-config")
+        config['kubernetesVersion'] != "v#{kube_component.version}"
       end
 
       def install
