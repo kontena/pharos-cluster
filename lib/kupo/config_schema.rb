@@ -7,6 +7,7 @@ module Kupo
   class ConfigSchema
     # @return [Dry::Validation::Schema]
     def self.build
+      # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition
       Dry::Validation.Form do
         configure do
           def self.messages
@@ -50,6 +51,7 @@ module Kupo
           end
         end
       end
+      # rubocop:enable Metrics/BlockLength, Lint/NestedMethodDefinition
     end
   end
 end
