@@ -189,8 +189,8 @@ module Kupo
       script = File.read(path || name)
       cmd = []
 
-      env.each_pair do |env, value|
-        cmd << "#{env}=#{Shellwords.escape(value)}"
+      env.each_pair do |e, value|
+        cmd << "#{e}=#{Shellwords.escape(value)}"
       end
 
       cmd << 'sh'
