@@ -24,10 +24,10 @@ module Kupo
         attr_accessor :exit_status
 
         def initialize
-          @stdin = String.new
-          @stdout = String.new
-          @stderr = String.new
-          @output = String.new
+          @stdin = +''
+          @stdout = +''
+          @stderr = +''
+          @output = +''
           @exit_status = -127
         end
 
