@@ -59,7 +59,7 @@ module Kupo
 
       def run
         @result = Result.new
-        open and wait
+        open && wait
         @result
       end
 
