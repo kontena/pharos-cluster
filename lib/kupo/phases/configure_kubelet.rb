@@ -15,14 +15,17 @@ module Kupo
 
       def call
         logger.info { 'Configuring kubelet ...' }
-        dropin = build_systemd_dropin
+        ensure_dropin(build_systemd_dropin)
+      end
 
-        if dropin != existing_dropin
-          @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
-          @ssh.write_file(DROPIN_PATH, dropin)
-          @ssh.exec!("sudo systemctl daemon-reload")
-          @ssh.exec!("sudo systemctl restart kubelet")
-        end
+      # @param dropin [String]
+      def ensure_dropin(dropin)
+        return unless dropin == existing_dropin
+
+        @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
+        @ssh.write_file(DROPIN_PATH, dropin)
+        @ssh.exec!("sudo systemctl daemon-reload")
+        @ssh.exec!("sudo systemctl restart kubelet")
       end
 
       # @return [String, nil]
