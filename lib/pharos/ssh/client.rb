@@ -244,25 +244,9 @@ module Pharos
 
       # @param path [String]
       # @return [String]
-      def write_file(path, contents, prefix: 'pharos')
-        tmp_path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
-
-        upload(StringIO.new(contents), tmp_path)
-
-        exec!("sudo mv #{tmp_path} #{path} || rm #{tmp_path}")
-      end
-
-      # @param contents [String]
-      # @yield [path]
-      # @yieldparam path [String] /tmp/...
-      def with_tmpfile(contents, prefix: "pharos")
-        path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
-
-        upload(StringIO.new(contents), path)
-
-        yield path
-      ensure
-        exec("rm #{path}") if path
+      def write_file(path, contents, prefix: 'kupo')
+        tmp_file = tempfile(prefix: prefix, content: contents)
+        exec!("sudo mv #{tmp_file} #{path} || rm #{tmp_path}")
       end
 
       def disconnect
