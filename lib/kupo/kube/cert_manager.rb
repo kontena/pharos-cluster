@@ -125,6 +125,7 @@ module Kupo::Kube
       end
 
       key = OpenSSL::PKey.read(Base64.strict_decode64(secret[:data][secret_filename]))
+      key
     end
 
     # @param key [OpenSSL::PKey]
