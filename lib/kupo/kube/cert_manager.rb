@@ -84,7 +84,7 @@ module Kupo
         resource_client = Kupo::Kube.client(@host.address, resource.apiVersion)
 
         begin
-          # TODO: update/re-create if spec.request does not match, or cert is expiring...?
+          # TODO: update/re-create if spec.request does not match (private key, subject or usages changed?), or cert is expiring...?
           resource = resource_client.get_resource(resource)
         rescue Kubeclient::ResourceNotFoundError
           resource = resource_client.create_resource(resource)
@@ -147,10 +147,11 @@ module Kupo
 
       # Generates a secret containing the `client-key.pem` for use with the returned client cert.
       #
+      # @param user [String] k8s auth username, used as client cert subject CN=
       # @return [OpenSSL::X509::Certificate, OpenSSL::PKey]
-      def ensure_client_certificate
+      def ensure_client_certificate(user: @name)
         key = ensure_key(secret_filename: 'client-key.pem')
-        subject = build_subject(cn: @name)
+        subject = build_subject(cn: user)
         cert = ensure_certificate(key, subject,
                                   usages: [
                                     'digital signature',
