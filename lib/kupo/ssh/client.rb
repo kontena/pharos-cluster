@@ -187,7 +187,7 @@ module Kupo
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
         script = File.read(path || name)
-        cmd = []
+        cmd = ['sudo']
 
         env.each_pair do |e, value|
           cmd << "#{e}=#{Shellwords.escape(value)}"
