@@ -40,6 +40,12 @@ module Kupo
       end
       alias mv move
 
+      def each_line
+        read.split(/[\r\n]/).each do |row|
+          yield row
+        end
+      end
+
       private
 
       def escaped_path
