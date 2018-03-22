@@ -54,10 +54,9 @@ module Kupo
           raise Kupo::Error, "Unknown container runtime: #{@host.container_runtime}"
         end
 
-        logger.info { "Configuring Kubernetes packages ..." }
-
         return if @ssh.file_exists?('/etc/kubernetes/kubelet.conf') || @host.role == 'master'
 
+        logger.info { "Configuring Kubernetes packages ..." }
         # we cannot update whole kube here if upgrading master host(s)
         exec_script(
           'configure-kube.sh',
