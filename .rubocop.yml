@@ -5,6 +5,7 @@ AllCops:
     - spec/**/*
     - Gemfile
     - "*.gemspec"
+    - bundler/**/*
   TargetRubyVersion: 2.4
 
 Style/PercentLiteralDelimiters:

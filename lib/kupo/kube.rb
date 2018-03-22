@@ -3,7 +3,8 @@
 require 'kubeclient'
 require 'deep_merge'
 
-module Kupo::Kube
+module Kupo
+  module Kube
   class Client < ::Kubeclient::Client
     def entities
       if @entities.empty?
@@ -219,5 +220,6 @@ module Kupo::Kube
   # @return [String]
   def self.underscore_entity(kind)
     Kubeclient::ClientMixin.underscore_entity(kind.to_s)
+  end
   end
 end
