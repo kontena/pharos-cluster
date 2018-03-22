@@ -40,9 +40,9 @@ module Kupo
         logger.info { "Configuring Kubernetes packages ..." }
         exec_script(
           'configure-kube.sh',
-          kube_version: Kupo::KUBE_VERSION,
-          kubeadm_version: Kupo::KUBEADM_VERSION,
-          arch: @host.cpu_arch.name
+          KUBE_VERSION: Kupo::KUBE_VERSION,
+          KUBEADM_VERSION: Kupo::KUBEADM_VERSION,
+          ARCH: @host.cpu_arch.name
         )
       end
 
