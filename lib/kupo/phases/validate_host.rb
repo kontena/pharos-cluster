@@ -2,7 +2,8 @@
 
 require_relative 'logging'
 
-module Kupo::Phases
+module Kupo
+  module Phases
   class ValidateHost
     include Kupo::Phases::Logging
 
@@ -25,16 +26,14 @@ module Kupo::Phases
     end
 
     def check_distro_version
-      unless @host.os_release.supported?
+        return if @host.os_release.supported?
         raise Kupo::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
       end
-    end
 
     def check_cpu_arch
-      unless @host.cpu_arch.supported?
+        return if @host.cpu_arch.supported?
         raise Kupo::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
-    end
 
     def check_sudo(ssh)
       ssh.exec!('sudo -n true')
@@ -76,5 +75,6 @@ module Kupo::Phases
         id: cpu['Architecture']
       )
     end
+  end
   end
 end

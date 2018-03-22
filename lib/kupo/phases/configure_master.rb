@@ -2,7 +2,8 @@
 
 require_relative 'base'
 
-module Kupo::Phases
+module Kupo
+  module Phases
   class ConfigureMaster < Base
     # @param master [Kupo::Configuration::Host]
     # @param config [Kupo::Configuration::Network]
@@ -100,7 +101,8 @@ module Kupo::Phases
     end
 
     def kube_component
-      @kube_component ||= self.class.components.find { |c| c.name == 'kubernetes' }
+        @kube_component ||= Kupo::Phases.find_component(name: 'kubernetes')
+      end
     end
   end
 end

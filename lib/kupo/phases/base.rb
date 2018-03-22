@@ -1,18 +1,15 @@
 # frozen_string_literal: true
 
 require_relative 'logging'
+require_relative '../phases'
 
-module Kupo::Phases
+module Kupo
+  module Phases
   class Base
     include Kupo::Phases::Logging
 
     def self.register_component(component)
-      @@components ||= Set.new
-      @@components << component
-    end
-
-    def self.components
-      @@components
+        Kupo::Phases.components << component
     end
 
     # @param script [String] name of file under ../scripts/
@@ -22,5 +19,6 @@ module Kupo::Phases
         path: File.realpath(File.join(__dir__, '..', 'scripts', script)),
       )
     end
+  end
   end
 end

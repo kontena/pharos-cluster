@@ -15,12 +15,10 @@ module Kupo
   autoload :Kube, 'kupo/kube'
   autoload :Erb, 'kupo/erb'
   autoload :AddonManager, 'kupo/addon_manager'
+  autoload :Phases, 'kupo/phases'
 
   module SSH
     autoload :Client, 'kupo/ssh/client'
-  end
-
-  module Phases
   end
 
   module Addons

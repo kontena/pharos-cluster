@@ -2,10 +2,11 @@
 
 require_relative 'base'
 
-module Kupo::Phases
+module Kupo
+  module Phases
   class ConfigureHost < Base
     CRIO_VERSION = '1.9'
-    KUBE_VERSION = '1.9.4'
+      KUBE_VERSION = '1.9.5'
     DOCKER_VERSION = '1.13.1'
 
     register_component(
@@ -82,5 +83,6 @@ module Kupo::Phases
     def docker?
       @host.container_runtime == 'docker'
     end
+  end
   end
 end

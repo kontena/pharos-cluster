@@ -4,7 +4,8 @@ require 'net/ssh'
 require 'net/scp'
 require 'shellwords'
 
-module Kupo::SSH
+module Kupo
+  module SSH
   Error = Class.new(StandardError)
 
   class ExecError < Error
@@ -135,9 +136,7 @@ module Kupo::SSH
     def self.disconnect_all
       return unless @connections
 
-      @connections.each do |_host, connection|
-        connection.disconnect
-      end
+        @connections.values.map(&:disconnect)
     end
 
     def initialize(host, user = nil, opts = {})
@@ -177,11 +176,9 @@ module Kupo::SSH
     def exec!(cmd, **options)
       ex = exec(cmd, **options)
 
-      if ex.error?
-        raise ExecError.new(cmd, ex.exit_status, ex.output)
-      else
-        return ex.stdout
-      end
+      raise ExecError.new(cmd, ex.exit_status, ex.output) if ex.error?
+
+      ex.stdout
     end
 
     # @param script [String] name of script
@@ -201,11 +198,9 @@ module Kupo::SSH
 
       ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
 
-      if ex.error?
-        raise ExecError.new(name, ex.exit_status, ex.output)
-      else
-        return ex.stdout
-      end
+      raise ExecError.new(name, ex.exit_status, ex.output) if ex.error?
+
+      ex.stdout
     end
 
     # @param cmd [String] command to execute
@@ -279,5 +274,6 @@ module Kupo::SSH
     def require_session!
       raise Error, "Connection not established" unless @session
     end
+  end
   end
 end
