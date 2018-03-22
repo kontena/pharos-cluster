@@ -33,7 +33,7 @@ module Kupo
       # @return [String]
       def build_systemd_dropin
         config = "[Service]\nEnvironment='KUBELET_EXTRA_ARGS="
-          args = kubelet_extra_args
+        args = kubelet_extra_args
         node_ip = @host.private_address.nil? ? @host.address : @host.private_address
         args << "--node-ip=#{node_ip}"
         config = config + args.join(' ') + "'"
