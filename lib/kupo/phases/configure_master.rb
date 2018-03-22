@@ -36,7 +36,23 @@ module Kupo
         client = Kupo::Kube.client(@master.address)
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
         config = YAML.safe_load(configmap.data[:MasterConfiguration])
-        config['kubernetesVersion'] != "v#{kube_component.version}"
+        config['kubernetesVersion'] != "v#{Kupo::KUBE_VERSION}"
+      end
+
+      def install
+        cfg = generate_config
+        tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))
+        @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
+
+        # Copy etcd certs over if needed
+        if @config.etcd&.certificate
+          exec_script(
+            'configure-etcd-certs.sh',
+            ca_certificate: File.read(@config.etcd.ca_certificate),
+            certificate: File.read(@config.etcd.certificate),
+            certificate_key: File.read(@config.etcd.key)
+          )
+        end
       end
 
       def install
@@ -67,7 +83,7 @@ module Kupo
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
           'kind' => 'MasterConfiguration',
-          'kubernetesVersion' => kube_component.version,
+          'kubernetesVersion' => Kupo::KUBE_VERSION,
           'apiServerCertSANs' => [@master.address, @master.private_address].compact.uniq,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
@@ -94,41 +110,29 @@ module Kupo
         config
       end
 
-<<<<<<< e0bcecb055357ce041396809bd92e05a989a3d46
       def upgrade
-        @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y")
+        logger.info(@master.address) { "Upgrading control plane ..." }
+        exec_script("install-kubeadm.sh", {
+          version: Kupo::KUBEADM_VERSION,
+          arch: @master.cpu_arch.name
+        })
 
+        cfg = generate_config
+        tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))
+        begin
+          @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
+          @ssh.exec!("sudo kubeadm upgrade apply #{Kupo::KUBE_VERSION} -y --force --config #{tmp_file}")
+        ensure
+          @ssh.exec!("rm #{tmp_file}")
+        end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
-      end
-=======
-    def upgrade
-      logger.info(@master.address) { "Upgrading control plane ..." }
-      exec_script("install-kubeadm.sh", {
-        version: ENV['KUBEADM_VERSION'] || kube_component.version,
-        arch: @master.cpu_arch.name
-      })
 
-      cfg = generate_config
-      tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))
-      begin
-        @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
-        @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y --force --config #{tmp_file}")
-      ensure
-        @ssh.exec!("rm #{tmp_file}")
-      end
-      logger.info(@master.address) { "Control plane upgrade succeeded!" }
-
-      exec_script(
-        'configure-kube.sh',
-        kube_version: kube_component.version,
-        kubeadm_version: ENV['KUBEADM_VERSION'] || kube_component.version,
-        arch: @master.cpu_arch.name
-      )
-    end
->>>>>>> fix upgrades
-
-      def kube_component
-        @kube_component ||= Kupo::Phases.find_component(name: 'kubernetes')
+        exec_script(
+          'configure-kube.sh',
+          kube_version: Kupo::KUBE_VERSION,
+          kubeadm_version: Kupo::KUBEADM_VERSION,
+          arch: @master.cpu_arch.name
+        )
       end
     end
   end

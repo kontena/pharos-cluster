@@ -5,25 +5,22 @@ require_relative 'base'
 module Kupo
   module Phases
     class ConfigureHost < Base
-      CRIO_VERSION = '1.9'
-      KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.9.5' }
-      DOCKER_VERSION = '1.13.1'
 
       register_component(
         Kupo::Phases::Component.new(
-          name: 'docker', version: DOCKER_VERSION, license: 'Apache License 2.0'
+          name: 'docker', version: Kupo::DOCKER_VERSION, license: 'Apache License 2.0'
         )
       )
 
       register_component(
         Kupo::Phases::Component.new(
-          name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0'
+          name: 'cri-o', version: Kupo::CRIO_VERSION, license: 'Apache License 2.0'
         )
       )
 
       register_component(
         Kupo::Phases::Component.new(
-          name: 'kubernetes', version: KUBE_VERSION, license: 'Apache License 2.0'
+          name: 'kubernetes', version: Kupo::KUBE_VERSION, license: 'Apache License 2.0'
         )
       )
 
@@ -47,11 +44,11 @@ module Kupo
           logger.info { "Configuring container runtime (docker) packages ..." }
           exec_script('configure-docker.sh',
                       DOCKER_PACKAGE: 'docker.io',
-                      DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1~16.04.2")
+                      DOCKER_VERSION: "#{Kupo::DOCKER_VERSION}-0ubuntu1~16.04.2")
         elsif crio?
           logger.info { "Configuring container runtime (cri-o) packages ..." }
           exec_script('configure-cri-o.sh',
-                      CRIO_VERSION: CRIO_VERSION,
+                      CRIO_VERSION: Kupo::CRIO_VERSION,
                       CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
                       CPU_ARCH: @host.cpu_arch.name)
         else
@@ -63,9 +60,9 @@ module Kupo
           # we cannot update whole kube here if upgrading master host(s)
           exec_script(
             'configure-kube.sh',
-            kube_version: KUBE_VERSION,
-            kubeadm_version: ENV['KUBEADM_VERSION'] || KUBE_VERSION,
-            arch: @host.cpu_arch.name
+            KUBE_VERSION: Kupo::KUBE_VERSION,
+            KUBEADM_VERSION: Kupo::KUBEADM_VERSION,
+            ARCH: @host.cpu_arch.name
           )
         end
       end
