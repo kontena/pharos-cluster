@@ -21,7 +21,7 @@ module Kupo
           temp_path
         )
         @client.exec!("sudo mv #{temp_path} #{escaped_path}")
-      rescue
+      rescue ExecError
         exec("rm #{temp_path}")
         raise
       end
@@ -61,4 +61,3 @@ module Kupo
     end
   end
 end
-
