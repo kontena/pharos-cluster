@@ -26,12 +26,12 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /etc/kubernetes
-        - name: secrets
-          mountPath: /etc/kubernetes-secrets
+        - name: client-secrets
+          mountPath: /etc/kubernetes-client-secrets
       volumes:
       - name: config
         configMap:
           name: metrics-server
-      - name: secrets
+      - name: client-secrets
         secret:
-          secretName: metrics-server
+          secretName: metrics-server-client-cert

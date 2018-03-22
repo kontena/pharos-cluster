@@ -22,12 +22,12 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /etc/kubernetes
-        - name: secrets
-          mountPath: /etc/kubernetes-secrets
+        - name: client-secrets
+          mountPath: /etc/kubernetes-client-secrets
       volumes:
       - name: config
         configMap:
           name: heapster
-      - name: secrets
+      - name: client-secrets
         secret:
-          secretName: heapster
+          secretName: heapster-client-cert
