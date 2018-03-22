@@ -41,22 +41,6 @@ module Kupo
 
       def install
         cfg = generate_config
-        tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))
-        @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
-
-        # Copy etcd certs over if needed
-        if @config.etcd&.certificate
-          exec_script(
-            'configure-etcd-certs.sh',
-            ca_certificate: File.read(@config.etcd.ca_certificate),
-            certificate: File.read(@config.etcd.certificate),
-            certificate_key: File.read(@config.etcd.key)
-          )
-        end
-      end
-
-      def install
-        cfg = generate_config
 
         # Copy etcd certs over if needed
         if @config.etcd&.certificate
@@ -112,10 +96,9 @@ module Kupo
 
       def upgrade
         logger.info(@master.address) { "Upgrading control plane ..." }
-        exec_script("install-kubeadm.sh", {
-          version: Kupo::KUBEADM_VERSION,
-          arch: @master.cpu_arch.name
-        })
+        exec_script("install-kubeadm.sh",
+                    VERSION: Kupo::KUBEADM_VERSION,
+                    ARCH: @master.cpu_arch.name)
 
         cfg = generate_config
         tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))

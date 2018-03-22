@@ -5,7 +5,6 @@ require_relative 'base'
 module Kupo
   module Phases
     class ConfigureHost < Base
-
       register_component(
         Kupo::Phases::Component.new(
           name: 'docker', version: Kupo::DOCKER_VERSION, license: 'Apache License 2.0'
