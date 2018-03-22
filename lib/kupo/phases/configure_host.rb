@@ -55,15 +55,16 @@ module Kupo
         end
 
         logger.info { "Configuring Kubernetes packages ..." }
-        if !@ssh.file_exists?('/etc/kubernetes/kubelet.conf') || @host.role != 'master'
-          # we cannot update whole kube here if upgrading master host(s)
-          exec_script(
-            'configure-kube.sh',
-            KUBE_VERSION: Kupo::KUBE_VERSION,
-            KUBEADM_VERSION: Kupo::KUBEADM_VERSION,
-            ARCH: @host.cpu_arch.name
-          )
-        end
+
+        return if @ssh.file_exists?('/etc/kubernetes/kubelet.conf') || @host.role == 'master'
+
+        # we cannot update whole kube here if upgrading master host(s)
+        exec_script(
+          'configure-kube.sh',
+          KUBE_VERSION: Kupo::KUBE_VERSION,
+          KUBEADM_VERSION: Kupo::KUBEADM_VERSION,
+          ARCH: @host.cpu_arch.name
+        )
       end
 
       def configure_repos
