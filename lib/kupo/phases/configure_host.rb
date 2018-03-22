@@ -17,12 +17,6 @@ module Kupo
         )
       )
 
-      register_component(
-        Kupo::Phases::Component.new(
-          name: 'kubernetes', version: Kupo::KUBE_VERSION, license: 'Apache License 2.0'
-        )
-      )
-
       # @param host [Kupo::Configuration::Host]
       def initialize(host)
         @host = host
@@ -53,17 +47,6 @@ module Kupo
         else
           raise Kupo::Error, "Unknown container runtime: #{@host.container_runtime}"
         end
-
-        return if @ssh.file_exists?('/etc/kubernetes/kubelet.conf') || @host.role == 'master'
-
-        logger.info { "Configuring Kubernetes packages ..." }
-        # we cannot update whole kube here if upgrading master host(s)
-        exec_script(
-          'configure-kube.sh',
-          KUBE_VERSION: Kupo::KUBE_VERSION,
-          KUBEADM_VERSION: Kupo::KUBEADM_VERSION,
-          ARCH: @host.cpu_arch.name
-        )
       end
 
       def configure_repos

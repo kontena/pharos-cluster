@@ -40,6 +40,8 @@ module Kupo
       end
 
       def install
+        Kupo::Phases::ConfigureKubelet.new(@master).call
+
         cfg = generate_config
 
         # Copy etcd certs over if needed
@@ -110,12 +112,7 @@ module Kupo
         end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
 
-        exec_script(
-          'configure-kube.sh',
-          kube_version: Kupo::KUBE_VERSION,
-          kubeadm_version: Kupo::KUBEADM_VERSION,
-          arch: @master.cpu_arch.name
-        )
+        Kupo::Phases::ConfigureKubelet.new(@master).call
       end
     end
   end

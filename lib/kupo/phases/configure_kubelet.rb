@@ -5,6 +5,12 @@ require_relative 'base'
 module Kupo
   module Phases
     class ConfigureKubelet < Base
+      register_component(
+        Kupo::Phases::Component.new(
+          name: 'kubernetes', version: Kupo::KUBE_VERSION, license: 'Apache License 2.0'
+        )
+      )
+
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-kupo.conf"
 
       # @param host [Kupo::Configuration::Host]
@@ -14,6 +20,8 @@ module Kupo
       end
 
       def call
+        configure_kube
+
         logger.info { 'Configuring kubelet ...' }
         ensure_dropin(build_systemd_dropin)
       end
@@ -26,6 +34,16 @@ module Kupo
         @ssh.write_file(DROPIN_PATH, dropin)
         @ssh.exec!("sudo systemctl daemon-reload")
         @ssh.exec!("sudo systemctl restart kubelet")
+      end
+
+      def configure_kube
+        logger.info { "Configuring Kubernetes packages ..." }
+        exec_script(
+          'configure-kube.sh',
+          kube_version: Kupo::KUBE_VERSION,
+          kubeadm_version: Kupo::KUBEADM_VERSION,
+          arch: @host.cpu_arch.name
+        )
       end
 
       # @return [String, nil]
