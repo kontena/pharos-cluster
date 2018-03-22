@@ -55,6 +55,8 @@ mkdir -p /opt/cni/bin
 cd /opt/cni/bin
 curl -sSL https://dl.bintray.com/kontena/pharos-bin/cni-plugins/cni-plugins-${ARCH}-v0.6.0.tgz | tar zx
 
-systemctl enable kubelet || true
-systemctl start kubelet
+if ! systemctl is-enabled --quiet kubelet ; then
+    systemctl enable kubelet
+fi
 
+systemctl start kubelet
