@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
 
   3.times.each do |i|
-    vm_name = "%<host>s-%<index>02d" % { host: host, index: i }
+    vm_name = "host-%<index>02d" % { index: i }
     config.vm.define(vm_name) do |host|
       host.vm.hostname = vm_name
       host.ssh.insert_key = false
