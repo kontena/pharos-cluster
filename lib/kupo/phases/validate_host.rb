@@ -37,7 +37,7 @@ module Kupo
 
       def check_sudo(ssh)
         ssh.exec!('sudo -n true')
-      rescue Kupo::SSH::ExecError => exc
+      rescue Kupo::SSH::Exec::ExecError => exc
         raise Kupo::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
 

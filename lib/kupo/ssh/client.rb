@@ -8,119 +8,6 @@ module Kupo
   module SSH
     Error = Class.new(StandardError)
 
-    class ExecError < Error
-      attr_reader :cmd, :exit_status, :output
-
-      def initialize(cmd, exit_status, output)
-        @cmd = cmd
-        @exit_status = exit_status
-        @output = output
-      end
-
-      def message
-        "SSH exec failed with code #{@exit_status}: #{@cmd}\n#{@output}"
-      end
-    end
-
-    class Exec
-      INDENT = "    "
-
-      def self.debug?
-        ENV['DEBUG'].to_s == 'true'
-      end
-
-      attr_reader :cmd, :exit_status, :stdout, :stderr, :output
-
-      def initialize(cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
-        @cmd = cmd
-        @stdin = stdin
-        @debug = debug
-        @debug_source = debug_source
-
-        @exit_status = nil
-        @stdout = ''
-        @stderr = ''
-        @output = ''
-      end
-
-      # @param session [Net::SSH::Connection::Session]
-      def open(session)
-        @channel = session.open_channel do |channel|
-          start(channel)
-        end
-      end
-
-      def wait
-        @channel.wait
-      end
-
-      # @param channel [Net::SSH::Connection::Channel]
-      def start(channel)
-        debug_cmd(@cmd, source: @debug_source) if debug?
-
-        channel.exec @cmd do |_, success|
-          raise Error, "Failed to exec #{cmd}" unless success
-
-          channel.on_data do |_, data|
-            @stdout += data
-            @output += data
-
-            debug_stdout(data) if debug?
-          end
-          channel.on_extended_data do |_c, _type, data|
-            @stderr += data
-            @output += data
-
-            debug_stderr(data) if debug?
-          end
-          channel.on_request("exit-status") do |_, data|
-            @exit_status = data.read_long
-
-            debug_exit(@exit_status) if debug?
-          end
-
-          if @stdin
-            channel.send_data(@stdin)
-            channel.eof!
-          end
-        end
-      end
-
-      # @return [Boolean]
-      def error?
-        !@exit_status.zero?
-      end
-
-      def debug?
-        @debug
-      end
-
-      def pastel
-        @pastel ||= Pastel.new
-      end
-
-      def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
-      end
-
-      def debug_stdout(data)
-        data.each_line do |line|
-          $stdout.write(INDENT + pastel.dim(line.to_s))
-        end
-      end
-
-      def debug_stderr(data)
-        data.each_line do |line|
-          # TODO: stderr is not line-buffered, this indents each write
-          $stdout.write(INDENT + pastel.red(line.to_s))
-        end
-      end
-
-      def debug_exit(exit_status)
-        $stdout.write(INDENT + pastel.yellow("! #{exit_status}") + "\n")
-      end
-    end
-
     class Client
       # @param host [Kupo::Configuration::Host]
       def self.for_host(host)
@@ -138,6 +25,8 @@ module Kupo
 
         @connections.values.map(&:disconnect)
       end
+
+      attr_reader :session
 
       def initialize(host, user = nil, opts = {})
         @host = host
@@ -161,24 +50,15 @@ module Kupo
       # @return [Exec]
       def exec(cmd, **options)
         require_session!
-
-        logger.debug { "exec: #{cmd}" }
-
-        ex = Exec.new(cmd, **options)
-        ex.open(@session)
-        ex.wait
-        ex
+        Exec.new(self, cmd, **options).run
       end
 
       # @param cmd [String] command to execute
       # @raise [ExecError]
       # @return [String] stdout
       def exec!(cmd, **options)
-        ex = exec(cmd, **options)
-
-        raise ExecError.new(cmd, ex.exit_status, ex.output) if ex.error?
-
-        ex.stdout
+        require_session!
+        Exec.new(self, cmd, **options).run!.stdout
       end
 
       # @param script [String] name of script
@@ -193,22 +73,15 @@ module Kupo
           cmd << "#{e}=#{Shellwords.escape(value)}"
         end
 
-        cmd << 'sh'
-        cmd << '-x'
+        cmd.concat(%w(sh -x))
 
-        ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
-
-        raise ExecError.new(name, ex.exit_status, ex.output) if ex.error?
-
-        ex.stdout
+        exec!(cmd.join(' '), stdin: script, debug_source: name, **options)
       end
 
       # @param cmd [String] command to execute
       # @return [Boolean]
-      def exec?(cmd, **options, &block)
-        ex = exec(cmd, **options, &block)
-
-        !ex.error?
+      def exec?(cmd, **options)
+        exec(cmd, **options).success?
       end
 
       # @param local_path [String]

@@ -19,6 +19,7 @@ module Kupo
 
   module SSH
     autoload :Client, 'kupo/ssh/client'
+    autoload :Exec, 'kupo/ssh/exec'
   end
 
   module Addons
