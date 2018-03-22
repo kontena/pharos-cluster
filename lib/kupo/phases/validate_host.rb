@@ -28,12 +28,12 @@ module Kupo
       def check_distro_version
         return if @host.os_release.supported?
         raise Kupo::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
-        end
+      end
 
       def check_cpu_arch
         return if @host.cpu_arch.supported?
         raise Kupo::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
-        end
+      end
 
       def check_sudo(ssh)
         ssh.exec!('sudo -n true')

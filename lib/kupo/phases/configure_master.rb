@@ -102,7 +102,7 @@ module Kupo
 
       def kube_component
         @kube_component ||= Kupo::Phases.find_component(name: 'kubernetes')
-        end
       end
+    end
   end
 end
