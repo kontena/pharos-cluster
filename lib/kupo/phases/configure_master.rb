@@ -27,7 +27,7 @@ module Kupo
       end
 
       def install?
-        !@ssh.file_exists?("/etc/kubernetes/admin.conf")
+        !@ssh.file("/etc/kubernetes/admin.conf").exist?
       end
 
       def upgrade?
@@ -46,9 +46,9 @@ module Kupo
         if @config.etcd&.certificate
           # TODO: lock down permissions on key
           @ssh.exec!('sudo mkdir -p /etc/kupo/etcd')
-          @ssh.write_file('/etc/kupo/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
-          @ssh.write_file('/etc/kupo/etcd/certificate.pem', File.read(@config.etcd.certificate))
-          @ssh.write_file('/etc/kupo/etcd/certificate-key.pem', File.read(@config.etcd.key))
+          @ssh.file('/etc/kupo/etcd/ca-certificate.pem').write(File.open(@config.etcd.ca_certificate))
+          @ssh.file('/etc/kupo/etcd/certificate.pem').write(File.open(@config.etcd.certificate))
+          @ssh.file('/etc/kupo/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
         end
 
         logger.info(@master.address) { "Initializing control plane ..." }

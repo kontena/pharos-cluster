@@ -186,7 +186,7 @@ module Kupo
       # @raise [ExecError]
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
-        script = File.read(path || name)
+        script = ::File.read(path || name)
         cmd = []
 
         env.each_pair do |e, value|
@@ -229,34 +229,15 @@ module Kupo
         @session.scp.download!(remote_path, local_path, opts)
       end
 
-      # @param path [String]
-      # @return [Boolean]
-      def file_exists?(path)
-        # TODO: this gives a false negative if we don't have access to the directory
-        exec?("[ -e #{path} ]")
-      end
-
-      # @param path [String]
-      # @return [String]
-      def read_file(path)
-        exec!("sudo cat #{path}")
-      end
-
-      # @param path [String]
-      # @return [String]
-      def write_file(path, contents, prefix: 'kupo')
-        tmp_path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
-
-        upload(StringIO.new(contents), tmp_path)
-
-        exec!("sudo mv #{tmp_path} #{path} || rm #{tmp_path}")
+      def file(path)
+        Kupo::SSH::File.new(self, path)
       end
 
       # @param contents [String]
       # @yield [path]
       # @yieldparam path [String] /tmp/...
       def with_tmpfile(contents, prefix: "kupo")
-        path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
+        path = ::File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
 
         upload(StringIO.new(contents), path)
 

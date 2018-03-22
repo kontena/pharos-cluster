@@ -15,13 +15,11 @@ module Kupo
       end
 
       def already_joined?
-        @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
+        @ssh.file("/etc/kubernetes/kubelet.conf").exist?
       end
 
       def call
-        if already_joined?
-          return
-        end
+        return if already_joined?
 
         logger.info { "Joining host to the master ..." }
         join_command = @master_ssh.exec!("sudo kubeadm token create --print-join-command")
