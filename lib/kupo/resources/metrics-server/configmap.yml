@@ -11,7 +11,7 @@ data:
     kind: Config
     clusters:
     - cluster:
-        server: https://10.96.0.1
+        server: https://kubernetes.default.svc
         insecure-skip-tls-verify: true
       name: default-cluster
     contexts:
