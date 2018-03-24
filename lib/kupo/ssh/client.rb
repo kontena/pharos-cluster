@@ -189,8 +189,8 @@ module Kupo
         script = ::File.read(path || name)
         cmd = %w(sudo)
 
-        cmd.concat env.map { |e, value| "#{e}=#{Shellwords.escape(value)}" }
-        cmd.concat %w(sh -x)
+        env.each { |e, value| cmd << "#{e}=#{Shellwords.escape(value)}" }
+        cmd.concat(%w(sh -x))
 
         ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
 
