@@ -14,7 +14,7 @@ Description=kubelet: The Kubernetes Node Agent
 Documentation=http://kubernetes.io/docs/
 
 [Service]
-ExecStart=/usr/bin/kubelet
+ExecStart=/usr/local/bin/kubelet
 Restart=always
 StartLimitInterval=0
 RestartSec=10
@@ -35,7 +35,7 @@ Environment="KUBELET_AUTHZ_ARGS=--authorization-mode=Webhook --client-ca-file=/e
 Environment="KUBELET_CADVISOR_ARGS=--cadvisor-port=0"
 Environment="KUBELET_CERTIFICATE_ARGS=--rotate-certificates=true --cert-dir=/var/lib/kubelet/pki"
 ExecStart=
-ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS
+ExecStart=/usr/local/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS
 EOF
 
 systemctl daemon-reload
@@ -47,8 +47,8 @@ fi
 binaries=(kubelet kubectl kubeadm)
 for bin in "${binaries[@]}"
 do
-    curl -sSL https://dl.bintray.com/kontena/pharos-bin/kube/${KUBE_VERSION}/${bin}-${ARCH}.gz | gunzip > /usr/bin/${bin}
-    chmod +x /usr/bin/${bin}
+    curl -sSL https://dl.bintray.com/kontena/pharos-bin/kube/${KUBE_VERSION}/${bin}-${ARCH}.gz | gunzip > /usr/local/bin/${bin}
+    chmod +x /usr/local/bin/${bin}
 done
 
 mkdir -p /opt/cni/bin
