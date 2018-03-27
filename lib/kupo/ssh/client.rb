@@ -193,7 +193,7 @@ module Kupo
           cmd << "#{e}=#{Shellwords.escape(value)}"
         end
 
-        cmd << 'bash'
+        cmd << 'sh'
         cmd << '-x'
 
         ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
