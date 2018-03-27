@@ -18,4 +18,16 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
         - /heapster
-        - --source=kubernetes.summary_api:''
+        - --source=kubernetes.summary_api:https://kubernetes.default.svc?inClusterConfig=false&kubeletHttps=true&kubeletPort=10250&auth=/etc/kubernetes/kubeconfig.conf
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kubernetes
+        - name: client-secrets
+          mountPath: /etc/kubernetes-client-secrets
+      volumes:
+      - name: config
+        configMap:
+          name: heapster
+      - name: client-secrets
+        secret:
+          secretName: heapster-client-cert

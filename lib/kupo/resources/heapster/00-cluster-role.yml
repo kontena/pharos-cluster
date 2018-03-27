@@ -1,21 +1,26 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:metrics-server
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:heapster
 rules:
 - apiGroups:
   - ""
   resources:
-  - pods
+  - events
+  - namespaces
   - nodes
   - nodes/stats
-  - namespaces
+  - pods
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - "extensions"
+  - extensions
   resources:
   - deployments
   verbs:

@@ -2,6 +2,7 @@
 
 require 'kubeclient'
 require 'deep_merge'
+
 module Kupo
   module Kube
     class Client < ::Kubeclient::Client
@@ -10,6 +11,16 @@ module Kupo
           discover
         end
         @entities
+      end
+
+      def update_entity_approval(resource_name, entity_config)
+        name      = entity_config[:metadata][:name]
+        ns_prefix = build_namespace_prefix(entity_config[:metadata][:namespace])
+        response = handle_exception do
+          rest_client[ns_prefix + resource_name + "/#{name}/approval"]
+            .put(entity_config.to_h.to_json, { 'Content-Type' => 'application/json' }.merge(@headers))
+        end
+        format_response(@as, response.body)
       end
 
       def entity_for_resource(resource)
@@ -39,10 +50,26 @@ module Kupo
 
       # @param resource [Kubeclient::Resource]
       # @return [Kubeclient::Resource]
+      def update_resource_approval(resource)
+        definition = entity_for_resource(resource)
+
+        update_entity_approval(definition.resource_name, resource)
+      end
+
+      # @param resource [Kubeclient::Resource]
+      # @return [Kubeclient::Resource]
       def create_resource(resource)
         definition = entity_for_resource(resource)
 
         create_entity(resource.kind, definition.resource_name, resource)
+      end
+
+      # @param resource [Kubeclient::Resource]
+      # @return [Kubeclient::Resource]
+      def get_resource(resource)
+        definition = entity_for_resource(resource)
+
+        get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
       end
     end
 
@@ -134,9 +161,25 @@ module Kupo
     # @param host [String]
     # @param resource [Kubeclient::Resource]
     # @return [Kubeclient::Resource]
+    def self.create_resource(host, resource)
+      resource_client = client(host, resource.apiVersion)
+      resource_client.create_resource(resource)
+    end
+
+    # @param host [String]
+    # @param resource [Kubeclient::Resource]
+    # @return [Kubeclient::Resource]
     def self.update_resource(host, resource)
       resource_client = client(host, resource.apiVersion)
       resource_client.update_resource(resource)
+    end
+
+    # @param host [String]
+    # @param resource [Kubeclient::Resource]
+    # @return [Kubeclient::Resource]
+    def self.get_resource(host, resource)
+      resource_client = client(host, resource.apiVersion)
+      resource_client.get_resource(resource)
     end
 
     # @param host [String]
