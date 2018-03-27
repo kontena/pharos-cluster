@@ -9,7 +9,7 @@ require_relative "kupo/root_command"
 
 module Kupo
   CRIO_VERSION = '1.9'
-  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.9.5' }
+  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.9.6' }
   KUBEADM_VERSION = ENV.fetch('KUBEADM_VERSION') { KUBE_VERSION }
   DOCKER_VERSION = '1.13.1'
 end
