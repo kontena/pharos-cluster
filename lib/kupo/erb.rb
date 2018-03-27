@@ -5,26 +5,20 @@ require 'ostruct'
 
 module Kupo
   class Erb
-    def initialize(path)
+    def initialize(path, content = nil)
       @path = path
+      @content = content.respond_to?(:read) ? content.read : (content || File.read(path))
     end
 
     def render(vars = {})
-      if erb?
-        ERB.new(template, nil, '%<>-').result(OpenStruct.new(vars).instance_eval { binding })
-      else
-        template
-      end
+      return @content unless erb?
+      ERB.new(@content, nil, '%<>-').result(OpenStruct.new(vars).instance_eval { binding })
     end
 
     private
 
     def erb?
-      @path.end_with?('.erb')
-    end
-
-    def template
-      File.read(@path)
+      @path.is_a?(Symbol) || @path.end_with?('.erb')
     end
   end
 end

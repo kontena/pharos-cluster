@@ -2,11 +2,11 @@
 
 module Kupo
   class UpCommand < Kupo::Command
-    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_path|
+    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_file|
       begin
-        File.realpath(config_path)
+        File.realpath(config_file)
       rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
+        signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
       end
     end
 
@@ -24,7 +24,7 @@ module Kupo
 
     def execute
       puts pastel.green("==> Reading instructions ...")
-      configure(load_config(config_content))
+      configure(load_config)
     end
 
     def configure(config)
@@ -40,7 +40,7 @@ module Kupo
         validate_hosts(config.hosts)
         # set workdir to the same dir where config was loaded from
         # so that the certs etc. can be referenced more easily
-        Dir.chdir(File.dirname(config_file)) do
+        Dir.chdir(config_file.is_a?(Symbol) ? '.' : File.dirname(config_file)) do
           handle_masters(master_hosts[0], config)
           handle_workers(master_hosts[0], worker_hosts(config))
           handle_addons(master_hosts[0], config.addons)
@@ -63,14 +63,14 @@ module Kupo
 
     # @return [String] configuration content
     def config_content
-      config_file == :stdin ? $stdin.read : File.read(config_file)
+      config_file == :stdin ? $stdin : File.read(config_file)
     end
 
     # @param [String] configuration path
     # @return [Kupo::Config]
-    def load_config(config_file)
-      file_content = Kupo::Erb.new(config_file).render(ENV.to_h)
-      yaml = YAML.safe_load(file_content, [], [], true, config_file)
+    def load_config
+      file_content = Kupo::Erb.new(config_file, config_content).render(ENV.to_h)
+      yaml = YAML.safe_load(file_content, [], [], true, config_file.to_s)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
