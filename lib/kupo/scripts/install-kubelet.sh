@@ -1,14 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
-set -e
+if [ "$(kubelet --version)" != "Kubernetes v$KUBE_VERSION" ]; then
+  apt-get install -y iproute2 socat util-linux mount ebtables ethtool
 
-if [ "$(kubelet --version)" = "Kubernetes v$KUBE_VERSION" ]; then
-    exit 0
-fi
-
-apt-get install -y iproute2 socat util-linux mount ebtables ethtool
-
-cat <<"EOF" >/etc/systemd/system/kubelet.service
+  cat <<"EOF" >/etc/systemd/system/kubelet.service
 [Unit]
 Description=kubelet: The Kubernetes Node Agent
 Documentation=http://kubernetes.io/docs/
@@ -23,9 +18,9 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-# Put in the basic kubelet config, later kubeadm commands will make things work properly
-mkdir -p /etc/systemd/system/kubelet.service.d/
-cat <<"EOF" >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+  # Put in the basic kubelet config, later kubeadm commands will make things work properly
+  mkdir -p /etc/systemd/system/kubelet.service.d/
+  cat <<"EOF" >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 [Service]
 Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
 Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
@@ -38,24 +33,24 @@ ExecStart=
 ExecStart=/usr/local/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_AUTHZ_ARGS $KUBELET_CADVISOR_ARGS $KUBELET_CERTIFICATE_ARGS $KUBELET_EXTRA_ARGS
 EOF
 
-systemctl daemon-reload
+  systemctl daemon-reload
 
-if systemctl is-active --quiet kubelet ; then
-    systemctl stop kubelet
+  if systemctl is-active --quiet kubelet ; then
+      systemctl stop kubelet
+  fi
+
+  /opt/kontena/bin/install-kube-bin.sh kubelet
+
+  # TODO: improve with versioning
+  mkdir -p /opt/cni/bin
+  cd /opt/cni/bin
+  curl -sSL https://dl.bintray.com/kontena/pharos-bin/cni-plugins/cni-plugins-${ARCH}-v0.6.0.tgz | tar zx
 fi
-
-for bin in kubelet kubectl kubeadm
-do
-    curl -sSL https://dl.bintray.com/kontena/pharos-bin/kube/${KUBE_VERSION}/${bin}-${ARCH}.gz | gunzip > /usr/local/bin/${bin}
-    chmod +x /usr/local/bin/${bin}
-done
-
-mkdir -p /opt/cni/bin
-cd /opt/cni/bin
-curl -sSL https://dl.bintray.com/kontena/pharos-bin/cni-plugins/cni-plugins-${ARCH}-v0.6.0.tgz | tar zx
 
 if ! systemctl is-enabled --quiet kubelet ; then
     systemctl enable kubelet
 fi
 
-systemctl start kubelet
+if ! systemctl is-active --quiet kubelet ; then
+  systemctl start kubelet
+fi

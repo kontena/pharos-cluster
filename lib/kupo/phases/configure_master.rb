@@ -105,9 +105,7 @@ module Kupo
 
       def upgrade
         logger.info(@master.address) { "Upgrading control plane ..." }
-        exec_script("install-kubeadm.sh",
-                    VERSION: Kupo::KUBEADM_VERSION,
-                    ARCH: @master.cpu_arch.name)
+        Kupo::Phases::ConfigureKubelet.new(@master).install_kubeadm
 
         cfg = generate_config
         @ssh.with_tmpfile(cfg.to_yaml) do |tmp_file|

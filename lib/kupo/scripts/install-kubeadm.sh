@@ -1,7 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 
-set -ex
-
-curl -sSL https://dl.bintray.com/kontena/pharos-bin/kube/${VERSION}/kubeadm-${ARCH}.gz | gunzip > /usr/local/bin/kubeadm
-chmod +x /usr/local/bin/kubeadm
-
+if [ "$(kubeadm version -o short)" != "v${KUBE_VERSION}" ]; then
+  /opt/kontena/bin/install-kube-bin.sh kubeadm
+fi

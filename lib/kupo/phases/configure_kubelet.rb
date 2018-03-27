@@ -20,7 +20,10 @@ module Kupo
       end
 
       def call
-        configure_kube
+        logger.info { "Installing Kubernetes packages ..." }
+        install_kubelet
+        install_kubectl
+        install_kubeadm
 
         logger.info { 'Configuring kubelet ...' }
         ensure_dropin(build_systemd_dropin)
@@ -36,12 +39,26 @@ module Kupo
         @ssh.exec!("sudo systemctl restart kubelet")
       end
 
-      def configure_kube
-        logger.info { "Configuring Kubernetes packages ..." }
+      def install_kubelet
         exec_script(
-          'configure-kube.sh',
+          'install-kubelet.sh',
           KUBE_VERSION: Kupo::KUBE_VERSION,
-          KUBEADM_VERSION: Kupo::KUBEADM_VERSION,
+          ARCH: @host.cpu_arch.name
+        )
+      end
+
+      def install_kubectl
+        exec_script(
+          'install-kubectl.sh',
+          KUBE_VERSION: Kupo::KUBE_VERSION,
+          ARCH: @host.cpu_arch.name
+        )
+      end
+
+      def install_kubeadm
+        exec_script(
+          'install-kubeadm.sh',
+          KUBE_VERSION: Kupo::KUBEADM_VERSION,
           ARCH: @host.cpu_arch.name
         )
       end
