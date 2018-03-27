@@ -47,11 +47,19 @@ module Kupo
         else
           raise Kupo::Error, "Unknown container runtime: #{@host.container_runtime}"
         end
+
+        logger.info { "Preparing binary installation ..." }
+        prepare_install
       end
 
       def configure_repos
         exec_script('repos/cri-o.sh') if crio?
         exec_script('repos/update.sh')
+      end
+
+      def prepare_install
+        @ssh.exec!('sudo mkdir -p /opt/kontena/bin')
+        install_script('/opt/kontena/bin/install-kube-bin.sh', 'install-kube-bin.sh')
       end
 
       # @param script [String]

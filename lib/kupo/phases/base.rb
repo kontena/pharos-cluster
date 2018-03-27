@@ -18,6 +18,14 @@ module Kupo
                           env: vars,
                           path: File.realpath(File.join(__dir__, '..', 'scripts', script)))
       end
+
+      # @param path [String] path on host
+      # @param script [String] name of file under ../scripts/
+      def install_script(path, script)
+        @ssh.install_file(path, File.realpath(File.join(__dir__, '..', 'scripts', script)),
+          mode: 0o755,
+        )
+      end
     end
   end
 end

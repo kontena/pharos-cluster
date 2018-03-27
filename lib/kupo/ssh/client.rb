@@ -252,6 +252,18 @@ module Kupo
         exec!("sudo mv #{tmp_path} #{path} || rm #{tmp_path}")
       end
 
+      # @param path [String]
+      # @return [String]
+      def install_file(path, contents, prefix: 'kupo', mode: 0o644)
+        tmp_path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
+
+        upload(StringIO.new(contents), tmp_path)
+
+        exec!("sudo install -m #{mode.to_s(8)} #{tmp_path} #{path}")
+      ensure
+        exec("rm #{tmp_path}") if tmp_path
+      end
+
       # @param contents [String]
       # @yield [path]
       # @yieldparam path [String] /tmp/...
