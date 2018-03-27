@@ -13,6 +13,10 @@ module Kupo
         @ssh = Kupo::SSH::Client.for_host(@master)
       end
 
+      def client
+        @client ||= Kupo::Kube.client(@master.address)
+      end
+
       def call
         logger.info { "Checking if Kubernetes control plane is already initialized ..." }
         if install?
@@ -33,10 +37,13 @@ module Kupo
       def upgrade?
         return false unless Kupo::Kube.config_exists?(@master.address)
 
-        client = Kupo::Kube.client(@master.address)
+        kubeadm_configmap['kubernetesVersion'] != "v#{Kupo::KUBE_VERSION}"
+      end
+
+      # @return [Hash]
+      def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        config = YAML.safe_load(configmap.data[:MasterConfiguration])
-        config['kubernetesVersion'] != "v#{Kupo::KUBE_VERSION}"
+        YAML.safe_load(configmap.data[:MasterConfiguration])
       end
 
       def install
@@ -103,12 +110,8 @@ module Kupo
                     ARCH: @master.cpu_arch.name)
 
         cfg = generate_config
-        tmp_file = File.join('/tmp', 'kubeadm.cfg.' + SecureRandom.hex(16))
-        begin
-          @ssh.upload(StringIO.new(cfg.to_yaml), tmp_file)
-          @ssh.exec!("sudo kubeadm upgrade apply #{Kupo::KUBE_VERSION} -y --force --config #{tmp_file}")
-        ensure
-          @ssh.exec!("rm #{tmp_file}")
+        @ssh.with_tmpfile(cfg.to_yaml) do |tmp_file|
+          @ssh.exec!("sudo kubeadm upgrade apply #{Kupo::KUBE_VERSION} -y --allow-experimental-upgrades --config #{tmp_file}")
         end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
 
