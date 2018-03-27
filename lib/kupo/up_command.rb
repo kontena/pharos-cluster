@@ -75,6 +75,10 @@ module Kupo
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
       end
+      parse_config(yaml)
+    end
+
+    def parse_config(yaml)
       schema_class = Kupo::ConfigSchema.build
       schema = schema_class.call(yaml)
       unless schema.success?
