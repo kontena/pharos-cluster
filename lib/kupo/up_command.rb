@@ -69,8 +69,7 @@ module Kupo
     # @param [String] configuration path
     # @return [Kupo::Config]
     def load_config(config_file)
-      file_content = Kupo::Erb.new(config_file).render(ENV.to_h)
-      yaml = YAML.safe_load(file_content, [], [], true, config_file)
+      yaml = Kupo::Erb.new(config_file).load_yaml(ENV.to_h)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10

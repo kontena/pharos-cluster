@@ -36,14 +36,14 @@ module Kupo
 
       def upgrade?
         return false unless Kupo::Kube.config_exists?(@master.address)
-
         kubeadm_configmap['kubernetesVersion'] != "v#{Kupo::KUBE_VERSION}"
       end
 
       # @return [Hash]
       def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        YAML.safe_load(configmap.data[:MasterConfiguration])
+        config = YAML.safe_load(configmap.data[:MasterConfiguration], [], [], true, "#{@master.address}::kubeadm-config")
+        config['kubernetesVersion'] != "v#{kube_component.version}"
       end
 
       def install

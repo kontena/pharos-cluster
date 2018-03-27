@@ -1,17 +1,44 @@
 # frozen_string_literal: true
 
 require 'erb'
-require 'ostruct'
+require 'yaml'
 
 module Kupo
   class Erb
+    class Namespace
+      Error = Class.new(Kupo::Error)
+
+      def initialize(path, hash)
+        @path = path
+        hash.each do |key, value|
+          singleton_class.send(:define_method, key) { value }
+        end
+      end
+
+      def inspect
+        super.sub('>', "for='#{@path}'>")
+      end
+
+      def with_binding(&block)
+        yield binding
+      rescue NameError => ex
+        raise Error, "#{ex.message} in file #{@path}"
+      end
+    end
+
     def initialize(path)
       @path = path
     end
 
+    def load_yaml(vars = {})
+      YAML.safe_load(render(vars), [], [], true, @path)
+    end
+
     def render(vars = {})
       if erb?
-        ERB.new(template, nil, '%<>-').result(OpenStruct.new(vars).instance_eval { binding })
+        Namespace.new(@path, vars).with_binding do |ns_binding|
+          ERB.new(template, nil, '%<>-').result(ns_binding)
+        end
       else
         template
       end

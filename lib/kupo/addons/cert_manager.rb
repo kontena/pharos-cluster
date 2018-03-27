@@ -9,7 +9,7 @@ module Kupo
 
       class Issuer < Kupo::Addons::Struct
         attribute :name, Kupo::Types::String
-        attribute :server, Kupo::Types::String
+        attribute :server, Kupo::Types::String.optional
         attribute :email, Kupo::Types::String.default('https://acme-v01.api.letsencrypt.org/directory')
       end
 
