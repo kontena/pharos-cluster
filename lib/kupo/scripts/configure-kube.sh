@@ -44,8 +44,7 @@ if systemctl is-active --quiet kubelet ; then
     systemctl stop kubelet
 fi
 
-binaries=(kubelet kubectl kubeadm)
-for bin in "${binaries[@]}"
+for bin in kubelet kubectl kubeadm
 do
     curl -sSL https://dl.bintray.com/kontena/pharos-bin/kube/${KUBE_VERSION}/${bin}-${ARCH}.gz | gunzip > /usr/local/bin/${bin}
     chmod +x /usr/local/bin/${bin}
