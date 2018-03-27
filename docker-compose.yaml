@@ -1,4 +1,4 @@
-dev:
+kupo:
   build: .
   volumes:
   - .:/app
@@ -6,4 +6,5 @@ dev:
   - ./.kupo:/root/.kupo
   environment:
   - SSH_AUTH_SOCK=/run/ssh-agent.sock
-  command: bin/kupo up
+  entrypoint: bin/kupo
+  command: up
