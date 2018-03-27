@@ -10,21 +10,25 @@ module Kupo
       struct {
         attribute :configmap, Kupo::Types::Hash
         attribute :node_selector, Kupo::Types::Hash
-        attribute :image, Kupo::Types::String
+        attribute :default_backend, Kupo::Types::Hash
       }
 
       schema {
         optional(:configmap).filled(:hash?)
         optional(:node_selector).filled(:hash?)
-        optional(:image).filled(:str?)
+        optional(:default_backend).filled(:hash?)
       }
 
+      DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'.freeze
+      DEFAULT_BACKEND_IMAGE = 'docker.io/kontena/pharos-default-backend:0.0.2'.freeze
+
       def image_name
-        return config.image if config.image
+        return config.default_backend[:image] if config.default_backend&.dig(:image)
+
         if host.cpu_arch.name == 'arm64'
-          'kontena/pharos-default-backend-arm64:0.0.2'
+          DEFAULT_BACKEND_ARM64_IMAGE
         else
-          'kontena/pharos-default-backend:0.0.2'
+          DEFAULT_BACKEND_IMAGE
         end
       end
 
