@@ -13,6 +13,10 @@ module Kupo
         @ssh = Kupo::SSH::Client.for_host(@master)
       end
 
+      def client
+        @client ||= Kupo::Kube.client(@master.address)
+      end
+
       def call
         logger.info { "Checking if Kubernetes control plane is already initialized ..." }
         if install?
@@ -33,13 +37,18 @@ module Kupo
       def upgrade?
         return false unless Kupo::Kube.config_exists?(@master.address)
 
-        client = Kupo::Kube.client(@master.address)
+        kubeadm_configmap['kubernetesVersion'] != "v#{Kupo::KUBE_VERSION}"
+      end
+
+      # @return [Hash]
+      def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        config = YAML.safe_load(configmap.data[:MasterConfiguration])
-        config['kubernetesVersion'] != "v#{kube_component.version}"
+        YAML.safe_load(configmap.data[:MasterConfiguration])
       end
 
       def install
+        Kupo::Phases::ConfigureKubelet.new(@master).call
+
         cfg = generate_config
 
         # Copy etcd certs over if needed
@@ -67,7 +76,7 @@ module Kupo
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
           'kind' => 'MasterConfiguration',
-          'kubernetesVersion' => kube_component.version,
+          'kubernetesVersion' => Kupo::KUBE_VERSION,
           'apiServerCertSANs' => [@master.address, @master.private_address].compact.uniq,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
@@ -95,13 +104,18 @@ module Kupo
       end
 
       def upgrade
-        @ssh.exec!("sudo kubeadm upgrade apply #{kube_component.version} -y")
+        logger.info(@master.address) { "Upgrading control plane ..." }
+        exec_script("install-kubeadm.sh",
+                    VERSION: Kupo::KUBEADM_VERSION,
+                    ARCH: @master.cpu_arch.name)
 
+        cfg = generate_config
+        @ssh.with_tmpfile(cfg.to_yaml) do |tmp_file|
+          @ssh.exec!("sudo kubeadm upgrade apply #{Kupo::KUBE_VERSION} -y --allow-experimental-upgrades --config #{tmp_file}")
+        end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
-      end
 
-      def kube_component
-        @kube_component ||= Kupo::Phases.find_component(name: 'kubernetes')
+        Kupo::Phases::ConfigureKubelet.new(@master).call
       end
     end
   end

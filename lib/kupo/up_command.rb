@@ -133,7 +133,6 @@ module Kupo
     def handle_masters(master, config)
       log_host_header(master)
       Phases::ConfigureHost.new(master).call
-      Phases::ConfigureKubelet.new(master).call
       Phases::ConfigureMaster.new(master, config).call
       Phases::ConfigureClient.new(master).call
       Phases::ConfigureDNS.new(master, config).call
