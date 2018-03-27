@@ -100,8 +100,20 @@ module Kupo
       File.exist?(File.join(Dir.home, ".kupo/#{host}"))
     end
 
+    # @example
+    #   resource_path('host-nodes', '*.yml')
+    #   => "<KUPO_DIR>/resources/host-nodes/*.yml"
+    # @param path_component [String, ..] extra path components to join to the result
+    # @return [String]
+    def self.resource_path(*joinables)
+      File.join(__dir__, 'resources', *joinables)
+    end
+
+    # Returns a list of .yml and .yml.erb files in the stack's resource directory
+    # @param stack [String]
+    # @return [Array<String>]
     def self.resource_files(stack)
-      Dir.glob(File.join(__dir__, 'resources', stack, '*.{yml,yml.erb}'))
+      Dir.glob(resource_path(stack, '*.{yml,yml.erb}'))
     end
 
     # @param host [Kupo::Configuration::Host]
@@ -214,7 +226,12 @@ module Kupo
     # @param path [String]
     # @return [Kubeclient::Resource]
     def self.parse_resource_file(path, vars = {})
-      Kubeclient::Resource.new(Kupo::Erb.new(File.realpath(path)).load_yaml(vars))
+      Kubeclient::Resource.new(
+        YAML.safe_load(
+          Kupo::Erb.new(File.realpath(resource_path(path))).render(vars),
+          [], [], true, path
+        )
+      )
     end
 
     # @param kind [String]
