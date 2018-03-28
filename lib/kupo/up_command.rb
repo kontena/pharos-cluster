@@ -64,7 +64,7 @@ module Kupo
     # @param [String] configuration path
     # @return [Kupo::Config]
     def load_config
-      yaml = YAML.safe_load(config_file.read, [], [], true, config_file.inspect)
+      yaml = YAML.safe_load(config_file.read, [], [], true, config_file.respond_to?(:path) ? config_file.path : '<STDIN>')
       config_file.close
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
