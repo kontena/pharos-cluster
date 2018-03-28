@@ -1,6 +1,6 @@
 # Authentication Token Webhook
 
-Example authetnication token webhook configuration
+Example authentication token webhook configuration
 
 ## Quickstart
 
