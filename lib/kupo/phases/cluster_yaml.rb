@@ -33,7 +33,7 @@ module Kupo
             name: 'cluster-yaml'
           },
           data: {
-            'cluster.yml' => @config
+            'cluster.yml' => @config.to_yaml
           }
         )
       end
