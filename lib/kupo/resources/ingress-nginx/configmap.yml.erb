@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-configuration
+  namespace: ingress-nginx
+  labels:
+    app: ingress-nginx
+data:
+  <% configmap.each do |k, v| %>
+  <%= k %>: "<%= v %>"
+  <% end %>

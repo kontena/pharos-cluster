@@ -2,20 +2,20 @@
 
 module Kupo
   class UpCommand < Kupo::Command
-    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_path|
+    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_content do |config_file|
       begin
-        File.realpath(config_path)
+        YAML.safe_load(File.read(File.realpath(config_file)), [], [], true, config_file)
       rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
+        signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
       end
     end
 
-    def default_config_file
+    def default_config_content
       if !$stdin.tty? && !$stdin.eof?
-        :stdin
+        YAML.safe_load($stdin.read, [], [], true, '<stdin>')
       else
         begin
-          File.realpath('cluster.yml')
+          YAML.safe_load(File.read(File.realpath('cluster.yml')), [], [], true, 'cluster.yml')
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: cluster.yml'
         end
@@ -24,7 +24,7 @@ module Kupo
 
     def execute
       puts pastel.green("==> Reading instructions ...")
-      configure(load_config(config_content))
+      configure(load_config)
     end
 
     def configure(config)
@@ -40,7 +40,7 @@ module Kupo
         validate_hosts(config.hosts)
         # set workdir to the same dir where config was loaded from
         # so that the certs etc. can be referenced more easily
-        Dir.chdir(File.dirname(config_file)) do
+        Dir.chdir(config_file.is_a?(Symbol) ? '.' : File.dirname(config_file)) do
           handle_masters(master_hosts[0], config)
           handle_workers(master_hosts[0], worker_hosts(config))
           handle_addons(master_hosts[0], config.addons)
@@ -61,19 +61,17 @@ module Kupo
       }.compact.reverse.join(' ')
     end
 
-    # @return [String] configuration content
-    def config_content
-      config_file == :stdin ? $stdin.read : File.read(config_file)
-    end
-
-    # @param [String] configuration content
+    # @param [String] configuration path
     # @return [Kupo::Config]
-    def load_config(content)
-      yaml = YAML.safe_load(content)
-      if yaml.is_a?(String)
-        signal_usage_error "File #{config_file} is not in YAML format"
+    def load_config
+      if config_content.is_a?(String)
+        signal_usage_error "Configuration is not in YAML format"
         exit 10
       end
+      parse_config(config_content)
+    end
+
+    def parse_config(yaml)
       schema_class = Kupo::ConfigSchema.build
       schema = schema_class.call(yaml)
       unless schema.success?

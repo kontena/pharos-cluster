@@ -2,7 +2,7 @@ describe Kupo::Kube do
 
   describe '.parse_resource_file' do
     it 'returns resource' do
-      resource = described_class.parse_resource_file('host-upgrades/daemonset.yml', {
+      resource = described_class.parse_resource_file('host-upgrades/daemonset.yml.erb', {
         arch: double(:arch, name: 'amd64')
       })
       expect(resource.metadata.name).to eq('host-upgrades')
@@ -33,6 +33,14 @@ describe Kupo::Kube do
         }
         expect(described_class.config_exists?(host.address)).to be_truthy
       end
+    end
+  end
+
+  describe '.resource_files' do
+    it 'returns a list of .yml and .yml.erb files in the stack directory' do
+      file_list = described_class.resource_files('ingress-nginx')
+      expect(file_list.select { | f| f.end_with?('.yml.erb') }).not_to be_empty
+      expect(file_list.select { | f| f.end_with?('.yml') }).not_to be_empty
     end
   end
 end
