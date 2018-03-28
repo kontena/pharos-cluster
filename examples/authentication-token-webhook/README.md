@@ -23,14 +23,16 @@ authentication:
 ```sh
 $ kupo up
 $ export KUBECONFIG=~/.kupo/<master-ip>
+```
 
 3. Deploy token reviewer service
+
 ```sh
 $ kubectl apply -f ./deploy
 ```
 The default user and token are `admin/verysecret`, but you can edit `daemonset.yml` and `cluster_role_binding.yml` to change those.
 
-4. Request Kube API server with token
+4. Request API server with the token
 ```sh
 $ curl -X GET \
   https://<master-ip>:6443/api/v1/nodes \

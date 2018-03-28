@@ -87,8 +87,6 @@ authentication:
     cache_ttl: 5m # optional
 ```
 
-See [./examples/authentication-token-webhook/README.md](./examples/authentication-token-webhook/README.md) for running example service.
-
 ## Addons
 
 Kupo includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
