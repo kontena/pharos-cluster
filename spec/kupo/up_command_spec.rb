@@ -13,7 +13,7 @@ describe Kupo::UpCommand do
     context 'default from cluster.yml in current directory' do
       it 'reads the cluster.yml from current directory' do
         allow(File).to receive(:realpath).with('cluster.yml').and_return('cluster.yml')
-        expect(File).to receive(:open).with('cluster.yml').and_return(StringIO.new(cfg))
+        expect(File).to receive(:read).with('cluster.yml').and_return(cfg)
         subject.run([])
       end
     end
@@ -21,7 +21,7 @@ describe Kupo::UpCommand do
     context 'using --config' do
       it 'reads the file from the specified location' do
         allow(File).to receive(:realpath).with('/tmp/test.yml').and_return('test.yml')
-        expect(File).to receive(:open).with('test.yml').and_return(StringIO.new(cfg))
+        expect(File).to receive(:read).with('test.yml').and_return(cfg)
         subject.run(['--config', '/tmp/test.yml'])
       end
     end
