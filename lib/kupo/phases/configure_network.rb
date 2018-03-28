@@ -18,11 +18,9 @@ module Kupo
       def initialize(master, config)
         @master = master
         @config = config
-        @ssh = Kupo::SSH::Client.for_host(@master)
       end
 
       def call
-        configure_cni
         ensure_passwd
         ensure_resources
       end
@@ -56,10 +54,6 @@ module Kupo
           arch: @master.cpu_arch,
           version: WEAVE_VERSION
         )
-      end
-
-      def configure_cni
-        exec_script('configure-weave-cni.sh')
       end
 
       def generate_password
