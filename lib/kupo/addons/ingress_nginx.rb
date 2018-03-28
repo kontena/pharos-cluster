@@ -21,8 +21,8 @@ module Kupo
         end
       }
 
-      DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'.freeze
-      DEFAULT_BACKEND_IMAGE = 'docker.io/kontena/pharos-default-backend:0.0.2'.freeze
+      DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'
+      DEFAULT_BACKEND_IMAGE = 'docker.io/kontena/pharos-default-backend:0.0.2'
 
       def image_name
         return config.default_backend[:image] if config.default_backend&.dig(:image)
@@ -38,7 +38,7 @@ module Kupo
         apply_stack(
           configmap: config.configmap || {},
           node_selector: config.node_selector,
-          image: self.image_name
+          image: image_name
         )
       end
     end
