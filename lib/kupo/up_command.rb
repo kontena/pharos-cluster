@@ -4,7 +4,7 @@ module Kupo
   class UpCommand < Kupo::Command
     option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_file|
       begin
-        File.realpath(config_file)
+        File.open(File.realpath(config_file))
       rescue Errno::ENOENT
         signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
       end
@@ -12,10 +12,10 @@ module Kupo
 
     def default_config_file
       if !$stdin.tty? && !$stdin.eof?
-        :stdin
+        $stdin
       else
         begin
-          File.realpath('cluster.yml')
+          File.open(File.realpath('cluster.yml'))
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: cluster.yml'
         end
@@ -61,16 +61,11 @@ module Kupo
       }.compact.reverse.join(' ')
     end
 
-    # @return [String] configuration content
-    def config_content
-      config_file == :stdin ? $stdin : File.read(config_file)
-    end
-
     # @param [String] configuration path
     # @return [Kupo::Config]
     def load_config
-      file_content = Kupo::Erb.new(config_file, config_content).render(ENV.to_h)
-      yaml = YAML.safe_load(file_content, [], [], true, config_file.to_s)
+      yaml = YAML.safe_load(config_file.read, [], [], true, config_file.inspect)
+      config_file.close
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
