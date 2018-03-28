@@ -11,6 +11,21 @@ describe Kupo::Addons::IngressNginx do
     test_addon.new(host, {foo: 'bar'})
   end
 
+  describe "#validate" do
+    it "validates default_backend as optional" do
+      result = described_class.validate({enabled: true})
+      expect(result.success?).to be_truthy
+
+    end
+
+    it "wants image in default_backend to be a string" do
+       result = described_class.validate({enabled: true, default_backend: {image: 12345}})
+       expect(result.success?).to be_falsey
+       expect(result.errors.dig(:default_backend, :image)).not_to be_nil
+    end
+  end
+
+
   describe "#image_name" do
     it "returns configured name" do
       expect(cpu_arch).not_to receive(:name)

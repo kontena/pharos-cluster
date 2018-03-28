@@ -16,7 +16,9 @@ module Kupo
       schema {
         optional(:configmap).filled(:hash?)
         optional(:node_selector).filled(:hash?)
-        optional(:default_backend).filled(:hash?)
+        optional(:default_backend).schema do
+          optional(:image).filled(:str?)
+        end
       }
 
       DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'.freeze
