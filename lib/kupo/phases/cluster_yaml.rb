@@ -40,4 +40,3 @@ module Kupo
     end
   end
 end
-
