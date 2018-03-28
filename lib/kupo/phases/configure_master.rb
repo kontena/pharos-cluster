@@ -108,14 +108,14 @@ module Kupo
 
         # Only if authentication token webhook option are given
         if @config.authentication&.token_webhook
-          config['apiServerExtraArgs'].merge!(add_authentication_token_webhook_args(@config.authentication.token_webhook.cache_ttl))
-          config['apiServerExtraVolumes'] += add_extra_volume_mounts
+          config['apiServerExtraArgs'].merge!(authentication_token_webhook_args(@config.authentication.token_webhook.cache_ttl))
+          config['apiServerExtraVolumes'] += volume_mounts_for_authentication_token_webhook
         end
 
         config
       end
 
-      def add_authentication_token_webhook_args(cache_ttl = nil)
+      def authentication_token_webhook_args(cache_ttl = nil)
         config = {
           'authentication-token-webhook-config-file' => AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR + '/token-webhook-config.yaml'
         }
@@ -123,7 +123,7 @@ module Kupo
         config
       end
 
-      def add_extra_volume_mounts
+      def volume_mounts_for_authentication_token_webhook
         volume_mounts = []
         volume_mount = {
           'name' => 'k8s-auth-token-webhook',
