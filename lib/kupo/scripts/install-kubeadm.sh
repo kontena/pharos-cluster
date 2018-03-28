@@ -2,6 +2,7 @@
 
 set -ex
 
-curl -sSL https://dl.bintray.com/kontena/pharos-bin/kube/${VERSION}/kubeadm-${ARCH}.gz | gunzip > /usr/local/bin/kubeadm
-chmod +x /usr/local/bin/kubeadm
-
+cd /tmp
+apt-get download kubeadm=${VERSION}-00
+dpkg -i --ignore-depends=kubelet kubeadm_${VERSION}*.deb
+rm -f kubeadm_${VERSION}*.deb
