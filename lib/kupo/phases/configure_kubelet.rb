@@ -20,6 +20,7 @@ module Kupo
       end
 
       def call
+        configure_cni
         configure_kube
 
         logger.info { 'Configuring kubelet ...' }
@@ -44,6 +45,10 @@ module Kupo
           KUBEADM_VERSION: Kupo::KUBEADM_VERSION,
           ARCH: @host.cpu_arch.name
         )
+      end
+
+      def configure_cni
+        exec_script('configure-weave-cni.sh')
       end
 
       # @return [String, nil]
