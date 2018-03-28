@@ -21,10 +21,6 @@ module Kupo
     autoload :Client, 'kupo/ssh/client'
   end
 
-  module Kube
-    autoload :CertManager, 'kupo/kube/cert_manager'
-  end
-
   module Addons
   end
 end

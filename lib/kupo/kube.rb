@@ -5,6 +5,8 @@ require 'deep_merge'
 
 module Kupo
   module Kube
+    autoload :CertManager, 'kupo/kube/cert_manager'
+
     class Client < ::Kubeclient::Client
       def entities
         if @entities.empty?
