@@ -5,7 +5,7 @@ set -e
 mkdir -p /etc/cni/net.d/
 cat <<EOF >/etc/cni/net.d/00-pharos.conflist
 {
-    "cniVersion": "0.3.1",
+    "cniVersion": "0.3.0",
     "name": "pharos",
     "plugins": [
         {

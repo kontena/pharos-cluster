@@ -18,6 +18,7 @@ module Kupo
       def initialize(master, config)
         @master = master
         @config = config
+        @ssh = Kupo::SSH::Client.for_host(@master)
       end
 
       def call
