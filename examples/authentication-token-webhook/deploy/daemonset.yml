@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: k8s-token-reviewer
+  namespace: kube-system
+  labels:
+    k8s-app: k8s-token-reviewer
+    version: v0.0.1
+spec:
+  selector:
+    matchLabels:
+      k8s-app: k8s-token-reviewer
+  template:
+    metadata:
+      labels:
+        k8s-app: k8s-token-reviewer
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ''
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      containers:
+        - image: nevalla/token_webhook_example:latest
+          name: k8s-token-reviewer
+          imagePullPolicy: Always
+          env:
+            - name: USER
+              value: admin
+            - name: TOKEN
+              value: verysecret
+            - name: GROUP
+              value: admin
+      hostNetwork: true
+      restartPolicy: Always
