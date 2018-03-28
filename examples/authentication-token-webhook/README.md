@@ -28,7 +28,7 @@ $ export KUBECONFIG=~/.kupo/<master-ip>
 3. Deploy token reviewer service
 
 ```sh
-$ kubectl apply -f ./deploy
+$ kubectl apply -f ./examples/authentication-token-webhook/deploy
 ```
 The default user and token are `admin/verysecret`, but you can edit `daemonset.yml` and `cluster_role_binding.yml` to change those.
 
