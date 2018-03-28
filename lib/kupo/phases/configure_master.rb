@@ -172,25 +172,23 @@ module Kupo
         }
 
         if webhook_config[:cluster][:certificate_authority]
-          config["clusters"][0]["cluster"]["certificate-authority"] = PHAROS_DIR + "/token_webhook/ca.pem"
+          config['clusters'][0]['cluster']['certificate-authority'] = PHAROS_DIR + '/token_webhook/ca.pem'
         end
 
         if webhook_config[:user][:client_certificate]
-          config["users"][0]["user"]["client-certificate"] = PHAROS_DIR + "/token_webhook/cert.pem"
+          config['users'][0]['user']['client-certificate'] = PHAROS_DIR + '/token_webhook/cert.pem'
         end
 
         if webhook_config[:user][:client_key]
-          config["users"][0]["user"]["client-key"] = PHAROS_DIR + "/token_webhook/key.pem"
+          config['users'][0]['user']['client-key'] = PHAROS_DIR + '/token_webhook/key.pem'
         end
 
         config
       end
 
       def upload_authentication_token_webhook_config(config)
-        filename = 'token-webhook-config.yaml'
-        @ssh.exec!("sudo mkdir -p #{AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR}")
-        @ssh.upload(StringIO.new(config.to_yaml), "/tmp/#{filename}")
-        @ssh.exec!("sudo mv /tmp/#{filename} #{AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR}")
+        @ssh.exec!('sudo mkdir -p ' + AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR)
+        @ssh.write_file(AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR + '/token-webhook-config.yaml', config.to_yaml)
       end
 
       def upload_authentication_token_webhook_certs(webhook_config)
