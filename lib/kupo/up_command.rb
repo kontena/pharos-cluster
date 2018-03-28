@@ -77,7 +77,7 @@ module Kupo
       schema_class = Kupo::ConfigSchema.build
       extra_keys = yaml.keys.map(&:to_sym) - schema_class.rules.keys
       unless extra_keys.empty?
-        signal_usage_error "Unexpected keys [%p] found in #{config_file}" % extra_keys.map(&:to_s)
+        signal_usage_error "Unexpected keys [%<extra_keys>p] found in #{config_file}" % { extra_keys: extra_keys.map(&:to_s) }
         exit 10
       end
       schema = schema_class.call(yaml)
