@@ -120,7 +120,7 @@ describe Kupo::Phases::ConfigureMaster do
       it 'comes with proper authentication webhook token config' do
         config = subject.generate_config
         expect(config['apiServerExtraArgs']['authentication-token-webhook-config-file'])
-          .to eq('/etc/kubernetes/authentication/token-webhook-config.yml')
+          .to eq('/etc/kubernetes/authentication/token-webhook-config.yaml')
       end
 
       it 'comes with proper volumen mounts' do
