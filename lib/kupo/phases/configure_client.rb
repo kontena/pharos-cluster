@@ -16,8 +16,8 @@ module Kupo
         config_file = File.join(config_dir, @master.address)
         logger.info { "Fetching kubectl config ..." }
         config_data = @ssh.read_file("/etc/kubernetes/admin.conf")
-        File.write(config_file, config_data.gsub(%r{(server: https://)(.+)(:6443)}, "\\1#{@master.address}\\3"))
-        File.chmod(0o600, config_file)
+        File.chmod(0o600, config_file) if File.exist?(config_file)
+        File.write(config_file, config_data.gsub(%r{(server: https://)(.+)(:6443)}, "\\1#{@master.address}\\3"), perm: 0o600)
         logger.info { "Configuration saved to #{config_file}" }
       end
 
