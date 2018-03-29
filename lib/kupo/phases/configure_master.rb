@@ -67,7 +67,7 @@ module Kupo
         end
 
         logger.info(@master.address) { "Initialization of control plane succeeded!" }
-        @ssh.exec!('install -o $USER -m 0700 -d ~/.kube')
+        @ssh.exec!('install -m 0700 -d ~/.kube')
         @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
 
