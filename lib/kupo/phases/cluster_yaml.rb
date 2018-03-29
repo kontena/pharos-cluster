@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
 require_relative 'base'
-require 'json'
 
 module Kupo
   module Phases
     class ClusterYAML < Base
       # @param master [Kupo::Configuration::Node]
       # @param config [Kupo::Config]
-      def initialize(master, config)
+      def initialize(master, config_content)
         @master = master
-        @config = config
+        @config_content = config_content
       end
 
       def call
@@ -34,7 +33,7 @@ module Kupo
             name: 'cluster-yaml'
           },
           data: {
-            'cluster.yml' => JSON.parse(JSON.dump(@config.to_h)).to_yaml
+            'cluster.yml' => @config_content
           }
         )
       end
