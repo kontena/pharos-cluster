@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'base'
+require 'json'
 
 module Kupo
   module Phases
@@ -33,7 +34,7 @@ module Kupo
             name: 'cluster-yaml'
           },
           data: {
-            'cluster.yml' => @config.to_yaml
+            'cluster.yml' => JSON.parse(JSON.dump(@config.to_h)).to_yaml
           }
         )
       end
