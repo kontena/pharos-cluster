@@ -45,6 +45,7 @@ module Pharos
       def gather_host_facts(ssh)
         @host.os_release = os_release(ssh)
         @host.cpu_arch = cpu_arch(ssh)
+        @host.hostname = ssh.exec!('hostname -f').strip
       end
 
       # @param ssh [Pharos::SSH::Client]

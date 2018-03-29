@@ -59,7 +59,9 @@ module Pharos
             optional(:cache_ttl).filled
           end
         end
-
+        optional(:cloud).schema do
+          required(:provider).filled(:str?)
+        end
         optional(:addons).value(type?: Hash)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|

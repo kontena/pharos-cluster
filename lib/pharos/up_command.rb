@@ -42,7 +42,7 @@ module Pharos
         # so that the certs etc. can be referenced more easily
         Dir.chdir(File.dirname(config_file)) do
           handle_masters(master_hosts[0], config)
-          handle_workers(master_hosts[0], worker_hosts(config))
+          handle_workers(master_hosts[0], worker_hosts(config), config)
           handle_addons(master_hosts[0], config.addons)
         end
         craft_time = Time.now - start_time
@@ -143,13 +143,14 @@ module Pharos
     end
 
     # @param master [Pharos::Configuration::Node]
-    # @param nodes [Array<Pharos::Configuration::Node>]
-    def handle_workers(master, nodes)
+    # @param nodes [Array<Kupo::Configuration::Node>]
+    # @param config [Pharos::Config]
+    def handle_workers(master, nodes, config)
       nodes.each do |node|
         log_host_header(node)
         begin
           Phases::ConfigureHost.new(node).call
-          Phases::ConfigureKubelet.new(node).call
+          Phases::ConfigureKubelet.new(node, config).call
           Phases::JoinNode.new(node, master).call
           Phases::LabelNode.new(node, master).call
         end
