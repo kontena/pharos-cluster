@@ -1,8 +1,9 @@
 describe Pharos::UpCommand do
   subject { described_class.new('') }
 
-  let(:cfg) { YAML.dump('hosts' => []) }
-  let(:yaml) { YAML.load(cfg) }
+  let(:yaml) { { 'hosts' => [] } }
+  let(:cfg) { YAML.dump(yaml) }
+  let(:erb_cfg) { YAML.dump(yaml.merge('erb' => '<%= 5+5 %>')) }
 
   context 'configuration file' do
     before do
@@ -12,8 +13,17 @@ describe Pharos::UpCommand do
 
     context 'default from cluster.yml in current directory' do
       it 'reads the cluster.yml from current directory' do
-        expect(File).to receive(:realpath).with('cluster.yml').and_return('cluster.yml')
+        allow(Dir).to receive(:glob).and_return(['cluster.yml'])
         expect(File).to receive(:read).with('cluster.yml').and_return(cfg)
+        subject.run([])
+      end
+
+      it 'reads cluster.yml.erb from current directory' do
+        allow(Dir).to receive(:glob).and_return(['cluster.yml.erb'])
+        expect(File).to receive(:read).with('cluster.yml.erb').and_return(erb_cfg)
+        expect(subject).to receive(:parse_config) do |cfg|
+          expect(cfg).to match hash_including('erb' => "10")
+        end.and_return(yaml)
         subject.run([])
       end
     end

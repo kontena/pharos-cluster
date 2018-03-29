@@ -14,11 +14,9 @@ module Pharos
       if !$stdin.tty? && !$stdin.eof?
         Kupo::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
       else
-        begin
-          Kupo::YamlFile.new(File.realpath('cluster.yml'))
-        rescue Errno::ENOENT
-          signal_usage_error 'File does not exist: cluster.yml'
-        end
+        cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
+        signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
+        Kupo::YamlFile.new(cluster_config)
       end
     end
 
