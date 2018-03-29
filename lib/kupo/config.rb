@@ -5,6 +5,7 @@ require_relative 'types'
 require_relative 'configuration/host'
 require_relative 'configuration/network'
 require_relative 'configuration/etcd'
+require_relative 'configuration/audit'
 
 module Kupo
   class Config < Dry::Struct
@@ -16,6 +17,7 @@ module Kupo
     attribute :network, Kupo::Configuration::Network
     attribute :addons, Kupo::Types::Hash
     attribute :etcd, Kupo::Configuration::Etcd
+    attribute :audit, Kupo::Configuration::Audit
 
     # @return [Integer]
     def dns_replicas
