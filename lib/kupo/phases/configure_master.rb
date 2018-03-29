@@ -68,8 +68,8 @@ module Kupo
 
         logger.info(@master.address) { "Initialization of control plane succeeded!" }
 
-        @ssh.exec!('mkdir -p ~/.kube')
-        @ssh.exec!('sudo cat /etc/kubernetes/admin.conf > ~/.kube/config')
+        @ssh.exec!('mkdir -p ~/.kube; chmod 0700 ~/.kube')
+        @ssh.exec!('sudo cat /etc/kubernetes/admin.conf > ~/.kube/config && sudo chmod 0600 ~/.kube/config')
       end
 
       def generate_config
