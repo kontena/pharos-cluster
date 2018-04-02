@@ -38,5 +38,44 @@ describe Kupo::ConfigSchema do
         expect(result.success?).to be_truthy
       end
     end
+
+    context 'etcd' do
+      it 'works without etcd' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {}
+        })
+        expect(result.success?).to be_truthy
+      end
+
+      it 'requires endpoints' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "etcd" => {}
+        })
+        expect(result.success?).to be_falsey
+      end
+
+      it 'sets endpoints' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "etcd" => {
+            "endpoints" => [
+              "https://192.168.1.2"
+            ]
+          }
+        })
+        expect(result.success?).to be_truthy
+        expect(result.to_h.dig(:etcd, :endpoints, 0)).to eq("https://192.168.1.2")
+      end
+    end
   end
 end
