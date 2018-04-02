@@ -5,6 +5,10 @@ require_relative 'base'
 module Kupo
   module Phases
     class ConfigureMaster < Base
+
+      AUDIT_CFG_DIR = '/etc/kupo/audit'.freeze
+
+
       # @param master [Kupo::Configuration::Host]
       # @param config [Kupo::Configuration::Network]
       def initialize(master, config)
@@ -60,6 +64,18 @@ module Kupo
           @ssh.write_file('/etc/kupo/etcd/certificate-key.pem', File.read(@config.etcd.key))
         end
 
+        if @config.audit&.server
+          logger.info(@master.address) { "Pushing audit configs to master" }
+          @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
+          @ssh.write_file("#{AUDIT_CFG_DIR}/webhook.yml",
+            parse_resource_file('audit/webhook-config.yml',
+            {
+              server: @config.audit.server
+            })
+          )
+          @ssh.write_file("#{AUDIT_CFG_DIR}/policy.yml", parse_resource_file('audit/policy.yml', {}))
+        end
+
         logger.info(@master.address) { "Initializing control plane ..." }
 
         @ssh.with_tmpfile(cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
@@ -80,7 +96,9 @@ module Kupo
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
-          }
+          },
+          'apiServerExtraArgs' => {},
+          'apiServerExtraVolumes' => []
         }
 
         config['api'] = { 'advertiseAddress' => @master.private_address || @master.address }
@@ -99,7 +117,29 @@ module Kupo
           config['etcd']['caFile'] = '/etc/kupo/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
           config['etcd']['keyFile'] = '/etc/kupo/etcd/certificate-key.pem' if @config.etcd.key
         end
+
+        # Configure audit related things if needed
+        if @config.audit&.server
+          config['apiServerExtraArgs'].merge!({
+            "audit-webhook-config-file" => '/etc/kupo/audit/webhook.yml',
+            "audit-policy-file" => '/etc/kupo/audit/policy.yml'
+          })
+          config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
+        end
+
         config
+      end
+
+      def volume_mounts_for_audit_webhook
+        volume_mounts = []
+        volume_mount = {
+          'name' => 'k8s-audit-webhook',
+          'hostPath' => AUDIT_CFG_DIR,
+          'mountPath' => AUDIT_CFG_DIR
+        }
+        volume_mounts << volume_mount
+
+        volume_mounts
       end
 
       def upgrade

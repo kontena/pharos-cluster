@@ -24,6 +24,27 @@ describe Kupo::Phases::ConfigureMaster do
   end
 
   describe '#config_yaml' do
+    context 'with auth configuration' do
+      let(:config) { Kupo::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Kupo::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        audit: {
+          server: 'foobar'
+        }
+      ) }
+
+      it 'comes with proper audit config' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'audit-webhook-config-file')).to eq('/etc/kupo/audit/webhook.yml')
+        expect(config.dig('apiServerExtraVolumes')).to include({
+          'name' => 'k8s-audit-webhook',
+          'hostPath' => '/etc/kupo/audit',
+          'mountPath' => '/etc/kupo/audit'
+        })
+      end
+    end
+
     context 'with network configuration' do
       let(:config) { Kupo::Config.new(
         hosts: (1..config_hosts_count).map { |i| Kupo::Configuration::Host.new() },
