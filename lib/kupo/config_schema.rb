@@ -61,7 +61,7 @@ module Kupo
         end
 
         optional(:kube_proxy).schema do
-          optional(:mode).filled(included_in?: ['userspace', 'iptables', 'ipvs'])
+          optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
         end
 
         optional(:addons).value(type?: Hash)
