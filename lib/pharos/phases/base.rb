@@ -22,7 +22,7 @@ module Pharos
       def parse_resource_file(path, vars = {})
         path = File.realpath(File.join(__dir__, '..', 'resources', path))
         yaml = File.read(path)
-        Kupo::Erb.new(yaml).render(vars)
+        Pharos::Erb.new(yaml).render(vars)
       end
     end
   end
