@@ -1,8 +1,8 @@
-# Kupo (クポ)
+# Pharos Cluster
 
 [![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/kupo/status.svg)](https://cloud-drone-07.kontena.io/kontena/kupo)
 
-Kontena Pharos installer, kupo!
+Kontena Pharos cluster installer.
 
 ## Requirements
 
@@ -11,7 +11,7 @@ Kontena Pharos installer, kupo!
 ## Usage
 
 ```
-$ kupo build -c cluster.yml
+$ pharos-cluster up -c cluster.yml
 ```
 
 Example cluster YAML:
@@ -52,7 +52,7 @@ You can view full sample of cluster.yml [here](./cluster.example.yml).
 
 ## Using external etcd
 
-Kupo can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
+Pharos Cluster can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
 
 ```yaml
 etcd:
@@ -70,7 +70,8 @@ You need to specify all etcd peer endpoints in the list.
 Certificate and corresponding key is used to authenticate the access to etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
 
 ## Webhook Token Authentication
-Kupo can configure [webhook for verifying bearer tokens](https://kubernetes.io/docs/admin/authentication/#webhook-token-authentication).
+
+Cluster supports [webhook for verifying bearer tokens](https://kubernetes.io/docs/admin/authentication/#webhook-token-authentication).
 
 ```yaml
 authentication:
@@ -89,7 +90,7 @@ authentication:
 
 ## Addons
 
-Kupo includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
+Pharos Cluster includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
 
 ### Ingress NGINX
 
@@ -161,7 +162,7 @@ kured:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/kupo.
+Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/pharos-cluster.
 
 ## License
 

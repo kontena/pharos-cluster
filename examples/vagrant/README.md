@@ -1,13 +1,13 @@
-# Vagrant, kupo!
+# Pharos Cluster Vagrant
 
-Kupo Vagrant setup mainly for local testing.
+Pharos Cluster Vagrant setup mainly for local testing.
 
 ## Quickstart
 
 ```sh
 $ vagrant up
-$ kupo up
-$ export KUBECONFIG=~/.kupo/192.168.100.100
+$ pharos-cluster up
+$ export KUBECONFIG=~/.pharos/192.168.100.100
 $ kubectl get nodes
 ```
 
