@@ -69,6 +69,18 @@ You need to specify all etcd peer endpoints in the list.
 
 Certificate and corresponding key is used to authenticate the access to etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
 
+## Audit logs
+
+Kupo supports configuring an external webhook for Audit events. The events are delivered in batched mode, each webhook can contain multiple events.
+
+Currently the audit policy is configured to emit all events on `Metadata` level.
+
+Example configuration for audit webhook:
+```yaml
+audit:
+ server: "http://webhook.example.com/audit"
+```
+
 ## Addons
 
 Kupo includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
