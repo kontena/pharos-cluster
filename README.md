@@ -1,12 +1,41 @@
 # Pharos Cluster
 
-[![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/kupo/status.svg)](https://cloud-drone-07.kontena.io/kontena/kupo)
+[![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/pharos-cluster/status.svg)](https://cloud-drone-07.kontena.io/kontena/pharos-cluster)
 
-Kontena Pharos cluster installer.
+Kontena Pharos cluster manager.
 
-## Requirements
+- [Introduction](#introduction)
+- [Design Principles](#design-principles)
+- [Installation](#installation)
+- [Host Requirements](#host-requirements)
+- [Usage](#usage)
+  - [Network Options](#network-options)
+  - [External etcd](#using-external-etcd)
+  - [Webhook Token Authentication](#webhook-token-authentication)
+- [Addons](#addons)
+  - [Ingress NGINX](#ingress-nginx)
+  - [Cert Manager](#cert-manager)
+  - [Host Security Updates](#host-security-updates)
+  - [Kured](#kured)
+  - [Kubernetes Dashboard](#kubernetes-dashboard)
 
-- Minimal Ubuntu 16.04 nodes with SSH access
+## Introduction
+
+Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution) management tool. It handles cluster bootstapping, upgrades and other maintenance tasks via SSH connection and Kubernetes API access.
+
+## Design Principles
+
+- Simple setup process and learning curve
+- Bare metal friendly, infrastructure agnostic
+- Manage remote clusters instantly, without bootstrapping
+
+## Installation
+
+Pharos Cluster executable can be downloaded from [https://github.com/kontena/pharos-cluster/releases](releases). Binaries should work on any recent 64bit MacOS or Linux machine.
+
+## Host Requirements
+
+- Minimal Ubuntu 16.04 (amd64 / arm64) hosts with SSH access
 
 ## Usage
 
@@ -44,13 +73,13 @@ addons:
 
 You can view full sample of cluster.yml [here](./cluster.example.yml).
 
-## Network Options
+### Network Options
 
 - `service_cidr` - IP address range for service VIPs. (default "10.96.0.0/12")
 - `pod_network_cidr` - IP address range for the pod network. (default "10.32.0.0/12")
 - `trusted_subnets` - array of trusted subnets where overlay network can be used without IPSEC.
 
-## Using external etcd
+### Using External etcd
 
 Pharos Cluster can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
 
@@ -69,7 +98,7 @@ You need to specify all etcd peer endpoints in the list.
 
 Certificate and corresponding key is used to authenticate the access to etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
 
-## Webhook Token Authentication
+### Webhook Token Authentication
 
 Cluster supports [webhook for verifying bearer tokens](https://kubernetes.io/docs/admin/authentication/#webhook-token-authentication).
 
@@ -87,6 +116,19 @@ authentication:
         client_certificate: /path/to/cert.pem # optional
     cache_ttl: 5m # optional
 ```
+
+## Audit Webhook
+
+Cluster supports setting up audit webhooks for external audit event collection.
+
+```yaml
+audit:
+ server: "http://audit.example.com/webhook"
+```
+
+Audit events are delivered in batched mode, multiple events in one webhook `POST` request.
+
+Currently audit events are configured to be emitted at `Metadata` level. See: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/api-machinery/auditing.md#levels
 
 ## Addons
 
@@ -135,7 +177,7 @@ cert-manager:
 - `issuer.server`-  ACME server url
 - `issuer.email` - email address used for ACME registration
 
-### Host Upgrades
+### Host Security Updates
 
 Automatic host operating system security updates.
 
@@ -157,6 +199,17 @@ https://github.com/weaveworks/kured
 
 ```yaml
 kured:
+  enabled: true
+```
+
+### Kubernetes Dashboard
+
+Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters. It allows users to manage applications running in the cluster and troubleshoot them, as well as manage the cluster itself.
+
+https://github.com/kubernetes/dashboard
+
+```yaml
+kubernetes-dashboard:
   enabled: true
 ```
 
