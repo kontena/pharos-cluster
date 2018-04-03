@@ -33,10 +33,12 @@ module Pharos
         cert, _key = cert_manager.ensure_client_certificate(user: 'metrics-server')
 
         logger.info { "Configuring metrics-server ..." }
-        Pharos::Kube.apply_stack(@master.address, 'metrics-server',
-                               version: '0.2.1',
-                               arch: @master.cpu_arch,
-                               client_cert: cert.to_pem)
+        Pharos::Kube.apply_stack(
+          @master.address, 'metrics-server',
+          version: '0.2.1',
+          arch: @master.cpu_arch,
+          client_cert: cert.to_pem
+        )
       end
 
       def configure_heapster
@@ -45,10 +47,12 @@ module Pharos
         cert, _key = cert_manager.ensure_client_certificate(user: 'heapster')
 
         logger.info { "Configuring heapster ..." }
-        Pharos::Kube.apply_stack(@master.address, 'heapster',
-                               version: '1.5.1',
-                               arch: @master.cpu_arch,
-                               client_cert: cert.to_pem)
+        Pharos::Kube.apply_stack(
+          @master.address, 'heapster',
+          version: '1.5.1',
+          arch: @master.cpu_arch,
+          client_cert: cert.to_pem
+        )
       end
     end
   end
