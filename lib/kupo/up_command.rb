@@ -139,6 +139,7 @@ module Kupo
       Phases::ConfigureNetwork.new(master, config.network).call
       Phases::ConfigureMetrics.new(master).call
       Phases::LabelNode.new(master, master).call
+      Phases::StoreClusterYAML.new(master, config_content).call
     end
 
     # @param master [Kupo::Configuration::Node]
