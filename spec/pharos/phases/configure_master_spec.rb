@@ -24,6 +24,28 @@ describe Pharos::Phases::ConfigureMaster do
   end
 
   describe '#generate_config' do
+
+    context 'with auth configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        audit: {
+          server: 'foobar'
+        }
+      ) }
+
+      it 'comes with proper audit config' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'audit-webhook-config-file')).to eq('/etc/pharos/audit/webhook.yml')
+        expect(config.dig('apiServerExtraVolumes')).to include({
+          'name' => 'k8s-audit-webhook',
+          'hostPath' => '/etc/pharos/audit',
+          'mountPath' => '/etc/pharos/audit'
+        })
+      end
+    end
+
     context 'with network configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
