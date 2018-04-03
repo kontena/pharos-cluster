@@ -6,6 +6,7 @@ require_relative 'configuration/host'
 require_relative 'configuration/network'
 require_relative 'configuration/etcd'
 require_relative 'configuration/authentication'
+require_relative 'configuration/audit'
 
 module Pharos
   class Config < Dry::Struct
@@ -18,6 +19,7 @@ module Pharos
     attribute :addons, Pharos::Types::Hash
     attribute :etcd, Pharos::Configuration::Etcd
     attribute :authentication, Pharos::Configuration::Authentication
+    attribute :audit, Pharos::Configuration::Audit
 
     # @return [Integer]
     def dns_replicas
