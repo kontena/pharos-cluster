@@ -6,6 +6,7 @@ require_relative 'configuration/host'
 require_relative 'configuration/network'
 require_relative 'configuration/etcd'
 require_relative 'configuration/authentication'
+require_relative 'configuration/kube_proxy'
 
 module Kupo
   class Config < Dry::Struct
@@ -18,6 +19,7 @@ module Kupo
     attribute :addons, Kupo::Types::Hash
     attribute :etcd, Kupo::Configuration::Etcd
     attribute :authentication, Kupo::Configuration::Authentication
+    attribute :kube_proxy, Kupo::Configuration::KubeProxy
 
     # @return [Integer]
     def dns_replicas

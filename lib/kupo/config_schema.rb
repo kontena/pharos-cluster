@@ -60,6 +60,10 @@ module Kupo
           end
         end
 
+        optional(:kube_proxy).schema do
+          optional(:mode).filled(included_in?: ['userspace', 'iptables', 'ipvs'])
+        end
+
         optional(:addons).value(type?: Hash)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|

@@ -120,6 +120,22 @@ module Kupo
           config['apiServerExtraVolumes'] += volume_mounts_for_authentication_token_webhook
         end
 
+        if @config.kube_proxy
+          config['kubeProxy'] = {
+            'config' => {}
+          }
+
+          if @config.kube_proxy.mode
+            config['kubeProxy']['config']['mode'] = @config.kube_proxy.mode
+          end
+
+          if @config.kube_proxy.mode == 'ipvs'
+            config['kubeProxy']['config']['featureGates'] = 'SupportIPVSProxyMode=true'
+          end
+
+          logger.info { "configure kubeProxy: #{config['kubeProxy'].inspect}"}
+        end
+
         config
       end
 
