@@ -37,7 +37,7 @@ module Pharos
         puts pastel.green("==> Sharpening tools ...")
         load_phases
         puts pastel.green("==> Starting to craft cluster ...")
-        validate_hosts(config.hosts)
+        validate_hosts(config)
         # set workdir to the same dir where config was loaded from
         # so that the certs etc. can be referenced more easily
         Dir.chdir(File.dirname(config_file)) do
@@ -101,13 +101,13 @@ module Pharos
       puts YAML.dump(errors)
     end
 
-    # @param hosts [Array<Pharos::Configuration::Node>]
-    def validate_hosts(hosts)
+    # @param hosts [Array<Pharos::Config>]
+    def validate_hosts(config)
       valid = true
-      hosts.each do |host|
+      config.hosts.each do |host|
         log_host_header(host)
         begin
-          Phases::ValidateHost.new(host).call
+          Phases::ValidateHost.new(host, config).call
         rescue Pharos::InvalidHostError => exc
           puts "    - #{exc.message}"
           valid = false
