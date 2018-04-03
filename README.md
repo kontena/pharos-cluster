@@ -16,6 +16,8 @@ Kontena Pharos cluster manager.
   - [Ingress NGINX](#ingress-nginx)
   - [Cert Manager](#cert-manager)
   - [Host Security Updates](#host-security-updates)
+  - [Kured](#kured)
+  - [Kubernetes Dashboard](#kubernetes-dashboard)
 
 ## Introduction
 
@@ -184,6 +186,17 @@ https://github.com/weaveworks/kured
 
 ```yaml
 kured:
+  enabled: true
+```
+
+### Kubernetes Dashboard
+
+Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters. It allows users to manage applications running in the cluster and troubleshoot them, as well as manage the cluster itself.
+
+https://github.com/kubernetes/dashboard
+
+```yaml
+kubernetes-dashboard:
   enabled: true
 ```
 
