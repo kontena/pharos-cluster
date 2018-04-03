@@ -52,7 +52,7 @@ module Pharos
       end
 
       def install
-        Pharos::Phases::ConfigureKubelet.new(@master).call
+        configure_kubelet
 
         cfg = generate_config
 
@@ -258,7 +258,11 @@ module Pharos
         end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
 
-        Pharos::Phases::ConfigureKubelet.new(@master).call
+        configure_kubelet
+      end
+
+      def configure_kubelet
+        Pharos::Phases::ConfigureKubelet.new(@master, @config).call
       end
     end
   end
