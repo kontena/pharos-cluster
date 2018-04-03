@@ -88,6 +88,19 @@ authentication:
     cache_ttl: 5m # optional
 ```
 
+## Audit Webhook
+
+Cluster supports setting up audit webhooks for external audit event collection.
+
+```yaml
+audit:
+ server: "http://audit.example.com/webhook"
+```
+
+Audit events are delivered in batched mode, multiple events in one webhook `POST` request.
+
+Currently audit events are configured to be emitted at `Metadata` level. See: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/api-machinery/auditing.md#levels
+
 ## Addons
 
 Pharos Cluster includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
