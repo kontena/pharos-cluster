@@ -77,5 +77,21 @@ describe Kupo::ConfigSchema do
         expect(result.to_h.dig(:etcd, :endpoints, 0)).to eq("https://192.168.1.2")
       end
     end
+
+    describe 'kube_proxy' do
+      it 'rejects invalid mode' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "kube_proxy" => {
+            "mode" => 'asdf',
+          }
+        })
+        expect(result).to_not be_success
+        expect(result.messages).to eq :kube_proxy => { :mode => [ "must be one of: userspace, iptables, ipvs" ] }
+      end
+    end
   end
 end

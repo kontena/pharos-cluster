@@ -152,6 +152,41 @@ describe Kupo::Phases::ConfigureMaster do
         expect(config.dig('criSocket')).to eq('/var/run/crio/crio.sock')
       end
     end
+
+    context 'with kube-proxy ipvs configuration' do
+      let(:config) { Kupo::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Kupo::Configuration::Host.new() },
+        network: {},
+        kube_proxy: {
+          mode: 'ipvs',
+        }
+      ) }
+
+      it 'configures kube-proxy' do
+        config = subject.generate_config
+        expect(config.dig('kubeProxy', 'config')).to eq(
+          'mode' => 'ipvs',
+          'featureGates' => 'SupportIPVSProxyMode=true',
+        )
+      end
+    end
+
+    context 'with kube-proxy iptables configuration' do
+      let(:config) { Kupo::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Kupo::Configuration::Host.new() },
+        network: {},
+        kube_proxy: {
+          mode: 'iptables',
+        }
+      ) }
+
+      it 'configures kube-proxy' do
+        config = subject.generate_config
+        expect(config.dig('kubeProxy', 'config')).to eq(
+          'mode' => 'iptables',
+        )
+      end
+    end
   end
 
   describe '#generate_authentication_token_webhook_config' do
