@@ -117,7 +117,7 @@ authentication:
     cache_ttl: 5m # optional
 ```
 
-## Audit Webhook
+### Audit Webhook
 
 Cluster supports setting up audit webhooks for external audit event collection.
 
