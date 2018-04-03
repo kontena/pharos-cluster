@@ -12,6 +12,8 @@ Kontena Pharos cluster manager.
   - [Network Options](#network-options)
   - [External etcd](#using-external-etcd)
   - [Webhook Token Authentication](#webhook-token-authentication)
+  - [Audit Webhook](#audit-webhook)
+  - [Cloud Provider](#cloud-provider)
 - [Addons](#addons)
   - [Ingress NGINX](#ingress-nginx)
   - [Cert Manager](#cert-manager)
@@ -129,6 +131,19 @@ audit:
 Audit events are delivered in batched mode, multiple events in one webhook `POST` request.
 
 Currently audit events are configured to be emitted at `Metadata` level. See: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/api-machinery/auditing.md#levels
+
+### Cloud Provider
+
+Pharos Cluster supports a concept of [cloud providers](https://kubernetes.io/docs/getting-started-guides/scratch/#cloud-provider). Cloud provider is a module that provides an interface for managing load balancers, nodes (i.e. hosts) and networking routes.
+
+```yaml
+cloud:
+  provider: aws
+```
+
+### Options
+
+- `provider` - specify used cloud provider (default: no cloud provider)
 
 ## Addons
 
