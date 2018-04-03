@@ -52,7 +52,7 @@ You can view full sample of cluster.yml [here](./cluster.example.yml).
 
 ## Using external etcd
 
-`pharos-cluster` can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
+Pharos Cluster can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
 
 ```yaml
 etcd:
