@@ -21,7 +21,7 @@ Kontena Pharos cluster manager.
 
 ## Introduction
 
-Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution) management tool. It handles cluster bootstapping, upgrades and other maintenance tasks via SSH connection and Kubernetes API access.
+Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution) management tool. It handles cluster bootstrapping, upgrades and other maintenance tasks via SSH connection and Kubernetes API access.
 
 ## Design Principles
 
