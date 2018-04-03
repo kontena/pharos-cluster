@@ -5,7 +5,7 @@ module Pharos
     option "--all", :flag, "Show all versions"
 
     def execute
-      puts "kupo version #{Pharos::VERSION}"
+      puts "pharos-cluster version #{Pharos::VERSION}"
       report_all if all?
     end
 

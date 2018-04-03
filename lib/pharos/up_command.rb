@@ -46,7 +46,7 @@ module Pharos
           handle_addons(master_hosts[0], config.addons)
         end
         craft_time = Time.now - start_time
-        puts pastel.green("==> Cluster has been crafted, kupo! (took #{humanize_duration(craft_time.to_i)})")
+        puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       ensure
         Pharos::SSH::Client.disconnect_all
       end
