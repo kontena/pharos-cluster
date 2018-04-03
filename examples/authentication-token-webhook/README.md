@@ -18,11 +18,11 @@ authentication:
 ...
 ```
 
-2. Kupo up
+2. Pharos Cluster up
 
 ```sh
-$ kupo up
-$ export KUBECONFIG=~/.kupo/<master-ip>
+$ pharos-cluster up
+$ export KUBECONFIG=~/.pharos/<master-ip>
 ```
 
 3. Deploy token reviewer service

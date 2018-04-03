@@ -18,5 +18,5 @@ chmod +x /usr/local/bin/github-release
     --user kontena \
     --repo kupo \
     --tag $DRONE_TAG \
-    --name "kupo-linux-amd64" \
-    --file ./kupo
+    --name "pharos-cluster-linux-amd64" \
+    --file ./pharos-cluster
