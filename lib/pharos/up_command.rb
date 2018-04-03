@@ -37,12 +37,12 @@ module Pharos
         puts pastel.green("==> Sharpening tools ...")
         load_phases
         puts pastel.green("==> Starting to craft cluster ...")
-        validate_hosts(config.hosts)
+        validate_hosts(config)
         # set workdir to the same dir where config was loaded from
         # so that the certs etc. can be referenced more easily
         Dir.chdir(File.dirname(config_file)) do
           handle_masters(master_hosts[0], config)
-          handle_workers(master_hosts[0], worker_hosts(config))
+          handle_workers(master_hosts[0], worker_hosts(config), config)
           handle_addons(master_hosts[0], config.addons)
         end
         craft_time = Time.now - start_time
@@ -101,13 +101,13 @@ module Pharos
       puts YAML.dump(errors)
     end
 
-    # @param hosts [Array<Pharos::Configuration::Node>]
-    def validate_hosts(hosts)
+    # @param hosts [Array<Pharos::Config>]
+    def validate_hosts(config)
       valid = true
-      hosts.each do |host|
+      config.hosts.each do |host|
         log_host_header(host)
         begin
-          Phases::ValidateHost.new(host).call
+          Phases::ValidateHost.new(host, config).call
         rescue Pharos::InvalidHostError => exc
           puts "    - #{exc.message}"
           valid = false
@@ -143,13 +143,14 @@ module Pharos
     end
 
     # @param master [Pharos::Configuration::Node]
-    # @param nodes [Array<Pharos::Configuration::Node>]
-    def handle_workers(master, nodes)
+    # @param nodes [Array<Kupo::Configuration::Node>]
+    # @param config [Pharos::Config]
+    def handle_workers(master, nodes, config)
       nodes.each do |node|
         log_host_header(node)
         begin
           Phases::ConfigureHost.new(node).call
-          Phases::ConfigureKubelet.new(node).call
+          Phases::ConfigureKubelet.new(node, config).call
           Phases::JoinNode.new(node, master).call
           Phases::LabelNode.new(node, master).call
         end

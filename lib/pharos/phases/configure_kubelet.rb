@@ -16,6 +16,7 @@ module Pharos
       # @param host [Pharos::Configuration::Host]
       def initialize(host)
         @host = host
+        @config = config
         @ssh = Pharos::SSH::Client.for_host(@host)
       end
 
@@ -62,6 +63,8 @@ module Pharos
         args = kubelet_extra_args
         node_ip = @host.private_address.nil? ? @host.address : @host.private_address
         args << "--node-ip=#{node_ip}"
+        args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
+        args << "--hostname-override=#{@host.hostname}"
         config = config + args.join(' ') + "'"
         config + "\nExecStartPre=-/sbin/swapoff -a"
       end

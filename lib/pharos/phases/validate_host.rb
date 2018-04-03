@@ -8,17 +8,18 @@ module Pharos
       include Pharos::Phases::Logging
 
       # @param host [Pharos::Configuration::Host]
-      def initialize(host)
+      # @param config [Pharos::Config]
+      def initialize(host, config)
         @host = host
+        @config = config
       end
 
       def call
         logger.info(@host.address) { "Connecting to host via SSH ..." }
-        ssh = Pharos::SSH::Client.for_host(@host)
         logger.info { "Checking sudo access ..." }
-        check_sudo(ssh)
+        check_sudo
         logger.info { "Gathering host facts ..." }
-        gather_host_facts(ssh)
+        gather_host_facts
         logger.info { "Validating distro and version ..." }
         check_distro_version
         logger.info { "Validating host configuration ..." }
@@ -35,21 +36,30 @@ module Pharos
         raise Pharos::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
 
-      def check_sudo(ssh)
+      def check_sudo
         ssh.exec!('sudo -n true')
       rescue Pharos::SSH::ExecError => exc
         raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
 
-      # @param ssh [Pharos::SSH::Client]
-      def gather_host_facts(ssh)
-        @host.os_release = os_release(ssh)
-        @host.cpu_arch = cpu_arch(ssh)
+      def gather_host_facts
+        @host.os_release = os_release
+        @host.cpu_arch = cpu_arch
+        @host.hostname = hostname
       end
 
-      # @param ssh [Pharos::SSH::Client]
+      # @return [String]
+      def hostname
+        cloud_provider = @config.cloud&.provider
+        if cloud_provider == 'aws'
+          ssh.exec!('hostname -f').strip
+        else
+          ssh.exec!('hostname -s').strip
+        end
+      end
+
       # @return [Pharos::Configuration::OsRelease]
-      def os_release(ssh)
+      def os_release
         os_info = {}
         ssh.read_file('/etc/os-release').split("\n").each do |line|
           match = line.match(/^(.+)=(.+)$/)
@@ -63,9 +73,8 @@ module Pharos
         )
       end
 
-      # @param ssh [Pharos::SSH::Client]
       # @return [Pharos::Configuration::CpuArch]
-      def cpu_arch(ssh)
+      def cpu_arch
         cpu = {}
         ssh.exec!('lscpu').split("\n").each do |line|
           match = line.match(/^(.+):\s+(.+)$/)
@@ -74,6 +83,11 @@ module Pharos
         Pharos::Configuration::CpuArch.new(
           id: cpu['Architecture']
         )
+      end
+
+      # @return [Pharos::SSH::Client]
+      def ssh
+        Pharos::SSH::Client.for_host(@host)
       end
     end
   end

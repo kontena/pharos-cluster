@@ -77,5 +77,41 @@ describe Pharos::ConfigSchema do
         expect(result.to_h.dig(:etcd, :endpoints, 0)).to eq("https://192.168.1.2")
       end
     end
+
+    context 'cloud' do
+      it 'works without cloud' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {}
+        })
+        expect(result.success?).to be_truthy
+      end
+
+      it 'works with cloud provider' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "cloud" => {
+            "provider" => "external"
+          }
+        })
+        expect(result.success?).to be_truthy
+      end
+
+      it 'errors without provider' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "cloud" => {}
+        })
+        expect(result.success?).to be_falsey
+      end
+    end
   end
 end

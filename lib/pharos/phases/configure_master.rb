@@ -115,6 +115,10 @@ module Pharos
           config['criSocket'] = '/var/run/crio/crio.sock'
         end
 
+        if @config.cloud && @config.cloud.provider != 'external'
+          config['cloudProvider'] = @config.cloud.provider
+        end
+
         # Only configure etcd if the external endpoints are given
         if @config.etcd&.endpoints
           config['etcd'] = {
