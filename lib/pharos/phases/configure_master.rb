@@ -68,11 +68,12 @@ module Pharos
         if @config.audit&.server
           logger.info(@master.address) { "Pushing audit configs to master" }
           @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
-          @ssh.write_file("#{AUDIT_CFG_DIR}/webhook.yml",
-            parse_resource_file('audit/webhook-config.yml',
-            {
+          @ssh.write_file(
+            "#{AUDIT_CFG_DIR}/webhook.yml",
+            parse_resource_file(
+              'audit/webhook-config.yml',
               server: @config.audit.server
-            })
+            )
           )
           @ssh.write_file("#{AUDIT_CFG_DIR}/policy.yml", parse_resource_file('audit/policy.yml', {}))
         end
@@ -136,10 +137,10 @@ module Pharos
 
         # Configure audit related things if needed
         if @config.audit&.server
-          config['apiServerExtraArgs'].merge!({
+          config['apiServerExtraArgs'].merge!(
             "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
             "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
-          })
+          )
           config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
         end
 
