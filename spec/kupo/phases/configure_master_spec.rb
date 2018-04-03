@@ -23,7 +23,7 @@ describe Kupo::Phases::ConfigureMaster do
     allow(Kupo::SSH::Client).to receive(:for_host)
   end
 
-  describe '#config_yaml' do
+  describe '#generate_config' do
     context 'with network configuration' do
       let(:config) { Kupo::Config.new(
         hosts: (1..config_hosts_count).map { |i| Kupo::Configuration::Host.new() },
@@ -94,6 +94,50 @@ describe Kupo::Phases::ConfigureMaster do
       end
     end
 
+    context 'with authentication webhook configuration' do
+      let(:config) { Kupo::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Kupo::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        authentication: {
+          token_webhook: {
+            config: {
+              cluster: {
+                name: 'pharos-authn',
+                server: 'http://localhost:9292/token'
+              },
+              user: {
+                name: 'pharos-apiserver'
+              }
+            }
+          }
+        }
+      ) }
+
+      it 'comes with proper authentication webhook token config' do
+        config = subject.generate_config
+        expect(config['apiServerExtraArgs']['authentication-token-webhook-config-file'])
+          .to eq('/etc/kubernetes/authentication/token-webhook-config.yaml')
+      end
+
+      it 'comes with proper volumen mounts' do
+        valid_volume_mounts =  [
+          {
+            'name' => 'k8s-auth-token-webhook',
+            'hostPath' => '/etc/kubernetes/authentication',
+            'mountPath' => '/etc/kubernetes/authentication'
+          },
+          {
+            'name' => 'pharos',
+            'hostPath' => '/etc/pharos',
+            'mountPath' => '/etc/pharos'
+          }
+        ]
+        config = subject.generate_config
+        expect(config['apiServerExtraVolumes']).to eq(valid_volume_mounts)
+      end
+    end
+
     context 'with cri-o configuration' do
       let(:master) { Kupo::Configuration::Host.new(address: 'test', container_runtime: 'cri-o') }
       let(:config) { Kupo::Config.new(
@@ -106,6 +150,78 @@ describe Kupo::Phases::ConfigureMaster do
       it 'comes with proper etcd endpoint config' do
         config = subject.generate_config
         expect(config.dig('criSocket')).to eq('/var/run/crio/crio.sock')
+      end
+    end
+  end
+
+  describe '#generate_authentication_token_webhook_config' do
+    let(:webhook_config) do
+      {
+        cluster: {
+          name: 'pharos-authn',
+          server: 'http://localhost:9292/token'
+        },
+        user: {
+          name: 'pharos-apiserver'
+        }
+      }
+    end
+
+    it 'comes with proper configuration' do
+      valid_config =  {
+        "kind" => "Config",
+        "apiVersion" => "v1",
+        "preferences" => {},
+        "clusters" => [
+            {
+                "name" => "pharos-authn",
+                "cluster" => {
+                    "server" => "http://localhost:9292/token",
+                }
+            }
+        ],
+        "users" => [
+            {
+                "name" => "pharos-apiserver",
+                "user" => {}
+            }
+        ],
+        "contexts" => [
+            {
+                "name" => "webhook",
+                "context" => {
+                    "cluster" => "pharos-authn",
+                    "user" => "pharos-apiserver"
+                }
+            }
+        ],
+        "current-context" => "webhook"
+      }
+      expect(subject.generate_authentication_token_webhook_config(webhook_config))
+        .to eq(valid_config)
+    end
+
+    context 'with cluster certificate_authority' do
+      it 'adds certificate authority config' do
+        webhook_config[:cluster][:certificate_authority] = '/etc/ca.pem'
+        config = subject.generate_authentication_token_webhook_config(webhook_config)
+        expect(config['clusters'][0]['cluster']['certificate-authority']).to eq('/etc/pharos/token_webhook/ca.pem')
+      end
+    end
+
+    context 'with user client certificate' do
+      it 'adds client certificate' do
+        webhook_config[:user][:client_certificate] = '/etc/cert.pem'
+        config = subject.generate_authentication_token_webhook_config(webhook_config)
+        expect(config['users'][0]['user']['client-certificate']).to eq('/etc/pharos/token_webhook/cert.pem')
+      end
+    end
+
+    context 'with user client key' do
+      it 'adds client key' do
+        webhook_config[:user][:client_key] = '/etc/key.pem'
+        config = subject.generate_authentication_token_webhook_config(webhook_config)
+        expect(config['users'][0]['user']['client-key']).to eq('/etc/pharos/token_webhook/key.pem')
       end
     end
   end

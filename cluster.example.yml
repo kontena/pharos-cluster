@@ -23,6 +23,18 @@ network:
   pod_network_cidr: 10.32.0.0/12
   trusted_subnets:
     - 10.10.0.0/16
+authentication:
+  token_webhook:
+    config:
+      cluster:
+        name: token-reviewer
+        server: http://localhost:9292/token
+        certificate_authority: /path/to/ca.pem
+      user:
+        name: kube-apiserver
+        client_key: /path/to/key.pem
+        client_certificate: /path/to/cert.pem
+    cache_ttl: 5m
 addons:
   ingress-nginx:
     enabled: true

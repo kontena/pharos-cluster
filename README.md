@@ -69,6 +69,24 @@ You need to specify all etcd peer endpoints in the list.
 
 Certificate and corresponding key is used to authenticate the access to etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
 
+## Webhook Token Authentication
+Kupo can configure [webhook for verifying bearer tokens](https://kubernetes.io/docs/admin/authentication/#webhook-token-authentication).
+
+```yaml
+authentication:
+  token_webhook:
+    config:
+      cluster:
+        name: token-reviewer
+        server: http://localhost:9292/token
+        certificate_authority: /path/to/ca.pem # optional
+      user:
+        name: kube-apiserver
+        client_key: /path/to/key.pem # optional
+        client_certificate: /path/to/cert.pem # optional
+    cache_ttl: 5m # optional
+```
+
 ## Addons
 
 Kupo includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.

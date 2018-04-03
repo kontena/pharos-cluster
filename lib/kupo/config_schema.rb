@@ -41,6 +41,25 @@ module Kupo
           optional(:ca_certificate).filled(:str?)
           optional(:key).filled(:str?)
         end
+
+        optional(:authentication).schema do
+          optional(:token_webhook).schema do
+            required(:config).schema do
+              required(:cluster).schema do
+                required(:name).filled
+                required(:server).filled
+                optional(:certificate_authority).filled
+              end
+              required(:user).schema do
+                required(:name).filled
+                optional(:client_certificate).filled
+                optional(:client_key).filled
+              end
+            end
+            optional(:cache_ttl).filled
+          end
+        end
+
         optional(:addons).value(type?: Hash)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|

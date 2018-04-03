@@ -5,6 +5,9 @@ require_relative 'base'
 module Kupo
   module Phases
     class ConfigureMaster < Base
+      PHAROS_DIR = '/etc/pharos'
+      AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
+
       # @param master [Kupo::Configuration::Host]
       # @param config [Kupo::Configuration::Network]
       def initialize(master, config)
@@ -60,6 +63,14 @@ module Kupo
           @ssh.write_file('/etc/kupo/etcd/certificate-key.pem', File.read(@config.etcd.key))
         end
 
+        # Generate and upload authentication token webhook config file if needed
+        if @config.authentication&.token_webhook
+          webhook_config = @config.authentication.token_webhook.config
+          auth_token_webhook_config = generate_authentication_token_webhook_config(webhook_config)
+          upload_authentication_token_webhook_config(auth_token_webhook_config)
+          upload_authentication_token_webhook_certs(webhook_config)
+        end
+
         logger.info(@master.address) { "Initializing control plane ..." }
 
         @ssh.with_tmpfile(cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
@@ -99,7 +110,100 @@ module Kupo
           config['etcd']['caFile'] = '/etc/kupo/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
           config['etcd']['keyFile'] = '/etc/kupo/etcd/certificate-key.pem' if @config.etcd.key
         end
+
+        config['apiServerExtraArgs'] = {}
+        config['apiServerExtraVolumes'] = []
+
+        # Only if authentication token webhook option are given
+        if @config.authentication&.token_webhook
+          config['apiServerExtraArgs'].merge!(authentication_token_webhook_args(@config.authentication.token_webhook.cache_ttl))
+          config['apiServerExtraVolumes'] += volume_mounts_for_authentication_token_webhook
+        end
+
         config
+      end
+
+      def authentication_token_webhook_args(cache_ttl = nil)
+        config = {
+          'authentication-token-webhook-config-file' => AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR + '/token-webhook-config.yaml'
+        }
+        config['authentication-token-webhook-cache-ttl'] = cache_ttl if cache_ttl
+        config
+      end
+
+      def volume_mounts_for_authentication_token_webhook
+        volume_mounts = []
+        volume_mount = {
+          'name' => 'k8s-auth-token-webhook',
+          'hostPath' => AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR,
+          'mountPath' => AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR
+        }
+        volume_mounts << volume_mount
+        pharos_volume_mount = {
+          'name' => 'pharos',
+          'hostPath' => PHAROS_DIR,
+          'mountPath' => PHAROS_DIR
+        }
+        volume_mounts << pharos_volume_mount
+        volume_mounts
+      end
+
+      def generate_authentication_token_webhook_config(webhook_config)
+        config = {
+          "kind" => "Config",
+          "apiVersion" => "v1",
+          "preferences" => {},
+          "clusters" => [
+            {
+              "name" => webhook_config[:cluster][:name].to_s,
+              "cluster" => {
+                "server" => webhook_config[:cluster][:server].to_s
+              }
+            }
+          ],
+          "users" => [
+            {
+              "name" => webhook_config[:user][:name].to_s,
+              "user" => {}
+            }
+          ],
+          "contexts" => [
+            {
+              "name" => "webhook",
+              "context" => {
+                "cluster" => webhook_config[:cluster][:name].to_s,
+                "user" => webhook_config[:user][:name].to_s
+              }
+            }
+          ],
+          "current-context" => "webhook"
+        }
+
+        if webhook_config[:cluster][:certificate_authority]
+          config['clusters'][0]['cluster']['certificate-authority'] = PHAROS_DIR + '/token_webhook/ca.pem'
+        end
+
+        if webhook_config[:user][:client_certificate]
+          config['users'][0]['user']['client-certificate'] = PHAROS_DIR + '/token_webhook/cert.pem'
+        end
+
+        if webhook_config[:user][:client_key]
+          config['users'][0]['user']['client-key'] = PHAROS_DIR + '/token_webhook/key.pem'
+        end
+
+        config
+      end
+
+      def upload_authentication_token_webhook_config(config)
+        @ssh.exec!('sudo mkdir -p ' + AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR)
+        @ssh.write_file(AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR + '/token-webhook-config.yaml', config.to_yaml)
+      end
+
+      def upload_authentication_token_webhook_certs(webhook_config)
+        @ssh.exec!("sudo mkdir -p #{PHAROS_DIR}/token_webhook")
+        @ssh.write_file(PHAROS_DIR + '/token_webhook/ca.pem', File.read(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
+        @ssh.write_file(PHAROS_DIR + '/token_webhook/cert.pem', File.read(File.expand_path(webhook_config[:user][:client_certificate]))) if webhook_config[:user][:client_certificate]
+        @ssh.write_file(PHAROS_DIR + '/token_webhook/key.pem', File.read(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
       end
 
       def upgrade
