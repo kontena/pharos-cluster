@@ -4,7 +4,7 @@ require_relative 'base'
 
 module Kupo
   module Phases
-    class ClusterYAML < Base
+    class StoreClusterYAML < Base
       # @param master [Kupo::Configuration::Node]
       # @param config [Kupo::Config]
       def initialize(master, config_content)
@@ -30,7 +30,7 @@ module Kupo
           kind: 'ConfigMap',
           metadata: {
             namespace: 'kube-system',
-            name: 'cluster-yaml'
+            name: 'kupo-config'
           },
           data: {
             'cluster.yml' => @config_content
