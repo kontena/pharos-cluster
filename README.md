@@ -2,7 +2,7 @@
 
 [![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/pharos-cluster/status.svg)](https://cloud-drone-07.kontena.io/kontena/pharos-cluster)
 
-Kontena Pharos cluster installer.
+Kontena Pharos cluster manager.
 
 ## Requirements
 
