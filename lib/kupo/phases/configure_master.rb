@@ -132,8 +132,6 @@ module Kupo
           if @config.kube_proxy.mode == 'ipvs'
             config['kubeProxy']['config']['featureGates'] = 'SupportIPVSProxyMode=true'
           end
-
-          logger.info { "configure kubeProxy: #{config['kubeProxy'].inspect}"}
         end
 
         config
