@@ -38,9 +38,9 @@ spec:
                 secretKeyRef:
                   name: weave-passwd
                   key: weave-passwd
-            # defaults to 0.0.0.0, exposing status API publically; disable
+            # defaults to 0.0.0.0:6782, limit to block public access
             - name: WEAVE_STATUS_ADDR
-              value: ""
+              value: 127.0.0.1:6782
           image: 'docker.io/weaveworks/weave-kube-<%= arch.name %>:<%= version %>'
           livenessProbe:
             httpGet:
