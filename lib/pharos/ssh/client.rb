@@ -262,7 +262,7 @@ module Pharos
 
       # @param path [String]
       # @return [String]
-      def write_file(path, contents, prefix: 'kupo')
+      def write_file(path, contents, prefix: 'pharos')
         tmp_file = tempfile(prefix: prefix, content: contents)
         exec!("sudo mv #{tmp_file} #{path} || rm #{tmp_path}")
       end

@@ -10,7 +10,7 @@ module Pharos
     class Tempfile
       attr_reader :path
       # @param client [Pharos::SSH::Client]
-      # @param prefix [String] Filename prefix, default "kupo"
+      # @param prefix [String] Filename prefix, default "pharos"
       # @param content [NilClass,String,IO] Content to upload to remote host
       # @param file [NilClass,String] Path to a file to upload to remote host
       # @yield [String] Temporary filename
@@ -22,7 +22,7 @@ module Pharos
       #   tempfile = Pharos::SSH::Tempfile.new(client)
       #   client.exec("uname -a >> #{path}")
       #   tempfile.unlink
-      def initialize(client, prefix: "kupo", content: nil, file: nil, &block)
+      def initialize(client, prefix: "pharos", content: nil, file: nil, &block)
         @client = client
         @path = File.join('/tmp', "#{prefix}.#{SecureRandom.hex(16)}")
         raise ArgumentError, "Both file and content given" if content && file
