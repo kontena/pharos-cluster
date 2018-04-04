@@ -261,10 +261,10 @@ module Pharos
       end
 
       # @param path [String]
+      # @param content [String]
       # @return [String]
-      def write_file(path, contents, prefix: 'pharos')
-        tmp_file = tempfile(prefix: prefix, content: contents)
-        exec!("sudo mv #{tmp_file} #{path} || rm #{tmp_path}")
+      def write_file(path, content)
+        exec!("cat | sudo tee #{path} > /dev/null", stdin: content)
       end
 
       def disconnect
