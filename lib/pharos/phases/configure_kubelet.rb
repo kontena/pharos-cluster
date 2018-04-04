@@ -73,7 +73,7 @@ module Pharos
       def kubelet_dns_args
         [
           "--cluster-dns=#{@config.network.dns_service_ip}",
-          "--cluster-domain=cluster.local",
+          "--cluster-domain=cluster.local"
         ]
       end
 
