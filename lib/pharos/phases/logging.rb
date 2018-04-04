@@ -5,8 +5,6 @@ require 'logger'
 module Pharos
   module Phases
     module Logging
-      include Pharos::Debug.module
-
       def self.logger
         @logger
       end
@@ -22,7 +20,7 @@ module Pharos
       def self.__init__
         @logger = Logger.new($stdout).tap do |logger|
           logger.progname = 'API'
-          logger.level = LOG_LEVEL
+          logger.level = Pharos::Debug.module.const_get(:LOG_LEVEL)
           logger.formatter = proc do |_severity, _datetime, _progname, msg|
             "    #{msg}\n"
           end
