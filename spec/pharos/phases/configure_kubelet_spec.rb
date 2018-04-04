@@ -21,7 +21,7 @@ describe Pharos::Phases::ConfigureKubelet do
     it "returns a systemd unit" do
       expect(subject.build_systemd_dropin).to eq <<~EOM
         [Service]
-        Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override='
+        Environment='KUBELET_EXTRA_ARGS=--read-only-port=0 --node-ip=192.168.42.1 --hostname-override='
         Environment='KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local'
         ExecStartPre=-/sbin/swapoff -a
       EOM
@@ -38,14 +38,8 @@ describe Pharos::Phases::ConfigureKubelet do
       ) }
 
       it "uses the customized --cluster-dns" do
-        expect(subject.build_systemd_dropin).to eq <<~EOM
-          [Service]
-          Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override='
-          Environment='KUBELET_DNS_ARGS=--cluster-dns=172.255.0.10 --cluster-domain=cluster.local'
-          ExecStartPre=-/sbin/swapoff -a
-        EOM
+        expect(subject.build_systemd_dropin).to match /KUBELET_DNS_ARGS=--cluster-dns=172.255.0.10 --cluster-domain=cluster.local/
       end
-
     end
   end
 end

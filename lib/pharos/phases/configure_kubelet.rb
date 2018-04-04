@@ -88,6 +88,7 @@ module Pharos
           args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
         end
 
+        args << '--read-only-port=0'
         args << "--node-ip=#{node_ip}"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
         args << "--hostname-override=#{@host.hostname}"
