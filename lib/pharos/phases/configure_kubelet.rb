@@ -63,9 +63,17 @@ module Pharos
       def build_systemd_dropin
         options = []
         options << "Environment='KUBELET_EXTRA_ARGS=#{kubelet_extra_args.join(' ')}'"
+        options << "Environment='KUBELET_DNS_ARGS=#{kubelet_dns_args.join(' ')}'"
         options << "ExecStartPre=-/sbin/swapoff -a"
 
         "[Service]\n#{options.join("\n")}\n"
+      end
+
+      def kubelet_dns_args
+        [
+          "--cluster-dns=#{@config.network.dns_service_ip}",
+          "--cluster-domain=cluster.local",
+        ]
       end
 
       def kubelet_extra_args
