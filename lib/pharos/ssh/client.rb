@@ -264,7 +264,7 @@ module Pharos
       # @param content [String]
       # @return [String]
       def write_file(path, content)
-        exec!("cat | sudo tee #{path.shellescape} > /dev/null", stdin: content)
+        exec!("sudo tee #{path.shellescape} > /dev/null", stdin: content)
       end
 
       def disconnect
