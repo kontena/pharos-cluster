@@ -23,6 +23,8 @@ module Pharos
     end
 
     class Exec
+      include Pharos::Debug.module
+
       INDENT = "    "
 
       def self.debug?
@@ -31,10 +33,9 @@ module Pharos
 
       attr_reader :cmd, :exit_status, :stdout, :stderr, :output
 
-      def initialize(cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
+      def initialize(cmd, stdin: nil, debug_source: nil)
         @cmd = cmd
         @stdin = stdin
-        @debug = debug
         @debug_source = debug_source
 
         @exit_status = nil
@@ -56,7 +57,7 @@ module Pharos
 
       # @param channel [Net::SSH::Connection::Channel]
       def start(channel)
-        debug_cmd(@cmd, source: @debug_source) if debug?
+        debug { debug_cmd(@cmd) }
 
         channel.exec @cmd do |_, success|
           raise Error, "Failed to exec #{cmd}" unless success
@@ -65,7 +66,7 @@ module Pharos
             @stdout += data
             @output += data
 
-            debug_stdout(data) if debug?
+            debug { debug_stdout(data) }
           end
           channel.on_extended_data do |_c, _type, data|
             @stderr += data
@@ -90,16 +91,12 @@ module Pharos
         !@exit_status.zero?
       end
 
-      def debug?
-        @debug
-      end
-
       def pastel
         @pastel ||= Pastel.new
       end
 
-      def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
+      def debug_cmd(cmd)
+        $stdout << INDENT << pastel.cyan("$ #{cmd}#{" < #{@debug_source}" if @debug_source}\n")
       end
 
       def debug_stdout(data)
@@ -215,7 +212,7 @@ module Pharos
       # @param opts [Hash]
       def upload(local_path, remote_path, opts = {})
         require_session!
-        logger.debug "upload from #{local_path}: #{remote_path}"
+        logger.debug { "upload from #{local_path}: #{remote_path}" }
         @session.scp.upload!(local_path, remote_path, opts)
       end
 
@@ -224,7 +221,7 @@ module Pharos
       # @param opts [Hash]
       def download(remote_path, local_path, opts = {})
         require_session!
-        logger.debug "download to #{local_path}: #{remote_path}"
+        logger.debug { "download to #{local_path}: #{remote_path}" }
         @session.scp.download!(remote_path, local_path, opts)
       end
 
