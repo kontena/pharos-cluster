@@ -38,6 +38,7 @@ Pharos Cluster executable can be downloaded from [https://github.com/kontena/pha
 ## Host Requirements
 
 - Minimal Ubuntu 16.04 (amd64 / arm64) hosts with SSH access
+- A user with passwordless sudo permission (`echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER`)
 
 ## Usage
 
