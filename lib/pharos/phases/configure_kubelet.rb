@@ -69,6 +69,7 @@ module Pharos
         "[Service]\n#{options.join("\n")}\n"
       end
 
+      # @return [Array<String>]
       def kubelet_dns_args
         [
           "--cluster-dns=#{@config.network.dns_service_ip}",
@@ -76,6 +77,7 @@ module Pharos
         ]
       end
 
+      # @return [Array<String>]
       def kubelet_extra_args
         args = []
         node_ip = @host.private_address.nil? ? @host.address : @host.private_address
