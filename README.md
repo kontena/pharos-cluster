@@ -1,6 +1,7 @@
 # Pharos Cluster
 
 [![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/pharos-cluster/status.svg)](https://cloud-drone-07.kontena.io/kontena/pharos-cluster)
+[![Join the chat at https://slack.kontena.io](https://slack.kontena.io/badge.svg)](https://slack.kontena.io)
 
 Kontena Pharos cluster manager.
 
