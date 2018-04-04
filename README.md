@@ -78,7 +78,7 @@ addons:
 You can view full sample of cluster.yml [here](./cluster.example.yml).
 
 ### Hosts
-- `address` - IP or hostname
+- `address` - IP address or hostname
 - `role` - One of `master`, `worker`
 - `private_address` - Private IP address or hostname. Prefered for cluster's internal communication where possible (optional)
 - `user` - Username with sudo permission to use for logging in (default  "ubuntu")
