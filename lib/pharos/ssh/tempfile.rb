@@ -2,24 +2,24 @@
 
 require 'securerandom'
 
-module Kupo
+module Pharos
   module SSH
     # A temporary filename on a remote host
     # Optionally uploads given content.
     # When used with a block, removes the temporary file after execution.
     class Tempfile
       attr_reader :path
-      # @param client [Kupo::SSH::Client]
+      # @param client [Pharos::SSH::Client]
       # @param prefix [String] Filename prefix, default "kupo"
       # @param content [NilClass,String,IO] Content to upload to remote host
       # @param file [NilClass,String] Path to a file to upload to remote host
       # @yield [String] Temporary filename
       # @example
-      #   Kupo::SSH::Tempfile.new(client) do |path|
+      #   Pharos::SSH::Tempfile.new(client) do |path|
       #     client.exec("uname -a >> #{path}")
       #   end
       # @example
-      #   tempfile = Kupo::SSH::Tempfile.new(client)
+      #   tempfile = Pharos::SSH::Tempfile.new(client)
       #   client.exec("uname -a >> #{path}")
       #   tempfile.unlink
       def initialize(client, prefix: "kupo", content: nil, file: nil, &block)
