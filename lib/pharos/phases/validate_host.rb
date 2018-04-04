@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'logging'
-
 module Pharos
   module Phases
     class ValidateHost
-      include Pharos::Phases::Logging
+      include Pharos::Logging
 
       # @param host [Pharos::Configuration::Host]
       # @param config [Pharos::Config]

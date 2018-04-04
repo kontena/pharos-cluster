@@ -105,7 +105,7 @@ RSpec.configure do |config|
       stdout = $stdout
       stderr = $stderr
       $stdout = $stderr = StringIO.new
-      Pharos::Phases::Logging.send(:__init__)
+      Pharos::Logging.send(:__init__)
 
       begin
         example.run

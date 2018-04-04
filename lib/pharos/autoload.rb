@@ -10,6 +10,7 @@ autoload :Logger, 'logger'
 
 module Pharos
   autoload :Debug, 'pharos/debug'
+  autoload :Logging, 'pharos/logging'
   autoload :Types, 'pharos/types'
   autoload :Config, 'pharos/config'
   autoload :ConfigSchema, 'pharos/config_schema'
