@@ -4,7 +4,7 @@ require 'yaml'
 require 'erb'
 require_relative 'yaml_file/namespace'
 
-module Kupo
+module Pharos
   # Reads YAML files and optionally performs ERB evaluation
   class YamlFile
     ParseError = Class.new(StandardError)
@@ -29,7 +29,7 @@ module Kupo
     end
 
     def load(variables = {})
-      result = YAML.safe_load(erb? ? erb_result(variables) : @content, [], [], true, @filename)
+      result = YAML.safe_load(read(variables), [], [], true, @filename)
       if result.is_a?(String)
         raise ParseError, "File #{"#{@filename} " if @filename}does not appear to be in YAML format"
       end
@@ -44,6 +44,10 @@ module Kupo
 
     def basename
       @filename.nil? ? '<unknown>' : File.basename(@filename)
+    end
+
+    def read(variables = {})
+      erb? ? erb_result(variables) : @content
     end
 
     def erb_result(variables = {})

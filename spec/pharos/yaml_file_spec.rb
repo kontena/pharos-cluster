@@ -1,6 +1,6 @@
 require 'yaml'
 
-describe Kupo::YamlFile do
+describe Pharos::YamlFile do
   context 'for a yaml file with .yml extension' do
     subject { described_class.new(fixtures_dir('yaml/erb/no_erb.yml')) }
 

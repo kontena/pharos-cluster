@@ -4,7 +4,7 @@ module Pharos
   class UpCommand < Pharos::Command
     option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
       begin
-        Kupo::YamlFile.new(File.realpath(config_file))
+        Pharos::YamlFile.new(File.realpath(config_file))
       rescue Errno::ENOENT
         signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
       end
@@ -12,11 +12,11 @@ module Pharos
 
     def default_config_yaml
       if !$stdin.tty? && !$stdin.eof?
-        Kupo::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
+        Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
       else
         cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
         signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
-        Kupo::YamlFile.new(cluster_config)
+        Pharos::YamlFile.new(cluster_config)
       end
     end
 
@@ -60,13 +60,13 @@ module Pharos
     end
 
     # @param [String] configuration path
-    # @return [Kupo::Config]
+    # @return [Pharos::Config]
     def load_config
       parse_config(config_yaml.load(ENV.to_h))
     end
 
     def parse_config(yaml)
-      schema_class = Kupo::ConfigSchema.build
+      schema_class = Pharos::ConfigSchema.build
       schema = schema_class.call(yaml)
       unless schema.success?
         show_config_errors(schema.messages)
@@ -131,11 +131,11 @@ module Pharos
       Phases::ConfigureNetwork.new(master, config.network).call
       Phases::ConfigureMetrics.new(master).call
       Phases::LabelNode.new(master, master).call
-      Phases::StoreClusterYAML.new(master, config_content).call
+      Phases::StoreClusterYAML.new(master, config_yaml.read(ENV.to_h)).call
     end
 
     # @param master [Pharos::Configuration::Node]
-    # @param nodes [Array<Kupo::Configuration::Node>]
+    # @param nodes [Array<Pharos::Configuration::Node>]
     # @param config [Pharos::Config]
     def handle_workers(master, nodes, config)
       nodes.each do |node|

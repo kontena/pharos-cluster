@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module Kupo
+module Pharos
   class YamlFile
     class Namespace
-      Error = Class.new(Kupo::Error)
+      Error = Class.new(Pharos::Error)
 
       def initialize(path, variables)
         @path = path
