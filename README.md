@@ -56,6 +56,8 @@ hosts:
     role: master
   - address: "2.2.2.2"
     role: worker
+    labels:
+      key: value
   - address: "3.3.3.3"
     role: worker
 network:
@@ -74,6 +76,15 @@ addons:
 ```
 
 You can view full sample of cluster.yml [here](./cluster.example.yml).
+
+### Hosts
+- `address` - IP address or hostname
+- `role` - One of `master`, `worker`
+- `private_address` - Private IP address or hostname. Prefered for cluster's internal communication where possible (optional)
+- `user` - Username with sudo permission to use for logging in (default  "ubuntu")
+- `ssh_key_path` - A local file path to an ssh private key file (default "~/.ssh/id_rsa")
+- `container_runtime` - One of `docker`, `cri-o` (default "docker")
+- `labels` - A list of `key: value` pairs to assign to the host (optional)
 
 ### Network Options
 
