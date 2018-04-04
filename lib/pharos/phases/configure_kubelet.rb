@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'base'
+require_relative 'component'
 
 module Pharos
   module Phases
@@ -60,23 +61,37 @@ module Pharos
 
       # @return [String]
       def build_systemd_dropin
-        config = "[Service]\nEnvironment='KUBELET_EXTRA_ARGS="
-        args = kubelet_extra_args
+        options = []
+        options << "Environment='KUBELET_EXTRA_ARGS=#{kubelet_extra_args.join(' ')}'"
+        options << "Environment='KUBELET_DNS_ARGS=#{kubelet_dns_args.join(' ')}'"
+        options << "ExecStartPre=-/sbin/swapoff -a"
+
+        "[Service]\n#{options.join("\n")}\n"
+      end
+
+      # @return [Array<String>]
+      def kubelet_dns_args
+        [
+          "--cluster-dns=#{@config.network.dns_service_ip}",
+          "--cluster-domain=cluster.local"
+        ]
+      end
+
+      # @return [Array<String>]
+      def kubelet_extra_args
+        args = []
         node_ip = @host.private_address.nil? ? @host.address : @host.private_address
+
+        if crio?
+          args << '--container-runtime=remote'
+          args << '--runtime-request-timeout=15m'
+          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
+        end
+
         args << "--node-ip=#{node_ip}"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
         args << "--hostname-override=#{@host.hostname}"
-        config = config + args.join(' ') + "'"
-        config + "\nExecStartPre=-/sbin/swapoff -a"
-      end
-
-      def kubelet_extra_args
-        return [] unless crio?
-        %w(
-          --container-runtime=remote
-          --runtime-request-timeout=15m
-          --container-runtime-endpoint=/var/run/crio/crio.sock
-        )
+        args
       end
 
       def crio?
