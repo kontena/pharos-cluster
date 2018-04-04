@@ -5,7 +5,7 @@ require 'logger'
 module Pharos
   module Phases
     module Logging
-      include Kupo::Debug.module
+      include Pharos::Debug.module
 
       def self.logger
         @logger
@@ -16,7 +16,7 @@ module Pharos
       end
 
       def logger
-        Kupo::Phases::Logging.logger
+        Pharos::Phases::Logging.logger
       end
 
       def self.__init__

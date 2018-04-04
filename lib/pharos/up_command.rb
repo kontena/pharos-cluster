@@ -143,7 +143,7 @@ module Pharos
     end
 
     # @param master [Pharos::Configuration::Node]
-    # @param nodes [Array<Kupo::Configuration::Node>]
+    # @param nodes [Array<Pharos::Configuration::Node>]
     # @param config [Pharos::Config]
     def handle_workers(master, nodes, config)
       nodes.each do |node|
