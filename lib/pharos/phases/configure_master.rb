@@ -32,6 +32,7 @@ module Pharos
           upgrade
         else
           logger.info { "Kubernetes control plane is up-to-date." }
+          configure
         end
       end
 
@@ -258,6 +259,10 @@ module Pharos
         end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
 
+        configure_kubelet
+      end
+
+      def configure
         configure_kubelet
       end
 
