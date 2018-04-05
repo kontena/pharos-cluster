@@ -23,6 +23,10 @@ module Pharos
     def execute
       puts pastel.green("==> Reading instructions ...")
       configure(load_config)
+    rescue => ex
+      raise unless ENV['DEBUG'].to_s.empty?
+      $stderr.puts "#{ex.class.name} : #{ex.message}"
+      exit 1
     end
 
     def configure(config)
