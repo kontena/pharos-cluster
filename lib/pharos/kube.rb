@@ -102,6 +102,12 @@ module Pharos
       File.exist?(File.join(Dir.home, ".pharos/#{host}"))
     end
 
+    # @param stack [String] dir name within lib/pharos/resources/
+    # @return [Array<String>]
+    def self.resource_files(stack)
+      Dir.glob(File.join(__dir__, 'resources', stack, '*.yml')).sort
+    end
+
     # @param host [Pharos::Configuration::Host]
     # @param stack [String]
     # @param vars [Hash]
@@ -109,8 +115,8 @@ module Pharos
     def self.apply_stack(host, stack, vars = {})
       checksum = SecureRandom.hex(16)
       resources = []
-      Dir.glob(File.join(__dir__, 'resources', stack, '*.yml')).each do |file|
-        resource = parse_resource_file("#{stack}/#{File.basename(file)}", vars)
+      resource_files(stack).each do |path|
+        resource = parse_resource_file(path, vars)
         resource.metadata.labels ||= {}
         resource.metadata.annotations ||= {}
         resource.metadata.labels[RESOURCE_LABEL] = stack
@@ -212,7 +218,7 @@ module Pharos
     # @param path [String]
     # @return [Kubeclient::Resource]
     def self.parse_resource_file(path, vars = {})
-      yaml = File.read(File.realpath(File.join(__dir__, 'resources', path)))
+      yaml = File.read(path)
       parsed_yaml = Pharos::Erb.new(yaml).render(vars)
 
       Kubeclient::Resource.new(YAML.safe_load(parsed_yaml))

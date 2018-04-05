@@ -1,8 +1,10 @@
 describe Pharos::Kube do
 
   describe '.parse_resource_file' do
+    let(:resource_dir) { File.join(__dir__, '../..', 'lib/pharos/resources')}
+
     it 'returns resource' do
-      resource = described_class.parse_resource_file('host-upgrades/daemonset.yml', {
+      resource = described_class.parse_resource_file(resource_dir + '/' + 'host-upgrades/daemonset.yml', {
         arch: double(:arch, name: 'amd64')
       })
       expect(resource.metadata.name).to eq('host-upgrades')
