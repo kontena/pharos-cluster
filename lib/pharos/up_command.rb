@@ -10,7 +10,7 @@ module Pharos
       end
     end
 
-    option '--tf-json', 'PATH', 'Path to terraform output json' do |config_path|
+    option '--hosts-from-tf', 'PATH', 'Path to terraform output json' do |config_path|
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
@@ -34,7 +34,7 @@ module Pharos
     def execute
       puts pastel.green("==> Reading instructions ...")
       config_hash = load_config(config_content)
-      if tf_json
+      if hosts_from_tf
         puts pastel.green("==> Importing hosts from Terraform ...")
         config_hash['hosts'] = load_tf_json
       end
@@ -56,7 +56,7 @@ module Pharos
 
     # @return [Array<Hash>] parsed hosts from terraform json output
     def load_tf_json
-      tf_parser = Pharos::Terraform::JsonParser.new(File.read(tf_json))
+      tf_parser = Pharos::Terraform::JsonParser.new(File.read(hosts_from_tf))
       tf_parser.hosts
     end
 
