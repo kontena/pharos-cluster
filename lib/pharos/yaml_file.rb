@@ -51,13 +51,11 @@ module Pharos
     end
 
     def erb_result(variables = {})
-      Namespace.new(@filename, variables).with_binding do |ns_binding|
-        ERB.new(@content, nil, '%<>-').result(ns_binding)
+      Namespace.new(variables).with_binding do |ns_binding|
+        ERB.new(@content, nil, '%<>-').tap { |e| e.location = [@filename, nil] }.result(ns_binding)
       end
-    rescue Namespace::Error
-      raise
     rescue StandardError, ScriptError => ex
-      raise ParseError, "#{ex} : #{ex.message} in file #{@filename}"
+      raise ParseError, "#{ex.class.name} : #{ex.message} (#{ex.backtrace.first.gsub(/:in `with_binding'/, '')})"
     end
 
     private
