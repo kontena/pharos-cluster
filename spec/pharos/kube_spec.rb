@@ -2,7 +2,7 @@ describe Pharos::Kube do
 
   describe '.parse_resource_file' do
     it 'returns resource' do
-      resource = described_class.parse_resource_file('ingress-nginx/03-role.yml')
+      resource = described_class.parse_resource_file(described_class.resource_path('ingress-nginx/03-role.yml'))
       expect(resource.metadata.name).to eq('nginx-ingress-role')
     end
 
@@ -37,8 +37,8 @@ describe Pharos::Kube do
   describe '.resource_files' do
     it 'returns a list of .yml and .yml.erb files in the stack directory' do
       file_list = described_class.resource_files('ingress-nginx')
-      expect(file_list.select { | f| f.end_with?('.yml.erb') }).not_to be_empty
-      expect(file_list.select { | f| f.end_with?('.yml') }).not_to be_empty
+      expect(file_list.select { | f| f.fnmatch('*.yml.erb') }).not_to be_empty
+      expect(file_list.select { | f| f.fnmatch('*.yml') }).not_to be_empty
     end
   end
 end

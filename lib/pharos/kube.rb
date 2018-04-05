@@ -111,11 +111,11 @@ module Pharos
       File.join(__dir__, 'resources', *joinables)
     end
 
-    # Returns a list of .yml and .yml.erb files in the stack's resource directory
+    # Returns a list of .yml and .yml.erb pathnames in the stack's resource directory
     # @param stack [String]
-    # @return [Array<String>]
+    # @return [Array<Pathname>]
     def self.resource_files(stack)
-      Dir.glob(resource_path(stack, '*.{yml,yml.erb}'))
+      Pathname.new(resource_path(stack)).glob('*.{yml,yml.erb}')
     end
 
     # @param host [Pharos::Configuration::Host]
@@ -126,7 +126,7 @@ module Pharos
       checksum = SecureRandom.hex(16)
       resources = []
       resource_files(stack).each do |file|
-        resource = parse_resource_file("#{stack}/#{File.basename(file)}", vars)
+        resource = parse_resource_file(file, vars)
         resource.metadata.labels ||= {}
         resource.metadata.annotations ||= {}
         resource.metadata.labels[RESOURCE_LABEL] = stack
@@ -228,9 +228,7 @@ module Pharos
     # @param path [String]
     # @return [Kubeclient::Resource]
     def self.parse_resource_file(path, vars = {})
-      Kubeclient::Resource.new(
-        Pharos::YamlFile.new(File.realpath(resource_path(path))).load(vars)
-      )
+      Kubeclient::Resource.new(Pharos::YamlFile.new(path).load(vars))
     end
 
     # @param kind [String]
