@@ -167,7 +167,7 @@ Pharos Cluster can read host information from Terraform json output. In this sce
 
 **Terraform output config:**
 
-```terraform
+```tf
 output "pharos" {
   value = {
     masters = {
