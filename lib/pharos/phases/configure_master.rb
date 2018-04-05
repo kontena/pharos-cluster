@@ -72,11 +72,11 @@ module Pharos
           @ssh.write_file(
             "#{AUDIT_CFG_DIR}/webhook.yml",
             parse_resource_file(
-              'audit/webhook-config.yml',
+              'audit/webhook-config.yml.erb',
               server: @config.audit.server
             )
           )
-          @ssh.write_file("#{AUDIT_CFG_DIR}/policy.yml", parse_resource_file('audit/policy.yml', {}))
+          @ssh.write_file("#{AUDIT_CFG_DIR}/policy.yml", parse_resource_file('audit/policy.yml'))
         end
 
         # Generate and upload authentication token webhook config file if needed
