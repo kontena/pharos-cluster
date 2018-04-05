@@ -49,7 +49,7 @@ module Pharos
       # @return [Hash]
       def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        Pharos::YamlFile.new(configmap.data[:MasterConfiguration]).load
+        Pharos::YamlFile.new(StringIO.new(configmap.data[:MasterConfiguration])).load
       end
 
       def install

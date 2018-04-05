@@ -18,11 +18,9 @@ module Pharos
       @filename = override_filename
       if input.respond_to?(:read)
         @content = input.read
-        @filename ||= input.respond_to?(:path) ? input.path : nil
-      elsif input.include?("\n")
-        @content = input
+        @filename ||= input.respond_to?(:path) ? input.path : input.to_s
       else
-        @filename ||= input
+        @filename ||= input.to_s
         @content = File.read(input)
       end
       @force_erb = force_erb
@@ -39,11 +37,11 @@ module Pharos
     end
 
     def dirname
-      @filename.nil? ? Dir.pwd : File.dirname(@filename)
+      File.dirname(@filename)
     end
 
     def basename
-      @filename.nil? ? '<unknown>' : File.basename(@filename)
+      File.basename(@filename)
     end
 
     def read(variables = {})

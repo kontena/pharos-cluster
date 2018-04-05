@@ -41,7 +41,7 @@ describe Pharos::YamlFile do
     end
   end
 
-  context 'with file input' do
+  context 'with file-alike input' do
     let(:file) { File.open(fixtures_dir('yaml/erb/with_erb.yml.erb')) }
     subject { described_class.new(file) }
 
@@ -50,16 +50,6 @@ describe Pharos::YamlFile do
       expect(file).to receive(:path).and_call_original
       subject.load(result: 'success')
       expect(subject.filename).to eq fixtures_dir('yaml/erb/with_erb.yml.erb')
-    end
-  end
-
-  context 'with content input' do
-    let(:filename) { fixtures_dir('yaml/erb/no_erb.yml') }
-    let(:file) { File.read(filename) }
-    subject { described_class.new(file) }
-
-    it 'reads the file' do
-      expect(subject.load).to eq YAML.safe_load(file)
     end
   end
 end
