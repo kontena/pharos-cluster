@@ -75,6 +75,8 @@ module Pharos
 
     # @return [String] terraform json content
     def tf_json_content
+      return nil unless tf_json
+
       File.read(tf_json)
     end
 
