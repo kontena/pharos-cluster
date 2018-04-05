@@ -16,12 +16,18 @@ module Pharos
 
     FORMATTER = "    %s\n"
 
+    def self.log_target
+      @log_target ||= ENV["PHAROS_LOG"].to_s.empty? ? $stdout : ENV["PHAROS_LOG"]
+    end
+
     def self.__init__
-      Pharos::Logging.logger = Logger.new(ENV["PHAROS_LOG"].to_s.empty? ? $stdout : ENV["PHAROS_LOG"]).tap do |logger|
+      Pharos::Logging.logger = Logger.new(log_target).tap do |logger|
         logger.progname = 'API'
         logger.level = Logger.const_get(LOG_LEVEL)
-        logger.formatter = proc do |_severity, _datetime, _progname, msg|
-          FORMATTER % msg
+        if log_target&.isatty
+          logger.formatter = proc do |_severity, _datetime, _progname, msg|
+            FORMATTER % msg
+          end
         end
       end
     end
