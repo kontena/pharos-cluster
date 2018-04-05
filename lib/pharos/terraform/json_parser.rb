@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require 'json'
 
 module Pharos
   module Terraform
     class JsonParser
-
       # @param json [String]
       def initialize(json)
         @data = JSON.parse(json)
@@ -24,12 +25,12 @@ module Pharos
 
       # @param bundle [Hash]
       # @param host [Hash]
-      # @param i [Integer]
+      # @param index [Integer]
       # @return [Hash]
-      def parse_host(bundle, host, i)
+      def parse_host(bundle, host, index)
         host = {
           address: host,
-          private_address: bundle['private_address'][i],
+          private_address: bundle['private_address'][index],
           role: bundle['role'] || 'worker'
         }
         host[:labels] = bundle['label'][0] if bundle['label']
