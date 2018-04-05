@@ -6,6 +6,8 @@ require_relative 'configuration/host'
 require_relative 'configuration/network'
 require_relative 'configuration/etcd'
 require_relative 'configuration/authentication'
+require_relative 'configuration/cloud'
+require_relative 'configuration/audit'
 require_relative 'configuration/kube_proxy'
 
 module Pharos
@@ -16,9 +18,11 @@ module Pharos
 
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
     attribute :network, Pharos::Configuration::Network
+    attribute :cloud, Pharos::Configuration::Cloud
     attribute :addons, Pharos::Types::Hash
     attribute :etcd, Pharos::Configuration::Etcd
     attribute :authentication, Pharos::Configuration::Authentication
+    attribute :audit, Pharos::Configuration::Audit
     attribute :kube_proxy, Pharos::Configuration::KubeProxy
 
     # @return [Integer]
