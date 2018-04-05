@@ -21,8 +21,7 @@ module Pharos
 
       def parse_resource_file(path, vars = {})
         path = File.realpath(File.join(__dir__, '..', 'resources', path))
-        yaml = File.read(path)
-        Pharos::Erb.new(yaml).render(vars)
+        Pharos::YamlFile.new(path).load(vars)
       end
     end
   end
