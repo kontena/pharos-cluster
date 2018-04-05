@@ -9,6 +9,7 @@ module Pharos
         signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
       end
     end
+
     option '--tf-json', 'PATH', 'Path to terraform output json' do |config_path|
       begin
         File.realpath(config_path)
@@ -17,6 +18,7 @@ module Pharos
       end
     end
 
+    # @return [Symbol, String]
     def default_config_file
       if !$stdin.tty? && !$stdin.eof?
         :stdin
@@ -31,9 +33,50 @@ module Pharos
 
     def execute
       puts pastel.green("==> Reading instructions ...")
-      configure(load_config(config_content, tf_json_content))
+      config_hash = load_config(config_content)
+      if tf_json
+        puts pastel.green("==> Importing hosts from Terraform ...")
+        config_hash['hosts'] = load_tf_json
+      end
+      config = validate_config(config_hash)
+      configure(config)
     end
 
+    # @param [String] configuration content
+    # @return [Hash] hash presentation of cluster.yml
+    def load_config(content)
+      yaml = YAML.safe_load(content)
+      if yaml.is_a?(String)
+        signal_usage_error "File #{config_file} is not in YAML format"
+        exit 10
+      end
+
+      yaml
+    end
+
+    # @return [Array<Hash>] parsed hosts from terraform json output
+    def load_tf_json
+      tf_parser = Pharos::Terraform::JsonParser.new(File.read(tf_json))
+      tf_parser.hosts
+    end
+
+    # @param config_hash [Hash] hash presentation of cluster.yml
+    # @return [Pharos::Config]
+    def validate_config(config_hash)
+      schema_class = Pharos::ConfigSchema.build
+      schema = schema_class.call(config_hash)
+      unless schema.success?
+        show_config_errors(schema.messages)
+        exit 11
+      end
+
+      config = Pharos::Config.new(schema)
+      addon_manager.validate(config.addons)
+
+      config
+    end
+
+    # @param config [Pharos::Config]
     def configure(config)
       master_hosts = master_hosts(config)
       signal_usage_error 'No master hosts defined' if master_hosts.empty?
@@ -59,6 +102,8 @@ module Pharos
       end
     end
 
+    # @param secs [Integer]
+    # @return [String]
     def humanize_duration(secs)
       [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map{ |count, name|
         if secs.positive?
@@ -71,39 +116,6 @@ module Pharos
     # @return [String] configuration content
     def config_content
       config_file == :stdin ? $stdin.read : File.read(config_file)
-    end
-
-    # @return [String] terraform json content
-    def tf_json_content
-      return nil unless tf_json
-
-      File.read(tf_json)
-    end
-
-    # @param [String] configuration content
-    # @return [Pharos::Config]
-    def load_config(content, tf_json = nil)
-      yaml = YAML.safe_load(content)
-      if yaml.is_a?(String)
-        signal_usage_error "File #{config_file} is not in YAML format"
-        exit 10
-      end
-      if tf_json
-        puts pastel.green("==> Importing hosts from Terraform ...")
-        tf_parser = Pharos::Terraform::JsonParser.new(tf_json)
-        yaml['hosts'] = tf_parser.hosts
-      end
-      schema_class = Pharos::ConfigSchema.build
-      schema = schema_class.call(yaml)
-      unless schema.success?
-        show_config_errors(schema.messages)
-        exit 11
-      end
-
-      config = Pharos::Config.new(schema)
-      addon_manager.validate(config.addons)
-
-      config
     end
 
     # @return [Pharos::AddonManager]
