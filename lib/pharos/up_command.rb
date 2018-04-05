@@ -9,6 +9,13 @@ module Pharos
         signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
       end
     end
+    option '--tf-json', 'PATH', 'Path to terraform output json' do |config_path|
+      begin
+        File.realpath(config_path)
+      rescue Errno::ENOENT
+        signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
+      end
+    end
 
     def default_config_file
       if !$stdin.tty? && !$stdin.eof?
@@ -24,7 +31,7 @@ module Pharos
 
     def execute
       puts pastel.green("==> Reading instructions ...")
-      configure(load_config(config_content))
+      configure(load_config(config_content, tf_json_content))
     end
 
     def configure(config)
@@ -66,13 +73,23 @@ module Pharos
       config_file == :stdin ? $stdin.read : File.read(config_file)
     end
 
+    # @return [String] terraform json content
+    def tf_json_content
+      File.read(tf_json)
+    end
+
     # @param [String] configuration content
     # @return [Pharos::Config]
-    def load_config(content)
+    def load_config(content, tf_json = nil)
       yaml = YAML.safe_load(content)
       if yaml.is_a?(String)
         signal_usage_error "File #{config_file} is not in YAML format"
         exit 10
+      end
+      if tf_json
+        puts pastel.green("==> Importing hosts from Terraform ...")
+        tf_parser = Pharos::Terraform::JsonParser.new(tf_json)
+        yaml['hosts'] = tf_parser.hosts
       end
       schema_class = Pharos::ConfigSchema.build
       schema = schema_class.call(yaml)
