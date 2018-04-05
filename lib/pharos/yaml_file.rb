@@ -54,7 +54,7 @@ module Pharos
       Namespace.new(@filename, variables).with_binding do |ns_binding|
         ERB.new(@content, nil, '%<>-').result(ns_binding)
       end
-    rescue NameSpace::Error
+    rescue Namespace::Error
       raise
     rescue StandardError, ScriptError => ex
       raise ParseError, "#{ex} : #{ex.message} in file #{@filename}"
