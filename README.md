@@ -15,6 +15,7 @@ Kontena Pharos cluster manager.
   - [Webhook Token Authentication](#webhook-token-authentication)
   - [Audit Webhook](#audit-webhook)
   - [Cloud Provider](#cloud-provider)
+  - [Terraform](#usage-with-terraform)
 - [Addons](#addons)
   - [Ingress NGINX](#ingress-nginx)
   - [Cert Manager](#cert-manager)
@@ -157,6 +158,69 @@ cloud:
 ### Options
 
 - `provider` - specify used cloud provider (default: no cloud provider)
+
+### Usage with Terraform
+
+Pharos Cluster can read host information from Terraform json output. In this scenario cluster.yml does not need to have `hosts` at all.
+
+#### Example
+
+**Terraform output config:**
+
+```terraform
+output "pharos" {
+  value = {
+    masters = {
+      address         = "${packet_device.pharos_master.*.network.0.address}"
+      private_address = "${packet_device.pharos_master.*.network.2.address}"
+      role            = "master"
+      user            = "root"
+    }
+
+    type_0 = {
+      address         = "${packet_device.pharos_type0.*.network.0.address}"
+      private_address = "${packet_device.pharos_type0.*.network.2.address}"
+
+      label = {
+        metal = "type0"
+      }
+
+      user = "root"
+      role = "worker"
+    }
+
+    type_2 = {
+      address         = "${packet_device.pharos_type2.*.network.0.address}"
+      private_address = "${packet_device.pharos_type2.*.network.2.address}"
+
+      label = {
+        metal = "type2"
+      }
+
+      user = "root"
+      role = "worker"
+    }
+  }
+}
+```
+
+**Cluster.yml:**
+
+```yaml
+network:
+  pod_network_cidr: 172.32.0.0/16
+  trusted_subnets:
+    - 10.80.0.0/16
+addons: {}
+```
+
+**Commands:**
+
+```sh
+$ terraform apply
+$ terraform output -json > tf.json
+$ pharos-cluster up -c cluster.yml --hosts-from-tf ./tf.json
+```
 
 ## Addons
 
