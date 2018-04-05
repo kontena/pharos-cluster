@@ -1,7 +1,6 @@
 require 'pharos/terraform/json_parser'
 
 describe Pharos::Terraform::JsonParser do
-  include FixturesHelpers
 
   let(:subject) { described_class.new(fixture('tf.json')) }
 

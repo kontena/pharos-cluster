@@ -13,7 +13,7 @@ module Pharos
   autoload :Config, 'pharos/config'
   autoload :ConfigSchema, 'pharos/config_schema'
   autoload :Kube, 'pharos/kube'
-  autoload :Erb, 'pharos/erb'
+  autoload :YamlFile, 'pharos/yaml_file'
   autoload :AddonManager, 'pharos/addon_manager'
   autoload :Phases, 'pharos/phases'
 

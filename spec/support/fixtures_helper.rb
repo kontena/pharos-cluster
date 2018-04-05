@@ -1,11 +1,11 @@
-module FixturesHelpers
-  FIXTURES_PATH = File.dirname(__FILE__) + '/../fixtures/'
+module FixturesHelper
+  FIXTURES_PATH = File.expand_path('../fixtures', __dir__)
 
-  def fixture_path(file)
-    File.expand_path(FIXTURES_PATH + file)
+  def fixtures_dir(*joinables)
+    File.join(*[FIXTURES_PATH] + joinables)
   end
 
   def fixture(file)
-    IO.read(fixture_path(file))
+    IO.read(fixtures_dir(file))
   end
 end

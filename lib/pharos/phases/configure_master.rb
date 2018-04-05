@@ -32,6 +32,7 @@ module Pharos
           upgrade
         else
           logger.info { "Kubernetes control plane is up-to-date." }
+          configure
         end
       end
 
@@ -48,7 +49,7 @@ module Pharos
       # @return [Hash]
       def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        YAML.safe_load(configmap.data[:MasterConfiguration])
+        Pharos::YamlFile.new(StringIO.new(configmap.data[:MasterConfiguration])).load
       end
 
       def install
@@ -258,6 +259,10 @@ module Pharos
         end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
 
+        configure_kubelet
+      end
+
+      def configure
         configure_kubelet
       end
 
