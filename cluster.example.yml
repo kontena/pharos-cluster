@@ -35,6 +35,8 @@ authentication:
         client_key: /path/to/key.pem
         client_certificate: /path/to/cert.pem
     cache_ttl: 5m
+audit:
+ server: "http://webhook.site/c700f7c0-cf9e-4a2b-b110-8777809b520b"
 addons:
   ingress-nginx:
     enabled: true
