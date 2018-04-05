@@ -105,9 +105,7 @@ module Pharos
     # @param stack [String] dir name within lib/pharos/resources/
     # @return [Array<String>]
     def self.resource_files(stack)
-      files = Dir.glob(File.join(__dir__, 'resources', stack, '*.yml'))
-      files.sort!
-      files
+      Dir.glob(File.join(__dir__, 'resources', stack, '*.yml')).sort
     end
 
     # @param host [Pharos::Configuration::Host]
