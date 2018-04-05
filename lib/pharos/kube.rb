@@ -115,7 +115,7 @@ module Pharos
     # @param stack [String]
     # @return [Array<Pathname>]
     def self.resource_files(stack)
-      Pathname.new(resource_path(stack)).glob('*.{yml,yml.erb}')
+      Pathname.glob(resource_path(stack, '*.{yml,yml.erb}'))
     end
 
     # @param host [Pharos::Configuration::Host]
