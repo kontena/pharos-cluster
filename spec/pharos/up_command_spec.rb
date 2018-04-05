@@ -48,6 +48,16 @@ describe Pharos::UpCommand do
           $stdin = old_stdin
         end
       end
+
+      it 'throws an error if the configuration has unknown top level keys' do
+        old_stdin = $stdin
+        begin
+          $stdin = StringIO.new(YAML.dump('hosts' => [], 'foo' => 'bar'))
+          expect{subject.run([])}.to raise_error(Clamp::UsageError) { |ex| expect(ex.message).to match /Unexpected.*foo/ }
+        ensure
+          $stdin = old_stdin
+        end
+      end
     end
   end
 end
