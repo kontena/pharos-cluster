@@ -109,8 +109,6 @@ RSpec.configure do |config|
 
       begin
         example.run
-      rescue SystemExit => e
-        puts "Got SystemExit: #{e.inspect}. Ignoring"
       ensure
         $stdout = stdout
         $stderr = stderr
