@@ -115,3 +115,5 @@ RSpec.configure do |config|
     end
   end
 end
+
+require_relative 'support/fixtures_helper'
