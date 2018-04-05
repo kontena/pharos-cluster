@@ -102,6 +102,14 @@ module Pharos
       File.exist?(File.join(Dir.home, ".pharos/#{host}"))
     end
 
+    # @param stack [String] dir name within lib/pharos/resources/
+    # @return [Array<String>]
+    def self.resource_files(stack)
+      files = Dir.glob(File.join(__dir__, 'resources', stack, '*.yml'))
+      files.sort!
+      files
+    end
+
     # @param host [Pharos::Configuration::Host]
     # @param stack [String]
     # @param vars [Hash]
