@@ -62,27 +62,27 @@ If using the `ingress-nginx` addon, then TCP ports 80/443 on the worker nodes (o
 
 The following ports serve unauthenticated monitoring/debugging information, and are either disabled, limited to localhost-only or should be restricted from external access to prevent information leaks.
 
-| Protocol    | Port        | Service               | Status                | Notes
-|-------------|-------------|-----------------------|-----------------------|-------
-| TCP         | 6781        | weave-npc metrics     | OPEN                  | unauthenticated weave-npc metrics API
-| TCP         | 6782        | weave status          | localhost-only        | unauthenticated read-only weave status, stats metrics API
-| TCP         | 10255       | kubelet read-only     | DISABLED              | unauthenticated read-only kubelet pod specs, stats metrics API
-| TCP         | 10248       | kubelet               | localhost-only        | ?
-| TCP         | 10249       | kube-proxy metrics    | localhost-only        | ?
-| TCP         | 10251       | kube-scheduler        | localhost-only        | ?
-| TCP         | 10252       | kube-controller       | localhost-only        | ?
-| TCP         | 10256       | kube-proxy healthz    | OPEN                  | ?
-| TCP         | 18080       | ingress-nginx status  | OPEN                  | unauthenticated
+| Protocol    | Port        | Service               | Hosts   | Status          | Notes
+|-------------|-------------|-----------------------|---------|-----------------|-------
+| TCP         | 6781        | weave-npc metrics     | All     | ***OPEN***      | unauthenticated weave-npc metrics API
+| TCP         | 6782        | weave status          | All     | localhost-only  | unauthenticated read-only weave status, stats metrics API
+| TCP         | 10255       | kubelet read-only     | All     | DISABLED        | unauthenticated read-only kubelet pod specs, stats metrics API
+| TCP         | 10248       | kubelet               | All     | localhost-only  | ?
+| TCP         | 10249       | kube-proxy metrics    | All     | localhost-only  | ?
+| TCP         | 10251       | kube-scheduler        | Master  | localhost-only  | ?
+| TCP         | 10252       | kube-controller       | Master  | localhost-only  | ?
+| TCP         | 10256       | kube-proxy healthz    | All     | ***OPEN***      | ?
+| TCP         | 18080       | ingress-nginx status  | workers | ***OPEN***      | unauthenticated
 
 ### Restricted Ports
 
 The following restricted services are only accessible via localhost the nodes, and must not be exposed to any untrusted access.
 
-| Protocol    | Port        | Service               | Hosts   | Notes
-|-------------|-------------|-----------------------|---------|-------
-| TCP         | 2379        | etcd clients          | master  | unauthenticated etcd client API
-| TCP         | 2380        | etcd peers            | master  | unauthenticated etcd peers API
-| TCP         | 6784        | weave control         | All     | unauthenticated weave control API
+| Protocol    | Port        | Service               | Hosts   | Status          | Notes
+|-------------|-------------|-----------------------|---------|-----------------|------
+| TCP         | 2379        | etcd clients          | master  | localhost-only  | unauthenticated etcd client API
+| TCP         | 2380        | etcd peers            | master  | localhost-only  | unauthenticated etcd peers API
+| TCP         | 6784        | weave control         | All     | localhost-only  | unauthenticated weave control API
 
 ## Usage
 
