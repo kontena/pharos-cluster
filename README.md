@@ -72,7 +72,7 @@ The following ports serve unauthenticated monitoring/debugging information, and 
 | TCP         | 10251       | kube-scheduler        | Master  | localhost-only  | ?
 | TCP         | 10252       | kube-controller       | Master  | localhost-only  | ?
 | TCP         | 10256       | kube-proxy healthz    | All     | **OPEN**        | ?
-| TCP         | 18080       | ingress-nginx status  | workers | **OPEN**        | unauthenticated
+| TCP         | 18080       | ingress-nginx status  | Workers | **OPEN**        | unauthenticated
 
 ### Restricted Ports
 
@@ -80,8 +80,8 @@ The following restricted services are only accessible via localhost the nodes, a
 
 | Protocol    | Port        | Service               | Hosts   | Status          | Notes
 |-------------|-------------|-----------------------|---------|-----------------|------
-| TCP         | 2379        | etcd clients          | master  | localhost-only  | unauthenticated etcd client API
-| TCP         | 2380        | etcd peers            | master  | localhost-only  | unauthenticated etcd peers API
+| TCP         | 2379        | etcd clients          | Master  | localhost-only  | unauthenticated etcd client API
+| TCP         | 2380        | etcd peers            | Master  | localhost-only  | unauthenticated etcd peers API
 | TCP         | 6784        | weave control         | All     | localhost-only  | unauthenticated weave control API
 
 ## Usage
