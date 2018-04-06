@@ -2,7 +2,7 @@
 
 module Pharos
   module SSH
-    class Exec
+    class RemoteCommand
       Error = Class.new(StandardError)
 
       class ExecError < Error

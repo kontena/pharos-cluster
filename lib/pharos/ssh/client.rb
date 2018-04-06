@@ -47,23 +47,23 @@ module Pharos
       end
 
       # @param cmd [String] command to execute
-      # @return [Exec]
+      # @return [Pharos::Command::Result]
       def exec(cmd, **options)
         require_session!
-        Exec.new(self, cmd, **options).run
+        RemoteCommand.new(self, cmd, **options).run
       end
 
       # @param cmd [String] command to execute
-      # @raise [ExecError]
+      # @raise [Pharos::SSH::RemoteCommand::ExecError]
       # @return [String] stdout
       def exec!(cmd, **options)
         require_session!
-        Exec.new(self, cmd, **options).run!.stdout
+        RemoteCommand.new(self, cmd, **options).run!.stdout
       end
 
       # @param script [String] name of script
       # @param path [String] real path to file, defaults to script
-      # @raise [ExecError]
+      # @raise [Pharos::SSH::RemoteCommand::ExecError]
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
         script = File.read(path || name)
