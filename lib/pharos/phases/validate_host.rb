@@ -38,8 +38,8 @@ module Pharos
 
       def check_sudo
         ssh.exec!('sudo -n true')
-      rescue Kupo::SSH::Exec::ExecError => exc
-        raise Kupo::InvalidHostError, "Unable to sudo: #{exc.output}"
+      rescue Pharos::SSH::Exec::ExecError => exc
+        raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
 
       def gather_host_facts
