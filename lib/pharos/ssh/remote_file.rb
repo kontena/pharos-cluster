@@ -30,7 +30,7 @@ module Pharos
         @client.exec?("[ -e #{@path} ]")
       end
 
-      def existing(&block)
+      def with_existing
         exist? && yield(self)
       end
 
