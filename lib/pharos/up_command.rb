@@ -2,7 +2,15 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_file do |config_path|
+    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
+      begin
+        Pharos::YamlFile.new(File.realpath(config_file))
+      rescue Errno::ENOENT
+        signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
+      end
+    end
+
+    option '--hosts-from-tf', 'PATH', 'Path to terraform output json' do |config_path|
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
@@ -10,23 +18,61 @@ module Pharos
       end
     end
 
-    def default_config_file
+    # @return [Pharos::YamlFile]
+    def default_config_yaml
       if !$stdin.tty? && !$stdin.eof?
-        :stdin
+        Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
       else
-        begin
-          File.realpath('cluster.yml')
-        rescue Errno::ENOENT
-          signal_usage_error 'File does not exist: cluster.yml'
-        end
+        cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
+        signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
+        Pharos::YamlFile.new(cluster_config)
       end
     end
 
     def execute
       puts pastel.green("==> Reading instructions ...")
-      configure(load_config(config_content))
+      config_hash = load_config
+      if hosts_from_tf
+        puts pastel.green("==> Importing hosts from Terraform ...")
+        config_hash['hosts'] ||= []
+        config_hash['hosts'] += load_tf_json
+      end
+      config = validate_config(config_hash)
+      configure(config)
+    rescue StandardError => ex
+      raise unless ENV['DEBUG'].to_s.empty?
+      warn "#{ex.class.name} : #{ex.message}"
+      exit 1
     end
 
+    # @return [Hash] hash presentation of cluster.yml
+    def load_config
+      config_yaml.load(ENV.to_h)
+    end
+
+    # @return [Array<Hash>] parsed hosts from terraform json output
+    def load_tf_json
+      tf_parser = Pharos::Terraform::JsonParser.new(File.read(hosts_from_tf))
+      tf_parser.hosts
+    end
+
+    # @param config_hash [Hash] hash presentation of cluster.yml
+    # @return [Pharos::Config]
+    def validate_config(config_hash)
+      schema_class = Pharos::ConfigSchema.build
+      schema = schema_class.call(config_hash)
+      unless schema.success?
+        show_config_errors(schema.messages)
+        exit 11
+      end
+
+      config = Pharos::Config.new(schema)
+      addon_manager.validate(config.addons)
+
+      config
+    end
+
+    # @param config [Pharos::Config]
     def configure(config)
       master_hosts = master_hosts(config)
       signal_usage_error 'No master hosts defined' if master_hosts.empty?
@@ -40,7 +86,7 @@ module Pharos
         validate_hosts(config)
         # set workdir to the same dir where config was loaded from
         # so that the certs etc. can be referenced more easily
-        Dir.chdir(File.dirname(config_file)) do
+        Dir.chdir(config_yaml.dirname) do
           handle_masters(master_hosts[0], config)
           handle_workers(master_hosts[0], worker_hosts(config), config)
           handle_addons(master_hosts[0], config.addons)
@@ -52,6 +98,8 @@ module Pharos
       end
     end
 
+    # @param secs [Integer]
+    # @return [String]
     def humanize_duration(secs)
       [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map{ |count, name|
         if secs.positive?
@@ -59,32 +107,6 @@ module Pharos
           "#{n.to_i} #{name}"
         end
       }.compact.reverse.join(' ')
-    end
-
-    # @return [String] configuration content
-    def config_content
-      config_file == :stdin ? $stdin.read : File.read(config_file)
-    end
-
-    # @param [String] configuration content
-    # @return [Pharos::Config]
-    def load_config(content)
-      yaml = YAML.safe_load(content)
-      if yaml.is_a?(String)
-        signal_usage_error "File #{config_file} is not in YAML format"
-        exit 10
-      end
-      schema_class = Pharos::ConfigSchema.build
-      schema = schema_class.call(yaml)
-      unless schema.success?
-        show_config_errors(schema.messages)
-        exit 11
-      end
-
-      config = Pharos::Config.new(schema)
-      addon_manager.validate(config.addons)
-
-      config
     end
 
     # @return [Pharos::AddonManager]
@@ -139,11 +161,11 @@ module Pharos
       Phases::ConfigureNetwork.new(master, config.network).call
       Phases::ConfigureMetrics.new(master).call
       Phases::LabelNode.new(master, master).call
-      Phases::StoreClusterYAML.new(master, config_content).call
+      Phases::StoreClusterYAML.new(master, config_yaml.read(ENV.to_h)).call
     end
 
     # @param master [Pharos::Configuration::Node]
-    # @param nodes [Array<Kupo::Configuration::Node>]
+    # @param nodes [Array<Pharos::Configuration::Node>]
     # @param config [Pharos::Config]
     def handle_workers(master, nodes, config)
       nodes.each do |node|

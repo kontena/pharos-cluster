@@ -15,7 +15,7 @@ spec:
         prometheus.io/port: '10254'
         prometheus.io/scrape: 'true'
     spec:
-      <%- if node_selector -%>
+      <%- unless node_selector.empty? -%>
       nodeSelector:
       <%- node_selector.each do |key, value| -%>
         <%= key %>: <%= value %>

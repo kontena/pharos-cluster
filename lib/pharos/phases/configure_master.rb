@@ -32,6 +32,7 @@ module Pharos
           upgrade
         else
           logger.info { "Kubernetes control plane is up-to-date." }
+          configure
         end
       end
 
@@ -48,7 +49,7 @@ module Pharos
       # @return [Hash]
       def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        YAML.safe_load(configmap.data[:MasterConfiguration])
+        Pharos::YamlFile.new(StringIO.new(configmap.data[:MasterConfiguration])).load
       end
 
       def install
@@ -71,11 +72,11 @@ module Pharos
           @ssh.write_file(
             "#{AUDIT_CFG_DIR}/webhook.yml",
             parse_resource_file(
-              'audit/webhook-config.yml',
+              'audit/webhook-config.yml.erb',
               server: @config.audit.server
             )
           )
-          @ssh.write_file("#{AUDIT_CFG_DIR}/policy.yml", parse_resource_file('audit/policy.yml', {}))
+          @ssh.write_file("#{AUDIT_CFG_DIR}/policy.yml", parse_resource_file('audit/policy.yml'))
         end
 
         # Generate and upload authentication token webhook config file if needed
@@ -258,6 +259,10 @@ module Pharos
         end
         logger.info(@master.address) { "Control plane upgrade succeeded!" }
 
+        configure_kubelet
+      end
+
+      def configure
         configure_kubelet
       end
 
