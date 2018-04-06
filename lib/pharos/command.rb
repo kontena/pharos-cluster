@@ -2,7 +2,6 @@
 
 module Pharos
   class Command < Clamp::Command
-<<<<<<< HEAD
     include Pharos::Logging
 
     option '--[no-]color', :flag, "Colorize output", default: $stdout.tty?
@@ -15,7 +14,6 @@ module Pharos
     option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
       debug!
     end
-
 
     def run(*args)
       super
