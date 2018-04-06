@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Kupo
+module Pharos
   module SSH
     class Exec
       Error = Class.new(StandardError)
