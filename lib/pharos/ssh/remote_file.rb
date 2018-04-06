@@ -31,7 +31,7 @@ module Pharos
       end
 
       def existing(&block)
-        exist? && yield self
+        exist? && yield(self)
       end
 
       def download(local_path)
