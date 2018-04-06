@@ -21,6 +21,10 @@ module Pharos
     autoload :Client, 'pharos/ssh/client'
   end
 
+  module Terraform
+    autoload :JsonParser, 'pharos/terraform/json_parser'
+  end
+
   module Addons
   end
 end

@@ -1,0 +1,9 @@
+network: {}
+addons:
+  ingress-nginx:
+    enabled: true
+  host-upgrades:
+    enabled: true
+    interval: "7d"
+  kured:
+    enabled: true
