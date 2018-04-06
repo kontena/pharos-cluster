@@ -1,5 +1,8 @@
 variable "do_token" {}
-variable "ssh_keys" {}
+
+variable "ssh_keys" {
+  type = "list"
+}
 
 variable "region" {
   default = "ams3"
@@ -41,8 +44,6 @@ resource "digitalocean_droplet" "pharos_worker" {
 }
 
 output "pharos" {
-  depends_on = ["packet_device.pharos_master", "packet_device.pharos_worker"]
-
   value = {
     masters = {
       address         = "${digitalocean_droplet.pharos_master.*.ipv4_address}"
