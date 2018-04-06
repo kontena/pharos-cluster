@@ -42,6 +42,48 @@ Pharos Cluster executable can be downloaded from [https://github.com/kontena/pha
 - Minimal Ubuntu 16.04 (amd64 / arm64) hosts with SSH access
 - A user with passwordless sudo permission (`echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER`)
 
+### Required Open Ports
+
+The follow ports are used by the `pharos-cluster` management tool, as well as between nodes in the same cluster. These ports are all authenticated, and can safely be left open for public access if required:
+
+| Protocol    | Port        | Service         | Hosts / Addon         | Notes
+|-------------|-------------|-----------------|-----------------------|-------
+| TCP         | 22          | SSH             | All                   | authenticated management channel for `pharos-cluster` operations (SSH keys)
+| TCP         | 6443        | kube-apiserver  | Master                | authenticated kube API for `pharos-cluster`, `kubectl` and worker node `kubelet` access (kube API tokens, RBAC)
+| TCP         | 6783        | weave           | All (weave)           | authenticated Weave peer control connections (shared weave secret)
+| UDP         | 6783        | weave           | All (weave)           | authenticated Weave sleeve fallback (shared weave secret)
+| UDP         | 6784        | weave           | All (weave)           | unauthenticated Weave fastdp (VXLAN), only used for peers on `network.trusted_subnets` networks
+| ESP (IPSec) |             | weave           | All (weave)           | authenticated Weave fastdp (IPsec encapsulated UDP port 6784 VXLAN), secured using IPSec SAs established over the control channel
+| TCP         | 10250       | kubelet         | All (master + worker) | authenticated kubelet API for the master node `kube-apiserver` and `heapster`/`metrics-server` addons (TLS client certs)
+
+If using the `ingress-nginx` addon, then TCP ports 80/443 on the worker nodes (or nodes matching `addons.ingress-nginx.node_selector`) must also be opened for public access.
+
+### Monitoring Ports
+
+The following ports serve unauthenticated monitoring/debugging information, and are either disabled, limited to localhost-only or should be restricted from external access to prevent information leaks:
+
+| Protocol    | Port        | Service               | Status                | Notes
+|-------------|-------------|-----------------------|-----------------------|-------
+| TCP         | 6781        | weave-npc metrics     | OPEN                  | unauthenticated weave-npc metrics API
+| TCP         | 6782        | weave status          | localhost-only        | unauthenticated read-only weave status, stats metrics API
+| TCP         | 10255       | kubelet read-only     | DISABLED              | unauthenticated read-only kubelet pod specs, stats metrics API
+| TCP         | 10248       | kubelet               | localhost-only        | ?
+| TCP         | 10249       | kube-proxy metrics    | localhost-only        | ?
+| TCP         | 10251       | kube-scheduler        | localhost-only        | ?
+| TCP         | 10252       | kube-controller       | localhost-only        | ?
+| TCP         | 10256       | kube-proxy healthz    | OPEN                  | ?
+| TCP         | 18080       | ingress-nginx status  | OPEN                  | unauthenticated
+
+### Restricted Ports
+
+The following restricted services are only accessible via localhost the nodes, and must not be exposed to any untrusted access:
+
+| Protocol    | Port        | Service               | Hosts   | Notes
+|-------------|-------------|-----------------------|---------|-------
+| TCP         | 2379        | etcd clients          | master  | unauthenticated etcd client API
+| TCP         | 2380        | etcd peers            | master  | unauthenticated etcd peers API
+| TCP         | 6784        | weave control         | All     | unauthenticated weave control API
+
 ## Usage
 
 ```
@@ -315,4 +357,3 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
