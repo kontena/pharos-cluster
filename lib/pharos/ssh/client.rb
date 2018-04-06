@@ -193,8 +193,8 @@ module Pharos
           cmd << "#{e}=#{Shellwords.escape(value)}"
         end
 
-        cmd << 'sh'
-        cmd << '-x'
+        cmd.concat(env.map { |pair| pair.map(&:shellescape).join('=') })
+        cmd.concat(%w(sh -x))
 
         ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
 
