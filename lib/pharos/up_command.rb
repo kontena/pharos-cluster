@@ -34,7 +34,8 @@ module Pharos
       config_hash = load_config
       if hosts_from_tf
         puts pastel.green("==> Importing hosts from Terraform ...")
-        config_hash['hosts'] = load_tf_json
+        config_hash['hosts'] ||= []
+        config_hash['hosts'] += load_tf_json
       end
       config = validate_config(config_hash)
       configure(config)
