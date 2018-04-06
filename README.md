@@ -1,17 +1,51 @@
-# Kupo (クポ)
+# Pharos Cluster
 
-[![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/kupo/status.svg)](https://cloud-drone-07.kontena.io/kontena/kupo)
+[![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/pharos-cluster/status.svg)](https://cloud-drone-07.kontena.io/kontena/pharos-cluster)
+[![Join the chat at https://slack.kontena.io](https://slack.kontena.io/badge.svg)](https://slack.kontena.io)
 
-Kontena Pharos installer, kupo!
+Kontena Pharos cluster manager.
 
-## Requirements
+- [Introduction](#introduction)
+- [Design Principles](#design-principles)
+- [Installation](#installation)
+- [Host Requirements](#host-requirements)
+- [Usage](#usage)
+  - [Network Options](#network-options)
+  - [External etcd](#using-external-etcd)
+  - [Webhook Token Authentication](#webhook-token-authentication)
+  - [Audit Webhook](#audit-webhook)
+  - [Cloud Provider](#cloud-provider)
+  - [Terraform](#usage-with-terraform)
+- [Addons](#addons)
+  - [Ingress NGINX](#ingress-nginx)
+  - [Cert Manager](#cert-manager)
+  - [Host Security Updates](#host-security-updates)
+  - [Kured](#kured)
+  - [Kubernetes Dashboard](#kubernetes-dashboard)
 
-- Minimal Ubuntu 16.04 nodes with SSH access
+## Introduction
+
+Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution) management tool. It handles cluster bootstrapping, upgrades and other maintenance tasks via SSH connection and Kubernetes API access.
+
+## Design Principles
+
+- Simple setup process and learning curve
+- Bare metal friendly, infrastructure agnostic
+- Manage remote clusters instantly, without bootstrapping
+
+## Installation
+
+Pharos Cluster executable can be downloaded from [https://github.com/kontena/pharos-cluster/releases](releases). Binaries should work on any recent 64bit MacOS or Linux machine.
+
+## Host Requirements
+
+- Minimal Ubuntu 16.04 (amd64 / arm64) hosts with SSH access
+- A user with passwordless sudo permission (`echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER`)
 
 ## Usage
 
 ```
-$ kupo build -c cluster.yml
+$ pharos-cluster up -c cluster.yml
 ```
 
 Example cluster YAML:
@@ -25,6 +59,8 @@ hosts:
     role: master
   - address: "2.2.2.2"
     role: worker
+    labels:
+      key: value
   - address: "3.3.3.3"
     role: worker
 network:
@@ -44,15 +80,24 @@ addons:
 
 You can view full sample of cluster.yml [here](./cluster.example.yml).
 
-## Network Options
+### Hosts
+- `address` - IP address or hostname
+- `role` - One of `master`, `worker`
+- `private_address` - Private IP address or hostname. Prefered for cluster's internal communication where possible (optional)
+- `user` - Username with sudo permission to use for logging in (default  "ubuntu")
+- `ssh_key_path` - A local file path to an ssh private key file (default "~/.ssh/id_rsa")
+- `container_runtime` - One of `docker`, `cri-o` (default "docker")
+- `labels` - A list of `key: value` pairs to assign to the host (optional)
+
+### Network Options
 
 - `service_cidr` - IP address range for service VIPs. (default "10.96.0.0/12")
 - `pod_network_cidr` - IP address range for the pod network. (default "10.32.0.0/12")
 - `trusted_subnets` - array of trusted subnets where overlay network can be used without IPSEC.
 
-## Using external etcd
+### Using External etcd
 
-Kupo can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
+Pharos Cluster can spin up Kubernetes using an externally managed etcd. In this case you need to define the external etcd details in your `cluster.yml` file:
 
 ```yaml
 etcd:
@@ -69,9 +114,114 @@ You need to specify all etcd peer endpoints in the list.
 
 Certificate and corresponding key is used to authenticate the access to etcd. The paths used are relative to the path where the `cluster.yml` file was loaded from.
 
+### Webhook Token Authentication
+
+Cluster supports [webhook for verifying bearer tokens](https://kubernetes.io/docs/admin/authentication/#webhook-token-authentication).
+
+```yaml
+authentication:
+  token_webhook:
+    config:
+      cluster:
+        name: token-reviewer
+        server: http://localhost:9292/token
+        certificate_authority: /path/to/ca.pem # optional
+      user:
+        name: kube-apiserver
+        client_key: /path/to/key.pem # optional
+        client_certificate: /path/to/cert.pem # optional
+    cache_ttl: 5m # optional
+```
+
+### Audit Webhook
+
+Cluster supports setting up audit webhooks for external audit event collection.
+
+```yaml
+audit:
+ server: "http://audit.example.com/webhook"
+```
+
+Audit events are delivered in batched mode, multiple events in one webhook `POST` request.
+
+Currently audit events are configured to be emitted at `Metadata` level. See: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/api-machinery/auditing.md#levels
+
+### Cloud Provider
+
+Pharos Cluster supports a concept of [cloud providers](https://kubernetes.io/docs/getting-started-guides/scratch/#cloud-provider). Cloud provider is a module that provides an interface for managing load balancers, nodes (i.e. hosts) and networking routes.
+
+```yaml
+cloud:
+  provider: aws
+```
+
+### Options
+
+- `provider` - specify used cloud provider (default: no cloud provider)
+
+### Usage with Terraform
+
+Pharos Cluster can read host information from Terraform json output. In this scenario cluster.yml does not need to have `hosts` at all.
+
+#### Example
+
+**Terraform output config:**
+
+```tf
+output "pharos" {
+  value = {
+    masters = {
+      address         = "${digitalocean_droplet.pharos_master.*.ipv4_address}"
+      private_address = "${digitalocean_droplet.pharos_master.*.ipv4_address_private}"
+      role            = "master"
+      user            = "root"
+    }
+
+    workers_2g = {
+      address         = "${digitalocean_droplet.pharos_2g.*.ipv4_address}"
+      private_address = "${digitalocean_droplet.pharos_2g.*.ipv4_address_private}"
+      role            = "worker"
+      user            = "root"
+
+      label = {
+        droplet = "2g"
+      }
+    }
+
+    workers_4g = {
+      address         = "${digitalocean_droplet.pharos_4g.*.ipv4_address}"
+      private_address = "${digitalocean_droplet.pharos_4g.*.ipv4_address_private}"
+      role            = "worker"
+      user            = "root"
+
+      label = {
+        droplet = "4g"
+      }
+    }
+  }
+}
+```
+
+**Cluster.yml:**
+
+```yaml
+network: {}
+addons:
+  ingress-nginx:
+    enabled: true
+```
+
+**Commands:**
+
+```sh
+$ terraform apply
+$ terraform output -json > tf.json
+$ pharos-cluster up -c cluster.yml --hosts-from-tf ./tf.json
+```
+
 ## Addons
 
-Kupo includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
+Pharos Cluster includes common functionality as addons. Addons can be enabled by introducing and enabling them in `cluster.yml`.
 
 ### Ingress NGINX
 
@@ -86,11 +236,14 @@ ingress-nginx:
     disk: ssd
   configmap:
     load-balance: least_conn
+  default_backend:
+    image: my-custom-image:latest
 ```
 #### Options
 
 - `node_selector` - deployment node selector (map), deploys ingress only to matching nodes.
 - `configmap` - custom configuration (map). For all supported `configmap` options, see: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
+- `default_backend.image` - custom image to be used as the default backend for the Nginx Ingress. Expected to fulfill the default backend [requirements](https://github.com/kubernetes/ingress-nginx#requirements). Leave empty to use Pharos' own default backend.
 
 ### Cert Manager
 
@@ -113,7 +266,7 @@ cert-manager:
 - `issuer.server`-  ACME server url
 - `issuer.email` - email address used for ACME registration
 
-### Host Upgrades
+### Host Security Updates
 
 Automatic host operating system security updates.
 
@@ -138,9 +291,20 @@ kured:
   enabled: true
 ```
 
+### Kubernetes Dashboard
+
+Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters. It allows users to manage applications running in the cluster and troubleshoot them, as well as manage the cluster itself.
+
+https://github.com/kubernetes/dashboard
+
+```yaml
+kubernetes-dashboard:
+  enabled: true
+```
+
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/kupo.
+Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/pharos-cluster.
 
 ## License
 

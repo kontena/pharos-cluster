@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: metrics-server
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+spec:
+  selector:
+    matchLabels:
+      k8s-app: metrics-server
+  template:
+    metadata:
+      name: metrics-server
+      labels:
+        k8s-app: metrics-server
+    spec:
+      serviceAccountName: metrics-server
+      containers:
+      - name: metrics-server
+        image: gcr.io/google_containers/metrics-server-<%= arch.name %>:v<%= version %>
+        imagePullPolicy: Always
+        command:
+        - /metrics-server
+        - --source=kubernetes.summary_api:https://kubernetes.default.svc?inClusterConfig=false&kubeletHttps=true&kubeletPort=10250&auth=/etc/kubernetes/kubeconfig.conf
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kubernetes
+        - name: client-secrets
+          mountPath: /etc/kubernetes-client-secrets
+      volumes:
+      - name: config
+        configMap:
+          name: metrics-server
+      - name: client-secrets
+        secret:
+          secretName: metrics-server-client-cert

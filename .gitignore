@@ -7,4 +7,4 @@
 /spec/reports/
 /tmp/
 /examples/vagrant/.vagrant/
-
+/Gemfile.lock
