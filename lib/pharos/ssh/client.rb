@@ -91,24 +91,24 @@ module Pharos
       end
 
       def debug_cmd(cmd)
-        $stderr << INDENT << pastel.cyan("$ #{cmd}#{" < #{@debug_source}" if @debug_source}") << "\n"
+        $stdout << INDENT << pastel.cyan("$ #{cmd}#{" < #{@debug_source}" if @debug_source}") << "\n"
       end
 
       def debug_stdout(data)
         data.each_line do |line|
-          $stderr << INDENT << pastel.dim(line)
+          $stdout << INDENT << pastel.dim(line)
         end
       end
 
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stderr << INDENT << pastel.red(line)
+          $stdout << INDENT << pastel.red(line)
         end
       end
 
       def debug_exit(exit_status)
-        $stderr << INDENT << pastel.yellow("! #{exit_status}") << "\n"
+        $stdout << INDENT << pastel.yellow("! #{exit_status}") << "\n"
       end
     end
 
