@@ -230,7 +230,7 @@ module Pharos
       end
 
       def file(path)
-        Kupo::SSH::RemoteFile.new(self, path)
+        Pharos::SSH::RemoteFile.new(self, path)
       end
 
       # @param contents [String]
