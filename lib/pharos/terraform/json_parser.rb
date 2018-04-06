@@ -5,15 +5,23 @@ require 'json'
 module Pharos
   module Terraform
     class JsonParser
+      class ParserError < Pharos::Error; end
+
       # @param json [String]
       def initialize(json)
-        @data = JSON.parse(json)
+        @json = json
+      end
+
+      def data
+        @data ||= JSON.parse(@json)
+      rescue JSON::ParserError => ex
+        raise ParserError, ex.message
       end
 
       # @return [Array<Hash>]
       def hosts
         hosts = []
-        values = @data.dig('pharos', 'value')
+        values = data.dig('pharos', 'value')
         values.each do |_, arr|
           bundle = arr[0]
           bundle['address'].each_with_index do |h, i|
@@ -30,9 +38,9 @@ module Pharos
       def parse_host(bundle, host, index)
         host = {
           address: host,
-          private_address: bundle['private_address'][index],
           role: bundle['role'] || 'worker'
         }
+        host[:private_address] = bundle['private_address'][index] if bundle['private_address']
         host[:labels] = bundle['label'][0] if bundle['label']
         host[:user] = bundle['user'] if bundle['user']
         host[:ssh_key_path] = bundle['ssh_key_path'] if bundle['ssh_key_path']

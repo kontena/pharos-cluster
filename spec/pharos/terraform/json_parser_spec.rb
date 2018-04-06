@@ -13,5 +13,12 @@ describe Pharos::Terraform::JsonParser do
       expect(hosts.select{ |h| h[:role] == 'master' }[0][:user]).to eq('root')
       expect(hosts.select{ |h| h[:role] == 'worker' }[0][:user]).to eq('ubuntu')
     end
+
+    it 'raises error on invalid json' do
+      subject = described_class.new('{"asdsds": "asdsdasd"')
+      expect {
+        subject.hosts
+      }.to raise_error(described_class::ParserError)
+    end
   end
 end
