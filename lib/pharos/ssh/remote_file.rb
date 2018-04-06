@@ -15,11 +15,15 @@ module Pharos
         @client.exec!("rm #{@path}")
       end
 
-      def write(content)
+      def write(content, sudo: true, append: false)
         @client.exec!(
-          "sudo tee #{@path} > /dev/null",
+          "#{'sudo ' if sudo}tee #{'--append ' if append}#{@path} > /dev/null",
           stdin: content.respond_to?(:read) ? content : StringIO.new(content)
         )
+      end
+
+      def append(content, sudo: true)
+        write(content, sudo: sudo, append: true)
       end
 
       def read
