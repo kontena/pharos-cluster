@@ -87,7 +87,7 @@ module Pharos
       end
 
       def pastel
-        @pastel ||= Pastel.new
+        @pastel ||= Pastel.new(enabled: $stdout.tty?)
       end
 
       def debug_cmd(cmd)
