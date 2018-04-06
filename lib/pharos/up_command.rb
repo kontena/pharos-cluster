@@ -67,7 +67,7 @@ module Pharos
       end
 
       config = Pharos::Config.new(schema)
-      addon_manager.validate(config.addons)
+      addon_manager.validate(config.addons || {})
 
       config
     end
