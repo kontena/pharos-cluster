@@ -1,8 +1,10 @@
-dev:
+pharos-cluster:
   build: .
   volumes:
   - .:/app
   - $SSH_AUTH_SOCK:/run/ssh-agent.sock
+  - ./.pharos:/root/.pharos
   environment:
   - SSH_AUTH_SOCK=/run/ssh-agent.sock
-  command: bin/kupo up
+  entrypoint: bin/pharos-cluster
+  command: up
