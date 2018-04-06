@@ -15,9 +15,10 @@ module Pharos
     end
 
     FORMATTER = "    %s\n"
+    private_constant :FORMATTER
 
     def self.log_target
-      @log_target ||= ENV["PHAROS_LOG"].to_s.empty? ? $stdout : ENV["PHAROS_LOG"]
+      ENV["PHAROS_LOG"].to_s.empty? ? $stdout : ENV["PHAROS_LOG"]
     end
 
     def self.__init__
@@ -32,14 +33,19 @@ module Pharos
       end
     end
 
+    __init__ unless defined?(@logger)
+
+    private
+
     def debug!
       extend Pharos::Debug::Enabled
       Pharos::Logging.__init__
     end
 
-    __init__ unless defined?(@logger)
-
-    private
+    def no_debug!
+      extend Pharos::Debug::Disabled
+      Pharos::Logging.__init__
+    end
 
     def logger
       Pharos::Logging.logger

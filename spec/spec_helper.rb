@@ -101,12 +101,13 @@ RSpec.configure do |config|
   # as the one that triggered the failure.
   Kernel.srand config.seed
 =end
-  unless ENV['DEBUG'].to_s == 'true'
+  if ENV['DEBUG'].to_s.empty?
     config.around(:each) do |example|
       stdout = $stdout
       stderr = $stderr
       $stdout = $stderr = StringIO.new
-      Pharos::Logging.send(:__init__)
+
+      Pharos::Logging.__init__
 
       begin
         example.run
