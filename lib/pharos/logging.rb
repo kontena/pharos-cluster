@@ -32,6 +32,11 @@ module Pharos
       end
     end
 
+    def debug!
+      extend Pharos::Debug::Enabled
+      Pharos::Logging.__init__
+    end
+
     __init__ unless defined?(@logger)
 
     private
