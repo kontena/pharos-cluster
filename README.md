@@ -64,15 +64,15 @@ The following ports serve unauthenticated monitoring/debugging information, and 
 
 | Protocol    | Port        | Service               | Hosts   | Status          | Notes
 |-------------|-------------|-----------------------|---------|-----------------|-------
-| TCP         | 6781        | weave-npc metrics     | All     | **OPEN**        | unauthenticated weave-npc metrics API
-| TCP         | 6782        | weave status          | All     | localhost-only  | unauthenticated read-only weave status, stats metrics API
-| TCP         | 10255       | kubelet read-only     | All     | *disabled*      | unauthenticated read-only kubelet pod specs, stats metrics API
+| TCP         | 6781        | weave-npc metrics     | All     | **OPEN**        | unauthenticated `/metrics`
+| TCP         | 6782        | weave status          | All     | localhost-only  | unauthenticated read-only weave `/status`, `/metrics` and `/report`
+| TCP         | 10255       | kubelet read-only     | All     | *disabled*      | unauthenticated read-only `/pods`, various stats metrics
 | TCP         | 10248       | kubelet               | All     | localhost-only  | ?
 | TCP         | 10249       | kube-proxy metrics    | All     | localhost-only  | ?
 | TCP         | 10251       | kube-scheduler        | Master  | localhost-only  | ?
 | TCP         | 10252       | kube-controller       | Master  | localhost-only  | ?
-| TCP         | 10256       | kube-proxy healthz    | All     | **OPEN**        | ?
-| TCP         | 18080       | ingress-nginx status  | Workers | **OPEN**        | unauthenticated
+| TCP         | 10256       | kube-proxy healthz    | All     | **OPEN**        | unauthenticated `/healthz`
+| TCP         | 18080       | ingress-nginx status  | Workers | **OPEN**        | unauthenticated `/healthz`, `/nginx_status` and default backend
 
 ### Restricted Ports
 
