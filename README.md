@@ -44,7 +44,7 @@ Pharos Cluster executable can be downloaded from [https://github.com/kontena/pha
 
 ### Required Open Ports
 
-The following ports are used by the `pharos-cluster` management tool, as well as between nodes in the same cluster. These ports are all authenticated, and can safely be left open for public access if required.
+The following ports are used by the `pharos-cluster` management tool, as well as between nodes in the same cluster. These ports are all authenticated, and can safely be left open for public access if desired.
 
 | Protocol    | Port        | Service         | Hosts / Addon         | Notes
 |-------------|-------------|-----------------|-----------------------|-------
