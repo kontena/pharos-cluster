@@ -60,7 +60,7 @@ If using the `ingress-nginx` addon, then TCP ports 80/443 on the worker nodes (o
 
 ### Monitoring Ports
 
-The following ports serve unauthenticated monitoring/debugging information, and are either disabled, limited to localhost-only or should be restricted from external access to prevent information leaks.
+The following ports serve unauthenticated monitoring/debugging information, and are either disabled, limited to localhost-only or only expose relatively harmless information.
 
 | Protocol    | Port        | Service               | Hosts   | Status          | Notes
 |-------------|-------------|-----------------------|---------|-----------------|-------
@@ -73,6 +73,8 @@ The following ports serve unauthenticated monitoring/debugging information, and 
 | TCP         | 10252       | kube-controller       | Master  | localhost-only  | ?
 | TCP         | 10256       | kube-proxy healthz    | All     | **OPEN**        | unauthenticated `/healthz`
 | TCP         | 18080       | ingress-nginx status  | Workers | **OPEN**        | unauthenticated `/healthz`, `/nginx_status` and default backend
+
+These ports should be restricted from external access to prevent information leaks.
 
 ### Restricted Ports
 
