@@ -171,34 +171,32 @@ Pharos Cluster can read host information from Terraform json output. In this sce
 output "pharos" {
   value = {
     masters = {
-      address         = "${packet_device.pharos_master.*.network.0.address}"
-      private_address = "${packet_device.pharos_master.*.network.2.address}"
+      address         = "${digitalocean_droplet.pharos_master.*.ipv4_address}"
+      private_address = "${digitalocean_droplet.pharos_master.*.ipv4_address_private}"
       role            = "master"
       user            = "root"
     }
 
-    type_0 = {
-      address         = "${packet_device.pharos_type0.*.network.0.address}"
-      private_address = "${packet_device.pharos_type0.*.network.2.address}"
+    workers_2g = {
+      address         = "${digitalocean_droplet.pharos_2g.*.ipv4_address}"
+      private_address = "${digitalocean_droplet.pharos_2g.*.ipv4_address_private}"
+      role            = "worker"
+      user            = "root"
 
       label = {
-        metal = "type0"
+        droplet = "2g"
       }
-
-      user = "root"
-      role = "worker"
     }
 
-    type_2 = {
-      address         = "${packet_device.pharos_type2.*.network.0.address}"
-      private_address = "${packet_device.pharos_type2.*.network.2.address}"
+    workers_4g = {
+      address         = "${digitalocean_droplet.pharos_4g.*.ipv4_address}"
+      private_address = "${digitalocean_droplet.pharos_4g.*.ipv4_address_private}"
+      role            = "worker"
+      user            = "root"
 
       label = {
-        metal = "type2"
+        droplet = "4g"
       }
-
-      user = "root"
-      role = "worker"
     }
   }
 }
@@ -207,11 +205,10 @@ output "pharos" {
 **Cluster.yml:**
 
 ```yaml
-network:
-  pod_network_cidr: 172.32.0.0/16
-  trusted_subnets:
-    - 10.80.0.0/16
-addons: {}
+network: {}
+addons:
+  ingress-nginx:
+    enabled: true
 ```
 
 **Commands:**
