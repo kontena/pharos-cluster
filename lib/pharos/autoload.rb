@@ -19,6 +19,7 @@ module Pharos
 
   module SSH
     autoload :Client, 'pharos/ssh/client'
+    autoload :Tempfile, 'pharos/ssh/tempfile'
   end
 
   module Terraform
