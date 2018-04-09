@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 require_relative 'addon'
-require_relative 'phases/logging'
+require_relative 'logging'
 
 module Pharos
   class AddonManager
-    include Pharos::Phases::Logging
+    include Pharos::Logging
 
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end

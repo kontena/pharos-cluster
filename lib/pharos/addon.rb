@@ -2,11 +2,11 @@
 
 require 'dry-validation'
 require_relative 'addons/struct'
-require_relative 'phases/logging'
+require_relative 'logging'
 
 module Pharos
   class Addon
-    include Pharos::Phases::Logging
+    include Pharos::Logging
 
     class Schema < Dry::Validation::Schema
       configure do

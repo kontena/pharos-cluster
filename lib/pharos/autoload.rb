@@ -16,6 +16,7 @@ module Pharos
   autoload :YamlFile, 'pharos/yaml_file'
   autoload :AddonManager, 'pharos/addon_manager'
   autoload :Phases, 'pharos/phases'
+  autoload :Logging, 'pharos/logging'
 
   module SSH
     autoload :Client, 'pharos/ssh/client'

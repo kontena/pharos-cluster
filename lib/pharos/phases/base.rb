@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'logging'
 require_relative '../phases'
 
 module Pharos
   module Phases
     class Base
-      include Pharos::Phases::Logging
+      include Pharos::Logging
 
       def self.register_component(component)
         Pharos::Phases.components << component
