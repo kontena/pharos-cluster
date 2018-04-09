@@ -46,72 +46,62 @@ module Pharos
         ENV['DEBUG'].to_s == 'true'
       end
 
-      attr_reader :cmd, :result
+      attr_reader :cmd
 
       def initialize(client, cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
         @client = client
-        @cmd = cmd
+        @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
         @stdin = stdin
         @debug = debug
         @debug_source = debug_source
         @exit_status = nil
       end
 
-      def run
-        @result = Result.new
-        open
-        wait
-        @result
-      end
-
       def run!
-        run
-        raise ExecError.new(cmd, @result.exit_status, @result.output) if @result.error?
-        @result
+        result = run
+        raise ExecError.new(cmd, result.exit_status, result.output) if result.error?
+        result
       end
 
-      def open
-        @channel = @client.session.open_channel do |channel|
-          start(channel)
-        end
-      end
-
-      def wait
-        @channel.wait
-      end
-
-      # @param channel [Net::SSH::Connection::Channel]
-      def start(channel)
+      def run
         debug_cmd(@cmd, source: @debug_source) if debug?
 
-        channel.exec @cmd do |_, success|
-          raise Error, "Failed to exec #{cmd}" unless success
+        result = Result.new
 
-          channel.on_data do |_, data|
-            result.stdout << data
-            result.output << data
+        response = @client.session.open_channel do |channel|
+          channel.exec @cmd do |_, success|
+            raise Error, "Failed to exec #{cmd}" unless success
 
-            debug_stdout(data) if debug?
-          end
+            channel.on_data do |_, data|
+              result.stdout << data
+              result.output << data
 
-          channel.on_extended_data do |_c, _type, data|
-            result.stderr << data
-            result.output << data
+              debug_stdout(data) if debug?
+            end
 
-            debug_stderr(data) if debug?
-          end
+            channel.on_extended_data do |_c, _type, data|
+              result.stderr << data
+              result.output << data
 
-          channel.on_request("exit-status") do |_, data|
-            result.exit_status = data.read_long
+              debug_stderr(data) if debug?
+            end
 
-            debug_exit(result.exit_status) if debug?
-          end
+            channel.on_request("exit-status") do |_, data|
+              result.exit_status = data.read_long
 
-          if @stdin
-            channel.send_data(@stdin)
-            channel.eof!
+              debug_exit(result.exit_status) if debug?
+            end
+
+            if @stdin
+              channel.send_data(@stdin)
+              channel.eof!
+            end
           end
         end
+
+        response.wait
+
+        result
       end
 
       def debug?
