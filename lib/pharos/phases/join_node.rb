@@ -9,13 +9,11 @@ module Pharos
         @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
       end
 
-      def call
-        if already_joined?
-          return
-        end
+      def call(join_command)
+        return if already_joined?
 
         logger.info { "Joining host to the master ..." }
-        join_command = @master_ssh.exec!("sudo kubeadm token create --print-join-command").split(' ')
+        join_command = @master.join_command.dup
         if @host.container_runtime == 'cri-o'
           join_command << '--cri-socket /var/run/crio/crio.sock'
         end

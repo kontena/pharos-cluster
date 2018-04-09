@@ -16,7 +16,7 @@ module Pharos
       attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
 
-      attr_accessor :os_release, :cpu_arch, :hostname
+      attr_accessor :os_release, :cpu_arch, :hostname, :join_command
 
       def to_s
         "#{address}"
