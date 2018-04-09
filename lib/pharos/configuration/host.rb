@@ -21,6 +21,10 @@ module Pharos
       def to_s
         address
       end
+
+      def peer_address
+        private_address || address
+      end
     end
   end
 end

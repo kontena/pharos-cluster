@@ -51,15 +51,17 @@ module Pharos
 
         # Copy etcd certs over if needed
         if @config.etcd&.certificate
-          # TODO: lock down permissions on key
-          @ssh.exec!('sudo mkdir -p /etc/pharos/etcd')
-          @ssh.file('/etc/kupo/etcd/ca-certificate.pem').write(File.open(@config.etcd.ca_certificate))
-          @ssh.file('/etc/kupo/etcd/certificate.pem').write(File.open(@config.etcd.certificate))
-          @ssh.file('/etc/kupo/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
+          logger.info(@host.address) { "Pushing external etcd certificates ..." }
+          copy_external_etcd_certs
+        end
+
+        if @config.etcd_hosts.size > 0
+          logger.info(@master.address) { "Pushing etcd certificates ..." }
+          copy_internal_etcd_certs
         end
 
         if @config.audit&.server
-          logger.info { "Pushing audit configs to master" }
+          logger.info(@master.address) { "Pushing audit configs to master ..." }
           @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
           @ssh.file("#{AUDIT_CFG_DIR}/webhook.yml").write(
             parse_resource_file('audit/webhook-config.yml.erb', server: @config.audit.server)
@@ -70,8 +72,11 @@ module Pharos
         # Generate and upload authentication token webhook config file if needed
         if @config.authentication&.token_webhook
           webhook_config = @config.authentication.token_webhook.config
+          logger.info(@master.address) { "Generating token authentication webhook config ..." }
           auth_token_webhook_config = generate_authentication_token_webhook_config(webhook_config)
+          logger.info(@master.address) { "Pushing token authentication webhook config ..." }
           upload_authentication_token_webhook_config(auth_token_webhook_config)
+          logger.info(@master.address) { "Pushing token authentication webhook certificates ..." }
           upload_authentication_token_webhook_certs(webhook_config)
         end
 
@@ -110,13 +115,9 @@ module Pharos
 
         # Only configure etcd if the external endpoints are given
         if @config.etcd&.endpoints
-          config['etcd'] = {
-            'endpoints' => @config.etcd.endpoints
-          }
-
-          config['etcd']['certFile'] = '/etc/pharos/etcd/certificate.pem' if @config.etcd.certificate
-          config['etcd']['caFile'] = '/etc/pharos/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
-          config['etcd']['keyFile'] = '/etc/pharos/etcd/certificate-key.pem' if @config.etcd.key
+          configure_external_etcd(config)
+        elsif @config.etcd_hosts.size > 0
+          configure_internal_etcd(config)
         end
 
         config['apiServerExtraArgs'] = {}
@@ -124,20 +125,77 @@ module Pharos
 
         # Only if authentication token webhook option are given
         if @config.authentication&.token_webhook
-          config['apiServerExtraArgs'].merge!(authentication_token_webhook_args(@config.authentication.token_webhook.cache_ttl))
-          config['apiServerExtraVolumes'] += volume_mounts_for_authentication_token_webhook
+          configure_token_webhook(config)
         end
 
         # Configure audit related things if needed
         if @config.audit&.server
-          config['apiServerExtraArgs'].merge!(
-            "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
-            "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
-          )
-          config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
+          configure_audit_webhook(config)
         end
 
         config
+      end
+
+      # @param config [Pharos::Config]
+      def configure_internal_etcd(config)
+        endpoints = @config.etcd_hosts.map { |h|
+          "https://#{h.peer_address}:2379"
+        }
+        config['etcd'] = {
+          'endpoints' => endpoints
+        }
+
+        config['etcd']['certFile'] = '/etc/pharos/pki/etcd/client.pem'
+        config['etcd']['caFile'] = '/etc/pharos/pki/ca.pem'
+        config['etcd']['keyFile'] = '/etc/pharos/pki/etcd/client-key.pem'
+      end
+
+      # TODO: lock down permissions on key
+      def copy_external_etcd_certs
+        @ssh.exec!('sudo mkdir -p /etc/pharos/etcd')
+        @ssh.write_file('/etc/pharos/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
+        @ssh.write_file('/etc/pharos/etcd/certificate.pem', File.read(@config.etcd.certificate))
+        @ssh.write_file('/etc/pharos/etcd/certificate-key.pem', File.read(@config.etcd.key))
+      end
+
+      def copy_internal_etcd_certs
+        @ssh.exec!('sudo mkdir -p /etc/pharos/pki/etcd')
+        return if @ssh.file_exists?('/etc/pharos/pki/etcd/client.pem')
+
+        etcd_peer = @config.etcd_hosts[0]
+        etcd_ssh = Pharos::SSH::Client.for_host(etcd_peer)
+        @ssh.exec!('sudo mkdir -p /etc/pharos/pki/etcd')
+        %w(ca.pem etcd/client.pem etcd/client-key.pem).each do |filename|
+          path = "/etc/pharos/pki/#{filename}"
+          contents = etcd_ssh.read_file(path)
+          @ssh.write_file(path, contents)
+        end
+      end
+
+      # @param config [Hash]
+      def configure_external_etcd(config)
+        config['etcd'] = {
+          'endpoints' => @config.etcd.endpoints
+        }
+
+        config['etcd']['certFile'] = '/etc/pharos/etcd/certificate.pem' if @config.etcd.certificate
+        config['etcd']['caFile'] = '/etc/pharos/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
+        config['etcd']['keyFile'] = '/etc/pharos/etcd/certificate-key.pem' if @config.etcd.key
+      end
+
+      # @param config [Hash]
+      def configure_token_webhook(config)
+        config['apiServerExtraArgs'].merge!(authentication_token_webhook_args(@config.authentication.token_webhook.cache_ttl))
+        config['apiServerExtraVolumes'] += volume_mounts_for_authentication_token_webhook
+      end
+
+      # @param config [Hash]
+      def configure_audit_webhook(config)
+        config['apiServerExtraArgs'].merge!(
+          "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
+          "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
+        )
+        config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
       end
 
       def volume_mounts_for_audit_webhook
@@ -177,6 +235,7 @@ module Pharos
         volume_mounts
       end
 
+      # @param webhook_config [Hash]
       def generate_authentication_token_webhook_config(webhook_config)
         config = {
           "kind" => "Config",
@@ -223,11 +282,13 @@ module Pharos
         config
       end
 
+      # @param config [Hash]
       def upload_authentication_token_webhook_config(config)
         @ssh.exec!('sudo mkdir -p ' + AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR)
         @ssh.file(AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR + '/token-webhook-config.yaml').write(config.to_yaml)
       end
 
+      # @param webhook_config [Hash]
       def upload_authentication_token_webhook_certs(webhook_config)
         @ssh.exec!("sudo mkdir -p #{PHAROS_DIR}/token_webhook")
         @ssh.file(PHAROS_DIR + '/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]

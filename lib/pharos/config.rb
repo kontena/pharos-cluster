@@ -51,5 +51,14 @@ module Pharos
     def worker_hosts
       @worker_hosts ||= hosts.select { |h| h.role == 'worker' }
     end
+
+    # @return [Array<Pharos::Configuration::Node>]
+    def etcd_hosts
+      hosts.select { |h| h.role == 'etcd' }
+    end
+
+    def etcd_leader
+      etcd_hosts[0]
+    end
   end
 end
