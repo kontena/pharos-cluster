@@ -31,7 +31,7 @@ module Pharos
 
       def write(content)
         @client.exec!(
-          "cat > #{@path.shellescape}",
+          "cat > #{escaped_path}",
           stdin: content
         )
       end
