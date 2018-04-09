@@ -77,27 +77,39 @@ module Pharos
       master_hosts = master_hosts(config)
       signal_usage_error 'No master hosts defined' if master_hosts.empty?
       signal_usage_error 'Only one host can be in master role' if master_hosts.size > 1
+      master_host = master_hosts[0]
 
-      begin
-        start_time = Time.now
-        puts pastel.green("==> Sharpening tools ...")
-        load_phases
-        puts pastel.green("==> Starting to craft cluster ...")
-        validate_hosts(config)
-        # set workdir to the same dir where config was loaded from
-        # so that the certs etc. can be referenced more easily
-        Dir.chdir(config_yaml.dirname) do
-          handle_masters(master_hosts[0], config)
-          handle_workers(master_hosts[0], worker_hosts(config), config)
-          handle_addons(master_hosts[0], config.addons)
-        end
-        craft_time = Time.now - start_time
-        puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
-        puts "    You can connect to the cluster with kubectl using:"
-        puts "    export KUBECONFIG=~/.pharos/#{master_hosts[0].address}"
-      ensure
-        Pharos::SSH::Client.disconnect_all
+      start_time = Time.now
+      puts pastel.green("==> Sharpening tools ...")
+      load_phases
+      puts pastel.green("==> Starting to craft cluster ...")
+
+      # set workdir to the same dir where config was loaded from
+      # so that the certs etc. can be referenced more easily
+      Dir.chdir(config_yaml.dirname) do
+        handle_phase(Phases::ValidateHost, config.hosts, config: config)
+        handle_phase(Phases::ConfigureHost, config.hosts, config: config)
+
+        handle_phase(Phases::ConfigureMaster, master_hosts, config: config, master: master_host)
+        handle_phase(Phases::ConfigureClient, master_hosts, config: config, master: master_host)
+        handle_phase(Phases::ConfigureDNS, master_hosts, config: config, master: master_host)
+        handle_phase(Phases::ConfigureNetwork, master_hosts, config: config, master: master_host)
+        handle_phase(Phases::LabelNode, master_hosts, config: config, master: master_host)
+        handle_phase(Phases::StoreClusterYAML, master_hosts, config_content: config_yaml.read(ENV.to_h))
+
+        handle_phase(Phases::ConfigureKubelet, worker_hosts(config), config: config, master: master_host)
+        handle_phase(Phases::JoinNode, worker_hosts(config), config: config, master: master_host)
+        handle_phase(Phases::LabelNode, worker_hosts(config), config: config, master: master_host)
+
+        handle_addons(master_host, config.addons)
       end
+
+      craft_time = Time.now - start_time
+      puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
+      puts "    You can connect to the cluster with kubectl using:"
+      puts "    export KUBECONFIG=~/.pharos/#{master_hosts[0].address}"
+
+      ssh_manager.disconnect_all
     end
 
     # @param secs [Integer]
@@ -125,21 +137,6 @@ module Pharos
       puts YAML.dump(errors)
     end
 
-    # @param hosts [Array<Pharos::Config>]
-    def validate_hosts(config)
-      valid = true
-      config.hosts.each do |host|
-        log_host_header(host)
-        begin
-          Phases::ValidateHost.new(host, config).call
-        rescue Pharos::InvalidHostError => exc
-          puts "    - #{exc.message}"
-          valid = false
-        end
-      end
-      exit 1 unless valid
-    end
-
     # @param config [Pharos::Config]
     # @return [Array<Pharos::Configuration::Node>]
     def master_hosts(config)
@@ -152,42 +149,21 @@ module Pharos
       config.hosts.select { |h| h.role == 'worker' }
     end
 
-    # @param master [Pharos::Configuration::Node]
-    # @param features [Pharos::Config]
-    def handle_masters(master, config)
-      log_host_header(master)
-      Phases::ConfigureHost.new(master).call
-      Phases::ConfigureMaster.new(master, config).call
-      Phases::ConfigureClient.new(master).call
-      Phases::ConfigureDNS.new(master, config).call
-      Phases::ConfigureNetwork.new(master, config.network).call
-      Phases::ConfigureMetrics.new(master).call
-      Phases::LabelNode.new(master, master).call
-      Phases::StoreClusterYAML.new(master, config_yaml.read(ENV.to_h)).call
-    end
-
-    # @param master [Pharos::Configuration::Node]
-    # @param nodes [Array<Pharos::Configuration::Node>]
-    # @param config [Pharos::Config]
-    def handle_workers(master, nodes, config)
-      nodes.each do |node|
-        log_host_header(node)
-        begin
-          Phases::ConfigureHost.new(node).call
-          Phases::ConfigureKubelet.new(node, config).call
-          Phases::JoinNode.new(node, master).call
-          Phases::LabelNode.new(node, master).call
-        end
-      end
-    end
-
     def handle_addons(master, addon_configs)
       puts pastel.cyan("==> addons: #{master.address}")
       addon_manager.apply(master, addon_configs)
     end
 
-    def log_host_header(host)
-      puts pastel.cyan("==> #{host.role}: #{host.address}")
+    def ssh_manager
+      @ssh_manager ||= Pharos::SSH::Manager.new
+    end
+
+    def handle_phase(phase_class, hosts, **options)
+      puts pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+
+      ssh_manager.with_hosts(hosts) do |host, ssh|
+        phase_class.new(host, ssh: ssh, **options).call
+      end
     end
   end
 end
