@@ -85,14 +85,8 @@ module Pharos
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
         script = File.read(path || name)
-        cmd = ['sudo']
-
-        env.each_pair do |e, value|
-          cmd << "#{e}=#{Shellwords.escape(value)}"
-        end
-
-        cmd.concat(%w(sh -x))
-
+        cmd = %w(sudo sh -x)
+        cmd.concat(env.map { |pair| pair.map(&:shellescape).join('=') })
         exec!(cmd.join(' '), stdin: script, debug_source: name, **options)
       end
 
@@ -120,24 +114,8 @@ module Pharos
         @session.scp.download!(remote_path, local_path, opts)
       end
 
-      # @param path [String]
-      # @return [Boolean]
-      def file_exists?(path)
-        # TODO: this gives a false negative if we don't have access to the directory
-        exec?("[ -e #{path} ]")
-      end
-
-      # @param path [String]
-      # @return [String]
-      def read_file(path)
-        exec!("sudo cat #{path}")
-      end
-
-      # @param path [String]
-      # @param content [String]
-      # @return [String]
-      def write_file(path, content)
-        exec!("sudo tee #{path.shellescape} > /dev/null", stdin: content)
+      def file(path)
+        Pharos::SSH::RemoteFile.new(self, path)
       end
 
       def disconnect

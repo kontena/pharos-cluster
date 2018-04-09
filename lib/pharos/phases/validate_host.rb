@@ -61,7 +61,7 @@ module Pharos
       # @return [Pharos::Configuration::OsRelease]
       def os_release
         os_info = {}
-        ssh.read_file('/etc/os-release').split("\n").each do |line|
+        ssh.file('/etc/os-release').each_line do |line|
           match = line.match(/^(.+)=(.+)$/)
           os_info[match[1]] = match[2].delete('"')
         end
