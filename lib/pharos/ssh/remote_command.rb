@@ -59,7 +59,8 @@ module Pharos
 
       def run
         @result = Result.new
-        open && wait
+        open
+        wait
         @result
       end
 
