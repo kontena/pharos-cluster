@@ -1,65 +1,105 @@
 # frozen_string_literal: true
 
 require 'shellwords'
+require 'securerandom'
 
 module Pharos
   module SSH
     class RemoteFile
+      attr_reader :path
+      # Initializes an instance of a remote file
+      # @param [Pharos::SSH::Client]
+      # @param path [String]
       def initialize(client, path)
         @client = client
-        @path = path.shellescape
+        @path = path
+        @escaped_path = path.shellescape
         freeze
       end
 
+      alias to_s path
+
+      # Removes the remote file
       def unlink
-        @client.exec!("rm #{@path}")
+        @client.exec!("rm #{@escaped_path}")
+      end
+      alias rm unlink
+
+      def basename
+        File.basename(@path)
       end
 
-      def write(content, sudo: true, append: false)
+      def dirname
+        File.dirname(@path)
+      end
+
+      def write(content)
+        tmp = temp_path.shellescape
         @client.exec!(
-          "#{'sudo ' if sudo}tee #{'--append ' if append}#{@path} > /dev/null",
+          "sudo cat > #{tmp} && (sudo mv #{tmp} #{@escaped_path} || sudo rm #{tmp}) || sudo rm #{tmp}",
           stdin: content.respond_to?(:read) ? content : StringIO.new(content)
         )
+      rescue StandardError
+        @client.exec!("rm #{tmp}")
+        raise
       end
 
-      def append(content, sudo: true)
-        write(content, sudo: sudo, append: true)
-      end
-
+      # Returns remote jfile content
+      # @return [String]
       def read
-        @client.exec!("sudo cat #{@path}")
+        @client.exec!("sudo cat #{@escaped_path}")
       end
 
+      # True if the file exists. Assumes a bash-like shell.
+      # @return [Boolean]
       def exist?
-        @client.exec?("[ -e #{@path} ]")
+        @client.exec?("[ -e #{@escaped_path} ]")
       end
 
+      # Performs the block if the remote file exists, otherwise returns false
+      # @yield [Pharos::SSH::RemoteFile]
       def with_existing
         exist? && yield(self)
       end
 
+      # Downloads the remote file to a local path or IO
+      # @param local_path [String,IO]
       def download(local_path)
         @session.download(@path, local_path)
       end
 
+      # Moves the current file to target path
+      # @param target [String]
       def move(target)
         @client.exec!("sudo mv #{@path} #{target.shellescape}")
       end
       alias mv move
 
+      # Copies the current file to target path
+      # @param target [String]
       def copy(target)
-        @client.exec!("sudo cp #{@path} #{target.shellescape}")
+        @client.exec!("sudo cp #{@escaped_path} #{target.shellescape}")
       end
       alias cp copy
 
+      # Creates a symlink that points to the current file to target path
+      # @param target [String]
       def link(target)
-        @client.exec!("sudo ln -s #{@path} #{target.shellescape}")
+        @client.exec!("sudo ln -s #{@escaped_path} #{target.shellescape}")
       end
 
+      # Yields each line in the remote file
+      # @yield [String]
       def each_line
         read.split(/[\r\n]/).each do |row|
           yield row
         end
+      end
+
+      private
+
+      def temp_file_path(prefix: nil)
+        File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}").shellescape
       end
     end
   end
