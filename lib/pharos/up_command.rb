@@ -39,10 +39,6 @@ module Pharos
       end
       config = validate_config(config_hash)
       configure(config)
-    rescue StandardError => ex
-      raise unless ENV['DEBUG'].to_s.empty?
-      warn "#{ex.class.name} : #{ex.message}"
-      exit 1
     end
 
     # @return [Hash] hash presentation of cluster.yml

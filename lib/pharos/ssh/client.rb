@@ -23,18 +23,14 @@ module Pharos
     end
 
     class Exec
+      include Pharos::Debug.module('DEBUG_SSH')
       INDENT = "    "
-
-      def self.debug?
-        ENV['DEBUG'].to_s == 'true'
-      end
 
       attr_reader :cmd, :exit_status, :stdout, :stderr, :output
 
-      def initialize(cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
+      def initialize(cmd, stdin: nil, debug_source: nil)
         @cmd = cmd
         @stdin = stdin
-        @debug = debug
         @debug_source = debug_source
 
         @exit_status = nil
@@ -56,7 +52,7 @@ module Pharos
 
       # @param channel [Net::SSH::Connection::Channel]
       def start(channel)
-        debug_cmd(@cmd, source: @debug_source) if debug?
+        debug_cmd(@cmd) if debug?
 
         channel.exec @cmd do |_, success|
           raise Error, "Failed to exec #{cmd}" unless success
@@ -75,7 +71,6 @@ module Pharos
           end
           channel.on_request("exit-status") do |_, data|
             @exit_status = data.read_long
-
             debug_exit(@exit_status) if debug?
           end
 
@@ -91,37 +86,35 @@ module Pharos
         !@exit_status.zero?
       end
 
-      def debug?
-        @debug
-      end
-
       def pastel
         @pastel ||= Pastel.new(enabled: $stdout.tty?)
       end
 
-      def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
+      def debug_cmd(cmd)
+        $stdout << INDENT << pastel.cyan("$ #{cmd}#{" < #{@debug_source}" if @debug_source}") << "\n"
       end
 
       def debug_stdout(data)
         data.each_line do |line|
-          $stdout.write(INDENT + pastel.dim(line.to_s))
+          $stdout << INDENT << pastel.dim(line)
         end
       end
 
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stdout.write(INDENT + pastel.red(line.to_s))
+          $stdout << INDENT << pastel.red(line)
         end
       end
 
       def debug_exit(exit_status)
-        $stdout.write(INDENT + pastel.yellow("! #{exit_status}") + "\n")
+        $stdout << INDENT << pastel.yellow("! #{exit_status}") << "\n"
       end
     end
 
     class Client
+      include Pharos::Logging
+
       # @param host [Pharos::Configuration::Host]
       def self.for_host(host)
         @connections ||= {}
@@ -143,13 +136,6 @@ module Pharos
         @host = host
         @user = user
         @opts = opts
-      end
-
-      def logger
-        @logger ||= Logger.new($stderr).tap do |logger|
-          logger.progname = "SSH[#{@host}]"
-          logger.level = ENV["DEBUG_SSH"] ? Logger::DEBUG : Logger::INFO
-        end
       end
 
       def connect
@@ -216,7 +202,7 @@ module Pharos
       # @param opts [Hash]
       def upload(local_path, remote_path, opts = {})
         require_session!
-        logger.debug "upload from #{local_path}: #{remote_path}"
+        logger.debug { "upload from #{local_path}: #{remote_path}" }
         @session.scp.upload!(local_path, remote_path, opts)
       end
 
@@ -225,7 +211,7 @@ module Pharos
       # @param opts [Hash]
       def download(remote_path, local_path, opts = {})
         require_session!
-        logger.debug "download to #{local_path}: #{remote_path}"
+        logger.debug { "download to #{local_path}: #{remote_path}" }
         @session.scp.download!(remote_path, local_path, opts)
       end
 

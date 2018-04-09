@@ -9,12 +9,5 @@ module Pharos
 
     subcommand ["build", "up"], "Initialize/upgrade cluster", UpCommand
     subcommand ["version"], "Show version information", VersionCommand
-
-    def self.run
-      super
-    rescue StandardError => exc
-      warn exc.message
-      warn exc.backtrace.join("\n")
-    end
   end
 end
