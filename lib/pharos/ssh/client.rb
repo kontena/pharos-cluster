@@ -193,8 +193,8 @@ module Pharos
           cmd << "#{e}=#{Shellwords.escape(value)}"
         end
 
-        cmd << 'sh'
-        cmd << '-x'
+        cmd.concat(env.map { |pair| pair.map(&:shellescape).join('=') })
+        cmd.concat(%w(sh -x))
 
         ex = exec(cmd.join(' '), stdin: script, debug_source: name, **options)
 
@@ -229,27 +229,8 @@ module Pharos
         @session.scp.download!(remote_path, local_path, opts)
       end
 
-      # @param path [String]
-      # @return [Boolean]
-      def file_exists?(path)
-        # TODO: this gives a false negative if we don't have access to the directory
-        exec?("[ -e #{path} ]")
-      end
-
-      # @param path [String]
-      # @return [String]
-      def read_file(path)
-        exec!("sudo cat #{path}")
-      end
-
-      # @param path [String]
-      # @return [String]
-      def write_file(path, contents, prefix: 'pharos')
-        tmp_path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
-
-        upload(StringIO.new(contents), tmp_path)
-
-        exec!("sudo mv #{tmp_path} #{path} || rm #{tmp_path}")
+      def file(path)
+        Pharos::SSH::RemoteFile.new(self, path)
       end
 
       # @param contents [String]
