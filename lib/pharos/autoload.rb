@@ -19,6 +19,7 @@ module Pharos
 
   module SSH
     autoload :Client, 'pharos/ssh/client'
+    autoload :RemoteCommand, 'pharos/ssh/remote_command'
   end
 
   module Terraform
