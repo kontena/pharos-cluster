@@ -86,7 +86,7 @@ module Pharos
       def exec_script!(name, env: {}, path: nil, **options)
         script = File.read(path || name)
         cmd = %w(sudo sh -x)
-        cmd.concat(env.map { |pair| pair.map(&:shellescape).join('=') })
+        cmd.concat(env.map { |key, value| "#{key.shellescape}=#{value.shellescape}" })
         exec!(cmd.join(' '), stdin: script, debug_source: name, **options)
       end
 
