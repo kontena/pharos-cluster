@@ -35,7 +35,7 @@ module Pharos
       def write(content)
         tmp = temp_file_path.shellescape
         @client.exec!(
-          "sudo tee #{tmp} > /dev/null && (sudo mv #{tmp} #{escaped_path} || (sudo rm #{tmp}; exit 1)) || (sudo rm #{tmp}; exit 1)",
+          "cat > #{tmp} && (sudo mv #{tmp} #{escaped_path} || (rm #{tmp}; exit 1))",
           stdin: content
         )
       end
