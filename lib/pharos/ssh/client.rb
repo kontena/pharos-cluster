@@ -122,23 +122,6 @@ module Pharos
     end
 
     class Client
-      # @param host [Pharos::Configuration::Host]
-      def self.for_host(host)
-        @connections ||= {}
-        unless @connections[host]
-          @connections[host] = new(host.address, host.user, keys: [host.ssh_key_path])
-          @connections[host].connect
-        end
-
-        @connections[host]
-      end
-
-      def self.disconnect_all
-        return unless @connections
-
-        @connections.values.map(&:disconnect)
-      end
-
       def initialize(host, user = nil, opts = {})
         @host = host
         @user = user
