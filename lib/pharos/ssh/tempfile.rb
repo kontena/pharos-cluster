@@ -8,11 +8,10 @@ module Pharos
     # A temporary filename on a remote host
     # Optionally uploads given content.
     # When used with a block, removes the temporary file after execution.
-    class Tempfile < Remotefile
+    class Tempfile < RemoteFile
       # @param client [Pharos::SSH::Client]
       # @param prefix [String] Filename prefix, default "pharos"
       # @param content [NilClass,String,IO] Content to upload to remote host
-      # @param file [NilClass,String] Path to a file to upload to remote host
       # @yield [String] Temporary filename
       # @example
       #   Pharos::SSH::Tempfile.new(client) do |path|
@@ -24,9 +23,17 @@ module Pharos
       #   tempfile.unlink
       def initialize(client, prefix: "pharos", content: nil, &block)
         @client = client
-        @path = temp_file_path(prefix)
+        @path = temp_file_path(prefix: prefix)
         @content = content
+        freeze
         run(&block) if block_given?
+      end
+
+      def write(content)
+        @client.exec!(
+          "sudo cat > #{@path.shellescape}",
+          stdin: content.respond_to?(:read) ? content : StringIO.new(content)
+        )
       end
 
       private
@@ -35,7 +42,10 @@ module Pharos
         write(@content) if @content
         yield @path
       ensure
-        unlink
+        begin
+          unlink
+        rescue Pharos::SSH::RemoteCommand::ExecError
+        end
       end
     end
   end
