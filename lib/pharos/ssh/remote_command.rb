@@ -51,7 +51,7 @@ module Pharos
       def initialize(client, cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
         @client = client
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
-        @stdin = stdin
+        @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
         @debug = debug
         @debug_source = debug_source
         @exit_status = nil

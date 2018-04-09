@@ -32,7 +32,7 @@ module Pharos
       def write(content)
         @client.exec!(
           "sudo cat > #{@path.shellescape}",
-          stdin: content.respond_to?(:read) ? content : StringIO.new(content)
+          stdin: content
         )
       end
 
