@@ -46,6 +46,24 @@ module Pharos
         @session = Net::SSH.start(@host, @user, @opts)
       end
 
+      # @example
+      #   tempfile do |tmp|
+      #     exec!("less #{tmp}")
+      #   end
+      # @example
+      #   tmp = tempfile.new(content: "hello")
+      #   exec!("cat #{tmp}")
+      #   tmp.unlink
+      #
+      # @param prefix [String] tempfile filename prefix (default "pharos")
+      # @param content [String] initial file content, default blank
+      # @param file [String,IO] path to local file or a readable IO object
+      # @return [Pharos::SSH::Tempfile]
+      # @yield [Pharos::SSH::Tempfile]
+      def tempfile(prefix: "pharos", content: nil, file: nil, &block)
+        Tempfile.new(self, prefix: prefix, content: content, file: file, &block)
+      end
+
       # @param cmd [String] command to execute
       # @return [Pharos::Command::Result]
       def exec(cmd, **options)
@@ -116,26 +134,10 @@ module Pharos
       end
 
       # @param path [String]
+      # @param content [String]
       # @return [String]
-      def write_file(path, contents, prefix: 'pharos')
-        tmp_path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
-
-        upload(StringIO.new(contents), tmp_path)
-
-        exec!("sudo mv #{tmp_path} #{path} || rm #{tmp_path}")
-      end
-
-      # @param contents [String]
-      # @yield [path]
-      # @yieldparam path [String] /tmp/...
-      def with_tmpfile(contents, prefix: "pharos")
-        path = File.join('/tmp', prefix + '.' + SecureRandom.hex(16))
-
-        upload(StringIO.new(contents), path)
-
-        yield path
-      ensure
-        exec("rm #{path}") if path
+      def write_file(path, content)
+        exec!("sudo tee #{path.shellescape} > /dev/null", stdin: content)
       end
 
       def disconnect
