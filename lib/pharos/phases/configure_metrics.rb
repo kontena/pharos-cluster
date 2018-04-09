@@ -17,11 +17,6 @@ module Pharos
         )
       )
 
-      # @param master [Pharos::Configuration::Host]
-      def initialize(master)
-        @master = master
-      end
-
       def call
         configure_metrics_server
         configure_heapster

@@ -17,12 +17,6 @@ module Pharos
         )
       )
 
-      # @param host [Pharos::Configuration::Host]
-      def initialize(host)
-        @host = host
-        @ssh = Pharos::SSH::Client.for_host(@host)
-      end
-
       def call
         logger.info { "Configuring essential packages ..." }
         exec_script('configure-essentials.sh')

@@ -10,14 +10,6 @@ module Pharos
 
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
 
-      # @param master [Pharos::Configuration::Host]
-      # @param config [Pharos::Configuration::Network]
-      def initialize(master, config)
-        @master = master
-        @config = config
-        @ssh = Pharos::SSH::Client.for_host(@master)
-      end
-
       def client
         @client ||= Pharos::Kube.client(@master.address)
       end
@@ -67,7 +59,7 @@ module Pharos
         end
 
         if @config.audit&.server
-          logger.info(@master.address) { "Pushing audit configs to master" }
+          logger.info { "Pushing audit configs to master" }
           @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
           @ssh.write_file(
             "#{AUDIT_CFG_DIR}/webhook.yml",
@@ -87,13 +79,13 @@ module Pharos
           upload_authentication_token_webhook_certs(webhook_config)
         end
 
-        logger.info(@master.address) { "Initializing control plane ..." }
+        logger.info { "Initializing control plane ..." }
 
         @ssh.with_tmpfile(cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm init --config #{tmp_file}")
         end
 
-        logger.info(@master.address) { "Initialization of control plane succeeded!" }
+        logger.info { "Initialization of control plane succeeded!" }
         @ssh.exec!('install -m 0700 -d ~/.kube')
         @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
@@ -103,16 +95,16 @@ module Pharos
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
           'kind' => 'MasterConfiguration',
           'kubernetesVersion' => Pharos::KUBE_VERSION,
-          'apiServerCertSANs' => [@master.address, @master.private_address].compact.uniq,
+          'apiServerCertSANs' => [@host.address, @host.private_address].compact.uniq,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
           }
         }
 
-        config['api'] = { 'advertiseAddress' => @master.private_address || @master.address }
+        config['api'] = { 'advertiseAddress' => @host.private_address || @host.address }
 
-        if @master.container_runtime == 'cri-o'
+        if @host.container_runtime == 'cri-o'
           config['criSocket'] = '/var/run/crio/crio.sock'
         end
 
@@ -248,16 +240,16 @@ module Pharos
       end
 
       def upgrade
-        logger.info(@master.address) { "Upgrading control plane ..." }
+        logger.info { "Upgrading control plane ..." }
         exec_script("install-kubeadm.sh",
                     VERSION: Pharos::KUBEADM_VERSION,
-                    ARCH: @master.cpu_arch.name)
+                    ARCH: @host.cpu_arch.name)
 
         cfg = generate_config
         @ssh.with_tmpfile(cfg.to_yaml) do |tmp_file|
           @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --allow-experimental-upgrades --config #{tmp_file}")
         end
-        logger.info(@master.address) { "Control plane upgrade succeeded!" }
+        logger.info { "Control plane upgrade succeeded!" }
 
         configure_kubelet
       end
@@ -267,7 +259,11 @@ module Pharos
       end
 
       def configure_kubelet
-        Pharos::Phases::ConfigureKubelet.new(@master, @config).call
+        Pharos::Phases::ConfigureKubelet.new(@host,
+          config: @config,
+          ssh: @ssh,
+          master: @master,
+        ).call
       end
     end
   end

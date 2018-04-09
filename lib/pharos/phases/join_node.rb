@@ -5,15 +5,6 @@ require_relative 'base'
 module Pharos
   module Phases
     class JoinNode < Base
-      # @param host [Pharos::Configuration::Host]
-      # @param master [Pharos::Configuration::Host]
-      def initialize(host, master)
-        @host = host
-        @master = master
-        @ssh = Pharos::SSH::Client.for_host(@host)
-        @master_ssh = Pharos::SSH::Client.for_host(@master)
-      end
-
       def already_joined?
         @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
       end

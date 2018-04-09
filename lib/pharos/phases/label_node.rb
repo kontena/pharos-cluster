@@ -5,11 +5,6 @@ require_relative 'base'
 module Pharos
   module Phases
     class LabelNode < Base
-      def initialize(host, master)
-        @host = host
-        @master = master
-      end
-
       def call
         return unless @host.labels
 

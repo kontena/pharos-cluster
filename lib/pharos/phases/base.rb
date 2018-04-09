@@ -6,6 +6,12 @@ require_relative '../phases'
 module Pharos
   module Phases
     class Base
+      # @return [String]
+      def self.title
+        # XXX: prettier
+        self.name
+      end
+
       def self.register_component(component)
         Pharos::Phases.components << component
       end
@@ -13,10 +19,12 @@ module Pharos
       # @param host [Pharos::Configuration::Host]
       # @param config [Pharos::Config]
       # @param ssh [Pharos::SSH::Client]
-      def initialize(host, config: nil, ssh: nil)
+      # @param master [Pharos::Configuration::Host]
+      def initialize(host, config: nil, ssh: nil, master: nil)
         @host = host
         @config = config
         @ssh = ssh
+        @master = master
       end
 
       def logger

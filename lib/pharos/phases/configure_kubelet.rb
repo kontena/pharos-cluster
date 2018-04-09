@@ -14,14 +14,6 @@ module Pharos
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
 
-      # @param host [Pharos::Configuration::Host]
-      # @param config [Pharos::Config]
-      def initialize(host, config)
-        @host = host
-        @config = config
-        @ssh = Pharos::SSH::Client.for_host(@host)
-      end
-
       def call
         configure_cni
         configure_kube

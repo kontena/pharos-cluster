@@ -5,15 +5,14 @@ require_relative 'base'
 module Pharos
   module Phases
     class StoreClusterYAML < Base
-      # @param master [Pharos::Configuration::Node]
-      # @param config [Pharos::Config]
-      def initialize(master, config_content)
-        @master = master
+      # @param config_content [String]
+      def initialize(host, config_content: , **options)
+        super(host, **options)
         @config_content = config_content
       end
 
       def call
-        logger.info(@master.address) { "Storing cluster configuration to configmap" }
+        logger.info { "Storing cluster configuration to configmap" }
         configmap = resource
         begin
           Pharos::Kube.update_resource(@master.address, configmap)

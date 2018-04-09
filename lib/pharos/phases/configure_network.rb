@@ -13,13 +13,6 @@ module Pharos
         )
       )
 
-      # @param master [Pharos::Configuration::Host]
-      # @param config [Pharos::Configuration::Network]
-      def initialize(master, config)
-        @master = master
-        @config = config
-      end
-
       def call
         ensure_passwd
         ensure_resources
@@ -45,12 +38,12 @@ module Pharos
       end
 
       def ensure_resources
-        trusted_subnets = @config.trusted_subnets || []
+        trusted_subnets = @config.network.trusted_subnets || []
         logger.info { "Configuring overlay network ..." }
         Pharos::Kube.apply_stack(
           @master.address, 'weave',
           trusted_subnets: trusted_subnets,
-          ipalloc_range: @config.pod_network_cidr,
+          ipalloc_range: @config.network.pod_network_cidr,
           arch: @master.cpu_arch,
           version: WEAVE_VERSION
         )

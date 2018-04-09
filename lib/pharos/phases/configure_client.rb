@@ -5,11 +5,6 @@ require_relative 'base'
 module Pharos
   module Phases
     class ConfigureClient < Base
-      # @param master [Pharos::Configuration::Host]
-      def initialize(master)
-        @master = master
-        @ssh = Pharos::SSH::Client.for_host(@master)
-      end
 
       def call
         Dir.mkdir(config_dir, 0o700) unless Dir.exist?(config_dir)
