@@ -13,7 +13,6 @@ module Pharos
       def initialize(client, path)
         @client = client
         @path = path
-        @escaped_path = path.shellescape
         freeze
       end
 
@@ -21,7 +20,7 @@ module Pharos
 
       # Removes the remote file
       def unlink
-        @client.exec!("rm #{@escaped_path}")
+        @client.exec!("rm #{escaped_path}")
       end
       alias rm unlink
 
@@ -34,26 +33,23 @@ module Pharos
       end
 
       def write(content)
-        tmp = temp_path.shellescape
+        tmp = temp_file_path.shellescape
         @client.exec!(
-          "sudo cat > #{tmp} && (sudo mv #{tmp} #{@escaped_path} || sudo rm #{tmp}) || sudo rm #{tmp}",
+          "sudo cat > #{tmp} && (sudo mv #{tmp} #{escaped_path} || (sudo rm #{tmp}; exit 1)) || (sudo rm #{tmp}; exit 1)",
           stdin: content.respond_to?(:read) ? content : StringIO.new(content)
         )
-      rescue StandardError
-        @client.exec!("rm #{tmp}")
-        raise
       end
 
       # Returns remote jfile content
       # @return [String]
       def read
-        @client.exec!("sudo cat #{@escaped_path}")
+        @client.exec!("sudo cat #{escaped_path}")
       end
 
       # True if the file exists. Assumes a bash-like shell.
       # @return [Boolean]
       def exist?
-        @client.exec?("[ -e #{@escaped_path} ]")
+        @client.exec?("[ -e #{escaped_path} ]")
       end
 
       # Performs the block if the remote file exists, otherwise returns false
@@ -78,14 +74,14 @@ module Pharos
       # Copies the current file to target path
       # @param target [String]
       def copy(target)
-        @client.exec!("sudo cp #{@escaped_path} #{target.shellescape}")
+        @client.exec!("sudo cp #{escaped_path} #{target.shellescape}")
       end
       alias cp copy
 
       # Creates a symlink that points to the current file to target path
       # @param target [String]
       def link(target)
-        @client.exec!("sudo ln -s #{@escaped_path} #{target.shellescape}")
+        @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
       end
 
       # Yields each line in the remote file
@@ -99,7 +95,11 @@ module Pharos
       private
 
       def temp_file_path(prefix: nil)
-        File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}").shellescape
+        File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}")
+      end
+
+      def escaped_path
+        @path.shellescape
       end
     end
   end

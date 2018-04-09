@@ -56,12 +56,11 @@ module Pharos
       #   tmp.unlink
       #
       # @param prefix [String] tempfile filename prefix (default "pharos")
-      # @param content [String] initial file content, default blank
-      # @param file [String,IO] path to local file or a readable IO object
+      # @param content [String,IO] initial file content, default blank
       # @return [Pharos::SSH::Tempfile]
       # @yield [Pharos::SSH::Tempfile]
-      def tempfile(prefix: "pharos", content: nil, file: nil, &block)
-        Tempfile.new(self, prefix: prefix, content: content, file: file, &block)
+      def tempfile(prefix: "pharos", content: nil, &block)
+        Tempfile.new(self, prefix: prefix, content: content, &block)
       end
 
       # @param cmd [String] command to execute
