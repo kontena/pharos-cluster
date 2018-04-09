@@ -1,14 +1,32 @@
 # frozen_string_literal: true
 
+require 'logger'
 require_relative '../phases'
 
 module Pharos
   module Phases
     class Base
-      include Pharos::Logging
-
       def self.register_component(component)
         Pharos::Phases.components << component
+      end
+
+      # @param host [Pharos::Configuration::Host]
+      # @param config [Pharos::Config]
+      # @param ssh [Pharos::SSH::Client]
+      def initialize(host, config: nil, ssh: nil)
+        @host = host
+        @config = config
+        @ssh = ssh
+      end
+
+      def logger
+        @logger ||= Logger.new($stdout).tap do |logger|
+          logger.progname = "#{@host}"
+          logger.level = ENV["DEBUG"] ? Logger::DEBUG : log_level
+          logger.formatter = proc do |_severity, _datetime, progname, msg|
+            "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }
+          end
+        end
       end
 
       # @param script [String] name of file under ../scripts/
