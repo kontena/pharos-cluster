@@ -95,7 +95,7 @@ module Pharos
         handle_phase(Phases::ConfigureDNS, master_hosts, config: config, master: master_host)
         handle_phase(Phases::ConfigureNetwork, master_hosts, config: config, master: master_host)
         handle_phase(Phases::LabelNode, master_hosts, config: config, master: master_host)
-        handle_phase(Phases::StoreClusterYAML, master_hosts, config_content: config_yaml.read(ENV.to_h))
+        handle_phase(Phases::StoreClusterYAML, master_hosts, master: master_host, config_content: config_yaml.read(ENV.to_h))
 
         handle_phase(Phases::ConfigureKubelet, worker_hosts(config), config: config, master: master_host)
         handle_phase(Phases::JoinNode, worker_hosts(config), config: config, master: master_host)
