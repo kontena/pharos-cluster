@@ -84,7 +84,6 @@ module Pharos
       @phase_manager = Pharos::PhaseManager.new([__dir__ + '/phases/'],
         ssh_manager: ssh_manager,
         config: config,
-        master: master_hosts(config).first,
       )
       addon_manager
       puts pastel.green("==> Starting to craft cluster ...")
@@ -153,15 +152,17 @@ module Pharos
 
       handle_phase(Phases::ConfigureMaster, master_hosts)
       handle_phase(Phases::ConfigureClient, master_hosts)
-      handle_phase(Phases::ConfigureDNS, master_hosts, ssh: false)
-      handle_phase(Phases::ConfigureNetwork, master_hosts, ssh: false)
-      handle_phase(Phases::ConfigureMetrics, master_hosts, ssh: false)
-      handle_phase(Phases::LabelNode, master_hosts, ssh: false)
-      handle_phase(Phases::StoreClusterYAML, master_hosts, ssh: false, config_content: config_yaml.read(ENV.to_h))
 
-      handle_phase(Phases::ConfigureKubelet, worker_hosts)
-      handle_phase(Phases::JoinNode, worker_hosts)
-      handle_phase(Phases::LabelNode, worker_hosts, ssh: false, parallel: false)
+      # master is now configured and can be used
+      handle_phase(Phases::ConfigureDNS, master_hosts, master: master_host, ssh: false, parallel: false)
+      handle_phase(Phases::ConfigureNetwork, master_hosts, master: master_host, ssh: false, parallel: false)
+      handle_phase(Phases::ConfigureMetrics, master_hosts, master: master_host, ssh: false, parallel: false)
+      handle_phase(Phases::LabelNode, master_hosts, master: master_host, ssh: false, parallel: false)
+      handle_phase(Phases::StoreClusterYAML, master_hosts, master: master_host, ssh: false, parallel: false, config_content: config_yaml.read(ENV.to_h))
+
+      handle_phase(Phases::ConfigureKubelet, worker_hosts) # TODO: also run this phase in parallel with Phases::ConfigureMaster?
+      handle_phase(Phases::JoinNode, worker_hosts, master: master_host) # XXX: this only uses the @master.join_command from the config, and thus threadsafe
+      handle_phase(Phases::LabelNode, worker_hosts, master: master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each thread, not threadsafe
     end
 
     def handle_phase(phase_class, hosts, **options)

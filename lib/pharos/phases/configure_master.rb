@@ -11,7 +11,7 @@ module Pharos
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
 
       def client
-        @client ||= Pharos::Kube.client(@master.address)
+        @client ||= Pharos::Kube.client(@host.address)
       end
 
       def call
@@ -33,7 +33,7 @@ module Pharos
       end
 
       def upgrade?
-        return false unless Pharos::Kube.config_exists?(@master.address)
+        return false unless Pharos::Kube.config_exists?(@host.address)
 
         kubeadm_configmap['kubernetesVersion'] != "v#{Pharos::KUBE_VERSION}"
       end
@@ -260,7 +260,6 @@ module Pharos
         Pharos::Phases::ConfigureKubelet.new(@host,
           config: @config,
           ssh: @ssh,
-          master: @master,
         ).call
       end
     end
