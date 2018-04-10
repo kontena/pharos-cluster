@@ -81,26 +81,18 @@ module Pharos
 
       start_time = Time.now
       puts pastel.green("==> Sharpening tools ...")
-      load_phases
+      @phase_manager = Pharos::PhaseManager.new([__dir__ + '/phases/'],
+        ssh_manager: ssh_manager,
+        config: config,
+        master: master_hosts(config).first,
+      )
+      addon_manager
       puts pastel.green("==> Starting to craft cluster ...")
 
       # set workdir to the same dir where config was loaded from
       # so that the certs etc. can be referenced more easily
       Dir.chdir(config_yaml.dirname) do
-        handle_phase(Phases::ValidateHost, config.hosts, config: config)
-        handle_phase(Phases::ConfigureHost, config.hosts, config: config)
-
-        handle_phase(Phases::ConfigureMaster, master_hosts, config: config, master: master_host)
-        handle_phase(Phases::ConfigureClient, master_hosts, config: config, master: master_host)
-        handle_phase(Phases::ConfigureDNS, master_hosts, config: config, master: master_host)
-        handle_phase(Phases::ConfigureNetwork, master_hosts, config: config, master: master_host)
-        handle_phase(Phases::LabelNode, master_hosts, config: config, master: master_host)
-        handle_phase(Phases::StoreClusterYAML, master_hosts, master: master_host, config_content: config_yaml.read(ENV.to_h))
-
-        handle_phase(Phases::ConfigureKubelet, worker_hosts(config), config: config, master: master_host)
-        handle_phase(Phases::JoinNode, worker_hosts(config), config: config, master: master_host)
-        handle_phase(Phases::LabelNode, worker_hosts(config), config: config, master: master_host)
-
+        handle_phases(config)
         handle_addons(master_host, config.addons)
       end
 
@@ -123,13 +115,14 @@ module Pharos
       }.compact.reverse.join(' ')
     end
 
+    # @return [Pharos::SSH::Manager]
+    def ssh_manager
+      @ssh_manager ||= Pharos::SSH::Manager.new
+    end
+
     # @return [Pharos::AddonManager]
     def addon_manager
       @addon_manager ||= Pharos::AddonManager.new([__dir__ + '/addons/'])
-    end
-
-    def load_phases
-      Dir.glob(__dir__ + '/phases/*.rb').each { |f| require(f) }
     end
 
     def show_config_errors(errors)
@@ -149,21 +142,36 @@ module Pharos
       config.hosts.select { |h| h.role == 'worker' }
     end
 
-    def handle_addons(master, addon_configs)
-      puts pastel.cyan("==> addons: #{master.address}")
-      addon_manager.apply(master, addon_configs)
-    end
+    def handle_phases(config)
+      all_hosts = config.hosts
+      master_hosts = master_hosts(config)
+      master_host = master_hosts[0]
+      worker_hosts = worker_hosts(config)
 
-    def ssh_manager
-      @ssh_manager ||= Pharos::SSH::Manager.new
+      handle_phase(Phases::ValidateHost, all_hosts)
+      handle_phase(Phases::ConfigureHost, all_hosts)
+
+      handle_phase(Phases::ConfigureMaster, master_hosts)
+      handle_phase(Phases::ConfigureClient, master_hosts)
+      handle_phase(Phases::ConfigureDNS, master_hosts, ssh: false)
+      handle_phase(Phases::ConfigureNetwork, master_hosts, ssh: false)
+      handle_phase(Phases::LabelNode, master_hosts, ssh: false)
+      handle_phase(Phases::StoreClusterYAML, master_hosts, ssh: false, config_content: config_yaml.read(ENV.to_h))
+
+      handle_phase(Phases::ConfigureKubelet, worker_hosts)
+      handle_phase(Phases::JoinNode, worker_hosts)
+      handle_phase(Phases::LabelNode, worker_hosts, ssh: false, parallel: false)
     end
 
     def handle_phase(phase_class, hosts, **options)
       puts pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
-      ssh_manager.with_hosts(hosts) do |host, ssh|
-        phase_class.new(host, ssh: ssh, **options).call
-      end
+      @phase_manager.apply(phase_class, hosts, **options)
+    end
+
+    def handle_addons(master, addon_configs)
+      puts pastel.cyan("==> addons: #{master.address}")
+      addon_manager.apply(master, addon_configs)
     end
   end
 end

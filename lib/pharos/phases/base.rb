@@ -12,6 +12,10 @@ module Pharos
         self.name
       end
 
+      def to_s
+        "#{self.class.title} @ #{@host}"
+      end
+
       def self.register_component(component)
         Pharos::Phases.components << component
       end
