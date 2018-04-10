@@ -3,7 +3,7 @@
 require 'kubeclient'
 
 module Pharos
-  module Kube
+  class Kube
     class Client < ::Kubeclient::Client
       def entities
         if @entities.empty?

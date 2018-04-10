@@ -4,7 +4,7 @@ require 'openssl'
 require 'base64'
 
 module Pharos
-  module Kube
+  class Kube
     # Manage kube certificates and private key secrets.
     #
     # Generates a v1 secret and certificates.k8s.io/v1beta1 csr with the given name.
