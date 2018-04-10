@@ -151,7 +151,7 @@ module Pharos
       handle_phase(Phases::ConfigureHost, all_hosts, ssh: true, parallel: true)
 
       handle_phase(Phases::ConfigureKubelet, worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
-      
+
       handle_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
       handle_phase(Phases::ConfigureClient, master_hosts, ssh: true, parallel: true)
 
@@ -160,7 +160,7 @@ module Pharos
       handle_phase(Phases::ConfigureNetwork, [master_host], master: master_host)
       handle_phase(Phases::ConfigureMetrics, [master_host], master: master_host)
       handle_phase(Phases::StoreClusterYAML, [master_host], master: master_host, config_content: config_yaml.read(ENV.to_h))
-      handle_phase(Phases::ConfigureBootstrap, [master_host], master: master_host)
+      handle_phase(Phases::ConfigureBootstrap, [master_host], ssh: true)
 
       handle_phase(Phases::JoinNode, worker_hosts, ssh: true, parallel: true)
 
