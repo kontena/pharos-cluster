@@ -26,7 +26,7 @@ module Pharos
         return if dropin == existing_dropin
 
         @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
-        @ssh.write_file(DROPIN_PATH, dropin)
+        @ssh.file(DROPIN_PATH).write(dropin)
         @ssh.exec!("sudo systemctl daemon-reload")
         @ssh.exec!("sudo systemctl restart kubelet")
       end
@@ -47,7 +47,8 @@ module Pharos
 
       # @return [String, nil]
       def existing_dropin
-        @ssh.read_file(DROPIN_PATH) if @ssh.file_exists?(DROPIN_PATH)
+        file = @ssh.file(DROPIN_PATH)
+        file.read if file.exist?
       end
 
       # @return [String]

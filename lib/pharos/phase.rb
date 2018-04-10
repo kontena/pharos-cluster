@@ -53,9 +53,11 @@ module Pharos
 
     # @param script [String] name of file under ../scripts/
     def exec_script(script, vars = {})
-      @ssh.exec_script!(script,
-                        env: vars,
-                        path: script_path(script))
+      @ssh.exec_script!(
+        script,
+        env: vars,
+        path: script_path(script)
+      )
     end
 
     def parse_resource_file(path, vars = {})

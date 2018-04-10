@@ -6,7 +6,7 @@ module Pharos
       title "Join nodes"
 
       def already_joined?
-        @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
+        @ssh.file("/etc/kubernetes/kubelet.conf").exist?
       end
 
       def call
