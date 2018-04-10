@@ -2,11 +2,15 @@
 
 set -e
 
+if [ -e /etc/kubernetes/manifests/pharos-etcd.yaml ]; then
+  exit
+fi
+
 mkdir -p /etc/systemd/system/kubelet.service.d
-cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos.conf
+cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-etcd.conf
 [Service]
 ExecStart=
-ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/
+ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0
 EOF
 
 apt-mark unhold kubelet
@@ -47,7 +51,7 @@ spec:
     - --initial-cluster-token=pharos-etcd-token
     - --initial-cluster-state=new
 
-    image: k8s.gcr.io/etcd-amd64:3.1.12
+    image: k8s.gcr.io/etcd-amd64:${ETCD_VERSION}
     name: etcd
     volumeMounts:
     - mountPath: /var/lib/etcd

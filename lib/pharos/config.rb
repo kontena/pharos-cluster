@@ -54,9 +54,20 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def etcd_hosts
-      hosts.select { |h| h.role == 'etcd' }
+      etcd_hosts = hosts.select { |h| h.role == 'etcd' }
+      if etcd_hosts.empty?
+        master_hosts
+      else
+        etcd_hosts
+      end
     end
 
+    # @return [Pharos::Configuration::Host]
+    def master_leader
+      master_hosts[0]
+    end
+
+    # @return [Pharos::Configuration::Host]
     def etcd_leader
       etcd_hosts[0]
     end

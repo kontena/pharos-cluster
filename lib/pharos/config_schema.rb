@@ -20,7 +20,7 @@ module Pharos
           each do
             schema do
               required(:address).filled
-              required(:role).filled(included_in?: ['etcd', 'master', 'worker'])
+              required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
               optional(:private_address).filled
               optional(:user).filled

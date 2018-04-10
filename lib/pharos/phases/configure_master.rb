@@ -4,7 +4,7 @@ module Pharos
   module Phases
     class ConfigureMaster < Pharos::Phase
       title "Configure master"
-
+      KUBE_DIR = '/etc/kubernetes'
       PHAROS_DIR = '/etc/pharos'
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
 
@@ -38,6 +38,10 @@ module Pharos
         kubeadm_configmap['kubernetesVersion'] != "v#{Pharos::KUBE_VERSION}"
       end
 
+      def leader?
+        @config.master_leader == @master
+      end
+
       # @return [Hash]
       def kubeadm_configmap
         configmap = client.get_config_map('kubeadm-config', 'kube-system')
@@ -55,10 +59,8 @@ module Pharos
           copy_external_etcd_certs
         end
 
-        if @config.etcd_hosts.size > 0
-          logger.info(@master.address) { "Pushing etcd certificates ..." }
-          copy_internal_etcd_certs
-        end
+        logger.info(@master.address) { "Pushing etcd certificates ..." }
+        copy_internal_etcd_certs
 
         if @config.audit&.server
           logger.info(@master.address) { "Pushing audit configs to master ..." }
@@ -80,6 +82,8 @@ module Pharos
           upload_authentication_token_webhook_certs(webhook_config)
         end
 
+        copy_kube_certs unless leader?
+
         logger.info { "Initializing control plane ..." }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
@@ -92,18 +96,22 @@ module Pharos
       end
 
       def generate_config
+        extra_sans = Set.new
+        @config.master_hosts.each do |h|
+          extra_sans += [h.address, h.private_address].compact.uniq
+        end
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
           'kind' => 'MasterConfiguration',
           'kubernetesVersion' => Pharos::KUBE_VERSION,
-          'apiServerCertSANs' => [@host.address, @host.private_address].compact.uniq,
+          'apiServerCertSANs' => extra_sans.to_a,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
           }
         }
 
-        config['api'] = { 'advertiseAddress' => @host.private_address || @host.address }
+        config['api'] = { 'advertiseAddress' => @host.peer_address }
 
         if @host.container_runtime == 'cri-o'
           config['criSocket'] = '/var/run/crio/crio.sock'
@@ -116,7 +124,7 @@ module Pharos
         # Only configure etcd if the external endpoints are given
         if @config.etcd&.endpoints
           configure_external_etcd(config)
-        elsif @config.etcd_hosts.size > 0
+        else
           configure_internal_etcd(config)
         end
 
@@ -124,16 +132,25 @@ module Pharos
         config['apiServerExtraVolumes'] = []
 
         # Only if authentication token webhook option are given
-        if @config.authentication&.token_webhook
-          configure_token_webhook(config)
-        end
+        configure_token_webhook(config) if @config.authentication&.token_webhook
 
         # Configure audit related things if needed
-        if @config.audit&.server
-          configure_audit_webhook(config)
-        end
+        configure_audit_webhook(config) if @config.audit&.server
 
         config
+      end
+
+      # Copies certificates from leading master
+      def copy_kube_certs
+        leader = @config.master_leader
+        leader_ssh = Pharos::SSH::Client.for_host(leader)
+        @ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
+        %w(ca.crt ca.key sa.key sa.pub).each do |file|
+          path = File.join(KUBE_DIR, 'pki', file)
+          contents = leader_ssh.file(path).read
+          @ssh.file(path).write(contents)
+          @ssh.exec!("sudo chmod 0400 #{path}")
+        end
       end
 
       # @param config [Pharos::Config]
@@ -160,15 +177,15 @@ module Pharos
 
       def copy_internal_etcd_certs
         @ssh.exec!('sudo mkdir -p /etc/pharos/pki/etcd')
-        return if @ssh.file_exists?('/etc/pharos/pki/etcd/client.pem')
+        return if @ssh.file('/etc/pharos/pki/etcd/client.pem').exist?
 
         etcd_peer = @config.etcd_hosts[0]
         etcd_ssh = Pharos::SSH::Client.for_host(etcd_peer)
         @ssh.exec!('sudo mkdir -p /etc/pharos/pki/etcd')
         %w(ca.pem etcd/client.pem etcd/client-key.pem).each do |filename|
           path = "/etc/pharos/pki/#{filename}"
-          contents = etcd_ssh.read_file(path)
-          @ssh.write_file(path, contents)
+          contents = etcd_ssh.file(path).read
+          @ssh.file(path).write(contents)
         end
       end
 
