@@ -47,7 +47,7 @@ module Pharos
       end
     end
 
-    def apply(phase_class, hosts, ssh: true, parallel: true, **options)
+    def apply(phase_class, hosts, ssh: false, parallel: false, **options)
       options = @options.merge(options)
 
       phases = hosts.map { |host|
