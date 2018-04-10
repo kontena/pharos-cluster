@@ -15,6 +15,7 @@ module Pharos
   autoload :Kube, 'pharos/kube'
   autoload :YamlFile, 'pharos/yaml_file'
   autoload :AddonManager, 'pharos/addon_manager'
+  autoload :Phase, 'pharos/phase'
   autoload :Phases, 'pharos/phases'
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
@@ -33,6 +34,6 @@ module Pharos
   end
 
   module Phases
-    
+
   end
 end

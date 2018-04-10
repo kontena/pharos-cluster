@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureHost < Base
+    class ConfigureHost < Pharos::Phase
       PHASE_TITLE = "Configure hosts"
 
       register_component(

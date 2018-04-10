@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-require_relative 'component'
-
 module Pharos
   module Phases
-    class ConfigureKubelet < Base
+    class ConfigureKubelet < Pharos::Phase
       PHASE_TITLE = "Configure kubelet"
 
       register_component(

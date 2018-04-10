@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureMetrics < Base
+    class ConfigureMetrics < Pharos::Phase
       PHASE_TITLE = "Configure metrics"
 
       register_component(

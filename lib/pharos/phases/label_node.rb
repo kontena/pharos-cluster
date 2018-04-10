@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class LabelNode < Base
+    class LabelNode < Pharos::Phase
       PHASE_TITLE = "Label nodes"
 
       def call

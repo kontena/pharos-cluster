@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class StoreClusterYAML < Base
+    class StoreClusterYAML < Pharos::Phase
       PHASE_TITLE = "Store cluster YAML"
 
       # @param config_content [String]

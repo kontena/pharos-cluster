@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class JoinNode < Base
+    class JoinNode < Pharos::Phase
       PHASE_TITLE = "Join nodes"
 
       def already_joined?

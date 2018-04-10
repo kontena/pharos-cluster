@@ -2,7 +2,7 @@
 
 module Pharos
   module Phases
-    class ValidateHost < Base
+    class ValidateHost < Pharos::Phase
       PHASE_TITLE = "Validate hosts"
 
       def call

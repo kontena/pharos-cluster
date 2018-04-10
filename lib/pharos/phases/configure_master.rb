@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureMaster < Base
+    class ConfigureMaster < Pharos::Phase
       PHASE_TITLE = "Configure master"
 
       PHAROS_DIR = '/etc/pharos'

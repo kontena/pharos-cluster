@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureClient < Base
+    class ConfigureClient < Pharos::Phase
       PHASE_TITLE = "Configure kube client"
 
       def call

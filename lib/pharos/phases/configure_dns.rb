@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureDNS < Base
+    class ConfigureDNS < Pharos::Phase
       PHASE_TITLE = "Configure DNS"
 
       def call
