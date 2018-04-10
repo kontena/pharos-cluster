@@ -56,7 +56,8 @@ module Pharos
 
       # @return [String, nil]
       def existing_dropin
-        @ssh.file(DROPIN_PATH).with_existing(&:read)
+        file = @ssh.file(DROPIN_PATH)
+        file.read if file.exist?
       end
 
       # @return [String]
