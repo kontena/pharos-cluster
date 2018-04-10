@@ -78,7 +78,7 @@ module Pharos
       end
       alias cp copy
 
-      # Creates a symlink that points to the current file to target path
+      # Creates a symlink at the target path that points to the current file
       # @param target [String]
       def link(target)
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
