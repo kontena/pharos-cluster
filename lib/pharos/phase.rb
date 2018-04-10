@@ -4,6 +4,8 @@ require 'logger'
 
 module Pharos
   class Phase
+    PHASE_TITLE = nil
+    
     # @return [String]
     def self.title
       self.const_get(:PHASE_TITLE) || self.name
