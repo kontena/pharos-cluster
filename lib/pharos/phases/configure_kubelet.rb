@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class ConfigureKubelet < Pharos::Phase
-      PHASE_TITLE = "Configure kubelet"
+      title "Configure kubelet"
 
       register_component(
         Pharos::Phases::Component.new(

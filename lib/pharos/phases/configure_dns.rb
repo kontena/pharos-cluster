@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class ConfigureDNS < Pharos::Phase
-      PHASE_TITLE = "Configure DNS"
+      title "Configure DNS"
 
       def call
         patch_kubedns(

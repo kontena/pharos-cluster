@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class StoreClusterYAML < Pharos::Phase
-      PHASE_TITLE = "Store cluster YAML"
+      title "Store cluster YAML"
 
       # @param config_content [String]
       def initialize(host, config_content: , **options)

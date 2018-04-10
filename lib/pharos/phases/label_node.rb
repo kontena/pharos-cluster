@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class LabelNode < Pharos::Phase
-      PHASE_TITLE = "Label nodes"
+      title "Label nodes"
 
       def call
         return unless @host.labels

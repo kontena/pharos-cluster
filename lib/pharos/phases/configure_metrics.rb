@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class ConfigureMetrics < Pharos::Phase
-      PHASE_TITLE = "Configure metrics"
+      title "Configure metrics"
 
       register_component(
         Pharos::Phases::Component.new(

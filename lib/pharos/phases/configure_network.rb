@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class ConfigureNetwork < Pharos::Phase
-      PHASE_TITLE = "Configure network"
+      title "Configure network"
 
       WEAVE_VERSION = '2.2.1'
 

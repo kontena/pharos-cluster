@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class ConfigureHost < Pharos::Phase
-      PHASE_TITLE = "Configure hosts"
+      title "Configure hosts"
 
       register_component(
         Pharos::Phases::Component.new(

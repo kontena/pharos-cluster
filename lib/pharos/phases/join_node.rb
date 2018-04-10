@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class JoinNode < Pharos::Phase
-      PHASE_TITLE = "Join nodes"
+      title "Join nodes"
 
       def already_joined?
         @ssh.file_exists?("/etc/kubernetes/kubelet.conf")

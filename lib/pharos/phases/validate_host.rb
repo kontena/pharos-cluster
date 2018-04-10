@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class ValidateHost < Pharos::Phase
-      PHASE_TITLE = "Validate hosts"
+      title "Validate hosts"
 
       def call
         logger.info { "Checking sudo access ..." }

@@ -3,7 +3,7 @@
 module Pharos
   module Phases
     class ConfigureClient < Pharos::Phase
-      PHASE_TITLE = "Configure kube client"
+      title "Configure kube client"
 
       def call
         fetch_kubeconfig
