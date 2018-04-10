@@ -105,10 +105,6 @@ module Pharos
       )
     end
 
-    def apply_resource
-      Pharos::Kube.apply_resource(host.address)
-    end
-
     def prune_stack
       Pharos::Kube.prune_stack(host.address, self.class.name, '-')
     end
