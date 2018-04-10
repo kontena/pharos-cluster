@@ -10,7 +10,7 @@ mkdir -p /etc/systemd/system/kubelet.service.d
 cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-etcd.conf
 [Service]
 ExecStart=
-ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0
+ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0 --address=127.0.0.1
 EOF
 
 apt-mark unhold kubelet

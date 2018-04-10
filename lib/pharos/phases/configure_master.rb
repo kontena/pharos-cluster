@@ -33,9 +33,12 @@ module Pharos
       end
 
       def upgrade?
-        return false unless Pharos::Kube.config_exists?(@host.address)
+        manifest = File.join(KUBE_DIR, 'manifests', 'kube-apiserver.yaml')
+        file = @ssh.file(manifest)
+        return false unless file.exist?
+        return false if file.read =~ /kube-apiserver-.+:v#{Pharos::KUBE_VERSION}/
 
-        kubeadm_configmap['kubernetesVersion'] != "v#{Pharos::KUBE_VERSION}"
+        true
       end
 
       def leader?
@@ -103,15 +106,18 @@ module Pharos
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
           'kind' => 'MasterConfiguration',
+          'nodeName' => @master.hostname,
           'kubernetesVersion' => Pharos::KUBE_VERSION,
+          'api' => { 'advertiseAddress' => @host.peer_address },
           'apiServerCertSANs' => extra_sans.to_a,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
+          },
+          'controllerManagerExtraArgs' => {
+            'horizontal-pod-autoscaler-use-rest-clients' => 'false'
           }
         }
-
-        config['api'] = { 'advertiseAddress' => @host.peer_address }
 
         if @host.container_runtime == 'cri-o'
           config['criSocket'] = '/var/run/crio/crio.sock'
@@ -323,7 +329,7 @@ module Pharos
 
         cfg = generate_config
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --allow-experimental-upgrades --config #{tmp_file}")
+          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
         end
         logger.info { "Control plane upgrade succeeded!" }
 
