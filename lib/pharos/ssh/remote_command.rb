@@ -40,31 +40,35 @@ module Pharos
         end
       end
 
-      INDENT = "    "
-
       def self.debug?
-        ENV['DEBUG'].to_s == 'true'
+        @debug ||= !ENV['DEBUG'].to_s.empty?
       end
+
+      INDENT = "    "
 
       attr_reader :cmd
 
-      def initialize(client, cmd, stdin: nil, debug: self.class.debug?, debug_source: nil)
+      # @param client [Pharos::SSH::Client] ssh client instance
+      # @param cmd [String,Array<String>] command to execute
+      # @param stdin [String,IO] attach string or stream to command STDIN
+      # @param debug
+      def initialize(client, cmd, stdin: nil, source: nil)
         @client = client
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
         @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
-        @debug = debug
-        @debug_source = debug_source
-        @exit_status = nil
+        @source = source
+        initialize_debug
+        freeze
       end
 
       def run!
         result = run
-        raise ExecError.new(cmd, result.exit_status, result.output) if result.error?
+        raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
         result
       end
 
       def run
-        debug_cmd(@cmd, source: @debug_source) if debug?
+        debug_cmd(@cmd, source: @source) if debug?
 
         result = Result.new
 
@@ -104,12 +108,23 @@ module Pharos
         result
       end
 
+      private
+
+      def initialize_debug
+        if self.class.debug?
+          @debug = true
+          @pastel = Pastel.new
+        else
+          @debug = false
+        end
+      end
+
       def debug?
         @debug
       end
 
       def pastel
-        @pastel ||= Pastel.new
+        @pastel
       end
 
       def debug_cmd(cmd, source: nil)

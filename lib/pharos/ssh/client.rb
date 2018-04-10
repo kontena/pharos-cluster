@@ -87,7 +87,7 @@ module Pharos
         cmd = %w(sudo)
         env.each { |key, value| cmd << "#{key}=#{value.shellescape}" }
         cmd.concat %w(sh -x)
-        exec!(cmd, stdin: script, debug_source: name, **options)
+        exec!(cmd, stdin: script, source: name, **options)
       end
 
       # @param cmd [String] command to execute
