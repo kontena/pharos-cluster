@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 require 'kubeclient'
+require 'deep_merge'
 
 module Pharos
-  class Kube
+  module Kube
     class Client < ::Kubeclient::Client
       def entities
         if @entities.empty?
