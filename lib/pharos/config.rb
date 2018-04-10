@@ -23,6 +23,9 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
 
+    # written by Pharos::Phases::CreateBootstrapToken, read by Pharos::Phases::JoinNode
+    attr_accessor :join_command
+
     # @return [Integer]
     def dns_replicas
       if network.dns_replicas

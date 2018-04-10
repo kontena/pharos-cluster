@@ -160,8 +160,9 @@ module Pharos
       handle_phase(Phases::ConfigureNetwork, [master_host], master: master_host)
       handle_phase(Phases::ConfigureMetrics, [master_host], master: master_host)
       handle_phase(Phases::StoreClusterYAML, [master_host], master: master_host, config_content: config_yaml.read(ENV.to_h))
+      handle_phase(Phases::ConfigureBootstrap, [master_host], master: master_host)
 
-      handle_phase(Phases::JoinNode, worker_hosts, ssh: true, parallel: true, master: master_host) # XXX: this only uses the @master.join_command from the config, and is thus threadsafe
+      handle_phase(Phases::JoinNode, worker_hosts, ssh: true, parallel: true)
 
       handle_phase(Phases::LabelNode, all_hosts, master: master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
     end
