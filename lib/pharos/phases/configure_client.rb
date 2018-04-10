@@ -7,7 +7,6 @@ module Pharos
 
       def call
         fetch_kubeconfig
-        create_join_command
       end
 
       def config_dir
@@ -23,12 +22,6 @@ module Pharos
         File.chmod(0o600, config_file) if File.exist?(config_file)
         File.write(config_file, config_data.gsub(%r{(server: https://)(.+)(:6443)}, "\\1#{@host.address}\\3"), perm: 0o600)
         logger.info { "Configuration saved to #{config_file}" }
-      end
-
-      def create_join_command
-        logger.info { "Creating node bootstrap token ..." }
-        # XXX: the join command is not specific to any one master host
-        @host.join_command = @ssh.exec!("sudo kubeadm token create --print-join-command").split(' ')
       end
     end
   end
