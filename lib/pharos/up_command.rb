@@ -155,6 +155,7 @@ module Pharos
       handle_phase(Phases::ConfigureClient, master_hosts)
       handle_phase(Phases::ConfigureDNS, master_hosts, ssh: false)
       handle_phase(Phases::ConfigureNetwork, master_hosts, ssh: false)
+      handle_phase(Phases::ConfigureMetrics, master_hosts, ssh: false)
       handle_phase(Phases::LabelNode, master_hosts, ssh: false)
       handle_phase(Phases::StoreClusterYAML, master_hosts, ssh: false, config_content: config_yaml.read(ENV.to_h))
 

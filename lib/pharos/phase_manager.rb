@@ -51,7 +51,7 @@ module Pharos
       options = @options.merge(options)
 
       phases = hosts.map { |host|
-        # one thread per node, one ssh client per node => one thread per ssh client 
+        # one thread per node, one ssh client per node => one thread per ssh client
         ssh = ssh ? @ssh_manager.client_for(host) : nil
 
         phase_class.new(host,
