@@ -110,6 +110,8 @@ module Pharos
 
       private
 
+      attr_reader :pastel
+
       def initialize_debug
         if self.class.debug?
           @debug = true
@@ -121,10 +123,6 @@ module Pharos
 
       def debug?
         @debug
-      end
-
-      def pastel
-        @pastel
       end
 
       def debug_cmd(cmd, source: nil)
