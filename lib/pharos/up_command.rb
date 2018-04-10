@@ -150,19 +150,20 @@ module Pharos
       handle_phase(Phases::ValidateHost, all_hosts, ssh: true, parallel: true)
       handle_phase(Phases::ConfigureHost, all_hosts, ssh: true, parallel: true)
 
-      handle_phase(Phases::ConfigureMaster, master_hosts, ssh: true)
-      handle_phase(Phases::ConfigureClient, master_hosts, ssh: true)
+      handle_phase(Phases::ConfigureKubelet, worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
+      
+      handle_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
+      handle_phase(Phases::ConfigureClient, master_hosts, ssh: true, parallel: true)
 
       # master is now configured and can be used
       handle_phase(Phases::ConfigureDNS, [master_host], master: master_host)
       handle_phase(Phases::ConfigureNetwork, [master_host], master: master_host)
       handle_phase(Phases::ConfigureMetrics, [master_host], master: master_host)
-      handle_phase(Phases::LabelNode, master_hosts, master: master_host)
       handle_phase(Phases::StoreClusterYAML, [master_host], master: master_host, config_content: config_yaml.read(ENV.to_h))
 
-      handle_phase(Phases::ConfigureKubelet, worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel with Phases::ConfigureMaster?
       handle_phase(Phases::JoinNode, worker_hosts, ssh: true, parallel: true, master: master_host) # XXX: this only uses the @master.join_command from the config, and is thus threadsafe
-      handle_phase(Phases::LabelNode, worker_hosts, master: master_host) # NOTE: uses the @master kube API for each node, not threadsafe
+
+      handle_phase(Phases::LabelNode, all_hosts, master: master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
     def handle_phase(phase_class, hosts, **options)
