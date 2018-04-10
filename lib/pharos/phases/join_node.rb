@@ -13,7 +13,7 @@ module Pharos
         return if already_joined?
 
         logger.info { "Joining host to the master ..." }
-        join_command = @master.join_command.split(' ')
+        join_command = @config.join_command.split(' ')
         if @host.container_runtime == 'cri-o'
           join_command << '--cri-socket /var/run/crio/crio.sock'
         end
