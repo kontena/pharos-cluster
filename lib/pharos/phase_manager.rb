@@ -47,18 +47,17 @@ module Pharos
       end
     end
 
-    def apply(phase_class, hosts, ssh: false, parallel: false, **options)
+    # @return [Pharos::Phase]
+    def prepare_phase(phase_class, host, ssh: false, **options)
       options = @options.merge(options)
 
-      phases = hosts.map { |host|
-        # one thread per node, one ssh client per node => one thread per ssh client
-        ssh = ssh ? @ssh_manager.client_for(host) : nil
+      options[:ssh] = @ssh_manager.client_for(host) if ssh
 
-        phase_class.new(host,
-          ssh: ssh,
-          **options
-        )
-      }
+      phase_class.new(host, **options)
+    end
+
+    def apply(phase_class, hosts, parallel: false, **options)
+      phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
 
       run(phases, parallel: parallel) do |phase|
         phase.call
