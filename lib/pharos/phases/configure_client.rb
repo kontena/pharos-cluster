@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class ConfigureClient < Base
+      PHASE_TITLE = "Configure kube client"
+
       def call
         fetch_kubeconfig
         create_join_command

@@ -8,8 +8,7 @@ module Pharos
     class Base
       # @return [String]
       def self.title
-        # XXX: prettier
-        self.name
+        self.const_get(:PHASE_TITLE) || self.name
       end
 
       def to_s

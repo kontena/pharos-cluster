@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class ConfigureMaster < Base
+      PHASE_TITLE = "Configure master"
+
       PHAROS_DIR = '/etc/pharos'
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
 

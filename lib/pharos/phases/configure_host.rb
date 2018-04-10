@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class ConfigureHost < Base
+      PHASE_TITLE = "Configure hosts"
+
       register_component(
         Pharos::Phases::Component.new(
           name: 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0'

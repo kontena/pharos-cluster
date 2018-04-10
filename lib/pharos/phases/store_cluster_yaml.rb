@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class StoreClusterYAML < Base
+      PHASE_TITLE = "Store cluster YAML"
+
       # @param config_content [String]
       def initialize(host, config_content: , **options)
         super(host, **options)

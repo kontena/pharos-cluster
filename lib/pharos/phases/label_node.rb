@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class LabelNode < Base
+      PHASE_TITLE = "Label nodes"
+
       def call
         return unless @host.labels
 

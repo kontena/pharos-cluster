@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class ConfigureMetrics < Base
+      PHASE_TITLE = "Configure metrics"
+
       register_component(
         Pharos::Phases::Component.new(
           name: 'metrics-server', version: '0.2.1', license: 'Apache License 2.0'

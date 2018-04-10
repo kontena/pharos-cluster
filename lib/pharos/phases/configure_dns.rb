@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class ConfigureDNS < Base
+      PHASE_TITLE = "Configure DNS"
+
       def call
         patch_kubedns(
           replicas: @config.dns_replicas,

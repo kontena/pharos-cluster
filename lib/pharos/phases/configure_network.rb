@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class ConfigureNetwork < Base
+      PHASE_TITLE = "Configure network"
+
       WEAVE_VERSION = '2.2.1'
 
       register_component(

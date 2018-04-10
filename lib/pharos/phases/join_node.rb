@@ -5,6 +5,8 @@ require_relative 'base'
 module Pharos
   module Phases
     class JoinNode < Base
+      PHASE_TITLE = "Join nodes"
+
       def already_joined?
         @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
       end

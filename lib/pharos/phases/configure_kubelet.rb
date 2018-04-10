@@ -6,6 +6,8 @@ require_relative 'component'
 module Pharos
   module Phases
     class ConfigureKubelet < Base
+      PHASE_TITLE = "Configure kubelet"
+
       register_component(
         Pharos::Phases::Component.new(
           name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
