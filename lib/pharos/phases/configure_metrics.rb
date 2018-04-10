@@ -31,7 +31,7 @@ module Pharos
         Pharos::Kube.apply_stack(
           @master.address, 'metrics-server',
           version: '0.2.1',
-          arch: @master.cpu_arch,
+          arch: @host.cpu_arch,
           client_cert: cert.to_pem
         )
       end
@@ -45,7 +45,7 @@ module Pharos
         Pharos::Kube.apply_stack(
           @master.address, 'heapster',
           version: '1.5.1',
-          arch: @master.cpu_arch,
+          arch: @host.cpu_arch,
           client_cert: cert.to_pem
         )
       end
