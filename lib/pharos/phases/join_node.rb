@@ -9,7 +9,7 @@ module Pharos
         @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
       end
 
-      def call(join_command)
+      def call
         return if already_joined?
 
         logger.info { "Joining host to the master ..." }
