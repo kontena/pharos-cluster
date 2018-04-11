@@ -7,7 +7,6 @@ module Pharos
     class Session
       def initialize(host)
         @host = host.respond_to?(:address) ? host.address : host
-        @resource_clients = {}
         freeze
       end
 
@@ -24,7 +23,7 @@ module Pharos
       end
 
       def resource_client(version = 'v1')
-        client = @resource_clients[version] ||= Pharos::Kube.client(@host, version)
+        client = Pharos::Kube.client(@host, version)
         block_given? ? yield(client) : client
       end
     end
