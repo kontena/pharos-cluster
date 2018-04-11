@@ -32,6 +32,7 @@ module Pharos
     def execute
       puts pastel.green("==> Reading instructions ...")
       config_hash = load_config
+      config_content = read_config
       if hosts_from_tf
         puts pastel.green("==> Importing hosts from Terraform ...")
         config_hash['hosts'] ||= []
@@ -42,7 +43,7 @@ module Pharos
       # so that the certs etc. can be referenced more easily
       Dir.chdir(config_yaml.dirname) do
         config = build_config(config_hash)
-        configure(config)
+        configure(config, config_content: config_content)
       end
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
@@ -53,6 +54,11 @@ module Pharos
     # @return [Hash] hash presentation of cluster.yml
     def load_config
       config_yaml.load(ENV.to_h)
+    end
+
+    # @return [String] raw cluster.yml
+    def read_config
+      config_yaml.read(ENV.to_h)
     end
 
     # @return [Array<Hash>] parsed hosts from terraform json output
@@ -80,8 +86,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    def configure(config)
-      manager = ClusterManager.new(config)
+    def configure(config, config_content: )
+      manager = ClusterManager.new(config, config_content: config_content)
       start_time = Time.now
 
       puts pastel.green("==> Sharpening tools ...")

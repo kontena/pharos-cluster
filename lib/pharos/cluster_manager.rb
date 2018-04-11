@@ -11,8 +11,9 @@ module Pharos
 
     attr_reader :config
 
-    def initialize(config)
+    def initialize(config, config_content: )
       @config = config
+      @config_content = config_content
     end
 
     # @return [Pharos::SSH::Manager]
@@ -61,7 +62,7 @@ module Pharos
       apply_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
       apply_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
       apply_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
-      apply_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: config_yaml.read(ENV.to_h))
+      apply_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: @config_content)
       apply_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
