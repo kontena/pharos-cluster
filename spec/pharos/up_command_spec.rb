@@ -49,5 +49,15 @@ describe Pharos::UpCommand do
         end
       end
     end
+
+    context '#humanize_duration' do
+      it 'formats duration as expected' do
+        expect(subject.humanize_duration(1019)).to eq "16 minutes 59 seconds"
+        expect(subject.humanize_duration(1020)).to eq "17 minutes"
+        expect(subject.humanize_duration(1021)).to eq "17 minutes 1 second"
+        expect(subject.humanize_duration(1021 + 3600)).to eq "1 hour 17 minutes 1 second"
+        expect(subject.humanize_duration(1021 + 7200)).to eq "2 hours 17 minutes 1 second"
+      end
+    end
   end
 end

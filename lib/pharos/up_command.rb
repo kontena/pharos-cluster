@@ -112,11 +112,11 @@ module Pharos
     # @param secs [Integer]
     # @return [String]
     def humanize_duration(secs)
-      [[60, :seconds], [60, :minutes], [24, :hours], [1000, :days]].map{ |count, name|
-        if secs.positive?
-          secs, n = secs.divmod(count)
-          "#{n.to_i} #{name}"
-        end
+      [[60, :second], [60, :minute], [24, :hour], [1000, :day]].map{ |count, name|
+        next unless secs.positive?
+        secs, n = secs.divmod(count).map(&:to_i)
+        next if n.zero?
+        "#{n} #{name}#{'s' unless n == 1}"
       }.compact.reverse.join(' ')
     end
 
