@@ -88,7 +88,7 @@ module Pharos
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config, config_content:)
-      manager = ClusterManager.new(config, config_content: config_content)
+      manager = ClusterManager.new(config, config_content: config_content, pastel: pastel)
       start_time = Time.now
 
       puts pastel.green("==> Sharpening tools ...")
