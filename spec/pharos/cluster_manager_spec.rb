@@ -13,11 +13,11 @@ describe Pharos::ClusterManager do
     end
 
     it 'displays the full list of nodes when there are just a few' do
-      expect(subject.format_hosts(hosts.first(3))).to eq "10.2.3.4, 10.2.3.56, 192.168.100.4"
+      expect(subject.format_hosts(hosts.first(3))).to eq "10.2.3.4 10.2.3.56 192.168.100.4"
     end
 
     it 'displays a grouped list of nodes when the group count is suitable' do
-      expect(subject.format_hosts(hosts.first(5))).to eq "10.2.* (2 hosts), 192.168.* (2 hosts), 172.15.23.51"
+      expect(subject.format_hosts(hosts.first(5))).to eq "10.2.* (2 hosts) 192.168.* (2 hosts) 172.15.23.51"
     end
   end
 end
