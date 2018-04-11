@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-require_relative 'component'
-
 module Pharos
   module Phases
-    class ConfigureKubelet < Base
+    class ConfigureKubelet < Pharos::Phase
+      title "Configure kubelet"
+
       register_component(
         Pharos::Phases::Component.new(
           name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
@@ -13,14 +12,6 @@ module Pharos
       )
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
-
-      # @param host [Pharos::Configuration::Host]
-      # @param config [Pharos::Config]
-      def initialize(host, config)
-        @host = host
-        @config = config
-        @ssh = Pharos::SSH::Client.for_host(@host)
-      end
 
       def call
         configure_cni
@@ -35,7 +26,7 @@ module Pharos
         return if dropin == existing_dropin
 
         @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
-        @ssh.write_file(DROPIN_PATH, dropin)
+        @ssh.file(DROPIN_PATH).write(dropin)
         @ssh.exec!("sudo systemctl daemon-reload")
         @ssh.exec!("sudo systemctl restart kubelet")
       end
@@ -56,7 +47,8 @@ module Pharos
 
       # @return [String, nil]
       def existing_dropin
-        @ssh.read_file(DROPIN_PATH) if @ssh.file_exists?(DROPIN_PATH)
+        file = @ssh.file(DROPIN_PATH)
+        file.read if file.exist?
       end
 
       # @return [String]

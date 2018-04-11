@@ -1,16 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureDNS < Base
-      # @param master [Pharos::Configuration::Node]
-      # @param config [Pharos::Config]
-      def initialize(master, config)
-        @master = master
-        @config = config
-      end
+    class ConfigureDNS < Pharos::Phase
+      title "Configure DNS"
 
       def call
         patch_kubedns(
@@ -53,7 +46,7 @@ module Pharos
       # @param replicas [Integer]
       # @param nodes [Integer]
       def patch_kubedns(replicas:, max_surge:, max_unavailable:)
-        logger.info(@master.address) { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
+        logger.info { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
         resource = Pharos::Kube.session(@master).resource(
           apiVersion: 'extensions/v1beta1',

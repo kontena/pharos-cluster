@@ -17,6 +17,10 @@ module Pharos
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
 
       attr_accessor :os_release, :cpu_arch, :hostname
+
+      def to_s
+        address
+      end
     end
   end
 end

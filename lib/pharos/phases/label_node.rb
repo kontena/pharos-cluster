@@ -1,14 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class LabelNode < Base
-      def initialize(host, master)
-        @host = host
-        @master = master
-      end
+    class LabelNode < Pharos::Phase
+      title "Label nodes"
 
       def call
         return unless @host.labels

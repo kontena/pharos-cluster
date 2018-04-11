@@ -1,30 +1,19 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class JoinNode < Base
-      # @param host [Pharos::Configuration::Host]
-      # @param master [Pharos::Configuration::Host]
-      def initialize(host, master)
-        @host = host
-        @master = master
-        @ssh = Pharos::SSH::Client.for_host(@host)
-        @master_ssh = Pharos::SSH::Client.for_host(@master)
-      end
+    class JoinNode < Pharos::Phase
+      title "Join nodes"
 
       def already_joined?
-        @ssh.file_exists?("/etc/kubernetes/kubelet.conf")
+        @ssh.file("/etc/kubernetes/kubelet.conf").exist?
       end
 
       def call
-        if already_joined?
-          return
-        end
+        return if already_joined?
 
         logger.info { "Joining host to the master ..." }
-        join_command = @master_ssh.exec!("sudo kubeadm token create --print-join-command").split(' ')
+        join_command = @config.join_command.split(' ')
         if @host.container_runtime == 'cri-o'
           join_command << '--cri-socket /var/run/crio/crio.sock'
         end

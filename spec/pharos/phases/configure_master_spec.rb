@@ -1,8 +1,4 @@
-require "pharos/config"
 require "pharos/phases/configure_master"
-require "pharos/phases/component"
-require "pharos/phases/configure_host"
-
 
 describe Pharos::Phases::ConfigureMaster do
   let(:master) { Pharos::Configuration::Host.new(address: 'test', private_address: 'private') }
@@ -17,11 +13,9 @@ describe Pharos::Phases::ConfigureMaster do
       addons: {},
       etcd: {}
   ) }
-  subject { described_class.new(master, config) }
 
-  before :each do
-    allow(Pharos::SSH::Client).to receive(:for_host)
-  end
+  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  subject { described_class.new(master, config: config, ssh: ssh) }
 
   describe '#generate_config' do
 

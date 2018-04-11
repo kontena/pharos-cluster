@@ -1,4 +1,3 @@
-require "pharos/config"
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do
@@ -10,12 +9,9 @@ describe Pharos::Phases::ConfigureKubelet do
       addons: {},
       etcd: {}
   ) }
-  subject { described_class.new(host, config) }
-  let(:ssh_client) { instance_double(Pharos::SSH::Client) }
 
-  before :each do
-    allow(Pharos::SSH::Client).to receive(:for_host).and_return(ssh_client)
-  end
+  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  subject { described_class.new(host, config: config, ssh: ssh) }
 
   describe '#build_systemd_dropin' do
     it "returns a systemd unit" do
