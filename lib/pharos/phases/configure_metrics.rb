@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureMetrics < Base
+    class ConfigureMetrics < Pharos::Phase
+      title "Configure metrics"
+
       register_component(
         Pharos::Phases::Component.new(
           name: 'metrics-server', version: '0.2.1', license: 'Apache License 2.0'
@@ -16,11 +16,6 @@ module Pharos
           name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
         )
       )
-
-      # @param master [Pharos::Configuration::Host]
-      def initialize(master)
-        @master = master
-      end
 
       def call
         configure_metrics_server
@@ -36,7 +31,7 @@ module Pharos
         Pharos::Kube.apply_stack(
           @master.address, 'metrics-server',
           version: '0.2.1',
-          arch: @master.cpu_arch,
+          arch: @host.cpu_arch,
           client_cert: cert.to_pem
         )
       end
@@ -50,7 +45,7 @@ module Pharos
         Pharos::Kube.apply_stack(
           @master.address, 'heapster',
           version: '1.5.1',
-          arch: @master.cpu_arch,
+          arch: @host.cpu_arch,
           client_cert: cert.to_pem
         )
       end

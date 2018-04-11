@@ -23,6 +23,9 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
 
+    # written by Pharos::Phases::CreateBootstrapToken, read by Pharos::Phases::JoinNode
+    attr_accessor :join_command
+
     # @return [Integer]
     def dns_replicas
       if network.dns_replicas
@@ -32,6 +35,21 @@ module Pharos
       else
         1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
       end
+    end
+
+    # @return [Array<Pharos::Configuration::Node>]
+    def master_hosts
+      @master_hosts ||= hosts.select { |h| h.role == 'master' }
+    end
+
+    # @return [Pharos::Configuration::Node]
+    def master_host
+      @master_host ||= master_hosts.first
+    end
+
+    # @return [Array<Pharos::Configuration::Node>]
+    def worker_hosts
+      @worker_hosts ||= hosts.select { |h| h.role == 'worker' }
     end
   end
 end

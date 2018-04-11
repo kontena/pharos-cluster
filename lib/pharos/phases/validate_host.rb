@@ -1,21 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'logging'
-
 module Pharos
   module Phases
-    class ValidateHost
-      include Pharos::Phases::Logging
-
-      # @param host [Pharos::Configuration::Host]
-      # @param config [Pharos::Config]
-      def initialize(host, config)
-        @host = host
-        @config = config
-      end
+    class ValidateHost < Pharos::Phase
+      title "Validate hosts"
 
       def call
-        logger.info(@host.address) { "Connecting to host via SSH ..." }
         logger.info { "Checking sudo access ..." }
         check_sudo
         logger.info { "Gathering host facts ..." }
@@ -37,7 +27,7 @@ module Pharos
       end
 
       def check_sudo
-        ssh.exec!('sudo -n true')
+        @ssh.exec!('sudo -n true')
       rescue Pharos::SSH::RemoteCommand::ExecError => exc
         raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
@@ -52,16 +42,16 @@ module Pharos
       def hostname
         cloud_provider = @config.cloud&.provider
         if cloud_provider == 'aws'
-          ssh.exec!('hostname -f').strip
+          @ssh.exec!('hostname -f').strip
         else
-          ssh.exec!('hostname -s').strip
+          @ssh.exec!('hostname -s').strip
         end
       end
 
       # @return [Pharos::Configuration::OsRelease]
       def os_release
         os_info = {}
-        ssh.file('/etc/os-release').each_line do |line|
+        @ssh.file('/etc/os-release').each_line do |line|
           match = line.match(/^(.+)=(.+)$/)
           os_info[match[1]] = match[2].delete('"')
         end
@@ -76,18 +66,13 @@ module Pharos
       # @return [Pharos::Configuration::CpuArch]
       def cpu_arch
         cpu = {}
-        ssh.exec!('lscpu').split("\n").each do |line|
+        @ssh.exec!('lscpu').split("\n").each do |line|
           match = line.match(/^(.+):\s+(.+)$/)
           cpu[match[1]] = match[2]
         end
         Pharos::Configuration::CpuArch.new(
           id: cpu['Architecture']
         )
-      end
-
-      # @return [Pharos::SSH::Client]
-      def ssh
-        Pharos::SSH::Client.for_host(@host)
       end
     end
   end

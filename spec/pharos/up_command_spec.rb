@@ -21,7 +21,7 @@ describe Pharos::UpCommand do
       it 'reads cluster.yml.erb from current directory' do
         allow(Dir).to receive(:glob).and_return(['cluster.yml.erb'])
         expect(File).to receive(:read).with('cluster.yml.erb').and_return(erb_cfg)
-        expect(subject).to receive(:validate_config) do |cfg|
+        expect(subject).to receive(:build_config) do |cfg|
           expect(cfg).to match hash_including('erb' => "10")
         end.and_return(yaml)
         subject.run([])
@@ -39,7 +39,7 @@ describe Pharos::UpCommand do
     context 'from stdin' do
       it 'reads the file from stdin' do
         expect(File).not_to receive(:realpath)
-        expect(subject).to receive(:validate_config).with(yaml).and_return(yaml)
+        expect(subject).to receive(:build_config).with(yaml).and_return(yaml)
         old_stdin = $stdin
         begin
           $stdin = StringIO.new(cfg)

@@ -27,7 +27,7 @@ module Pharos
       def image_name
         return config.default_backend[:image] if config.default_backend&.dig(:image)
 
-        if host.cpu_arch.name == 'arm64'
+        if cpu_arch.name == 'arm64'
           DEFAULT_BACKEND_ARM64_IMAGE
         else
           DEFAULT_BACKEND_IMAGE
