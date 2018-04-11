@@ -126,4 +126,3 @@ RSpec.configure do |config|
 
   config.include FixturesHelper
 end
-

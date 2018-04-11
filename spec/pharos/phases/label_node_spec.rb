@@ -1,14 +1,16 @@
 require 'pharos/phases/label_node'
 
 describe Pharos::Phases::LabelNode do
-
   let(:master) { Pharos::Configuration::Host.new(address: '1.1.1.1') }
   let(:worker) { Pharos::Configuration::Host.new(address: '2.2.2.2', labels: {foo: 'bar'}) }
-  let(:kube) { double(:kube) }
-  let(:subject) { described_class.new(worker, master) }
+  let(:subject) { described_class.new(worker, master: master) }
+
 
   describe '#find_node' do
+    let(:kube) { double(:kube) }
+
     before(:each) do
+      allow(subject).to receive(:kube).and_return(kube)
       allow(subject).to receive(:sleep)
     end
 
@@ -22,7 +24,6 @@ describe Pharos::Phases::LabelNode do
           }
         })
       ])
-      allow(subject).to receive(:kube).and_return(kube)
       expect(subject.find_node).not_to be_nil
     end
 
@@ -36,7 +37,6 @@ describe Pharos::Phases::LabelNode do
           }
         })
       ])
-      allow(subject).to receive(:kube).and_return(kube)
       expect(subject.find_node).to be_nil
     end
   end

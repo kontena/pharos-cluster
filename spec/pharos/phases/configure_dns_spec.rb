@@ -12,7 +12,8 @@ describe Pharos::Phases::ConfigureDNS do
       addons: {},
       etcd: {}
   ) }
-  subject { described_class.new(master, config) }
+
+  subject { described_class.new(master, config: config, master: master) }
 
   describe '#call' do
     context "with one host" do
