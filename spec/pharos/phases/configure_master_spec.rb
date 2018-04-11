@@ -1,8 +1,4 @@
-require "pharos/config"
 require "pharos/phases/configure_master"
-require "pharos/phases/component"
-require "pharos/phases/configure_host"
-
 
 describe Pharos::Phases::ConfigureMaster do
   let(:master) { Pharos::Configuration::Host.new(address: 'test', private_address: 'private') }

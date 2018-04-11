@@ -1,4 +1,3 @@
-require "pharos/config"
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do

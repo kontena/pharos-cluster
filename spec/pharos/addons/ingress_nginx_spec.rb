@@ -1,4 +1,3 @@
-require "pharos/addon"
 require "pharos/addons/ingress_nginx"
 
 describe Pharos::Addons::IngressNginx do

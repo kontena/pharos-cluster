@@ -1,4 +1,3 @@
-require "pharos/config"
 require "pharos/phases/configure_dns"
 
 describe Pharos::Phases::ConfigureDNS do

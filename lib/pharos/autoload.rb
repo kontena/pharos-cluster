@@ -14,6 +14,7 @@ module Pharos
   autoload :ConfigSchema, 'pharos/config_schema'
   autoload :Kube, 'pharos/kube'
   autoload :YamlFile, 'pharos/yaml_file'
+  autoload :Addon, 'pharos/addon'
   autoload :AddonManager, 'pharos/addon_manager'
   autoload :Phase, 'pharos/phase'
   autoload :Phases, 'pharos/phases'
@@ -39,5 +40,9 @@ module Pharos
 
   module Phases
 
+  end
+
+  module Configuration
+    autoload :Host, 'pharos/configuration/host'
   end
 end

@@ -1,4 +1,3 @@
-require 'pharos/config'
 require 'pharos/phases/label_node'
 
 describe Pharos::Phases::LabelNode do
