@@ -23,7 +23,7 @@ module Pharos
 
     # @return [Pharos::AddonManager]
     def phase_manager
-      @phase_manager = Pharos::PhaseManager.new([__dir__ + '/phases/'],
+      @phase_manager = Pharos::PhaseManager.new(
         ssh_manager: ssh_manager,
         config: @config,
       )
@@ -31,21 +31,24 @@ module Pharos
 
     # @return [Pharos::AddonManager]
     def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new([__dir__ + '/addons/'])
+      @addon_manager ||= Pharos::AddonManager.new(@config)
     end
 
-    # preload code
-    def preload
-      phase_manager # triggers load_phases
-      addon_manager # triggers load_addons
+    # load phases/addons
+    def load
+      Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
+      Pharos::AddonManager.load_addons(__dir__ + '/addons/')
     end
 
     def validate
-      addon_manager.validate(config.addons || {})
+      addon_manager.validate
     end
 
     def up
+      puts pastel.green("==> Starting to craft cluster ...")
       apply_phases
+
+      puts pastel.green("==> Configuring addons ...")
       apply_addons
     end
 
@@ -77,9 +80,11 @@ module Pharos
     end
 
     def apply_addons
-      puts pastel.cyan("==> addons: #{config.master_host.address}")
+      addon_manager.each do |addon|
+        puts pastel.cyan("==> #{addon.enabled? ? "Enabling" : "Disabling" } addon #{addon.name}")
 
-      addon_manager.apply(config.master_host, config.addons)
+        addon.apply
+      end
     end
 
     def disconnect

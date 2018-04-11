@@ -5,11 +5,16 @@ module Pharos
     include Pharos::Logging
 
     # @param dirs [Array<String>]
-    def initialize(dirs, ssh_manager: , **options)
+    def self.load_phases(*dirs)
+      dirs.each do |dir|
+        Dir.glob(File.join(dir, '*.rb')).each { |f| require(f) }
+      end
+    end
+
+    # @param dirs [Array<String>]
+    def initialize(ssh_manager: , **options)
       @ssh_manager = ssh_manager
       @options = options
-
-      load_phases(dirs)
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
@@ -61,13 +66,6 @@ module Pharos
 
       run(phases, parallel: parallel) do |phase|
         phase.call
-      end
-    end
-
-    # @param dirs [Array<String>]
-    def load_phases(dirs)
-      dirs.each do |dir|
-        Dir.glob(File.join(dir, '*.rb')).each { |f| require(f) }
       end
     end
   end

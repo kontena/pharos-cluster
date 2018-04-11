@@ -91,10 +91,9 @@ module Pharos
       start_time = Time.now
 
       puts pastel.green("==> Sharpening tools ...")
-      manager.preload
+      manager.load
       manager.validate
 
-      puts pastel.green("==> Starting to craft cluster ...")
       manager.up
 
       craft_time = Time.now - start_time

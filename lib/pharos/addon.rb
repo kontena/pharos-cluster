@@ -74,15 +74,33 @@ module Pharos
       ObjectSpace.each_object(Class).select { |klass| klass < self }
     end
 
-    attr_reader :host, :config
+    attr_reader :config, :cpu_arch
 
-    def initialize(host, config)
-      @host = host
+    def initialize(config = nil, enabled: true, master: , cpu_arch: )
       @config = self.class.struct.new(config)
+      @enabled = enabled
+      @master = master
+      @cpu_arch = cpu_arch
+    end
+
+    def name
+      self.class.name
     end
 
     def duration
       Fugit::Duration
+    end
+
+    def enabled?
+      @enabled
+    end
+
+    def apply
+      if enabled?
+        install
+      else
+        uninstall
+      end
     end
 
     def install
@@ -95,22 +113,22 @@ module Pharos
 
     def apply_stack(vars = {})
       Pharos::Kube.apply_stack(
-        host.address, self.class.name,
+        @master.address, self.class.name,
         vars.merge(
           name: self.class.name,
           version: self.class.version,
-          config: config,
-          arch: host.cpu_arch
+          config: @config,
+          arch: @cpu_arch
         )
       )
     end
 
     def apply_resource
-      Pharos::Kube.apply_resource(host.address)
+      Pharos::Kube.apply_resource(@master.address)
     end
 
     def prune_stack
-      Pharos::Kube.prune_stack(host.address, self.class.name, '-')
+      Pharos::Kube.prune_stack(@master.address, self.class.name, '-')
     end
   end
 end
