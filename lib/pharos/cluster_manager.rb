@@ -44,14 +44,6 @@ module Pharos
       addon_manager.validate
     end
 
-    def up
-      puts pastel.green("==> Starting to craft cluster ...")
-      apply_phases
-
-      puts pastel.green("==> Configuring addons ...")
-      apply_addons
-    end
-
     def apply_phases
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
