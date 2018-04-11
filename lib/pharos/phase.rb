@@ -4,8 +4,6 @@ require 'logger'
 
 module Pharos
   class Phase
-    PHASE_TITLE = nil
-
     # @return [String]
     def self.title(title = nil)
       @title = title if title
