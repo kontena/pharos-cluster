@@ -77,7 +77,7 @@ module Pharos
     end
 
     def apply_addons
-      puts pastel.cyan("==> addons: #{master.address}")
+      puts pastel.cyan("==> addons: #{config.master_host.address}")
 
       addon_manager.apply(config.master_host, config.addons)
     end
