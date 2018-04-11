@@ -19,6 +19,7 @@ module Pharos
   autoload :Phases, 'pharos/phases'
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
+  autoload :ClusterManager, 'pharos/cluster_manager'
 
   module SSH
     autoload :Client, 'pharos/ssh/client'

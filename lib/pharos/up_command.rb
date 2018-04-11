@@ -37,8 +37,13 @@ module Pharos
         config_hash['hosts'] ||= []
         config_hash['hosts'] += load_tf_json
       end
-      config = validate_config(config_hash)
-      configure(config)
+
+      # set workdir to the same dir where config was loaded from
+      # so that the certs etc. can be referenced more easily
+      Dir.chdir(config_yaml.dirname) do
+        config = build_config(config_hash)
+        configure(config)
+      end
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
       warn "#{ex.class.name} : #{ex.message}"
@@ -58,7 +63,7 @@ module Pharos
 
     # @param config_hash [Hash] hash presentation of cluster.yml
     # @return [Pharos::Config]
-    def validate_config(config_hash)
+    def build_config(config_hash)
       schema_class = Pharos::ConfigSchema.build
       schema = schema_class.call(config_hash)
       unless schema.success?
@@ -67,7 +72,6 @@ module Pharos
       end
 
       config = Pharos::Config.new(schema)
-      addon_manager.validate(config.addons || {})
 
       signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
       signal_usage_error 'Only one host can be in master role' if config.master_hosts.size > 1
@@ -77,28 +81,22 @@ module Pharos
 
     # @param config [Pharos::Config]
     def configure(config)
+      manager = ClusterManager.new(config)
       start_time = Time.now
-      puts pastel.green("==> Sharpening tools ...")
-      @phase_manager = Pharos::PhaseManager.new([__dir__ + '/phases/'],
-        ssh_manager: ssh_manager,
-        config: config,
-      )
-      addon_manager
-      puts pastel.green("==> Starting to craft cluster ...")
 
-      # set workdir to the same dir where config was loaded from
-      # so that the certs etc. can be referenced more easily
-      Dir.chdir(config_yaml.dirname) do
-        handle_phases(config)
-        handle_addons(master_host, config.addons)
-      end
+      puts pastel.green("==> Sharpening tools ...")
+      manager.preload
+      manager.validate
+
+      puts pastel.green("==> Starting to craft cluster ...")
+      manager.up
 
       craft_time = Time.now - start_time
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       puts "    You can connect to the cluster with kubectl using:"
-      puts "    export KUBECONFIG=~/.pharos/#{master_hosts[0].address}"
+      puts "    export KUBECONFIG=~/.pharos/#{config.master_host.address}"
 
-      ssh_manager.disconnect_all
+      manager.disconnect
     end
 
     # @param secs [Integer]
@@ -112,51 +110,9 @@ module Pharos
       }.compact.reverse.join(' ')
     end
 
-    # @return [Pharos::SSH::Manager]
-    def ssh_manager
-      @ssh_manager ||= Pharos::SSH::Manager.new
-    end
-
-    # @return [Pharos::AddonManager]
-    def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new([__dir__ + '/addons/'])
-    end
-
     def show_config_errors(errors)
       puts "==> Invalid configuration file:"
       puts YAML.dump(errors)
-    end
-
-    def handle_phases(config)
-      handle_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
-      handle_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
-
-      handle_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
-
-      handle_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
-      handle_phase(Phases::ConfigureClient, config.master_hosts, ssh: true, parallel: true)
-
-      # master is now configured and can be used
-      handle_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
-      handle_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
-      handle_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
-      handle_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: config_yaml.read(ENV.to_h))
-      handle_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
-
-      handle_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
-
-      handle_phase(Phases::LabelNode, config.hosts, master: config.master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
-    end
-
-    def handle_phase(phase_class, hosts, **options)
-      puts pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
-
-      @phase_manager.apply(phase_class, hosts, **options)
-    end
-
-    def handle_addons(master, addon_configs)
-      puts pastel.cyan("==> addons: #{master.address}")
-      addon_manager.apply(master, addon_configs)
     end
   end
 end
