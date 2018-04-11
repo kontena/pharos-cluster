@@ -66,12 +66,16 @@ module Pharos
         @resource.metadata
       end
 
+      def kind
+        @resource.kind.to_s
+      end
+
       private
 
       # @param kind [String]
       # @return [String]
       def underscored_entity
-        Kubeclient::ClientMixin.underscore_entity(@resource.kind.to_s)
+        Kubeclient::ClientMixin.underscore_entity(kind)
       end
 
       def entity_definition
