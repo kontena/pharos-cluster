@@ -6,7 +6,7 @@ module Pharos
 
     # XXX: should be in some kind of output helper?
     def pastel
-      @pastel ||= Pastel.new(enabled: $stdout.tty?)
+      @pastel ||= Pastel.new
     end
 
     attr_reader :config
