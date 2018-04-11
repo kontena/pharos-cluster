@@ -99,17 +99,13 @@ module Pharos
       end
 
       def generate_config
-        extra_sans = Set.new
-        @config.master_hosts.each do |h|
-          extra_sans += [h.address, h.private_address].compact.uniq
-        end
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
           'kind' => 'MasterConfiguration',
           'nodeName' => @master.hostname,
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'api' => { 'advertiseAddress' => @host.peer_address },
-          'apiServerCertSANs' => extra_sans.to_a,
+          'apiServerCertSANs' => build_extra_sans,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
@@ -144,6 +140,17 @@ module Pharos
         configure_audit_webhook(config) if @config.audit&.server
 
         config
+      end
+
+      # @return [Array<String>]
+      def build_extra_sans
+        extra_sans = Set.new(['127.0.0.1'])
+        @config.master_hosts.each do |h|
+          extra_sans += [h.address, h.private_address].compact.uniq
+        end
+        extra_sans += @config.external_addresses if @config.external_addresses
+
+        extra_sans.to_a
       end
 
       # Copies certificates from leading master

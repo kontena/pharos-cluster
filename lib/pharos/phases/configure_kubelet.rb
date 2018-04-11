@@ -15,6 +15,7 @@ module Pharos
 
       def call
         configure_cni
+        configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
         logger.info { 'Configuring kubelet ...' }
@@ -29,6 +30,15 @@ module Pharos
         @ssh.file(DROPIN_PATH).write(dropin)
         @ssh.exec!("sudo systemctl daemon-reload")
         @ssh.exec!("sudo systemctl restart kubelet")
+      end
+
+      def configure_kubelet_proxy
+        exec_script(
+          'configure-kubelet-proxy.sh',
+          KUBE_VERSION: Pharos::KUBE_VERSION,
+          ARCH: @host.cpu_arch.name,
+          MASTER_HOSTS: @config.master_hosts.map { |h| h.peer_address }.join(',')
+        )
       end
 
       def configure_kube

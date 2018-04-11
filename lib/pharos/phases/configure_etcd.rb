@@ -29,7 +29,8 @@ module Pharos
         exec_script(
           'configure-etcd-certs.sh',
           PEER_IP: @host.private_address || @host.address,
-          PEER_NAME: "etcd#{peer_index + 1}"
+          PEER_NAME: "etcd#{peer_index + 1}",
+          ARCH: @host.cpu_arch.name
         )
 
         logger.info(@host.address) { 'Configuring etcd ...' }
@@ -39,6 +40,7 @@ module Pharos
           INITIAL_CLUSTER: initial_cluster.join(','),
           ETCD_VERSION: Pharos::ETCD_VERSION,
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          ARCH: @host.cpu_arch.name,
           PEER_NAME: "etcd#{peer_index + 1}"
         )
       end
