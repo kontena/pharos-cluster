@@ -64,7 +64,13 @@ module Pharos
     def apply(phase_class, hosts, parallel: false, **options)
       phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
 
-      run(phases, parallel: parallel, &:call)
+      run(phases, parallel: parallel) do |phase|
+        start = Time.now
+
+        phase.call
+
+        logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
+      end
     end
   end
 end
