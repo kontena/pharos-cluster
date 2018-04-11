@@ -36,5 +36,20 @@ module Pharos
         1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
       end
     end
+
+    # @return [Array<Pharos::Configuration::Node>]
+    def master_hosts
+      @master_hosts ||= hosts.select { |h| h.role == 'master' }
+    end
+
+    # @return [Pharos::Configuration::Node]
+    def master_host
+      @master_host ||= master_hosts.first
+    end
+
+    # @return [Array<Pharos::Configuration::Node>]
+    def worker_hosts
+      @worker_hosts ||= hosts.select { |h| h.role == 'worker' }
+    end
   end
 end

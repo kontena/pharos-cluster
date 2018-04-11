@@ -69,16 +69,14 @@ module Pharos
       config = Pharos::Config.new(schema)
       addon_manager.validate(config.addons || {})
 
+      signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
+      signal_usage_error 'Only one host can be in master role' if config.master_hosts.size > 1
+
       config
     end
 
     # @param config [Pharos::Config]
     def configure(config)
-      master_hosts = master_hosts(config)
-      signal_usage_error 'No master hosts defined' if master_hosts.empty?
-      signal_usage_error 'Only one host can be in master role' if master_hosts.size > 1
-      master_host = master_hosts[0]
-
       start_time = Time.now
       puts pastel.green("==> Sharpening tools ...")
       @phase_manager = Pharos::PhaseManager.new([__dir__ + '/phases/'],
@@ -129,42 +127,25 @@ module Pharos
       puts YAML.dump(errors)
     end
 
-    # @param config [Pharos::Config]
-    # @return [Array<Pharos::Configuration::Node>]
-    def master_hosts(config)
-      config.hosts.select { |h| h.role == 'master' }
-    end
-
-    # @param config [Pharos::Config]
-    # @return [Array<Pharos::Configuration::Node>]
-    def worker_hosts(config)
-      config.hosts.select { |h| h.role == 'worker' }
-    end
-
     def handle_phases(config)
-      all_hosts = config.hosts
-      master_hosts = master_hosts(config)
-      master_host = master_hosts[0]
-      worker_hosts = worker_hosts(config)
+      handle_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
+      handle_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
 
-      handle_phase(Phases::ValidateHost, all_hosts, ssh: true, parallel: true)
-      handle_phase(Phases::ConfigureHost, all_hosts, ssh: true, parallel: true)
+      handle_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
 
-      handle_phase(Phases::ConfigureKubelet, worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
-
-      handle_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
-      handle_phase(Phases::ConfigureClient, master_hosts, ssh: true, parallel: true)
+      handle_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
+      handle_phase(Phases::ConfigureClient, config.master_hosts, ssh: true, parallel: true)
 
       # master is now configured and can be used
-      handle_phase(Phases::ConfigureDNS, [master_host], master: master_host)
-      handle_phase(Phases::ConfigureNetwork, [master_host], master: master_host)
-      handle_phase(Phases::ConfigureMetrics, [master_host], master: master_host)
-      handle_phase(Phases::StoreClusterYAML, [master_host], master: master_host, config_content: config_yaml.read(ENV.to_h))
-      handle_phase(Phases::ConfigureBootstrap, [master_host], ssh: true)
+      handle_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
+      handle_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
+      handle_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
+      handle_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: config_yaml.read(ENV.to_h))
+      handle_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
 
-      handle_phase(Phases::JoinNode, worker_hosts, ssh: true, parallel: true)
+      handle_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
 
-      handle_phase(Phases::LabelNode, all_hosts, master: master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      handle_phase(Phases::LabelNode, config.hosts, master: config.master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
     def handle_phase(phase_class, hosts, **options)
