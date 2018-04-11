@@ -6,7 +6,7 @@ module Pharos
       title "Store cluster YAML"
 
       # @param config_content [String]
-      def initialize(host, config_content: , **options)
+      def initialize(host, config_content:, **options)
         super(host, **options)
         @config_content = config_content
       end

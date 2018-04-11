@@ -12,7 +12,7 @@ module Pharos
     end
 
     # @param dirs [Array<String>]
-    def initialize(ssh_manager: , **options)
+    def initialize(ssh_manager:, **options)
       @ssh_manager = ssh_manager
       @options = options
     end
@@ -24,13 +24,13 @@ module Pharos
         Thread.new do
           begin
             yield phase
-          rescue => exc
+          rescue StandardError => exc
             puts " [#{phase}] #{exc.class}: #{exc.message}"
             raise
           end
         end
       }
-      threads.map { |thread| thread.value }
+      threads.map(&:value)
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
@@ -64,9 +64,7 @@ module Pharos
     def apply(phase_class, hosts, parallel: false, **options)
       phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
 
-      run(phases, parallel: parallel) do |phase|
-        phase.call
-      end
+      run(phases, parallel: parallel, &:call)
     end
   end
 end

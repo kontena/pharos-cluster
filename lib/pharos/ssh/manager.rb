@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 module Pharos
   module SSH
@@ -8,13 +9,11 @@ module Pharos
 
       # @param host [Pharos::Configuration::Host]
       def client_for(host)
-        @clients[host] ||= Pharos::SSH::Client.new(host.address, host.user, keys: [host.ssh_key_path]).tap do |client|
-          client.connect
-        end
+        @clients[host] ||= Pharos::SSH::Client.new(host.address, host.user, keys: [host.ssh_key_path]).tap(&:connect)
       end
 
       def disconnect_all
-        @clients.each do |host, client|
+        @clients.each do |_host, client|
           client.disconnect
         end
       end

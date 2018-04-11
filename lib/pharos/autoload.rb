@@ -35,11 +35,9 @@ module Pharos
   end
 
   module Addons
-
   end
 
   module Phases
-
   end
 
   module Configuration

@@ -33,7 +33,7 @@ module Pharos
 
     def logger
       @logger ||= Logger.new($stdout).tap do |logger|
-        logger.progname = "#{@host}"
+        logger.progname = @host.to_s
         logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
         logger.formatter = proc do |_severity, _datetime, progname, msg|
           "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }

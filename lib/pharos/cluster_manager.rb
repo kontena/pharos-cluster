@@ -11,7 +11,7 @@ module Pharos
 
     attr_reader :config
 
-    def initialize(config, config_content: )
+    def initialize(config, config_content:)
       @config = config
       @config_content = config_content
     end
@@ -25,7 +25,7 @@ module Pharos
     def phase_manager
       @phase_manager = Pharos::PhaseManager.new(
         ssh_manager: ssh_manager,
-        config: @config,
+        config: @config
       )
     end
 
@@ -73,7 +73,7 @@ module Pharos
 
     def apply_addons
       addon_manager.each do |addon|
-        puts pastel.cyan("==> #{addon.enabled? ? "Enabling" : "Disabling" } addon #{addon.name}")
+        puts pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
 
         addon.apply
       end

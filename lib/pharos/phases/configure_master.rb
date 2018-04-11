@@ -257,10 +257,12 @@ module Pharos
       end
 
       def configure_kubelet
-        Pharos::Phases::ConfigureKubelet.new(@host,
+        phase = Pharos::Phases::ConfigureKubelet.new(
+          @host,
           config: @config,
-          ssh: @ssh,
-        ).call
+          ssh: @ssh
+        )
+        phase.call
       end
     end
   end

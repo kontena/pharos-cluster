@@ -19,7 +19,7 @@ module Pharos
       attr_accessor :os_release, :cpu_arch, :hostname
 
       def to_s
-        "#{address}"
+        address
       end
     end
   end

@@ -76,7 +76,7 @@ module Pharos
 
     attr_reader :config, :cpu_arch
 
-    def initialize(config = nil, enabled: true, master: , cpu_arch: )
+    def initialize(config = nil, enabled: true, master:, cpu_arch:)
       @config = self.class.struct.new(config)
       @enabled = enabled
       @master = master

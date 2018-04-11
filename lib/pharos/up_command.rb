@@ -86,7 +86,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    def configure(config, config_content: )
+    # @param config_content [String]
+    def configure(config, config_content:)
       manager = ClusterManager.new(config, config_content: config_content)
       start_time = Time.now
 
