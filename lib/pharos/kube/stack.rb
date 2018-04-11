@@ -7,11 +7,12 @@ module Pharos
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
       RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
 
-      def initialize(host, name, vars = {})
-        @host = host
+      def initialize(session, name, vars = {})
+        @session = session
         @name = name
         @resource_path = RESOURCE_PATH.join(name).freeze
         @vars = vars
+        freeze
       end
 
       def resource_files
@@ -20,37 +21,34 @@ module Pharos
 
       def resources
         resource_files.map do |resource_file|
-          Resource.new(@host, resource_file, @vars)
+          Resource.new(@session, resource_file, @vars)
         end
       end
 
       # @return [Array<Kubeclient::Resource>]
       def apply
-        checksum = SecureRandom.hex(16)
-        processed = []
-        resources.each do |resource|
-          resource.metadata.labels ||= {}
-          resource.metadata.annotations ||= {}
-          resource.metadata.labels[RESOURCE_LABEL] = @name
-          resource.metadata.annotations[RESOURCE_ANNOTATION] = checksum
-          resource.apply
-          processed << resource
+        with_pruning do |checksum|
+          resources.map do |resource|
+            resource.metadata.labels ||= {}
+            resource.metadata.annotations ||= {}
+            resource.metadata.labels[RESOURCE_LABEL] = @name
+            resource.metadata.annotations[RESOURCE_ANNOTATION] = checksum
+            resource.apply
+            resource
+          end
         end
-        prune(checksum)
-
-        resources
       end
 
       # @param checksum [String]
       # @return [Array<Kubeclient::Resource>]
       def prune(checksum)
         pruned = []
-        api_groups.each do |api_group|
-          client = group_client(api_group)
+        @session.api_groups.each do |api_group|
+          client = @session.resource_client(api_group.preferredVersion.groupVersion)
           client.entities.each do |type, meta|
             next if type.end_with?('_review')
             objects = client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
-            objects.map { |obj| Resource.new(@host, obj) }.each do |obj|
+            objects.map { |obj| Resource.new(@session, obj) }.each do |obj|
               next unless obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
               obj.apiVersion = api_group.preferredVersion.groupVersion
               obj.delete
@@ -63,12 +61,11 @@ module Pharos
 
       private
 
-      def api_groups
-        Pharos::Kube.client(@host, '').apis.groups
-      end
-
-      def group_client(api_group)
-        Pharos::Kube.client(@host, api_group.preferredVersion.groupVersion)
+      def with_pruning
+        checksum = SecureRandom.hex(16)
+        result = yield checksum
+        prune(checksum)
+        result
       end
     end
   end

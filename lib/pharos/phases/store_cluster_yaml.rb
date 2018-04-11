@@ -20,8 +20,7 @@ module Pharos
       private
 
       def resource
-        Pharos::Kube::Resource.new(
-          @master.address,
+        Pharos::Kube.session(@master).resource(
           apiVersion: 'v1',
           kind: 'ConfigMap',
           metadata: {

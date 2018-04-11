@@ -5,7 +5,7 @@ require 'pathname'
 module Pharos
   module Kube
     class Resource
-      def initialize(host, resource, vars = {})
+      def initialize(session, resource, vars = {})
         @resource =
           case resource
           when Kubeclient::Resource
@@ -16,11 +16,8 @@ module Pharos
             Kubeclient::Resource.new(Pharos::YamlFile.new(resource).load(vars))
           end
         @api_version = @resource.apiVersion || 'v1'
-        @client = Pharos::Kube.client(host, @api_version)
-      end
-
-      def metadata
-        @resource.metadata
+        @client = session.resource_client(@api_version)
+        freeze
       end
 
       # @return [Kubeclient::Resource]
@@ -45,14 +42,14 @@ module Pharos
         @client.get_resource(@resource)
       end
 
-      # @return [Kubeclient::Resource]
+      # @return [Kubeclient::Resource,FalseClass]
       def delete
-        if resource.metadata.selfLink
+        if metadata.selfLink
           api_group = metadata.selfLink.split("/")[1]
           path = metadata.selfLink.gsub("/#{api_group}/#{@api_version}", '')
           @client.rest_client[path].delete
         else
-          definition = @client.entities[underscore_entity(@resource.kind.to_s)]
+          definition = entity_definition
           @client.get_entity(definition.resource_name, metadata.name, metadata.namespace)
           @client.delete_entity(
             definition.resource_name, metadata.name, metadata.namespace,
@@ -65,12 +62,20 @@ module Pharos
         false
       end
 
+      def metadata
+        @resource.metadata
+      end
+
       private
 
       # @param kind [String]
       # @return [String]
-      def underscore_entity(kind)
-        Kubeclient::ClientMixin.underscore_entity(kind.to_s)
+      def underscored_entity
+        Kubeclient::ClientMixin.underscore_entity(@resource.kind.to_s)
+      end
+
+      def entity_definition
+        @client.entities[underscored_entity]
       end
     end
   end

@@ -8,13 +8,14 @@ module Pharos
     autoload :Client, 'pharos/kube/client'
     autoload :Resource, 'pharos/kube/resource'
     autoload :Stack, 'pharos/kube/stack'
+    autoload :Session, 'pharos/kube/session'
 
     # @param host [String]
     # @return [Kubeclient::Client]
     def self.client(host, version = 'v1')
       @kube_client ||= {}
       unless @kube_client[version]
-        config = Kubeclient::Config.read(config_path(host))
+        config = host_config(host)
         path_prefix = version == 'v1' ? 'api' : 'apis'
         api_version, api_group = version.split('/').reverse
         @kube_client[version] = Pharos::Kube::Client.new(
@@ -28,27 +29,38 @@ module Pharos
     end
 
     # @param host [String]
+    # @return [Pharos::Kube::Session]
+    def self.session(host)
+      @sessions ||= {}
+      @sessions[host] ||= Session.new(host)
+    end
+
+    def self.host_config(host)
+      Kubeclient::Config.read(host_config_path(host))
+    end
+
+    # @param host [String]
     # @return [String]
-    def self.config_path(host)
+    def self.host_config_path(host)
       File.join(Dir.home, ".pharos/#{host}")
     end
 
     # @param host [String]
     # @return [Boolean]
     def self.config_exists?(host)
-      File.exist?(config_path(host))
+      File.exist?(host_config_path(host))
     end
 
     def self.apply_stack(host, name, vars = {})
-      Stack.new(host, name, vars).apply
+      session(host).stack(name, vars).apply
     end
 
     def self.apply_resource(host, name, vars = {})
-      Stack.new(host, name, vars).apply
+      session(host).stack(name, vars).apply
     end
 
     def self.prune_stack(host, name, checksum)
-      Stack.new(host, name).prune(checksum)
+      session(host).stack(name).prune(checksum)
     end
   end
 end
