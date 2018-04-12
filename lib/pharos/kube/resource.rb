@@ -6,6 +6,7 @@ module Pharos
   module Kube
     class Resource
       def initialize(session, resource)
+        @session = session
         @resource =
           case resource
           when Kubeclient::Resource
@@ -39,7 +40,7 @@ module Pharos
 
       # @return [Kubeclient::Resource]
       def get
-        @client.get_resource(@resource)
+        Resource.new(@session, @client.get_resource(@resource))
       end
 
       # @return [Kubeclient::Resource,FalseClass]
@@ -62,12 +63,39 @@ module Pharos
         false
       end
 
+      def [](key)
+        @resource.send(key)
+      end
+
+      def []=(key, value)
+        @resource.send("#{key}=", value)
+      end
+
+      def fetch(key, default = nil, &block)
+        val = send(:[], key)
+        if val.nil?
+          if default
+            default
+          elsif block_given?
+            yield
+          else
+            raise NameError, "unknown attribute #{key} for resource"
+          end
+        else
+          val
+        end
+      end
+
+      def attributes
+        @resource
+      end
+
       def metadata
-        @resource.metadata
+        fetch(:metadata) { @resource.metadata = {} }
       end
 
       def kind
-        @resource.kind.to_s
+        fetch(:kind)
       end
 
       private
