@@ -35,6 +35,8 @@ module Pharos
       @sessions[host] ||= Session.new(host)
     end
 
+    # @param host [String]
+    # @return [Kubeclient::Config]
     def self.host_config(host)
       Kubeclient::Config.read(host_config_path(host))
     end
@@ -50,6 +52,8 @@ module Pharos
     def self.config_exists?(host)
       File.exist?(host_config_path(host))
     end
+
+    # Shortcuts / compatibility:
 
     def self.apply_stack(host, name, vars = {})
       session(host).stack(name, vars).apply

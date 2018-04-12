@@ -7,6 +7,9 @@ module Pharos
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
       RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
 
+      # @param session [Pharos::Kube::Session]
+      # @param name [String] stack name
+      # @param vars [Hash] variables for ERB evaluation
       def initialize(session, name, vars = {})
         @session = session
         @name = name
@@ -15,16 +18,21 @@ module Pharos
         freeze
       end
 
+      # A list of .yml and yml.erb files in the stacks resource directory
+      # @return [Array<Pathname>]
       def resource_files
         Pathname.glob(@resource_path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
       end
 
+      # A list of resources
+      # @return [Array<Pharos::Kube::Resource>]
       def resources
         resource_files.map do |resource_file|
           @session.resource(Pharos::YamlFile.new(resource_file).load(@vars))
         end
       end
 
+      # Applies the stack onto the kube cluster
       # @return [Array<Kubeclient::Resource>]
       def apply
         with_pruning do |checksum|

@@ -5,7 +5,10 @@ require 'pathname'
 
 module Pharos
   module Kube
+    # A wrapper around Kubeclient::Resource that works with a Pharos::Kube::Session
     class Resource
+      # @param session [Pharos::Kube::Session]
+      # @param resource [Kubeclient::Resource,Hash]
       def initialize(session, resource)
         @session = session
         @resource =
@@ -22,6 +25,7 @@ module Pharos
         freeze
       end
 
+      # Creates a new resource or updates existing
       # @return [Kubeclient::Resource]
       def apply
         update
@@ -29,21 +33,26 @@ module Pharos
         create
       end
 
+      # Creates a resource
       # @return [Kubeclient::Resource]
       def create
         @client.create_resource(@resource)
       end
 
+      # Updates a resource
       # @return [Kubeclient::Resource]
       def update
         @client.update_resource(@resource)
       end
 
-      # @return [Kubeclient::Resource]
+      # Retrieves a resource from kube and returns a new instance of Resource
+      # @return [Pharos::Kube::Resource]
       def get
         Resource.new(@session, @client.get_resource(@resource))
       end
 
+      # Deletes the resource from kube. Returns false if the resource
+      # does not exist.
       # @return [Kubeclient::Resource,FalseClass]
       def delete
         if metadata.selfLink
@@ -64,14 +73,25 @@ module Pharos
         false
       end
 
+      # Access an attribute of the resource
+      # @example
+      #   resource[:metadata].labels ||= {}
       def [](key)
         @resource.send(key)
       end
 
+      # Set a value to an attribute on the resource
       def []=(key, value)
         @resource.send("#{key}=", value)
       end
 
+      # Like Hash#fetch
+      # @example
+      #   resource.fetch(:metadata, {}).fetch(:foo, nil)
+      #   metadata= resource.fetch(:metadata) { resource.metadata = {} }
+      #   metadata['labels'] = ['foo']
+      # @param key [String,Symbol]
+      # @param default [Object] value to use if nil returned
       def fetch(key, default = nil)
         val = send(:[], key)
         if val.nil?
@@ -87,22 +107,23 @@ module Pharos
         end
       end
 
+      # Accessor to the original resource
       def attributes
         @resource
       end
 
-      def metadata
-        fetch(:metadata) { @resource.metadata = {} }
+      def method_missing(meth, *args)
+        attributes.send(meth, *args)
+      rescue NameError
+        super
       end
 
-      def kind
-        fetch(:kind)
+      def respond_to_missing?(meth, include_private = false)
+        attributes.respond_to?(meth, include_private) || super
       end
 
       private
 
-      # @param kind [String]
-      # @return [String]
       def underscored_entity
         Kubeclient::ClientMixin.underscore_entity(kind)
       end
