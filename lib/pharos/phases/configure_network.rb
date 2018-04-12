@@ -5,7 +5,7 @@ module Pharos
     class ConfigureNetwork < Pharos::Phase
       title "Configure network"
 
-      WEAVE_VERSION = '2.2.1'
+      WEAVE_VERSION = '2.3.0'
 
       register_component(
         Pharos::Phases::Component.new(
