@@ -65,7 +65,7 @@ module Pharos
     end
 
     def apply_phase(phase_class, hosts, **options)
-      puts pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      puts pastel.cyan("==> #{phase_class.title} @ #{format_hosts(hosts)}")
 
       phase_manager.apply(phase_class, hosts, **options)
     end
@@ -80,6 +80,23 @@ module Pharos
 
     def disconnect
       ssh_manager.disconnect_all
+    end
+
+    def format_hosts(hosts)
+      return hosts.join(' ') if logger.debug?
+      case hosts.size
+      when 0
+        '<unknown>'
+      when 1..3
+        hosts.join(' ')
+      else
+        grouped = hosts.group_by { |h| h.split('.').first(2).join('.') + '.*' }
+        if grouped.size > 3
+          "#{hosts.size} hosts"
+        else
+          grouped.map { |prefix, group| group.size == 1 ? group.first : "#{prefix} (#{group.size} hosts)" }.join(' ')
+        end
+      end
     end
   end
 end
