@@ -21,7 +21,7 @@ module Pharos
 
       def resources
         resource_files.map do |resource_file|
-          @session.resource(resource_file, @vars)
+          @session.resource(Pharos::YamlFile.new(resource_file).load(@vars))
         end
       end
 

@@ -10,8 +10,8 @@ module Pharos
         freeze
       end
 
-      def resource(resource, vars = {})
-        Resource.new(self, resource, vars)
+      def resource(resource)
+        Resource.new(self, resource)
       end
 
       def stack(name, vars = {})

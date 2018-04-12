@@ -5,7 +5,7 @@ require 'pathname'
 module Pharos
   module Kube
     class Resource
-      def initialize(session, resource, vars = {})
+      def initialize(session, resource)
         @resource =
           case resource
           when Kubeclient::Resource
@@ -13,7 +13,7 @@ module Pharos
           when Hash
             Kubeclient::Resource.new(resource)
           else
-            Kubeclient::Resource.new(Pharos::YamlFile.new(resource).load(vars))
+            raise TypeError, "Expected an instance of KubeClient::Resource or Hash"
           end
         @api_version = @resource.apiVersion || 'v1'
         @client = session.resource_client(@api_version)
