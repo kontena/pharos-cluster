@@ -29,10 +29,11 @@ module Pharos
       def apply
         with_pruning do |checksum|
           resources.map do |resource|
-            resource.metadata.labels ||= {}
-            resource.metadata.annotations ||= {}
-            resource.metadata.labels[RESOURCE_LABEL] = @name
-            resource.metadata.annotations[RESOURCE_ANNOTATION] = checksum
+            metadata = resource.metadata
+            metadata.labels ||= {}
+            metadata.annotations ||= {}
+            metadata.labels[RESOURCE_LABEL] = @name
+            metadata.annotations[RESOURCE_ANNOTATION] = checksum
             resource.apply
             resource
           end
