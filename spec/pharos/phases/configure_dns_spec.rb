@@ -121,17 +121,22 @@ describe Pharos::Phases::ConfigureDNS do
   end
 
   describe '#patch_kubedns' do
+    let(:session) { double }
+    let(:resource) { double }
     it "updates the resource" do
-      expect(Pharos::Kube).to receive(:update_resource).with('test', Kubeclient::Resource) do |addr, resource|
-        expect(resource.apiVersion).to eq 'extensions/v1beta1'
-        expect(resource.kind).to eq 'Deployment'
-        expect(resource.metadata.name).to eq 'kube-dns'
-        expect(resource.metadata.namespace).to eq 'kube-system'
-        expect(resource.spec.replicas).to eq 1
-        expect(resource.spec.strategy.rollingUpdate.maxSurge).to eq 0
-        expect(resource.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
-        expect(resource.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution).to be_an Array
-      end
+      expect(Pharos::Kube).to receive(:session).with(master).and_return(session)
+      expect(session).to receive(:resource) do |hash|
+        res = Kubeclient::Resource.new(hash)
+        expect(res.apiVersion).to eq 'extensions/v1beta1'
+        expect(res.kind).to eq 'Deployment'
+        expect(res.metadata.name).to eq 'kube-dns'
+        expect(res.metadata.namespace).to eq 'kube-system'
+        expect(res.spec.replicas).to eq 1
+        expect(res.spec.strategy.rollingUpdate.maxSurge).to eq 0
+        expect(res.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
+        expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution).to be_an Array
+      end.and_return(resource)
+      expect(resource).to receive(:update)
 
       subject.call
     end

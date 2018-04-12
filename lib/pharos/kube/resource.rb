@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'kubeclient'
 require 'pathname'
 
@@ -71,7 +72,7 @@ module Pharos
         @resource.send("#{key}=", value)
       end
 
-      def fetch(key, default = nil, &block)
+      def fetch(key, default = nil)
         val = send(:[], key)
         if val.nil?
           if default
