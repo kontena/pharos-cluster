@@ -21,7 +21,7 @@ module Pharos
 
       def resources
         resource_files.map do |resource_file|
-          Resource.new(@session, resource_file, @vars)
+          @session.resource(resource_file, @vars)
         end
       end
 
@@ -43,19 +43,26 @@ module Pharos
       # @return [Array<Kubeclient::Resource>]
       def prune(checksum)
         pruned = []
+
         @session.api_groups.each do |api_group|
-          client = @session.resource_client(api_group.preferredVersion.groupVersion)
-          client.entities.each do |type, meta|
-            next if type.end_with?('_review')
-            objects = client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
-            objects.map { |obj| Resource.new(@session, obj) }.each do |obj|
-              next unless obj.metadata.annotations.nil? || obj.metadata.annotations[RESOURCE_ANNOTATION] != checksum
-              obj.apiVersion = api_group.preferredVersion.groupVersion
-              obj.delete
-              pruned << obj
-            end
+          group_client = @session.resource_client(api_group.preferredVersion.groupVersion)
+
+          entities = group_client.entities.reject { |type, _| type.end_with?('_review') }
+
+          objects = entities.flat_map do |type, meta|
+            group_client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
+          end
+
+          prunables = objects.select do |obj|
+            annotations = obj.metadata.annotations
+            annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+          end
+
+          prunables.each do |obj|
+            pruned << obj if @session.resource(obj).delete
           end
         end
+
         pruned
       end
 
