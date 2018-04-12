@@ -244,7 +244,7 @@ module Pharos
         )
 
         cfg = generate_config
-        @ssh.with_tmpfile(cfg.to_yaml) do |tmp_file|
+        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --allow-experimental-upgrades --config #{tmp_file}")
         end
         logger.info { "Control plane upgrade succeeded!" }
