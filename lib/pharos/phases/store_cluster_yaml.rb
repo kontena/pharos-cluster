@@ -13,7 +13,7 @@ module Pharos
 
       def call
         logger.info { "Storing cluster configuration to configmap" }
-        resource.update
+        resource.apply
       end
 
       private
