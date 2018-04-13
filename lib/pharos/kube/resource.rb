@@ -77,12 +77,12 @@ module Pharos
       # @example
       #   resource[:metadata].labels ||= {}
       def [](key)
-        @resource.send(key)
+        @resource[key]
       end
 
       # Set a value to an attribute on the resource
       def []=(key, value)
-        @resource.send("#{key}=", value)
+        @resource[key] = value
       end
 
       # Like Hash#fetch
