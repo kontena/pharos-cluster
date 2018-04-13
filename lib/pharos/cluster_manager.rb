@@ -51,7 +51,7 @@ module Pharos
       apply_phase(Phases::ConfigureEtcdCa, [config.etcd_host], ssh: true, parallel: false)
       apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: true)
 
-      apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false, master: config.master_host)
+      apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
       apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
       apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
 
