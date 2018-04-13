@@ -51,7 +51,7 @@ module Pharos
         logger.info { 'Pushing certificate authority files to host ...' }
         @ssh.exec!("sudo mkdir -p #{CA_PATH}")
 
-        mem_storage['etcd-ca'].each do |file, crt|
+        cluster_context['etcd-ca'].each do |file, crt|
           path = File.join(CA_PATH, file)
           @ssh.file(path).write(crt)
         end

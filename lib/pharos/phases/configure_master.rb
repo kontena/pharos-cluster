@@ -149,10 +149,10 @@ module Pharos
 
       # Copies certificates from memory to host
       def copy_kube_certs
-        return unless mem_storage['master-certs']
+        return unless cluster_context['master-certs']
 
         @ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
-        mem_storage['master-certs'].each do |file, contents|
+        cluster_context['master-certs'].each do |file, contents|
           path = File.join(KUBE_DIR, 'pki', file)
           @ssh.file(path).write(contents)
           @ssh.exec!("sudo chmod 0400 #{path}")
@@ -161,14 +161,14 @@ module Pharos
 
       # Cache certs to memory
       def cache_kube_certs
-        return if mem_storage['master-certs']
+        return if cluster_context['master-certs']
 
         cache = {}
         SHARED_CERT_FILES.each do |file|
           path = File.join(KUBE_DIR, 'pki', file)
           cache[file] = @ssh.file(path).read
         end
-        mem_storage['master-certs'] = cache
+        cluster_context['master-certs'] = cache
       end
 
       # @param config [Pharos::Config]

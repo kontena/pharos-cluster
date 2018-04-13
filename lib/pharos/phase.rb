@@ -63,13 +63,13 @@ module Pharos
     end
 
     # @return [Hash]
-    def mem_storage
-      self.class.mem_storage
+    def cluster_context
+      self.class.cluster_context
     end
 
     # @return [Hash]
-    def self.mem_storage
-      @@mem_storage ||= {}
+    def self.cluster_context
+      @@cluster_context ||= {}
     end
   end
 end

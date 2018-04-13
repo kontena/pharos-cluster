@@ -8,7 +8,7 @@ module Pharos
       def call
         logger.info { "Creating node bootstrap token ..." }
 
-        mem_storage['join-command'] = @ssh.exec!("sudo kubeadm token create --print-join-command")
+        cluster_context['join-command'] = @ssh.exec!("sudo kubeadm token create --print-join-command")
       end
     end
   end
