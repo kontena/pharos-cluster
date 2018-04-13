@@ -6,7 +6,7 @@ module Pharos
       title "Configure cluster-info"
 
       def client
-        @client ||= Pharos::Kube.client(@host.address)
+        @client ||= Pharos::Kube.client(@master.address)
       end
 
       def call
