@@ -4,7 +4,7 @@ module Pharos
   module Addons
     class IngressNginx < Pharos::Addon
       name 'ingress-nginx'
-      version '0.11.0'
+      version '0.12.0'
       license 'Apache License 2.0'
 
       struct {
