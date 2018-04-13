@@ -6,7 +6,7 @@ module Pharos
       title "Configure master"
       KUBE_DIR = '/etc/kubernetes'
       PHAROS_DIR = '/etc/pharos'
-      SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub)
+      SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub).freeze
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
 

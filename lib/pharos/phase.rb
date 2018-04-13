@@ -69,7 +69,7 @@ module Pharos
 
     # @return [Hash]
     def self.cluster_context
-      @@cluster_context ||= {}
+      @@cluster_context ||= {} # rubocop:disable Style/ClassVars
     end
   end
 end

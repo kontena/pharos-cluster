@@ -5,7 +5,7 @@ module Pharos
     class ConfigureEtcdCa < Pharos::Phase
       title "Configure etcd certificate authority"
       CA_PATH = '/etc/pharos/pki'
-      CA_FILES = %w(ca.pem ca-key.pem)
+      CA_FILES = %w(ca.pem ca-key.pem).freeze
 
       def call
         logger.info { 'Configuring etcd certificate authority ...' }
