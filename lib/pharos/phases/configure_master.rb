@@ -36,7 +36,7 @@ module Pharos
         manifest = File.join(KUBE_DIR, 'manifests', 'kube-apiserver.yaml')
         file = @ssh.file(manifest)
         return false unless file.exist?
-        return false if file.read =~ /kube-apiserver-.+:v#{Pharos::KUBE_VERSION}/
+        return false if file.read.match?(/kube-apiserver-.+:v#{Pharos::KUBE_VERSION}/)
 
         true
       end
@@ -148,7 +148,6 @@ module Pharos
         @config.master_hosts.each do |h|
           extra_sans += [h.address, h.private_address].compact.uniq
         end
-        extra_sans += @config.external_addresses if @config.external_addresses
 
         extra_sans.to_a
       end

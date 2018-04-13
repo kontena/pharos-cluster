@@ -37,7 +37,7 @@ module Pharos
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
-          MASTER_HOSTS: @config.master_hosts.map { |h| h.peer_address }.join(',')
+          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
         )
       end
 
