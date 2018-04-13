@@ -73,40 +73,6 @@ module Pharos
         false
       end
 
-      # Access an attribute of the resource
-      # @example
-      #   resource[:metadata].labels ||= {}
-      def [](key)
-        @resource[key]
-      end
-
-      # Set a value to an attribute on the resource
-      def []=(key, value)
-        @resource[key] = value
-      end
-
-      # Like Hash#fetch
-      # @example
-      #   resource.fetch(:metadata, {}).fetch(:foo, nil)
-      #   metadata= resource.fetch(:metadata) { resource.metadata = {} }
-      #   metadata['labels'] = ['foo']
-      # @param key [String,Symbol]
-      # @param default [Object] value to use if nil returned
-      def fetch(key, default = nil)
-        val = send(:[], key)
-        if val.nil?
-          if default
-            default
-          elsif block_given?
-            yield
-          else
-            raise NameError, "unknown attribute #{key} for resource"
-          end
-        else
-          val
-        end
-      end
-
       # Accessor to the original resource
       def attributes
         @resource
