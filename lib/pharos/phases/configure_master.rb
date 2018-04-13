@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "base64"
 
 module Pharos
   module Phases
@@ -9,6 +10,9 @@ module Pharos
       SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub).freeze
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
+
+      SECRETS_CFG_DIR = (PHAROS_DIR + '/secrets-encryption').freeze
+      SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
 
       def call
         logger.info { "Checking if Kubernetes control plane is already initialized ..." }
@@ -38,6 +42,7 @@ module Pharos
       end
 
       def install
+
         configure_kubelet
 
         cfg = generate_config
@@ -69,6 +74,9 @@ module Pharos
         end
 
         copy_kube_certs
+
+        @ssh.exec!("sudo mkdir -p #{SECRETS_CFG_DIR}")
+        configure_secrets_encryption
 
         logger.info { "Initializing control plane ..." }
 
@@ -126,7 +134,17 @@ module Pharos
 
         # Configure audit related things if needed
         configure_audit_webhook(config) if @config.audit&.server
-
+        
+        # Set secrets config location and mount it to api server
+        config['apiServerExtraArgs'].merge!(
+          "experimental-encryption-provider-config" => SECRETS_CFG_FILE
+        )
+        config['apiServerExtraVolumes'] << {
+          'name' => 'k8s-secrets-config',
+          'hostPath' => SECRETS_CFG_DIR,
+          'mountPath' => SECRETS_CFG_DIR
+        }
+        
         config
       end
 
@@ -308,6 +326,22 @@ module Pharos
         @ssh.file(PHAROS_DIR + '/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
         @ssh.file(PHAROS_DIR + '/token_webhook/cert.pem').write(File.open(File.expand_path(webhook_config[:user][:client_certificate]))) if webhook_config[:user][:client_certificate]
         @ssh.file(PHAROS_DIR + '/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
+      end
+
+      def configure_secrets_encryption
+        # Generate keys
+        # TODO: Put the keys into some "context" and dump to user in the up command
+        # Only at that level we should use pastel etc. IMO
+        puts "==> Generating secret encryption keys"
+        puts "NOTE: These keys are highly sensitive, keep them safe!!!"
+        key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
+        key2 = Base64.strict_encode64(SecureRandom.random_bytes(32))
+        puts "Key1: #{key1}"
+        puts "Key2: #{key2}"
+        puts "NOTE: These values are base64 encoded already!"
+
+        @ssh.file(SECRETS_CFG_FILE).write(
+          parse_resource_file('secrets/encryption-config.yml.erb', key1: key1, key2: key2))
       end
 
       def upgrade

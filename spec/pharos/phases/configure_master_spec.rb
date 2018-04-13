@@ -73,6 +73,15 @@ describe Pharos::Phases::ConfigureMaster do
       expect(config.dig('etcd', 'version')).to be_nil
     end
 
+    it 'comes with secrets encryption config' do
+      config = subject.generate_config
+      expect(config.dig('apiServerExtraArgs', 'experimental-encryption-provider-config')).to eq(described_class::SECRETS_CFG_FILE)
+      expect(config['apiServerExtraVolumes']).to include({'name' => 'k8s-secrets-config',
+        'hostPath' => described_class::SECRETS_CFG_DIR,
+        'mountPath' => described_class::SECRETS_CFG_DIR
+      })
+    end
+
     context 'with etcd endpoint configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
@@ -151,7 +160,7 @@ describe Pharos::Phases::ConfigureMaster do
           }
         ]
         config = subject.generate_config
-        expect(config['apiServerExtraVolumes']).to eq(valid_volume_mounts)
+        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0], valid_volume_mounts[1])
       end
     end
 
