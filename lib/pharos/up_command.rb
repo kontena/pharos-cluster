@@ -121,8 +121,8 @@ module Pharos
     end
 
     def show_config_errors(errors)
-      puts "==> Invalid configuration file:"
-      puts YAML.dump(errors)
+      warn "==> Invalid configuration file:"
+      warn YAML.dump(errors)
     end
   end
 end
