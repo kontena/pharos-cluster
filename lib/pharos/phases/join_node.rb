@@ -17,7 +17,7 @@ module Pharos
         end
 
         logger.info { "Joining host to the master ..." }
-        join_command = mem_storage['join-command'].split(' ')
+        join_command = cluster_context['join-command'].split(' ')
         join_command = rewrite_api_address(join_command)
         if @host.container_runtime == 'cri-o'
           join_command << '--cri-socket /var/run/crio/crio.sock'
