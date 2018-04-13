@@ -60,11 +60,6 @@ module Pharos
     end
 
     # @return [Pharos::Configuration::Host]
-    def master_leader
-      master_hosts[0]
-    end
-
-    # @return [Pharos::Configuration::Host]
     def etcd_host
       etcd_hosts[0]
     end
