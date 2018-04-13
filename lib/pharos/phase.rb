@@ -61,5 +61,15 @@ module Pharos
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
     end
+
+    # @return [Hash]
+    def mem_storage
+      self.class.mem_storage
+    end
+
+    # @return [Hash]
+    def self.mem_storage
+      @@mem_storage ||= {}
+    end
   end
 end

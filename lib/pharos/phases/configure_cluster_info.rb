@@ -1,17 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureClusterInfo < Base
-      # @param master [Pharos::Configuration::Host]
-      def initialize(master)
-        @master = master
-      end
+    class ConfigureClusterInfo < Pharos::Phase
+      title "Configure cluster-info"
 
       def client
-        @client ||= Pharos::Kube.client(@master.address)
+        @client ||= Pharos::Kube.client(@host.address)
       end
 
       def call

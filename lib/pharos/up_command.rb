@@ -80,7 +80,6 @@ module Pharos
       config = Pharos::Config.new(schema)
 
       signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
-      signal_usage_error 'Only one host can be in master role' if config.master_hosts.size > 1
 
       config
     end

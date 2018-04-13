@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureEtcd < Base
+    class ConfigureEtcd < Pharos::Phase
+      title 'Configure etcd'
       CA_PATH = '/etc/pharos/pki'
 
       register_component(
@@ -13,16 +12,8 @@ module Pharos
         )
       )
 
-      # @param host [Kupo::Configuration::Host]
-      # @param config [Kupo::Configuration]
-      def initialize(host, config)
-        @host = host
-        @config = config
-        @ssh = Pharos::SSH::Client.for_host(@host)
-      end
-
       def call
-        sync_ca unless @host == @config.etcd_leader
+        sync_ca
 
         logger.info(@host.address) { 'Configuring etcd certs ...' }
         peer_index = @config.etcd_hosts.find_index { |h| h == @host }
@@ -59,12 +50,10 @@ module Pharos
 
         logger.info { 'Pushing certificate authority files to host ...' }
         @ssh.exec!("sudo mkdir -p #{CA_PATH}")
-        leader = @config.etcd_leader
-        leader_ssh = Pharos::SSH::Client.for_host(leader)
-        %w(ca.pem ca-key.pem).each do |file|
+
+        mem_storage['etcd-ca'].each do |file, crt|
           path = File.join(CA_PATH, file)
-          ca_crt = leader_ssh.file(path).read
-          @ssh.file(path).write(ca_crt)
+          @ssh.file(path).write(crt)
         end
       end
     end

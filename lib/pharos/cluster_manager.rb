@@ -47,13 +47,17 @@ module Pharos
     def apply_phases
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureCfssl, config.etcd_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureEtcdCa, [config.etcd_host], ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: true)
 
-      apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false, master: config.master_host)
+      apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false, master: config.master_host)
       apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
-      apply_phase(Phases::ConfigureClient, config.master_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
 
       # master is now configured and can be used
+      apply_phase(Phases::ConfigureClusterInfo, [config.master_host], ssh: true, parallel: false)
       apply_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
       apply_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
       apply_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)

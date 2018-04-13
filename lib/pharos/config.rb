@@ -23,9 +23,6 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
 
-    # written by Pharos::Phases::CreateBootstrapToken, read by Pharos::Phases::JoinNode
-    attr_accessor :join_command
-
     # @return [Integer]
     def dns_replicas
       if network.dns_replicas
@@ -68,7 +65,7 @@ module Pharos
     end
 
     # @return [Pharos::Configuration::Host]
-    def etcd_leader
+    def etcd_host
       etcd_hosts[0]
     end
   end

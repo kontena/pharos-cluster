@@ -6,7 +6,10 @@ module Pharos
       title "Label nodes"
 
       def call
-        return unless @host.labels
+        unless @host.labels
+          logger.info { "No labels set ... " }
+          return
+        end
 
         node = find_node
         raise Pharos::Error, "Cannot set labels, node not found" if node.nil?
