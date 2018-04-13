@@ -10,10 +10,6 @@ module Pharos
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
 
-      def client
-        @client ||= Pharos::Kube.client(@host.address)
-      end
-
       def call
         logger.info { "Checking if Kubernetes control plane is already initialized ..." }
         if install?
@@ -39,12 +35,6 @@ module Pharos
         return false if file.read.match?(/kube-apiserver-.+:v#{Pharos::KUBE_VERSION}/)
 
         true
-      end
-
-      # @return [Hash]
-      def kubeadm_configmap
-        configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        Pharos::YamlFile.new(StringIO.new(configmap.data[:MasterConfiguration])).load
       end
 
       def install
