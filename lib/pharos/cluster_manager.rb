@@ -56,7 +56,6 @@ module Pharos
       apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
 
       # master is now configured and can be used
-      apply_phase(Phases::ConfigureClusterInfo, [config.master_host], ssh: false, parallel: false, master: config.master_host)
       apply_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
       apply_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
       apply_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
