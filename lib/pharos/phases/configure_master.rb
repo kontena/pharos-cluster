@@ -89,7 +89,10 @@ module Pharos
           'kind' => 'MasterConfiguration',
           'nodeName' => @host.hostname,
           'kubernetesVersion' => Pharos::KUBE_VERSION,
-          'api' => { 'advertiseAddress' => @host.peer_address },
+          'api' => {
+            'advertiseAddress' => @host.peer_address,
+            'controlPlaneEndpoint' => '127.0.0.1'
+          },
           'apiServerCertSANs' => build_extra_sans,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
