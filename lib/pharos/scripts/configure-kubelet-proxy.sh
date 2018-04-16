@@ -2,7 +2,7 @@
 
 set -eu
 
-if [ ! -e /usr/bin/kubelet ]; then
+if [ ! -e /etc/kubernetes/kubelet.conf ]; then
     mkdir -p /etc/systemd/system/kubelet.service.d
     cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-kubelet-proxy.conf
 [Service]

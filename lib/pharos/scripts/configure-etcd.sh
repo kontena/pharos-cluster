@@ -2,11 +2,7 @@
 
 set -e
 
-if [ $(nc -w 2 -z ${PEER_IP} 2380) ]; then
-  exit
-fi
-
-if [ ! -e /usr/bin/kubelet ]; then
+if [ ! -e /etc/kubernetes/kubelet.conf ]; then
   mkdir -p /etc/systemd/system/kubelet.service.d
   cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-etcd.conf
 [Service]
