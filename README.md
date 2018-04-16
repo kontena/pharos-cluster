@@ -271,7 +271,7 @@ addons:
 ```sh
 $ terraform apply
 $ terraform output -json > tf.json
-$ pharos-cluster up -c cluster.yml --hosts-from-tf ./tf.json
+$ pharos-cluster up -c cluster.yml --tf-json ./tf.json
 ```
 
 ## Addons
