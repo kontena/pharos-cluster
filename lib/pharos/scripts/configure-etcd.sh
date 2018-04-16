@@ -2,19 +2,6 @@
 
 set -e
 
-if [ ! -e /etc/kubernetes/kubelet.conf ]; then
-  mkdir -p /etc/systemd/system/kubelet.service.d
-  cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-etcd.conf
-[Service]
-ExecStart=
-ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0 --address=127.0.0.1
-EOF
-
-  apt-mark unhold kubelet
-  apt-get install -y kubelet=${KUBE_VERSION}-00
-  apt-mark hold kubelet
-fi
-
 mkdir -p /etc/kubernetes/manifests
 cat <<EOF >/etc/kubernetes/manifests/pharos-etcd.yaml
 apiVersion: v1
@@ -78,8 +65,19 @@ spec:
       type: DirectoryOrCreate
     name: etcd-certs
 EOF
-systemctl daemon-reload
-systemctl restart kubelet
+
+if [ ! -e /etc/kubernetes/kubelet.conf ]; then
+  mkdir -p /etc/systemd/system/kubelet.service.d
+  cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-etcd.conf
+[Service]
+ExecStart=
+ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0 --address=127.0.0.1
+EOF
+
+  apt-mark unhold kubelet
+  apt-get install -y kubelet=${KUBE_VERSION}-00
+  apt-mark hold kubelet
+fi
 
 echo "Waiting etcd to launch on port 2380..."
 
