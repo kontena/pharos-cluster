@@ -26,7 +26,7 @@ spec:
     - --data-dir=/var/lib/etcd
     - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.pem
     - --peer-key-file=/etc/kubernetes/pki/etcd/peer-key.pem
-    - --listen-client-urls=https://${PEER_IP}:2379
+    - --listen-client-urls=https://localhost:2379,https://${PEER_IP}:2379
     - --advertise-client-urls=https://${PEER_IP}:2379
     - --listen-peer-urls=https://${PEER_IP}:2380
     - --initial-advertise-peer-urls=https://${PEER_IP}:2380
@@ -42,7 +42,7 @@ spec:
         command:
         - /bin/sh
         - -ec
-        - ETCDCTL_API=3 etcdctl --endpoints=${PEER_IP}:2379 --cacert=/etc/kubernetes/pki/ca.pem
+        - ETCDCTL_API=3 etcdctl --endpoints=localhost:2379 --cacert=/etc/kubernetes/pki/ca.pem
           --cert=/etc/kubernetes/pki/etcd/client.pem --key=/etc/kubernetes/pki/etcd/client-key.pem
           get foo
       failureThreshold: 8
