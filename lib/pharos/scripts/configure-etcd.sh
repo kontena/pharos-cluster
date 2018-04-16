@@ -50,6 +50,17 @@ spec:
     - --initial-cluster-state=new
 
     image: k8s.gcr.io/etcd-${ARCH}:${ETCD_VERSION}
+    livenessProbe:
+      exec:
+        command:
+        - /bin/sh
+        - -ec
+        - ETCDCTL_API=3 etcdctl --endpoints=${PEER_IP}:2379 --cacert=/etc/kubernetes/pki/ca.pem
+          --cert=/etc/kubernetes/pki/etcd/client.pem --key=/etc/kubernetes/pki/etcd/client-key.pem
+          get foo
+      failureThreshold: 8
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
     name: etcd
     volumeMounts:
     - mountPath: /var/lib/etcd
