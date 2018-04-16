@@ -62,7 +62,7 @@ describe Pharos::Phases::ConfigureMaster do
     it 'comes with correct master addresses' do
       config.hosts << master
       config = subject.generate_config
-      expect(config.dig('apiServerCertSANs')).to eq(['127.0.0.1', 'test', 'private'])
+      expect(config.dig('apiServerCertSANs')).to eq(['localhost', 'test', 'private'])
       expect(config.dig('api', 'advertiseAddress')).to eq('private')
     end
 
