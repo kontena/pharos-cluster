@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureHost < Base
+    class ConfigureHost < Pharos::Phase
+      title "Configure hosts"
+
       register_component(
         Pharos::Phases::Component.new(
           name: 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0'
@@ -16,12 +16,6 @@ module Pharos
           name: 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0'
         )
       )
-
-      # @param host [Pharos::Configuration::Host]
-      def initialize(host)
-        @host = host
-        @ssh = Pharos::SSH::Client.for_host(@host)
-      end
 
       def call
         logger.info { "Configuring essential packages ..." }
@@ -35,15 +29,19 @@ module Pharos
 
         if docker?
           logger.info { "Configuring container runtime (docker) packages ..." }
-          exec_script('configure-docker.sh',
-                      DOCKER_PACKAGE: 'docker.io',
-                      DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2")
+          exec_script(
+            'configure-docker.sh',
+            DOCKER_PACKAGE: 'docker.io',
+            DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2"
+          )
         elsif crio?
           logger.info { "Configuring container runtime (cri-o) packages ..." }
-          exec_script('configure-cri-o.sh',
-                      CRIO_VERSION: Pharos::CRIO_VERSION,
-                      CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
-                      CPU_ARCH: @host.cpu_arch.name)
+          exec_script(
+            'configure-cri-o.sh',
+            CRIO_VERSION: Pharos::CRIO_VERSION,
+            CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
+            CPU_ARCH: @host.cpu_arch.name
+          )
         else
           raise Pharos::Error, "Unknown container runtime: #{@host.container_runtime}"
         end

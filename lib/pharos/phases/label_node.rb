@@ -1,17 +1,15 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class LabelNode < Base
-      def initialize(host, master)
-        @host = host
-        @master = master
-      end
+    class LabelNode < Pharos::Phase
+      title "Label nodes"
 
       def call
-        return unless @host.labels
+        unless @host.labels
+          logger.info { "No labels set ... " }
+          return
+        end
 
         node = find_node
         raise Pharos::Error, "Cannot set labels, node not found" if node.nil?
@@ -48,7 +46,7 @@ module Pharos
       end
 
       def kube
-        @kube ||= Pharos::Kube.client(@master.address)
+        @kube ||= Pharos::Kube.client(@master.api_address)
       end
     end
   end

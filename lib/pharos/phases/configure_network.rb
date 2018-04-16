@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative 'base'
-
 module Pharos
   module Phases
-    class ConfigureNetwork < Base
-      WEAVE_VERSION = '2.2.1'
+    class ConfigureNetwork < Pharos::Phase
+      title "Configure network"
+
+      WEAVE_VERSION = '2.3.0'
 
       register_component(
         Pharos::Phases::Component.new(
@@ -13,20 +13,13 @@ module Pharos
         )
       )
 
-      # @param master [Pharos::Configuration::Host]
-      # @param config [Pharos::Configuration::Network]
-      def initialize(master, config)
-        @master = master
-        @config = config
-      end
-
       def call
         ensure_passwd
         ensure_resources
       end
 
       def ensure_passwd
-        kube_client = Pharos::Kube.client(@master.address)
+        kube_client = Pharos::Kube.client(@master.api_address)
         begin
           kube_client.get_secret('weave-passwd', 'kube-system')
         rescue Kubeclient::ResourceNotFoundError
@@ -45,13 +38,13 @@ module Pharos
       end
 
       def ensure_resources
-        trusted_subnets = @config.trusted_subnets || []
+        trusted_subnets = @config.network.trusted_subnets || []
         logger.info { "Configuring overlay network ..." }
         Pharos::Kube.apply_stack(
-          @master.address, 'weave',
+          @master.api_address, 'weave',
           trusted_subnets: trusted_subnets,
-          ipalloc_range: @config.pod_network_cidr,
-          arch: @master.cpu_arch,
+          ipalloc_range: @config.network.pod_network_cidr,
+          arch: @host.cpu_arch,
           version: WEAVE_VERSION
         )
       end
