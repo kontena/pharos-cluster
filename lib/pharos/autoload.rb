@@ -34,12 +34,6 @@ module Pharos
     autoload :JsonParser, 'pharos/terraform/json_parser'
   end
 
-  module Addons
-  end
-
-  module Phases
-  end
-
   module Configuration
     autoload :Host, 'pharos/configuration/host'
   end
