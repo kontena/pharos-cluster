@@ -8,8 +8,12 @@ variable "region" {
   default = "ams3"
 }
 
+variable "master_count" {
+  default = 3
+}
+
 variable "worker_count" {
-  default = 2
+  default = 3
 }
 
 variable "master_size" {
@@ -25,8 +29,9 @@ provider "digitalocean" {
 }
 
 resource "digitalocean_droplet" "pharos_master" {
+  count              = "${var.master_count}"
   image              = "ubuntu-16-04-x64"
-  name               = "pharos-master"
+  name               = "pharos-master-${count.index}"
   region             = "${var.region}"
   size               = "${var.master_size}"
   private_networking = true
@@ -43,7 +48,33 @@ resource "digitalocean_droplet" "pharos_worker" {
   ssh_keys           = "${var.ssh_keys}"
 }
 
-output "pharos" {
+resource "digitalocean_loadbalancer" "pharos_master_lb" {
+  name   = "pharos-master-lb"
+  region = "${var.region}"
+
+  forwarding_rule {
+    entry_port     = 6443
+    entry_protocol = "tcp"
+
+    target_port     = 6443
+    target_protocol = "tcp"
+  }
+
+  healthcheck {
+    port     = 6443
+    protocol = "tcp"
+  }
+
+  droplet_ids = ["${digitalocean_droplet.pharos_master.*.id}"]
+}
+
+output "pharos_api" {
+  value = {
+    endpoint = "${digitalocean_loadbalancer.pharos_master_lb.ip}"
+  }
+}
+
+output "pharos_hosts" {
   value = {
     masters = {
       address         = "${digitalocean_droplet.pharos_master.*.ipv4_address}"
