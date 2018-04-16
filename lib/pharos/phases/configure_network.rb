@@ -19,7 +19,7 @@ module Pharos
       end
 
       def ensure_passwd
-        kube_client = Pharos::Kube.client(@master.address)
+        kube_client = Pharos::Kube.client(@master.api_address)
         begin
           kube_client.get_secret('weave-passwd', 'kube-system')
         rescue Kubeclient::ResourceNotFoundError
@@ -41,7 +41,7 @@ module Pharos
         trusted_subnets = @config.network.trusted_subnets || []
         logger.info { "Configuring overlay network ..." }
         Pharos::Kube.apply_stack(
-          @master.address, 'weave',
+          @master.api_address, 'weave',
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,

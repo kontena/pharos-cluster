@@ -1,11 +1,11 @@
 require "pharos/phases/configure_master"
 
 describe Pharos::Phases::ConfigureMaster do
-  let(:master) { Pharos::Configuration::Host.new(address: 'test', private_address: 'private') }
+  let(:master) { Pharos::Configuration::Host.new(address: 'test', private_address: 'private', role: 'master') }
   let(:config_hosts_count) { 1 }
 
   let(:config) { Pharos::Config.new(
-      hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+      hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new(role: 'worker') },
       network: {
         service_cidr: '1.2.3.4/16',
         pod_network_cidr: '10.0.0.0/16'
@@ -60,15 +60,16 @@ describe Pharos::Phases::ConfigureMaster do
     end
 
     it 'comes with correct master addresses' do
+      config.hosts << master
       config = subject.generate_config
-      expect(config.dig('apiServerCertSANs')).to eq(['test', 'private'])
+      expect(config.dig('apiServerCertSANs')).to eq(['localhost', 'test', 'private'])
       expect(config.dig('api', 'advertiseAddress')).to eq('private')
     end
 
-    it 'comes with no etcd config' do
+    it 'comes with internal etcd config' do
       config = subject.generate_config
-      expect(config.dig('etcd')).to be_nil
-      expect(config.dig('etcd', 'endpoints')).to be_nil
+      expect(config.dig('etcd')).not_to be_nil
+      expect(config.dig('etcd', 'endpoints')).not_to be_nil
       expect(config.dig('etcd', 'version')).to be_nil
     end
 

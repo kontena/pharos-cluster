@@ -125,6 +125,7 @@ addons:
 You can view full sample of cluster.yml [here](./cluster.example.yml).
 
 ### Hosts
+
 - `address` - IP address or hostname
 - `role` - One of `master`, `worker`
 - `private_address` - Private IP address or hostname. Prefered for cluster's internal communication where possible (optional)
@@ -132,6 +133,10 @@ You can view full sample of cluster.yml [here](./cluster.example.yml).
 - `ssh_key_path` - A local file path to an ssh private key file (default "~/.ssh/id_rsa")
 - `container_runtime` - One of `docker`, `cri-o` (default "docker")
 - `labels` - A list of `key: value` pairs to assign to the host (optional)
+
+### API Options
+
+- `endpoint` - External endpoint address for Kubernetes API (eg loadbalancer or DNS)
 
 ### Network Options
 
@@ -212,7 +217,13 @@ Pharos Cluster can read host information from Terraform json output. In this sce
 **Terraform output config:**
 
 ```tf
-output "pharos" {
+output "pharos_api" {
+  value = {
+    endpoint = "${digitalocean_loadbalancer.pharos_master_lb.ip}"
+  }
+}
+
+output "pharos_hosts" {
   value = {
     masters = {
       address         = "${digitalocean_droplet.pharos_master.*.ipv4_address}"
@@ -260,7 +271,7 @@ addons:
 ```sh
 $ terraform apply
 $ terraform output -json > tf.json
-$ pharos-cluster up -c cluster.yml --hosts-from-tf ./tf.json
+$ pharos-cluster up -c cluster.yml --tf-json ./tf.json
 ```
 
 ## Addons

@@ -54,7 +54,7 @@ module Pharos
             name: @name
           }
         )
-        resource_client = Pharos::Kube.client(@host.address, resource.apiVersion)
+        resource_client = Pharos::Kube.client(@host.api_address, resource.apiVersion)
 
         begin
           resource = resource_client.get_resource(resource)
@@ -81,7 +81,7 @@ module Pharos
             usages: usages
           }
         )
-        resource_client = Pharos::Kube.client(@host.address, resource.apiVersion)
+        resource_client = Pharos::Kube.client(@host.api_address, resource.apiVersion)
 
         begin
           # TODO: update/re-create if spec.request does not match (private key, subject or usages changed?), or cert is expiring...?
@@ -96,7 +96,7 @@ module Pharos
       # @param resource [Kubeclient::Resource]
       # @return [Kubeclient::Resource]
       def ensure_csr_approved(resource)
-        resource_client = Pharos::Kube.client(@host.address, resource.apiVersion)
+        resource_client = Pharos::Kube.client(@host.api_address, resource.apiVersion)
 
         resource.status.conditions ||= []
 

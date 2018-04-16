@@ -61,5 +61,15 @@ module Pharos
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
     end
+
+    # @return [Hash]
+    def cluster_context
+      self.class.cluster_context
+    end
+
+    # @return [Hash]
+    def self.cluster_context
+      @@cluster_context ||= {} # rubocop:disable Style/ClassVars
+    end
   end
 end

@@ -21,7 +21,7 @@ module Pharos
       # @return [Array<Hash>]
       def hosts
         hosts = []
-        values = data.dig('pharos', 'value')
+        values = data.dig('pharos_hosts', 'value') || data.dig('pharos', 'value')
         values.each do |_, arr|
           bundle = arr[0]
           bundle['address'].each_with_index do |h, i|
@@ -29,6 +29,11 @@ module Pharos
           end
         end
         hosts
+      end
+
+      # @return [String,NilClass]
+      def api
+        @api ||= data.dig('pharos_api', 'value')
       end
 
       # @param bundle [Hash]
