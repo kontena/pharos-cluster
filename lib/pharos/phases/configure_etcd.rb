@@ -46,7 +46,7 @@ module Pharos
       end
 
       def sync_ca
-        return if @ssh.file(File.join(CA_PATH, 'ca.pem')).exist?
+        return if cluster_context['etcd-ca'].keys.all? { |k| @ssh.file(File.join(CA_PATH, k)).exist? }
 
         logger.info { 'Pushing certificate authority files to host ...' }
         @ssh.exec!("sudo mkdir -p #{CA_PATH}")
