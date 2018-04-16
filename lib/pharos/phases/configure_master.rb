@@ -91,7 +91,7 @@ module Pharos
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'api' => {
             'advertiseAddress' => @host.peer_address,
-            'controlPlaneEndpoint' => '127.0.0.1'
+            'controlPlaneEndpoint' => 'localhost'
           },
           'apiServerCertSANs' => build_extra_sans,
           'networking' => {
@@ -132,7 +132,7 @@ module Pharos
 
       # @return [Array<String>]
       def build_extra_sans
-        extra_sans = Set.new(['127.0.0.1'])
+        extra_sans = Set.new(['localhost'])
         extra_sans << @host.address
         extra_sans << @host.private_address if @host.private_address
         extra_sans << @host.api_endpoint if @host.api_endpoint
