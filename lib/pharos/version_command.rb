@@ -25,7 +25,7 @@ module Pharos
     end
 
     def load_phases
-      Dir.glob(__dir__ + '/phases/*.rb').each { |f| require(f) }
+      Pharos::PhaseManager.load_phases(__dir__ + '/phases')
     end
 
     def load_addons
