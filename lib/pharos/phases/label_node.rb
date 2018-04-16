@@ -46,7 +46,7 @@ module Pharos
       end
 
       def kube
-        @kube ||= Pharos::Kube.client(@master.address)
+        @kube ||= Pharos::Kube.client(@master.api_address)
       end
     end
   end

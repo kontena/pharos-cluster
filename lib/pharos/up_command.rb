@@ -10,7 +10,7 @@ module Pharos
       end
     end
 
-    option '--hosts-from-tf', 'PATH', 'Path to terraform output json' do |config_path|
+    option '--tf-json', 'PATH', 'Path to terraform output json' do |config_path|
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
@@ -33,10 +33,9 @@ module Pharos
       puts pastel.green("==> Reading instructions ...")
       config_hash = load_config
       config_content = read_config
-      if hosts_from_tf
-        puts pastel.green("==> Importing hosts from Terraform ...")
-        config_hash['hosts'] ||= []
-        config_hash['hosts'] += load_tf_json
+      if tf_json
+        puts pastel.green("==> Importing configuration from Terraform ...")
+        load_terraform(tf_json, config_hash)
       end
 
       # set workdir to the same dir where config was loaded from
@@ -61,10 +60,16 @@ module Pharos
       config_yaml.read(ENV.to_h)
     end
 
-    # @return [Array<Hash>] parsed hosts from terraform json output
-    def load_tf_json
-      tf_parser = Pharos::Terraform::JsonParser.new(File.read(hosts_from_tf))
-      tf_parser.hosts
+    # @param file [String]
+    # @param config [Hash]
+    # @return [Hash]
+    def load_terraform(file, config)
+      tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
+      config['hosts'] ||= []
+      config['api'] ||= {}
+      config['hosts'] += tf_parser.hosts
+      config['api'].merge(tf_parser.api)
+      config
     end
 
     # @param config_hash [Hash] hash presentation of cluster.yml
@@ -78,6 +83,9 @@ module Pharos
       end
 
       config = Pharos::Config.new(schema)
+
+      # inject api_endpoint to each host object
+      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
 
       signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
@@ -103,7 +111,7 @@ module Pharos
       craft_time = Time.now - start_time
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       puts "    You can connect to the cluster with kubectl using:"
-      puts "    export KUBECONFIG=~/.pharos/#{config.master_host.address}"
+      puts "    export KUBECONFIG=~/.pharos/#{config.master_host.api_address}"
 
       manager.disconnect
     end

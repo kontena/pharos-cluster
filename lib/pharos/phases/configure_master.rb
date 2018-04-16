@@ -133,9 +133,9 @@ module Pharos
       # @return [Array<String>]
       def build_extra_sans
         extra_sans = Set.new(['127.0.0.1'])
-        @config.master_hosts.each do |h|
-          extra_sans += [h.address, h.private_address].compact.uniq
-        end
+        extra_sans << @host.address
+        extra_sans << @host.private_address if @host.private_address
+        extra_sans << @host.api_endpoint if @host.api_endpoint
 
         extra_sans.to_a
       end

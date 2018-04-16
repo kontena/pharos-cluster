@@ -3,6 +3,7 @@
 require 'dry-struct'
 require_relative 'types'
 require_relative 'configuration/host'
+require_relative 'configuration/api'
 require_relative 'configuration/network'
 require_relative 'configuration/etcd'
 require_relative 'configuration/authentication'
@@ -16,6 +17,7 @@ module Pharos
     constructor_type :schema
 
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
+    attribute :api, Pharos::Configuration::Api
     attribute :network, Pharos::Configuration::Network
     attribute :cloud, Pharos::Configuration::Cloud
     attribute :addons, Pharos::Types::Hash

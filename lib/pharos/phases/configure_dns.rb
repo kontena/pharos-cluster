@@ -49,7 +49,7 @@ module Pharos
         logger.info { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
         Pharos::Kube.update_resource(
-          @master.address,
+          @master.api_address,
           Kubeclient::Resource.new(
             apiVersion: 'extensions/v1beta1',
             kind: 'Deployment',
