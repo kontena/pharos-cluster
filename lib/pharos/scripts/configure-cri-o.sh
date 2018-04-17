@@ -9,7 +9,7 @@ Environment='CRIO_STORAGE_OPTIONS=--cgroup-manager=cgroupfs --stream-address=$CR
 ExecStartPre=/sbin/sysctl -w net.ipv4.ip_forward=1
 EOF
 
-apt-get install -y cri-o-$CRIO_VERSION
+DEBIAN_FRONTEND=noninteractive apt-get install -y cri-o-$CRIO_VERSION
 systemctl enable crio
 # remove unnecessary cni plugins
 rm /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
