@@ -104,6 +104,13 @@ module Pharos
 
       puts pastel.green("==> Starting to craft cluster ...")
       manager.apply_phases
+      if Phase.cluster_context['secrets_encryption']
+        puts pastel.red("==> Configured secrets encryption with keys:")
+        puts pastel.red("    Key1:#{Phase.cluster_context['secrets_encryption']['key1']}")
+        puts pastel.red("    Key2:#{Phase.cluster_context['secrets_encryption']['key2']}")
+        puts pastel.red("    Keep these safe!")
+        puts pastel.red("    NOTE: These values are base64 encoded already!")
+      end
 
       puts pastel.green("==> Configuring addons ...")
       manager.apply_addons

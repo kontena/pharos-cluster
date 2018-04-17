@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "base64"
 
 module Pharos
@@ -42,7 +43,6 @@ module Pharos
       end
 
       def install
-
         configure_kubelet
 
         cfg = generate_config
@@ -134,17 +134,15 @@ module Pharos
 
         # Configure audit related things if needed
         configure_audit_webhook(config) if @config.audit&.server
-        
+
         # Set secrets config location and mount it to api server
-        config['apiServerExtraArgs'].merge!(
-          "experimental-encryption-provider-config" => SECRETS_CFG_FILE
-        )
+        config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
         config['apiServerExtraVolumes'] << {
           'name' => 'k8s-secrets-config',
           'hostPath' => SECRETS_CFG_DIR,
           'mountPath' => SECRETS_CFG_DIR
         }
-        
+
         config
       end
 
@@ -330,18 +328,14 @@ module Pharos
 
       def configure_secrets_encryption
         # Generate keys
-        # TODO: Put the keys into some "context" and dump to user in the up command
-        # Only at that level we should use pastel etc. IMO
-        puts "==> Generating secret encryption keys"
-        puts "NOTE: These keys are highly sensitive, keep them safe!!!"
         key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
         key2 = Base64.strict_encode64(SecureRandom.random_bytes(32))
-        puts "Key1: #{key1}"
-        puts "Key2: #{key2}"
-        puts "NOTE: These values are base64 encoded already!"
+        cluster_context['secrets_encryption'] = {
+          'key1' => key1,
+          'key2' => key2
+        }
 
-        @ssh.file(SECRETS_CFG_FILE).write(
-          parse_resource_file('secrets/encryption-config.yml.erb', key1: key1, key2: key2))
+        @ssh.file(SECRETS_CFG_FILE).write(parse_resource_file('secrets/encryption-config.yml.erb', key1: key1, key2: key2))
       end
 
       def upgrade
