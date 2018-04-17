@@ -68,6 +68,7 @@ module Pharos
           end
 
           prunables.each do |obj|
+            obj.apiVersion = api_group.preferredVersion.groupVersion
             pruned << obj if @session.resource(obj).delete
           end
         end

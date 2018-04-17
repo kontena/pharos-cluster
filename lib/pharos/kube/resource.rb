@@ -56,7 +56,7 @@ module Pharos
       # @return [Kubeclient::Resource,FalseClass]
       def delete
         if attributes.metadata.selfLink
-          api_group = attributes.metadata.selfLink.split("/")[1]
+          api_group = attributes.metadata.selfLink.split('/')[1]
           path = attributes.metadata.selfLink.gsub("/#{api_group}/#{@api_version}", '')
           @client.rest_client[path].delete
         else
