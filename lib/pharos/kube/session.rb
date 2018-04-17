@@ -7,7 +7,7 @@ module Pharos
     class Session
       # @param host [String,Phaross::Configuration::Host]
       def initialize(host)
-        @host = host.respond_to?(:address) ? host.address : host
+        @host = host.respond_to?(:api_address) ? host.api_address : host
         freeze
       end
 
