@@ -13,18 +13,13 @@ module Pharos
 
       def call
         logger.info { "Storing cluster configuration to configmap" }
-        configmap = resource
-        begin
-          Pharos::Kube.update_resource(@master.address, configmap)
-        rescue Kubeclient::ResourceNotFoundError
-          Pharos::Kube.create_resource(@master.address, configmap)
-        end
+        resource.apply
       end
 
       private
 
       def resource
-        Kubeclient::Resource.new(
+        Pharos::Kube.session(@master).resource(
           apiVersion: 'v1',
           kind: 'ConfigMap',
           metadata: {

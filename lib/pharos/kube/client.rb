@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'kubeclient'
+require 'deep_merge'
 
 module Pharos
   module Kube
