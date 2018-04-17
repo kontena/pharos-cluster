@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'addon'
-require_relative 'logging'
 
 module Pharos
   class AddonManager

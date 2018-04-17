@@ -2,7 +2,6 @@
 
 require 'dry-validation'
 require_relative 'addons/struct'
-require_relative 'logging'
 
 module Pharos
   class Addon
