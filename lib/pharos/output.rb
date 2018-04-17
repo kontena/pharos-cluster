@@ -91,13 +91,13 @@ module Pharos
     # A green top level message
     # @param msg [String]
     def header(msg)
-      self.puts(green('==> %<msg>s' % { msg: msg }))
+      puts(green('==> %<msg>s' % { msg: msg }))
     end
 
     # A cyan top level message
     # @param msg [String]
     def sub_header(msg)
-      self.puts(cyan('==> %<msg>s' % { msg: msg }))
+      puts(cyan('==> %<msg>s' % { msg: msg }))
     end
   end
 end
