@@ -17,6 +17,8 @@ cat <<EOF >/etc/docker/daemon.json
 }
 EOF
 
+DEBIAN_FRONTEND=noninteractive
+
 apt-mark unhold $DOCKER_PACKAGE
 apt-get install -y $DOCKER_PACKAGE=$DOCKER_VERSION
 apt-mark hold $DOCKER_PACKAGE

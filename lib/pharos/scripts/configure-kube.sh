@@ -14,6 +14,7 @@ if [ -e /etc/systemd/system/kubelet.service.d/5-pharos-kubelet-proxy.conf ]; the
     systemctl daemon-reload
 fi
 
+DEBIAN_FRONTEND=noninteractive
 apt-mark unhold kubelet kubectl kubeadm
 apt-get install -y kubelet=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubeadm=${KUBEADM_VERSION}-00
 apt-mark hold kubelet kubectl kubeadm
