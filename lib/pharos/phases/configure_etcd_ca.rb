@@ -8,7 +8,7 @@ module Pharos
       CA_FILES = %w(ca.pem ca-key.pem).freeze
 
       def call
-        info'Configuring etcd certificate authority ...'
+        info 'Configuring etcd certificate authority ...'
         exec_script(
           'configure-etcd-ca.sh',
           ARCH: @host.cpu_arch.name
