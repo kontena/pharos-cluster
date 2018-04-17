@@ -34,8 +34,6 @@ module Pharos
       end
 
       def upgrade?
-        return true
-
         manifest = File.join(KUBE_DIR, 'manifests', 'kube-apiserver.yaml')
         file = @ssh.file(manifest)
         return false unless file.exist?
