@@ -344,8 +344,9 @@ module Pharos
           'key1' => key1,
           'key2' => key2
         }
-
-        @ssh.file(SECRETS_CFG_FILE).write(parse_resource_file('secrets/encryption-config.yml.erb', key1: key1, key2: key2))
+        cfg_file = @ssh.file(SECRETS_CFG_FILE)
+        cfg_file.write(parse_resource_file('secrets/encryption-config.yml.erb', key1: key1, key2: key2))
+        cfg_file.chmod('0700')
       end
 
       def upgrade
