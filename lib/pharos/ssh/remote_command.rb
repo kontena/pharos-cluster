@@ -115,7 +115,7 @@ module Pharos
       def initialize_debug
         if self.class.debug?
           @debug = true
-          @pastel = Pastel.new($stdout.tty?)
+          @pastel = Pastel.new(enabled: $stdout.tty?)
         else
           @debug = false
         end
