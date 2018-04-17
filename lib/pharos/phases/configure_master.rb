@@ -4,15 +4,11 @@ module Pharos
   module Phases
     class ConfigureMaster < Pharos::Phase
       title "Configure master"
-
+      KUBE_DIR = '/etc/kubernetes'
       PHAROS_DIR = '/etc/pharos'
+      SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub).freeze
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
-
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
-
-      def client
-        @client ||= Pharos::Kube.client(@host.address)
-      end
 
       def call
         logger.info { "Checking if Kubernetes control plane is already initialized ..." }
@@ -33,15 +29,12 @@ module Pharos
       end
 
       def upgrade?
-        return false unless Pharos::Kube.config_exists?(@host.address)
+        manifest = File.join(KUBE_DIR, 'manifests', 'kube-apiserver.yaml')
+        file = @ssh.file(manifest)
+        return false unless file.exist?
+        return false if file.read.match?(/kube-apiserver-.+:v#{Pharos::KUBE_VERSION}/)
 
-        kubeadm_configmap['kubernetesVersion'] != "v#{Pharos::KUBE_VERSION}"
-      end
-
-      # @return [Hash]
-      def kubeadm_configmap
-        configmap = client.get_config_map('kubeadm-config', 'kube-system')
-        Pharos::YamlFile.new(StringIO.new(configmap.data[:MasterConfiguration])).load
+        true
       end
 
       def install
@@ -51,15 +44,12 @@ module Pharos
 
         # Copy etcd certs over if needed
         if @config.etcd&.certificate
-          # TODO: lock down permissions on key
-          @ssh.exec!('sudo mkdir -p /etc/pharos/etcd')
-          @ssh.file('/etc/kupo/etcd/ca-certificate.pem').write(File.open(@config.etcd.ca_certificate))
-          @ssh.file('/etc/kupo/etcd/certificate.pem').write(File.open(@config.etcd.certificate))
-          @ssh.file('/etc/kupo/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
+          logger.info { "Pushing external etcd certificates ..." }
+          copy_external_etcd_certs
         end
 
         if @config.audit&.server
-          logger.info { "Pushing audit configs to master" }
+          logger.info { "Pushing audit configs to master ..." }
           @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
           @ssh.file("#{AUDIT_CFG_DIR}/webhook.yml").write(
             parse_resource_file('audit/webhook-config.yml.erb', server: @config.audit.server)
@@ -70,16 +60,23 @@ module Pharos
         # Generate and upload authentication token webhook config file if needed
         if @config.authentication&.token_webhook
           webhook_config = @config.authentication.token_webhook.config
+          logger.info { "Generating token authentication webhook config ..." }
           auth_token_webhook_config = generate_authentication_token_webhook_config(webhook_config)
+          logger.info { "Pushing token authentication webhook config ..." }
           upload_authentication_token_webhook_config(auth_token_webhook_config)
+          logger.info { "Pushing token authentication webhook certificates ..." }
           upload_authentication_token_webhook_certs(webhook_config)
         end
+
+        copy_kube_certs
 
         logger.info { "Initializing control plane ..." }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm init --config #{tmp_file}")
         end
+
+        cache_kube_certs
 
         logger.info { "Initialization of control plane succeeded!" }
         @ssh.exec!('install -m 0700 -d ~/.kube')
@@ -90,15 +87,21 @@ module Pharos
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
           'kind' => 'MasterConfiguration',
+          'nodeName' => @host.hostname,
           'kubernetesVersion' => Pharos::KUBE_VERSION,
-          'apiServerCertSANs' => [@host.address, @host.private_address].compact.uniq,
+          'api' => {
+            'advertiseAddress' => @host.peer_address,
+            'controlPlaneEndpoint' => 'localhost'
+          },
+          'apiServerCertSANs' => build_extra_sans,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
+          },
+          'controllerManagerExtraArgs' => {
+            'horizontal-pod-autoscaler-use-rest-clients' => 'false'
           }
         }
-
-        config['api'] = { 'advertiseAddress' => @host.private_address || @host.address }
 
         if @host.container_runtime == 'cri-o'
           config['criSocket'] = '/var/run/crio/crio.sock'
@@ -110,34 +113,103 @@ module Pharos
 
         # Only configure etcd if the external endpoints are given
         if @config.etcd&.endpoints
-          config['etcd'] = {
-            'endpoints' => @config.etcd.endpoints
-          }
-
-          config['etcd']['certFile'] = '/etc/pharos/etcd/certificate.pem' if @config.etcd.certificate
-          config['etcd']['caFile'] = '/etc/pharos/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
-          config['etcd']['keyFile'] = '/etc/pharos/etcd/certificate-key.pem' if @config.etcd.key
+          configure_external_etcd(config)
+        else
+          configure_internal_etcd(config)
         end
 
         config['apiServerExtraArgs'] = {}
         config['apiServerExtraVolumes'] = []
 
         # Only if authentication token webhook option are given
-        if @config.authentication&.token_webhook
-          config['apiServerExtraArgs'].merge!(authentication_token_webhook_args(@config.authentication.token_webhook.cache_ttl))
-          config['apiServerExtraVolumes'] += volume_mounts_for_authentication_token_webhook
-        end
+        configure_token_webhook(config) if @config.authentication&.token_webhook
 
         # Configure audit related things if needed
-        if @config.audit&.server
-          config['apiServerExtraArgs'].merge!(
-            "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
-            "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
-          )
-          config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
-        end
+        configure_audit_webhook(config) if @config.audit&.server
 
         config
+      end
+
+      # @return [Array<String>]
+      def build_extra_sans
+        extra_sans = Set.new(['localhost'])
+        extra_sans << @host.address
+        extra_sans << @host.private_address if @host.private_address
+        extra_sans << @host.api_endpoint if @host.api_endpoint
+
+        extra_sans.to_a
+      end
+
+      # Copies certificates from memory to host
+      def copy_kube_certs
+        return unless cluster_context['master-certs']
+
+        @ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
+        cluster_context['master-certs'].each do |file, contents|
+          path = File.join(KUBE_DIR, 'pki', file)
+          @ssh.file(path).write(contents)
+          @ssh.exec!("sudo chmod 0400 #{path}")
+        end
+      end
+
+      # Cache certs to memory
+      def cache_kube_certs
+        return if cluster_context['master-certs']
+
+        cache = {}
+        SHARED_CERT_FILES.each do |file|
+          path = File.join(KUBE_DIR, 'pki', file)
+          cache[file] = @ssh.file(path).read
+        end
+        cluster_context['master-certs'] = cache
+      end
+
+      # @param config [Pharos::Config]
+      def configure_internal_etcd(config)
+        endpoints = @config.etcd_hosts.map { |h|
+          "https://#{h.peer_address}:2379"
+        }
+        config['etcd'] = {
+          'endpoints' => endpoints
+        }
+
+        config['etcd']['certFile'] = '/etc/pharos/pki/etcd/client.pem'
+        config['etcd']['caFile'] = '/etc/pharos/pki/ca.pem'
+        config['etcd']['keyFile'] = '/etc/pharos/pki/etcd/client-key.pem'
+      end
+
+      # TODO: lock down permissions on key
+      def copy_external_etcd_certs
+        @ssh.exec!('sudo mkdir -p /etc/pharos/etcd')
+        @ssh.write_file('/etc/pharos/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
+        @ssh.write_file('/etc/pharos/etcd/certificate.pem', File.read(@config.etcd.certificate))
+        @ssh.write_file('/etc/pharos/etcd/certificate-key.pem', File.read(@config.etcd.key))
+      end
+
+      # @param config [Hash]
+      def configure_external_etcd(config)
+        config['etcd'] = {
+          'endpoints' => @config.etcd.endpoints
+        }
+
+        config['etcd']['certFile'] = '/etc/pharos/etcd/certificate.pem' if @config.etcd.certificate
+        config['etcd']['caFile'] = '/etc/pharos/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
+        config['etcd']['keyFile'] = '/etc/pharos/etcd/certificate-key.pem' if @config.etcd.key
+      end
+
+      # @param config [Hash]
+      def configure_token_webhook(config)
+        config['apiServerExtraArgs'].merge!(authentication_token_webhook_args(@config.authentication.token_webhook.cache_ttl))
+        config['apiServerExtraVolumes'] += volume_mounts_for_authentication_token_webhook
+      end
+
+      # @param config [Hash]
+      def configure_audit_webhook(config)
+        config['apiServerExtraArgs'].merge!(
+          "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
+          "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
+        )
+        config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
       end
 
       def volume_mounts_for_audit_webhook
@@ -177,6 +249,7 @@ module Pharos
         volume_mounts
       end
 
+      # @param webhook_config [Hash]
       def generate_authentication_token_webhook_config(webhook_config)
         config = {
           "kind" => "Config",
@@ -223,11 +296,13 @@ module Pharos
         config
       end
 
+      # @param config [Hash]
       def upload_authentication_token_webhook_config(config)
         @ssh.exec!('sudo mkdir -p ' + AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR)
         @ssh.file(AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR + '/token-webhook-config.yaml').write(config.to_yaml)
       end
 
+      # @param webhook_config [Hash]
       def upload_authentication_token_webhook_certs(webhook_config)
         @ssh.exec!("sudo mkdir -p #{PHAROS_DIR}/token_webhook")
         @ssh.file(PHAROS_DIR + '/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
@@ -244,8 +319,8 @@ module Pharos
         )
 
         cfg = generate_config
-        @ssh.with_tmpfile(cfg.to_yaml) do |tmp_file|
-          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --allow-experimental-upgrades --config #{tmp_file}")
+        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
         end
         logger.info { "Control plane upgrade succeeded!" }
 

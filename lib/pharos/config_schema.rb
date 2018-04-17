@@ -20,14 +20,17 @@ module Pharos
           each do
             schema do
               required(:address).filled
+              optional(:private_address).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
-              optional(:private_address).filled
               optional(:user).filled
               optional(:ssh_key_path).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
             end
           end
+        end
+        optional(:api).schema do
+          optional(:endpoint).filled(:str?)
         end
         optional(:network).schema do
           optional(:dns_replicas).filled(:int?, gt?: 0)

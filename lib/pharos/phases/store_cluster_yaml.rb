@@ -27,7 +27,8 @@ module Pharos
             name: 'pharos-config'
           },
           data: {
-            'cluster.yml' => @config_content
+            'cluster.yml' => @config_content,
+            'pharos-version' => Pharos::VERSION
           }
         )
       end

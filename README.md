@@ -35,7 +35,7 @@ Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution
 
 ## Installation
 
-Pharos Cluster executable can be downloaded from [https://github.com/kontena/pharos-cluster/releases](releases). Binaries should work on any recent 64bit MacOS or Linux machine.
+Pharos Cluster executable can be downloaded from [https://github.com/kontena/pharos-cluster/releases](https://github.com/kontena/pharos-cluster/releases). Binaries should work on any recent 64bit MacOS or Linux machine.
 
 ## Host Requirements
 
@@ -65,7 +65,7 @@ The following ports serve unauthenticated monitoring/debugging information, and 
 | Protocol    | Port        | Service               | Hosts   | Status          | Notes
 |-------------|-------------|-----------------------|---------|-----------------|-------
 | TCP         | 6781        | weave-npc metrics     | All     | **OPEN**        | unauthenticated `/metrics`
-| TCP         | 6782        | weave status          | All     | localhost-only  | unauthenticated read-only weave `/status`, `/metrics` and `/report`
+| TCP         | 6782        | weave metrics         | All     | **OPEN**        | unauthenticated `/metrics`
 | TCP         | 10255       | kubelet read-only     | All     | *disabled*      | unauthenticated read-only `/pods`, various stats metrics
 | TCP         | 10248       | kubelet               | All     | localhost-only  | ?
 | TCP         | 10249       | kube-proxy metrics    | All     | localhost-only  | ?
@@ -125,6 +125,7 @@ addons:
 You can view full sample of cluster.yml [here](./cluster.example.yml).
 
 ### Hosts
+
 - `address` - IP address or hostname
 - `role` - One of `master`, `worker`
 - `private_address` - Private IP address or hostname. Prefered for cluster's internal communication where possible (optional)
@@ -132,6 +133,10 @@ You can view full sample of cluster.yml [here](./cluster.example.yml).
 - `ssh_key_path` - A local file path to an ssh private key file (default "~/.ssh/id_rsa")
 - `container_runtime` - One of `docker`, `cri-o` (default "docker")
 - `labels` - A list of `key: value` pairs to assign to the host (optional)
+
+### API Options
+
+- `endpoint` - External endpoint address for Kubernetes API (eg loadbalancer or DNS)
 
 ### Network Options
 
@@ -212,7 +217,13 @@ Pharos Cluster can read host information from Terraform json output. In this sce
 **Terraform output config:**
 
 ```tf
-output "pharos" {
+output "pharos_api" {
+  value = {
+    endpoint = "${digitalocean_loadbalancer.pharos_master_lb.ip}"
+  }
+}
+
+output "pharos_hosts" {
   value = {
     masters = {
       address         = "${digitalocean_droplet.pharos_master.*.ipv4_address}"
@@ -260,7 +271,7 @@ addons:
 ```sh
 $ terraform apply
 $ terraform output -json > tf.json
-$ pharos-cluster up -c cluster.yml --hosts-from-tf ./tf.json
+$ pharos-cluster up -c cluster.yml --tf-json ./tf.json
 ```
 
 ## Addons
