@@ -4,16 +4,12 @@ module Pharos
   class ClusterManager
     include Pharos::Logging
 
-    # XXX: should be in some kind of output helper?
-    def pastel
-      @pastel ||= Pastel.new
-    end
-
     attr_reader :config
 
-    def initialize(config, config_content:)
+    def initialize(config, config_content:, **opts)
       @config = config
       @config_content = config_content
+      @pastel = opts.fetch(:pastel) { Pastel.new }
     end
 
     # @return [Pharos::SSH::Manager]
@@ -70,14 +66,14 @@ module Pharos
     end
 
     def apply_phase(phase_class, hosts, **options)
-      puts pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
       phase_manager.apply(phase_class, hosts, **options)
     end
 
     def apply_addons
       addon_manager.each do |addon|
-        puts pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
+        puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
 
         addon.apply
       end
