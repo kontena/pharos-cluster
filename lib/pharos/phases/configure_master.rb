@@ -302,7 +302,7 @@ module Pharos
       def configure_kube_proxy(config)
         config['kubeProxy'] = {
           'config' => {
-            'featureGates' => {},
+            'featureGates' => {}
           }
         }
 
@@ -313,6 +313,8 @@ module Pharos
         if @config.kube_proxy.mode == 'ipvs'
           config['kubeProxy']['config']['featureGates']['SupportIPVSProxyMode'] = true
         end
+
+        config
       end
 
       # @param config [Hash]
