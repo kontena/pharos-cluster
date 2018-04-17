@@ -19,7 +19,6 @@ module Pharos
   autoload :Phase, 'pharos/phase'
   autoload :Phases, 'pharos/phases'
   autoload :PhaseManager, 'pharos/phase_manager'
-  autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :Output, 'pharos/output'
 

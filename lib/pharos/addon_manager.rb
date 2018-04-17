@@ -5,8 +5,6 @@ require_relative 'logging'
 
 module Pharos
   class AddonManager
-    include Pharos::Logging
-
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
 

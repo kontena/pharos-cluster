@@ -2,8 +2,6 @@
 
 module Pharos
   class ClusterManager
-    include Pharos::Logging
-
     attr_reader :config
 
     def initialize(config, config_content:, **opts)
