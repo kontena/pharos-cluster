@@ -192,7 +192,9 @@ describe Pharos::Phases::ConfigureMaster do
         config = subject.generate_config
         expect(config.dig('kubeProxy', 'config')).to eq(
           'mode' => 'ipvs',
-          'featureGates' => 'SupportIPVSProxyMode=true',
+          'featureGates' => {
+            'SupportIPVSProxyMode' => true,
+          },
         )
       end
     end
@@ -210,6 +212,7 @@ describe Pharos::Phases::ConfigureMaster do
         config = subject.generate_config
         expect(config.dig('kubeProxy', 'config')).to eq(
           'mode' => 'iptables',
+          'featureGates' => {},
         )
       end
     end
