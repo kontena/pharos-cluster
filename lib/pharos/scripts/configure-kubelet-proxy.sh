@@ -16,7 +16,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-    - image: docker.io/kontena/pharos-kubelet-proxy-${ARCH}:0.2.0
+    - image: docker.io/kontena/pharos-kubelet-proxy-${ARCH}:0.3.5
       name: proxy
       env:
       - name: KUBE_MASTERS
@@ -32,6 +32,7 @@ ExecStart=
 ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0 --address=127.0.0.1
 EOF
 
+    export DEBIAN_FRONTEND=noninteractive
     apt-mark unhold kubelet
     apt-get install -y kubelet=${KUBE_VERSION}-00
     apt-mark hold kubelet

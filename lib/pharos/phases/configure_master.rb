@@ -48,32 +48,17 @@ module Pharos
           copy_external_etcd_certs
         end
 
-        if @config.audit&.server
-          logger.info { "Pushing audit configs to master ..." }
-          @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
-          @ssh.file("#{AUDIT_CFG_DIR}/webhook.yml").write(
-            parse_resource_file('audit/webhook-config.yml.erb', server: @config.audit.server)
-          )
-          @ssh.file("#{AUDIT_CFG_DIR}/policy.yml").write(parse_resource_file('audit/policy.yml'))
-        end
+        push_audit_config if @config.audit&.server
 
         # Generate and upload authentication token webhook config file if needed
-        if @config.authentication&.token_webhook
-          webhook_config = @config.authentication.token_webhook.config
-          logger.info { "Generating token authentication webhook config ..." }
-          auth_token_webhook_config = generate_authentication_token_webhook_config(webhook_config)
-          logger.info { "Pushing token authentication webhook config ..." }
-          upload_authentication_token_webhook_config(auth_token_webhook_config)
-          logger.info { "Pushing token authentication webhook certificates ..." }
-          upload_authentication_token_webhook_certs(webhook_config)
-        end
+        push_authentication_token_webhook_config if @config.authentication&.token_webhook
 
         copy_kube_certs
 
         logger.info { "Initializing control plane ..." }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm init --config #{tmp_file}")
+          @ssh.exec!("sudo kubeadm init --ignore-preflight-errors all --skip-token-print --config #{tmp_file}")
         end
 
         cache_kube_certs
@@ -339,6 +324,25 @@ module Pharos
         logger.info { "Control plane upgrade succeeded!" }
 
         configure_kubelet
+      end
+
+      def push_audit_config
+        logger.info { "Pushing audit configs to master ..." }
+        @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
+        @ssh.file("#{AUDIT_CFG_DIR}/webhook.yml").write(
+          parse_resource_file('audit/webhook-config.yml.erb', server: @config.audit.server)
+        )
+        @ssh.file("#{AUDIT_CFG_DIR}/policy.yml").write(parse_resource_file('audit/policy.yml'))
+      end
+
+      def push_authentication_token_webhook_config
+        webhook_config = @config.authentication.token_webhook.config
+        logger.info { "Generating token authentication webhook config ..." }
+        auth_token_webhook_config = generate_authentication_token_webhook_config(webhook_config)
+        logger.info { "Pushing token authentication webhook config ..." }
+        upload_authentication_token_webhook_config(auth_token_webhook_config)
+        logger.info { "Pushing token authentication webhook certificates ..." }
+        upload_authentication_token_webhook_certs(webhook_config)
       end
 
       def configure

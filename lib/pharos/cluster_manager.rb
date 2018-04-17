@@ -4,16 +4,12 @@ module Pharos
   class ClusterManager
     include Pharos::Logging
 
-    # XXX: should be in some kind of output helper?
-    def pastel
-      @pastel ||= Pastel.new
-    end
-
     attr_reader :config
 
-    def initialize(config, config_content:)
+    def initialize(config, config_content:, **opts)
       @config = config
       @config_content = config_content
+      @pastel = opts.fetch(:pastel) { Pastel.new }
     end
 
     # @return [Pharos::SSH::Manager]
@@ -46,12 +42,14 @@ module Pharos
 
     def apply_phases
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::MigrateMaster, config.master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureCfssl, config.etcd_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureEtcdCa, [config.etcd_host], ssh: true, parallel: false)
       apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: true)
 
       apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: config.master_host)
       apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
       apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
 
@@ -68,14 +66,14 @@ module Pharos
     end
 
     def apply_phase(phase_class, hosts, **options)
-      puts pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
       phase_manager.apply(phase_class, hosts, **options)
     end
 
     def apply_addons
       addon_manager.each do |addon|
-        puts pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
+        puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
 
         addon.apply
       end
