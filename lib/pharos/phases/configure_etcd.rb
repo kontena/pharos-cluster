@@ -15,7 +15,7 @@ module Pharos
       def call
         sync_ca
 
-        logger.info(@host.address) { 'Configuring etcd certs ...' }
+        Out.info(@host.address) { 'Configuring etcd certs ...' }
         peer_index = @config.etcd_hosts.find_index { |h| h == @host }
         exec_script(
           'configure-etcd-certs.sh',
@@ -24,7 +24,7 @@ module Pharos
           ARCH: @host.cpu_arch.name
         )
 
-        logger.info(@host.address) { 'Configuring etcd ...' }
+        Out.info(@host.address) { 'Configuring etcd ...' }
         exec_script(
           'configure-etcd.sh',
           PEER_IP: @host.private_address || @host.address,
@@ -48,7 +48,7 @@ module Pharos
       def sync_ca
         return if cluster_context['etcd-ca'].keys.all? { |k| @ssh.file(File.join(CA_PATH, k)).exist? }
 
-        logger.info { 'Pushing certificate authority files to host ...' }
+        Out.info { 'Pushing certificate authority files to host ...' }
         @ssh.exec!("sudo mkdir -p #{CA_PATH}")
 
         cluster_context['etcd-ca'].each do |file, crt|

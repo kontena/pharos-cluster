@@ -18,7 +18,7 @@ module Pharos
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
-        logger.info { 'Configuring kubelet ...' }
+        Out.info { 'Configuring kubelet ...' }
         ensure_dropin(build_systemd_dropin)
       end
 
@@ -42,7 +42,7 @@ module Pharos
       end
 
       def configure_kube
-        logger.info { "Configuring Kubernetes packages ..." }
+        Out.info { "Configuring Kubernetes packages ..." }
         exec_script(
           'configure-kube.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,

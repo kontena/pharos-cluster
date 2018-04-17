@@ -6,13 +6,13 @@ module Pharos
       title "Validate hosts"
 
       def call
-        logger.info { "Checking sudo access ..." }
+        Out.info { "Checking sudo access ..." }
         check_sudo
-        logger.info { "Gathering host facts ..." }
+        Out.info { "Gathering host facts ..." }
         gather_host_facts
-        logger.info { "Validating distro and version ..." }
+        Out.info { "Validating distro and version ..." }
         check_distro_version
-        logger.info { "Validating host configuration ..." }
+        Out.info { "Validating host configuration ..." }
         check_cpu_arch
       end
 

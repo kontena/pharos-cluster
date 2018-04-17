@@ -66,14 +66,14 @@ module Pharos
     end
 
     def apply_phase(phase_class, hosts, **options)
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      Out.sub_header "#{phase_class.title} @ #{hosts.join(' ')}"
 
       phase_manager.apply(phase_class, hosts, **options)
     end
 
     def apply_addons
       addon_manager.each do |addon|
-        puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
+        Out.sub_header "#{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}"
 
         addon.apply
       end

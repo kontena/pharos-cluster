@@ -30,11 +30,11 @@ module Pharos
     end
 
     def execute
-      puts pastel.green("==> Reading instructions ...")
+      Out.header "Reading instructions ..."
       config_hash = load_config
       config_content = read_config
       if tf_json
-        puts pastel.green("==> Importing configuration from Terraform ...")
+        Out.header "Importing configuration from Terraform ..."
         load_terraform(tf_json, config_hash)
       end
 
@@ -95,23 +95,23 @@ module Pharos
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config, config_content:)
-      manager = ClusterManager.new(config, config_content: config_content, pastel: pastel)
+      manager = ClusterManager.new(config, config_content: config_content)
       start_time = Time.now
 
-      puts pastel.green("==> Sharpening tools ...")
+      Out.header "Sharpening tools ..."
       manager.load
       manager.validate
 
-      puts pastel.green("==> Starting to craft cluster ...")
+      Out.header "Starting to craft cluster ..."
       manager.apply_phases
 
-      puts pastel.green("==> Configuring addons ...")
+      Out.header "Configuring addons ..."
       manager.apply_addons
 
       craft_time = Time.now - start_time
-      puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
-      puts "    You can connect to the cluster with kubectl using:"
-      puts "    export KUBECONFIG=~/.pharos/#{config.master_host.api_address}"
+      Out.header "Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})"
+      Out.info "You can connect to the cluster with kubectl using:"
+      Out.info "export KUBECONFIG=~/.pharos/#{config.master_host.api_address}"
 
       manager.disconnect
     end
@@ -128,7 +128,7 @@ module Pharos
     end
 
     def show_config_errors(errors)
-      warn "==> Invalid configuration file:"
+      warn "Invalid configuration file:"
       warn YAML.dump(errors)
     end
   end

@@ -2,8 +2,6 @@
 
 module Pharos
   class PhaseManager
-    include Pharos::Logging
-
     # @param dirs [Array<String>]
     def self.load_phases(*dirs)
       dirs.each do |dir|
@@ -25,7 +23,7 @@ module Pharos
           begin
             yield phase
           rescue StandardError => exc
-            puts " [#{phase}] #{exc.class}: #{exc.message}"
+            Out.error(phase.to_s) { "#{exc.class}: #{exc.message}" }
             raise
           end
         end
@@ -69,7 +67,7 @@ module Pharos
 
         phase.call
 
-        logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
+        Out.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
       end
     end
   end

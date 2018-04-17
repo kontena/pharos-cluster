@@ -17,15 +17,8 @@ module Pharos
         @opts = opts
       end
 
-      def logger
-        @logger ||= Logger.new($stderr).tap do |logger|
-          logger.progname = "SSH[#{@host}]"
-          logger.level = ENV["DEBUG_SSH"] ? Logger::DEBUG : Logger::INFO
-        end
-      end
-
       def connect
-        logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
+        Out.debug("SSH") { "connect: #{@user}@#{@host} (#{@opts})" }
         @session = Net::SSH.start(@host, @user, @opts)
       end
 
@@ -84,7 +77,7 @@ module Pharos
       # @param opts [Hash]
       def upload(local_path, remote_path, opts = {})
         require_session!
-        logger.debug "upload from #{local_path}: #{remote_path}"
+        Out.debug("SSH[#{@host}]") { "upload from #{local_path}: #{remote_path}" }
         @session.scp.upload!(local_path, remote_path, opts)
       end
 
@@ -93,7 +86,7 @@ module Pharos
       # @param opts [Hash]
       def download(remote_path, local_path, opts = {})
         require_session!
-        logger.debug "download to #{local_path}: #{remote_path}"
+        Out.debug("SSH[#{@host}]") { "download to #{local_path}: #{remote_path}" }
         @session.scp.download!(remote_path, local_path, opts)
       end
 

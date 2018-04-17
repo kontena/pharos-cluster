@@ -12,11 +12,11 @@ module Pharos
 
       def call
         if already_joined?
-          logger.info { "Already joined ..." }
+          Out.info { "Already joined ..." }
           return
         end
 
-        logger.info { "Joining host to the master ..." }
+        Out.info { "Joining host to the master ..." }
         join_command = cluster_context['join-command'].split(' ')
         if @host.container_runtime == 'cri-o'
           join_command << '--cri-socket /var/run/crio/crio.sock'
