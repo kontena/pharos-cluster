@@ -124,7 +124,7 @@ describe Pharos::Phases::ConfigureDNS do
     let(:session) { double }
     let(:resource) { double }
     it "updates the resource" do
-      expect(Pharos::Kube).to receive(:session).with(master).and_return(session)
+      expect(Pharos::Kube).to receive(:session).with(master.api_address).and_return(session)
       expect(session).to receive(:resource) do |hash|
         res = Kubeclient::Resource.new(hash)
         expect(res.apiVersion).to eq 'extensions/v1beta1'

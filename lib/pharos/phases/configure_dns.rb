@@ -55,26 +55,36 @@ module Pharos
             namespace: 'kube-system',
             name: 'kube-dns'
           },
-          template: {
-            spec: {
-              affinity: {
-                podAntiAffinity: {
-                  requiredDuringSchedulingIgnoredDuringExecution: [
-                    {
-                      labelSelector: {
-                        matchExpressions: [
-                          {
-                            key: "k8s-app",
-                            operator: "In",
-                            values: [
-                              "kube-dns"
-                            ]
-                          }
-                        ]
-                      },
-                      topologyKey: "kubernetes.io/hostname"
-                    }
-                  ]
+          spec: {
+            replicas: replicas,
+            strategy: {
+              type: "RollingUpdate",
+              rollingUpdate: {
+                maxSurge: max_surge, # must be zero for a two-node cluster
+                maxUnavailable: max_unavailable, # must be at least one, even for a single-node cluster
+              }
+            },
+            template: {
+              spec: {
+                affinity: {
+                  podAntiAffinity: {
+                    requiredDuringSchedulingIgnoredDuringExecution: [
+                      {
+                        labelSelector: {
+                          matchExpressions: [
+                            {
+                              key: "k8s-app",
+                              operator: "In",
+                              values: [
+                                "kube-dns"
+                              ]
+                            }
+                          ]
+                        },
+                        topologyKey: "kubernetes.io/hostname"
+                      }
+                    ]
+                  }
                 }
               }
             }
