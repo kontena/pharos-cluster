@@ -13,7 +13,7 @@ module Pharos
       elsif progname.nil?
         "    %<msg>s\n" % { msg: msg }
       else
-        "    %<msg>s %<prg>s\n" % { msg: msg, prg: "(#{dim(progname)})" }
+        "    %<msg>s (%<progname>s)\n" % { msg: msg, progname: progname }
       end
     end
 
