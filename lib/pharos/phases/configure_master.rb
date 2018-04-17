@@ -75,7 +75,6 @@ module Pharos
 
         copy_kube_certs
 
-        @ssh.exec!("sudo mkdir -p #{SECRETS_CFG_DIR}")
         configure_secrets_encryption
 
         logger.info { "Initializing control plane ..." }
@@ -326,7 +325,18 @@ module Pharos
         @ssh.file(PHAROS_DIR + '/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
       end
 
+      def secrets_encryption_exist?
+        logger.debug { "Checking if secrets encryption is already configured" }
+        cfg_file = @ssh.file(SECRETS_CFG_FILE)
+        return false unless cfg_file.exist?
+        return false unless cfg_file.read.match?(/aescbc/)
+
+        true
+      end
+
       def configure_secrets_encryption
+        logger.info { "Creating secrets encryption configuration" }
+        @ssh.exec!("sudo install -m 0700 -d #{SECRETS_CFG_DIR}")
         # Generate keys
         key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
         key2 = Base64.strict_encode64(SecureRandom.random_bytes(32))
@@ -345,7 +355,9 @@ module Pharos
           VERSION: Pharos::KUBEADM_VERSION,
           ARCH: @host.cpu_arch.name
         )
-
+        unless secrets_encryption_exist?
+          configure_secrets_encryption
+        end
         cfg = generate_config
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
