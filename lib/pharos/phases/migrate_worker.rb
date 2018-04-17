@@ -3,12 +3,16 @@
 module Pharos
   module Phases
     class MigrateWorker < Pharos::Phase
+      title "Migrate worker"
+
       def call
         migrate_0_5_to_0_6 if migrate_0_5_to_0_6?
       end
 
       def migrate_0_5_to_0_6?
-        !@ssh.file('/etc/kubernetes/kubelet.conf').read.include?('localhost:6443')
+        file = @ssh.file('/etc/kubernetes/kubelet.conf')
+        return false unless file.exist?
+        !file.read.include?('localhost:6443')
       end
 
       def migrate_0_5_to_0_6
