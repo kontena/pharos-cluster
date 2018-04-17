@@ -55,9 +55,9 @@ module Pharos
       # does not exist.
       # @return [Kubeclient::Resource,FalseClass]
       def delete
-        if metadata.selfLink
-          api_group = metadata.selfLink.split("/")[1]
-          path = metadata.selfLink.gsub("/#{api_group}/#{@api_version}", '')
+        if attributes.metadata.selfLink
+          api_group = attributes.metadata.selfLink.split("/")[1]
+          path = attributes.metadata.selfLink.gsub("/#{api_group}/#{@api_version}", '')
           @client.rest_client[path].delete
         else
           definition = entity_definition
