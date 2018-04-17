@@ -322,13 +322,21 @@ module Pharos
       def configure_secrets_encryption
         logger.info { "Creating secrets encryption configuration ..." }
         @ssh.exec!("sudo install -m 0700 -d #{SECRETS_CFG_DIR}")
+
         # Generate keys
-        key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
-        key2 = Base64.strict_encode64(SecureRandom.random_bytes(32))
-        cluster_context['secrets_encryption'] = {
-          'key1' => key1,
-          'key2' => key2
-        }
+        if cluster_context['secrets_encryption']
+          key1 = cluster_context['secrets_encryption']['key1']
+          key2 = cluster_context['secrets_encryption']['key2']
+        else
+          key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
+          key2 = Base64.strict_encode64(SecureRandom.random_bytes(32))
+
+          cluster_context['secrets_encryption'] = {
+            'key1' => key1,
+            'key2' => key2
+          }
+        end
+
         cfg_file = @ssh.file(SECRETS_CFG_FILE)
         cfg_file.write(parse_resource_file('secrets/encryption-config.yml.erb', key1: key1, key2: key2))
         cfg_file.chmod('0700')
