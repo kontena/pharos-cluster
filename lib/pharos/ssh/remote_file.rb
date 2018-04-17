@@ -40,6 +40,10 @@ module Pharos
         )
       end
 
+      def chmod(mode)
+        @client.exec!("sudo chmod #{mode} #{escaped_path}")
+      end
+
       # Returns remote jfile content
       # @return [String]
       def read
