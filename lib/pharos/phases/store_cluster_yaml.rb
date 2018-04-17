@@ -12,7 +12,7 @@ module Pharos
       end
 
       def call
-        Out.info { "Storing cluster configuration to configmap" }
+        info "Storing cluster configuration to configmap"
         resource.apply
       end
 

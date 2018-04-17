@@ -6,7 +6,7 @@ module Pharos
       title "Configure bootstrap tokens"
 
       def call
-        Out.info { "Creating node bootstrap token ..." }
+        info "Creating node bootstrap token ..."
 
         cluster_context['join-command'] = @ssh.exec!("sudo kubeadm token create --print-join-command")
       end

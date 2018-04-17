@@ -61,5 +61,9 @@ module Pharos
     def self.cluster_context
       @@cluster_context ||= {} # rubocop:disable Style/ClassVars
     end
+
+    def info(msg)
+      Out.info(@host.address) { msg }
+    end
   end
 end

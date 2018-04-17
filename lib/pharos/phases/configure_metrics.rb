@@ -16,11 +16,11 @@ module Pharos
       end
 
       def configure_heapster
-        Out.info { "Provisioning client certificate for heapster ..." }
+        info "Provisioning client certificate for heapster ..."
         cert_manager = Pharos::Kube::CertManager.new(@master, 'heapster-client-cert', namespace: 'kube-system')
         cert, _key = cert_manager.ensure_client_certificate(user: 'heapster')
 
-        Out.info { "Configuring heapster ..." }
+        info "Configuring heapster ..."
         Pharos::Kube.apply_stack(
           @master.address, 'heapster',
           version: '1.5.1',

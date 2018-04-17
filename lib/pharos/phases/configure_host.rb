@@ -18,24 +18,24 @@ module Pharos
       )
 
       def call
-        Out.info { "Configuring essential packages ..." }
+        info "Configuring essential packages ..."
         exec_script('configure-essentials.sh')
 
-        Out.info { "Configuring package repositories ..." }
+        info "Configuring package repositories ..."
         configure_repos
 
-        Out.info { "Configuring netfilter ..." }
+        info "Configuring netfilter ..."
         exec_script('configure-netfilter.sh')
 
         if docker?
-          Out.info { "Configuring container runtime (docker) packages ..." }
+          info "Configuring container runtime (docker) packages ..."
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
             DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2"
           )
         elsif crio?
-          Out.info { "Configuring container runtime (cri-o) packages ..." }
+          info "Configuring container runtime (cri-o) packages ..."
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,

@@ -12,7 +12,7 @@ module Pharos
       )
 
       def call
-        Out.info { 'Installing cfssl ...' }
+        info 'Installing cfssl ...'
         exec_script(
           'configure-cfssl.sh',
           ARCH: @host.cpu_arch.name

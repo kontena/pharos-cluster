@@ -16,15 +16,15 @@ module Pharos
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
 
       def call
-        Out.info { "Checking if Kubernetes control plane is already initialized ..." }
+        info "Checking if Kubernetes control plane is already initialized ..."
         if install?
-          Out.info { "Kubernetes control plane is not initialized, proceeding to initialize ..." }
+          info "Kubernetes control plane is not initialized, proceeding to initialize ..."
           install
         elsif upgrade?
-          Out.info { "Upgrading Kubernetes control plane ..." }
+          info "Upgrading Kubernetes control plane ..."
           upgrade
         else
-          Out.info { "Kubernetes control plane is up-to-date." }
+          info "Kubernetes control plane is up-to-date."
           configure
         end
       end
@@ -49,7 +49,7 @@ module Pharos
 
         # Copy etcd certs over if needed
         if @config.etcd&.certificate
-          Out.info { "Pushing external etcd certificates ..." }
+          info "Pushing external etcd certificates ..."
           copy_external_etcd_certs
         end
 
@@ -61,7 +61,7 @@ module Pharos
         copy_kube_certs
         configure_secrets_encryption
 
-        Out.info { "Initializing control plane ..." }
+        info "Initializing control plane ..."
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm init --ignore-preflight-errors all --skip-token-print --config #{tmp_file}")
@@ -69,7 +69,7 @@ module Pharos
 
         cache_kube_certs
 
-        Out.info { "Initialization of control plane succeeded!" }
+        info "Initialization of control plane succeeded!"
         @ssh.exec!('install -m 0700 -d ~/.kube')
         @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
@@ -319,7 +319,7 @@ module Pharos
       end
 
       def configure_secrets_encryption
-        Out.info { "Creating secrets encryption configuration ..." }
+        info "Creating secrets encryption configuration ..."
         @ssh.exec!("sudo install -m 0700 -d #{SECRETS_CFG_DIR}")
         # Generate keys
         key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
@@ -334,7 +334,7 @@ module Pharos
       end
 
       def upgrade
-        Out.info { "Upgrading control plane ..." }
+        info "Upgrading control plane ..."
         exec_script(
           "install-kubeadm.sh",
           VERSION: Pharos::KUBEADM_VERSION,
@@ -347,13 +347,13 @@ module Pharos
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
         end
-        Out.info { "Control plane upgrade succeeded!" }
+        info "Control plane upgrade succeeded!"
 
         configure_kubelet
       end
 
       def push_audit_config
-        Out.info { "Pushing audit configs to master ..." }
+        info "Pushing audit configs to master ..."
         @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
         @ssh.file("#{AUDIT_CFG_DIR}/webhook.yml").write(
           parse_resource_file('audit/webhook-config.yml.erb', server: @config.audit.server)
@@ -363,11 +363,11 @@ module Pharos
 
       def push_authentication_token_webhook_config
         webhook_config = @config.authentication.token_webhook.config
-        Out.info { "Generating token authentication webhook config ..." }
+        info "Generating token authentication webhook config ..."
         auth_token_webhook_config = generate_authentication_token_webhook_config(webhook_config)
-        Out.info { "Pushing token authentication webhook config ..." }
+        info "Pushing token authentication webhook config ..."
         upload_authentication_token_webhook_config(auth_token_webhook_config)
-        Out.info { "Pushing token authentication webhook certificates ..." }
+        info "Pushing token authentication webhook certificates ..."
         upload_authentication_token_webhook_certs(webhook_config)
       end
 
