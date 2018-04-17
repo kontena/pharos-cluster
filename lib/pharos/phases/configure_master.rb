@@ -326,16 +326,16 @@ module Pharos
       end
 
       def secrets_encryption_exist?
-        logger.debug { "Checking if secrets encryption is already configured" }
+        logger.debug { "Checking if secrets encryption is already configured ..." }
         cfg_file = @ssh.file(SECRETS_CFG_FILE)
         return false unless cfg_file.exist?
         return false unless cfg_file.read.match?(/aescbc/)
-
+        logger.debug { "Secrets encryption is already configured ..." }
         true
       end
 
       def configure_secrets_encryption
-        logger.info { "Creating secrets encryption configuration" }
+        logger.info { "Creating secrets encryption configuration ..." }
         @ssh.exec!("sudo install -m 0700 -d #{SECRETS_CFG_DIR}")
         # Generate keys
         key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
