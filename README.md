@@ -204,7 +204,7 @@ cloud:
   provider: aws
 ```
 
-### Options
+#### Options
 
 - `provider` - specify used cloud provider (default: no cloud provider)
 
