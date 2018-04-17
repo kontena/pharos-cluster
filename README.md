@@ -208,6 +208,19 @@ cloud:
 
 - `provider` - specify used cloud provider (default: no cloud provider)
 
+### `kube-proxy`
+
+The `kube-proxy` can be configured to run in [different operating modes](https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies). If the default `iptables` mode is not appropriate, then this can also be configured to use the `userspace` or [(experimental) `ipvs`](https://github.com/kubernetes/kubernetes/tree/master/pkg/proxy/ipvs) modes.
+
+```yaml
+kube_proxy:
+  mode: ipvs
+```
+
+#### Options
+
+- `mode` - one of `userspace`, `iptables` (default) or `ipvs` (experimental)
+
 ### Usage with Terraform
 
 Pharos Cluster can read host information from Terraform json output. In this scenario cluster.yml does not need to have `hosts` at all.
