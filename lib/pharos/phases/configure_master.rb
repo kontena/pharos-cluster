@@ -112,19 +112,7 @@ module Pharos
         # Configure audit related things if needed
         configure_audit_webhook(config) if @config.audit&.server
 
-        if @config.kube_proxy
-          config['kubeProxy'] = {
-            'config' => {}
-          }
-
-          if @config.kube_proxy.mode
-            config['kubeProxy']['config']['mode'] = @config.kube_proxy.mode
-          end
-
-          if @config.kube_proxy.mode == 'ipvs'
-            config['kubeProxy']['config']['featureGates'] = 'SupportIPVSProxyMode=true'
-          end
-        end
+        configure_kube_proxy(config) if @config.kube_proxy
 
         config
       end
@@ -293,6 +281,21 @@ module Pharos
         end
 
         config
+      end
+
+      # @param config [Hash]
+      def configure_kube_proxy(config)
+        config['kubeProxy'] = {
+          'config' => {}
+        }
+
+        if @config.kube_proxy.mode
+          config['kubeProxy']['config']['mode'] = @config.kube_proxy.mode
+        end
+
+        if @config.kube_proxy.mode == 'ipvs'
+          config['kubeProxy']['config']['featureGates'] = 'SupportIPVSProxyMode=true'
+        end
       end
 
       # @param config [Hash]
