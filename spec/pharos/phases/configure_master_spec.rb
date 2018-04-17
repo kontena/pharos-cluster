@@ -251,33 +251,4 @@ describe Pharos::Phases::ConfigureMaster do
       end
     end
   end
-
-  describe '#secrets_encryption_exist' do
-
-    subject { described_class.new(ssh: ssh) }
-
-    let(:ssh) { instance_double(Pharos::SSH::Client, :file => remote_file) }
-
-    let(:remote_file) { double }
-
-    it 'returns false if no config file existing' do
-      subject.instance_variable_set(:@ssh, ssh)
-      expect(remote_file).to receive(:exist?).and_return(false)
-      expect(subject.secrets_encryption_exist?).to be_falsey
-    end
-
-    it 'returns false if aescbc not configured' do
-      subject.instance_variable_set(:@ssh, ssh)
-      expect(remote_file).to receive(:exist?).and_return(true)
-      expect(remote_file).to receive(:read).and_return(fixture("secrets_cfg_no_encryption.yaml"))
-      expect(subject.secrets_encryption_exist?).to be_falsey
-    end
-
-    it 'returns true if aescbc already configured' do
-      subject.instance_variable_set(:@ssh, ssh)
-      expect(remote_file).to receive(:exist?).and_return(true)
-      expect(remote_file).to receive(:read).and_return(fixture("secrets_cfg.yaml"))
-      expect(subject.secrets_encryption_exist?).to be_truthy
-    end
-  end
 end
