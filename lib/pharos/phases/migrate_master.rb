@@ -3,6 +3,8 @@
 module Pharos
   module Phases
     class MigrateMaster < Pharos::Phase
+      title "Migrate master"
+
       def call
         migrate_0_5_to_0_6 if migrate_0_5_to_0_6?
       end
