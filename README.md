@@ -46,17 +46,17 @@ Pharos Cluster executable can be downloaded from [https://github.com/kontena/pha
 
 The following ports are used by the `pharos-cluster` management tool, as well as between nodes in the same cluster. These ports are all authenticated, and can safely be left open for public access if desired.
 
-| Protocol    | Port        | Service         | Hosts / Addon         | Notes
-|-------------|-------------|-----------------|-----------------------|-------
-| TCP         | 22          | SSH             | All                   | authenticated management channel for `pharos-cluster` operations using SSH keys
-| TCP         | 2379        | etcd clients    | Master                | authenticated etcd client API using TLS client certs between master hosts
-| TCP         | 2380        | etcd peers      | Master                | authenticated etcd peers API using TLS client certs between master hosts
-| TCP         | 6443        | kube-apiserver  | Master                | authenticated kube API for `pharos-cluster`, `kubectl` and worker node `kubelet` access using kube API tokens, RBAC
-| TCP         | 6783        | weave control   | All (weave)           | authenticated Weave peer control connections using the shared weave secret
-| UDP         | 6783        | weave dataplane | All (weave)           | authenticated Weave `sleeve` fallback using the shared weave secret
-| UDP         | 6784        | weave dataplane | All (weave)           | unauthenticated Weave `fastdp` (VXLAN), only used for peers on `network.trusted_subnets` networks
-| ESP (IPSec) |             | weave dataplane | All (weave)           | authenticated Weave `fastdp` (IPsec encapsulated UDP port 6784 VXLAN) using IPSec SAs established over the control channel
-| TCP         | 10250       | kubelet         | All                   | authenticated kubelet API for the master node `kube-apiserver` (and `heapster`/`metrics-server` addons) using TLS client certs
+| Protocol    | Port        | Service         | Hosts                   | Notes
+|-------------|-------------|-----------------|-------------------------|-------
+| TCP         | 22          | SSH             | CLI => All              | authenticated management channel for `pharos-cluster` operations using SSH keys
+| TCP         | 2379        | etcd clients    | Master <=> Master       | authenticated etcd client API using TLS client certs
+| TCP         | 2380        | etcd peers      | Master <=> Master       | authenticated etcd peers API using TLS client certs
+| TCP         | 6443        | kube-apiserver  | Worker, CLI => Master   | authenticated kube API using kube TLS client certs, ServiceAccount tokens with RBAC
+| TCP         | 6783        | weave control   | Host <=> Host           | authenticated Weave peer control connections using the shared weave secret
+| UDP         | 6783        | weave dataplane | Host <=> Host           | authenticated Weave `sleeve` fallback using the shared weave secret
+| UDP         | 6784        | weave dataplane | Host <=> Host (trusted) | unauthenticated Weave `fastdp` (VXLAN), only used for peers on `network.trusted_subnets` networks
+| ESP (IPSec) |             | weave dataplane | Host <=> Host           | authenticated Weave `fastdp` (IPsec encapsulated UDP port 6784 VXLAN) using IPSec SAs established over the control channel
+| TCP         | 10250       | kubelet         | Master, Worker => Host  | authenticated kubelet API for the master node `kube-apiserver` (and `heapster`/`metrics-server` addons) using TLS client certs
 
 If using the `ingress-nginx` addon, then TCP ports 80/443 on the worker nodes (or nodes matching `addons.ingress-nginx.node_selector`) must also be opened for public access.
 
