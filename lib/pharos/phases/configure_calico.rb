@@ -20,12 +20,7 @@ module Pharos
       )
 
       def validate
-        case @host.cpu_arch.name
-        when 'amd64'
-
-        else
-          fail "Unsupported CPU architecture: #{@host.cpu_arch.name}"
-        end
+        fail "Unsupported CPU architecture: #{@host.cpu_arch.name}" unless @host.cpu_arch.name == 'amd64'
       end
 
       def call

@@ -43,7 +43,6 @@ module Pharos
             optional(:trusted_subnets).each(type?: String)
           end
           optional(:calico).schema do
-
           end
         end
         optional(:etcd).schema do
