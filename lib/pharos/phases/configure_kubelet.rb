@@ -14,7 +14,7 @@ module Pharos
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
 
       def call
-        configure_cni
+        configure_weave_cni if @config.network.provider == 'weave'
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
@@ -51,7 +51,7 @@ module Pharos
         )
       end
 
-      def configure_cni
+      def configure_weave_cni
         exec_script('configure-weave-cni.sh')
       end
 
