@@ -93,6 +93,8 @@ module Pharos
           }
         }
 
+        config['noTaintMaster'] = true if @host.no_taint_master
+
         if @host.container_runtime == 'cri-o'
           config['criSocket'] = '/var/run/crio/crio.sock'
         end
