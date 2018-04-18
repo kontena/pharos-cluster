@@ -71,7 +71,9 @@ module Pharos
     end
 
     def format_hosts(hosts)
-      if hosts.all? { |h| h.role == 'worker' }
+      if hosts.size == config.hosts.size
+        "(on all hosts)"
+      elsif hosts.all? { |h| h.role == 'worker' }
         "(on worker host#{'s' if hosts.size > 1 })"
       elsif hosts.all? { |h| h.role == 'master' }
         "(on master host#{'s' if hosts.size > 1 })"
