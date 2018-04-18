@@ -9,7 +9,7 @@ module Pharos
     end
 
     def to_s
-      "#{self.class.title} @ #{@host}"
+      "#{self.class.title} @ #{@host.address} (#{@host.role})"
     end
 
     def self.register_component(component)
@@ -60,8 +60,11 @@ module Pharos
       @@cluster_context ||= {} # rubocop:disable Style/ClassVars
     end
 
-    def info(msg)
-      Out.info(@host.address) { msg }
+    %i(debug info warn error fatal puts).each do |meth|
+      define_method meth do |msg|
+        Out.send(meth, @host.address) { msg }
+      end
+      private meth
     end
   end
 end
