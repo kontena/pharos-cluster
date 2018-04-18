@@ -102,14 +102,14 @@ module Pharos
       manager.load
       manager.validate
 
-      Out.header "Starting to craft cluster ..."
+      Out.header "Starting to craft the cluster ..."
       manager.apply_phases
 
       Out.header "Configuring addons ..."
       manager.apply_addons
 
       craft_time = Time.now - start_time
-      Out.header "Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})"
+      Out.header "The cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})"
       Out.info "You can connect to the cluster with kubectl using:"
       Out.info "export KUBECONFIG=~/.pharos/#{config.master_host.api_address}"
 
