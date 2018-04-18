@@ -65,9 +65,19 @@ module Pharos
     end
 
     def apply_phase(phase_class, hosts, **options)
-      Out.sub_header "#{phase_class.title} @ #{hosts.join(' ')}"
+      Out.sub_header "#{phase_class.title} #{format_hosts(hosts)}"
 
       phase_manager.apply(phase_class, hosts, **options)
+    end
+
+    def format_hosts(hosts)
+      if hosts.all? { |h| h.role == 'worker' }
+        "(on worker host#{'s' if hosts.size > 1 })"
+      elsif hosts.all? { |h| h.role == 'master' }
+        "(on master host#{'s' if hosts.size > 1 })"
+      else
+        ""
+      end
     end
 
     def apply_addons
