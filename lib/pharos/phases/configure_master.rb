@@ -59,7 +59,6 @@ module Pharos
         push_authentication_token_webhook_config if @config.authentication&.token_webhook
 
         copy_kube_certs
-        configure_secrets_encryption
 
         info "Initializing control plane ..."
 
