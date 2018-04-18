@@ -178,6 +178,20 @@ describe Pharos::Phases::ConfigureMaster do
         expect(config.dig('criSocket')).to eq('/var/run/crio/crio.sock')
       end
     end
+
+    context 'with multiple masters' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..3).map { |i| Pharos::Configuration::Host.new(role: 'master') },
+        network: {},
+        addons: {},
+        etcd: {}
+      ) }
+
+      it 'comes with proper apiserver-count' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'apiserver-count')).to eq("3")
+      end
+    end
   end
 
   describe '#generate_authentication_token_webhook_config' do

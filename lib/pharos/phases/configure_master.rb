@@ -108,7 +108,9 @@ module Pharos
           configure_internal_etcd(config)
         end
 
-        config['apiServerExtraArgs'] = {}
+        config['apiServerExtraArgs'] = {
+          'apiserver-count' => @config.master_hosts.size.to_s
+        }
         config['apiServerExtraVolumes'] = []
 
         # Only if authentication token webhook option are given
