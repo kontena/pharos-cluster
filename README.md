@@ -46,9 +46,9 @@ Pharos Cluster executable can be downloaded from [https://github.com/kontena/pha
 
 The following ports are used by the `pharos-cluster` management tool, as well as between nodes in the same cluster. These ports are all authenticated, and can safely be left open for public access if desired.
 
-| Protocol    | Port        | Service         | Hosts                   | Notes
+| Protocol    | Port        | Service         | Direction               | Notes
 |-------------|-------------|-----------------|-------------------------|-------
-| TCP         | 22          | SSH             | CLI => All              | authenticated management channel for `pharos-cluster` operations using SSH keys
+| TCP         | 22          | SSH             | CLI => Host             | authenticated management channel for `pharos-cluster` operations using SSH keys
 | TCP         | 2379        | etcd clients    | Master <=> Master       | authenticated etcd client API using TLS client certs
 | TCP         | 2380        | etcd peers      | Master <=> Master       | authenticated etcd peers API using TLS client certs
 | TCP         | 6443        | kube-apiserver  | Worker, CLI => Master   | authenticated kube API using kube TLS client certs, ServiceAccount tokens with RBAC
