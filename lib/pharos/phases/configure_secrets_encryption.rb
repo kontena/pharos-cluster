@@ -21,11 +21,11 @@ module Pharos
 
       # @return [Hash, nil]
       def read_config_keys
-        Out.debug(@host.address) { "Checking if secrets encryption is already configured ..." }
+        debug "Checking if secrets encryption is already configured ..."
         file = @ssh.file(SECRETS_CFG_FILE)
         return nil unless file.exist?
 
-        Out.debug(@host.address) { "Reusing existing encryption keys ..." }
+        debug "Reusing existing encryption keys ..."
         config = Pharos::YamlFile.new(file).load
 
         keys = {}
