@@ -21,11 +21,11 @@ module Pharos
 
       # @return [Hash, nil]
       def read_config_keys
-        logger.debug { "Checking if secrets encryption is already configured ..." }
+        Out.debug(@host.address) { "Checking if secrets encryption is already configured ..." }
         file = @ssh.file(SECRETS_CFG_FILE)
         return nil unless file.exist?
 
-        logger.debug { "Reusing existing encryption keys ..." }
+        Out.debug(@host.address) { "Reusing existing encryption keys ..." }
         config = Pharos::YamlFile.new(file).load
 
         keys = {}
@@ -43,7 +43,7 @@ module Pharos
 
       # @return [Hash]
       def generate_keys
-        logger.info { "Generating new encryption keys ..." }
+        info "Generating new encryption keys ..."
 
         {
           'key1' => Base64.strict_encode64(SecureRandom.random_bytes(32)),
@@ -55,7 +55,7 @@ module Pharos
         cfg_file = @ssh.file(SECRETS_CFG_FILE)
         return if cfg_file.exist?
 
-        logger.info { "Creating secrets encryption configuration ..." }
+        info "Creating secrets encryption configuration ..."
         @ssh.exec!("test -d #{SECRETS_CFG_DIR} || sudo install -m 0700 -d #{SECRETS_CFG_DIR}")
         cfg_file.write(parse_resource_file('secrets/encryption-config.yml.erb', keys))
         cfg_file.chmod('0700')
