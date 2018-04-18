@@ -24,7 +24,7 @@ module Pharos
 
     def configure_logger
       @logger = Logger.new($stdout)
-      @logger.level = Logger::INFO
+      @logger.level = Logger::WARN
       @logger.formatter = STDOUT_FORMATTER if $stdout.tty?
     end
 
@@ -56,7 +56,13 @@ module Pharos
     # Set debug on/off
     # @param [TrueClass,FalseClass]
     def debug=(bool)
-      @logger.level = bool ? Logger::DEBUG : Logger::INFO
+      @logger.level = bool ? Logger::DEBUG : Logger::WARN
+    end
+
+    # Set verbose on/off
+    # @param [TrueClass,FalseClass]
+    def verbose=(bool)
+      @logger.level = bool ? Logger::INFO : Logger::WARN
     end
 
     # Set color on/off

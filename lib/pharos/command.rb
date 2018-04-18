@@ -14,5 +14,9 @@ module Pharos
     option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
       Out.debug = true
     end
+
+    option ['-V', '--verbose'], :flag, "enable verbose output" do
+      Out.verbose = true
+    end
   end
 end
