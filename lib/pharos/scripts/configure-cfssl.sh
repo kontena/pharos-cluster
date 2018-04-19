@@ -8,7 +8,7 @@ else
     MIRROR="http://ports.ubuntu.com"
 fi
 
-CFSSL_URL="${MIRROR}/pool/universe/g/golang-github-cloudflare-cfssl/golang-cfssl_${VERSION?"Need to set VERSION"}_${ARCH}.deb"
+CFSSL_URL="${MIRROR}/pool/universe/g/golang-github-cloudflare-cfssl/golang-cfssl_${VERSION:?"Need to set VERSION"}_${ARCH}.deb"
 
 if [ ! -e  /usr/bin/cfssl ]; then
     curl -sL -o /tmp/cfssl.deb ${CFSSL_URL}
