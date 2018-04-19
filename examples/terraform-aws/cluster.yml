@@ -8,12 +8,6 @@ addons:
     enabled: true
     node_selector:
       ingress: "nginx"
-  cert-manager:
-    enabled: true
-    issuer:
-      name: letsencrypt
-      server: https://acme-v01.api.letsencrypt.org/directory
-      email: jari@kontena.io
   host-upgrades:
     enabled: true
     interval: "7d"
