@@ -53,17 +53,14 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def etcd_hosts
+      return [] if etcd&.endpoints
+
       etcd_hosts = hosts.select { |h| h.role == 'etcd' }
       if etcd_hosts.empty?
         master_hosts
       else
         etcd_hosts
       end
-    end
-
-    # @return [Pharos::Configuration::Host]
-    def etcd_host
-      etcd_hosts[0]
     end
   end
 end
