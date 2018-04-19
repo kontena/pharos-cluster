@@ -24,7 +24,6 @@ module Pharos
       # @param host [String]
       # @return [Kubeclient::Client]
       def client(version = 'v1')
-        @clients ||= {}
         @clients[version] ||= Pharos::Kube::Client.for_host(@host, version)
       end
 
