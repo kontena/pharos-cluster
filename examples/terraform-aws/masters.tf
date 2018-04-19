@@ -23,7 +23,7 @@ resource "aws_instance" "pharos_master" {
 
   tags = "${map(
     "Name", "${var.cluster_name}-master-${count.index + 1}",
-    "${local.kube_cluster_tag}", "owned"
+    "${local.kube_cluster_tag}", "shared"
   )}"
 
   instance_type          = "${var.master_type}"
