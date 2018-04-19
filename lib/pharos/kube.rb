@@ -23,10 +23,15 @@ module Pharos
       Kubeclient::Config.read(host_config_path(host))
     end
 
+    # @return [String]
+    def self.config_dir
+      File.join(Dir.home, '.pharos')
+    end
+
     # @param host [Pharos::Configuration::Host]
     # @return [String]
     def self.host_config_path(host)
-      File.join(Dir.home, ".pharos/#{host.api_address}")
+      File.join(config_dir, host.api_address)
     end
 
     # @param host [Pharos::Configuration::Host]
