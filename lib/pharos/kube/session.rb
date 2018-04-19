@@ -11,6 +11,16 @@ module Pharos
         @clients = {}
       end
 
+      # @return [String]
+      def to_s
+        @host.to_s
+      end
+
+      # @return [Boolean]
+      def configured?
+        Pharos::Kube.host_config_exists?(@host)
+      end
+
       # @param host [String]
       # @return [Kubeclient::Client]
       def client(version = 'v1')

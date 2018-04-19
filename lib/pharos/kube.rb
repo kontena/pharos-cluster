@@ -36,7 +36,7 @@ module Pharos
 
     # @param host [Pharos::Configuration::Host]
     # @return [Boolean]
-    def self.config_exists?(host)
+    def self.host_config_exists?(host)
       File.exist?(host_config_path(host))
     end
   end

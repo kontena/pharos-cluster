@@ -57,6 +57,8 @@ module Pharos
 
     # @return [Pharos::Phase]
     def prepare_phase(phase_class, host, ssh: false, kube: false, **options)
+      fail "kube (#{kube}) is not yet configured for phase: #{phase_class}" if kube && !@kube_session.configured?
+
       options[:config] = @config
       options[:ssh] = @ssh_manager.client_for(host) if ssh
       options[:kube] = @kube_session if kube
