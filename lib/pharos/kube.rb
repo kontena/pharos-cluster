@@ -63,7 +63,7 @@ module Pharos
       session(host).stack(name, vars).apply
     end
 
-    def self.prune_stack(host, name, checksum)
+    def self.prune_stack(host, name, checksum = nil)
       session(host).stack(name).prune(checksum)
     end
   end

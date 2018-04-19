@@ -50,7 +50,7 @@ module Pharos
 
       # @param checksum [String]
       # @return [Array<Kubeclient::Resource>]
-      def prune(checksum)
+      def prune(checksum = nil)
         pruned = []
 
         @session.api_groups.each do |api_group|
@@ -62,9 +62,13 @@ module Pharos
             group_client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
           end
 
-          prunables = objects.select do |obj|
-            annotations = obj.metadata.annotations
-            annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+          if checksum
+            prunables = objects.select do |obj|
+              annotations = obj.metadata.annotations
+              annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+            end
+          else
+            prunables = objects
           end
 
           prunables.each do |obj|
