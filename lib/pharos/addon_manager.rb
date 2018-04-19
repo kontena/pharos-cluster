@@ -18,8 +18,10 @@ module Pharos
     end
 
     # @param config [Pharos::Configuration]
-    def initialize(config)
+    # @param kube_session [Pharos::Kube::Session]
+    def initialize(config, kube_session: )
       @config = config
+      @kube_session = kube_session
     end
 
     def configs
@@ -42,8 +44,8 @@ module Pharos
 
     def options
       {
-        kube: Pharos::Kube.session(@config.master_host),
-        cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs
+        kube: @kube_session, # can only be used after Phases::ConfigureClient runs!
+        cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs!
       }
     end
 

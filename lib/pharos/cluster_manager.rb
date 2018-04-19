@@ -12,6 +12,13 @@ module Pharos
       @pastel = opts.fetch(:pastel) { Pastel.new }
     end
 
+    # XXX: cannot be used until after Phases::ConfigureClient has completed!
+    #
+    # @return [Pharos::Kube::Session]
+    def kube_session
+      @kube_session ||= Pharos::Kube.session(@config.master_host)
+    end
+
     # @return [Pharos::SSH::Manager]
     def ssh_manager
       @ssh_manager ||= Pharos::SSH::Manager.new
@@ -21,12 +28,15 @@ module Pharos
     def phase_manager
       @phase_manager = Pharos::PhaseManager.new(@config,
         ssh_manager: ssh_manager,
+        kube_session: kube_session,
       )
     end
 
     # @return [Pharos::AddonManager]
     def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new(@config)
+      @addon_manager ||= Pharos::AddonManager.new(@config,
+        kube_session: kube_session,
+      )
     end
 
     # load phases/addons

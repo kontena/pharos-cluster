@@ -11,10 +11,13 @@ module Pharos
       end
     end
 
-    # @param dirs [Array<String>]
-    def initialize(config, ssh_manager:)
+    # @param config [Pharos::Config]
+    # @param ssh_manager [Pharos::SSH::Manager]
+    # @param kube_session [Pharos::Kube::Session]
+    def initialize(config, ssh_manager:, kube_session: )
       @config = config
       @ssh_manager = ssh_manager
+      @kube_session = kube_session
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
@@ -56,7 +59,7 @@ module Pharos
     def prepare_phase(phase_class, host, ssh: false, kube: false, **options)
       options[:config] = @config
       options[:ssh] = @ssh_manager.client_for(host) if ssh
-      options[:kube] = Pharos::Kube.session(@config.master_host) if kube
+      options[:kube] = @kube_session if kube
 
       phase_class.new(host, **options)
     end
