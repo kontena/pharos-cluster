@@ -42,7 +42,7 @@ module Pharos
 
     def options
       {
-        master: @config.master_host,
+        kube: Pharos::Kube.session(@config.master_host),
         cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs
       }
     end
@@ -51,11 +51,11 @@ module Pharos
       with_enabled_addons do |addon_class, config_hash|
         config = addon_class.validate(config_hash)
 
-        yield addon_class.new(config, enabled: true, master: @master, **options)
+        yield addon_class.new(config, enabled: true, **options)
       end
 
       with_disabled_addons do |addon_class|
-        yield addon_class.new(nil, enabled: false, master: @master, **options)
+        yield addon_class.new(nil, enabled: false, **options)
       end
     end
 
