@@ -52,7 +52,7 @@ module Pharos
         pruned = []
 
         @session.api_groups.each do |api_group|
-          group_client = @session.resource_client(api_group.preferredVersion.groupVersion)
+          group_client = @session.client(api_group.preferredVersion.groupVersion)
 
           entities = group_client.entities.reject { |type, _| type.end_with?('_review') }
 

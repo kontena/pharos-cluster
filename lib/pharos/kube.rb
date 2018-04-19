@@ -10,44 +10,26 @@ module Pharos
     autoload :Stack, 'pharos/kube/stack'
     autoload :Session, 'pharos/kube/session'
 
-    # @param host [String]
-    # @return [Kubeclient::Client]
-    def self.client(host, version = 'v1')
-      @kube_client ||= {}
-      unless @kube_client[version]
-        config = host_config(host)
-        path_prefix = version == 'v1' ? 'api' : 'apis'
-        api_version, api_group = version.split('/').reverse
-        @kube_client[version] = Pharos::Kube::Client.new(
-          (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
-          api_version,
-          ssl_options: config.context.ssl_options,
-          auth_options: config.context.auth_options
-        )
-      end
-      @kube_client[version]
-    end
-
-    # @param host [String]
+    # @param host [Pharos::Configuration::Host]
     # @return [Pharos::Kube::Session]
     def self.session(host)
       @sessions ||= {}
       @sessions[host] ||= Session.new(host)
     end
 
-    # @param host [String]
+    # @param host [Pharos::Configuration::Host]
     # @return [Kubeclient::Config]
     def self.host_config(host)
       Kubeclient::Config.read(host_config_path(host))
     end
 
-    # @param host [String]
+    # @param host [Pharos::Configuration::Host]
     # @return [String]
     def self.host_config_path(host)
-      File.join(Dir.home, ".pharos/#{host}")
+      File.join(Dir.home, ".pharos/#{host.api_address}")
     end
 
-    # @param host [String]
+    # @param host [Pharos::Configuration::Host]
     # @return [Boolean]
     def self.config_exists?(host)
       File.exist?(host_config_path(host))

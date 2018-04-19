@@ -21,7 +21,7 @@ module Pharos
             raise TypeError, "Expected an instance of KubeClient::Resource or Hash"
           end
         @api_version = @resource.apiVersion || 'v1'
-        @client = session.resource_client(@api_version)
+        @client = session.client(@api_version)
         freeze
       end
 

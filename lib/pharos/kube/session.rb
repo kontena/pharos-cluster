@@ -5,10 +5,17 @@ require_relative '../kube'
 module Pharos
   module Kube
     class Session
-      # @param host [String,Phaross::Configuration::Host]
+      # @param host [Pharos::Configuration::Host]
       def initialize(host)
-        @host = host.respond_to?(:api_address) ? host.api_address : host
-        freeze
+        @host = host
+        @clients = {}
+      end
+
+      # @param host [String]
+      # @return [Kubeclient::Client]
+      def client(version = 'v1')
+        @clients ||= {}
+        @clients[version] ||= Pharos::Kube::Client.for_host(@host, version)
       end
 
       # Returns a new resource associated with this session
@@ -27,17 +34,7 @@ module Pharos
 
       # List of api groups available for the session
       def api_groups
-        resource_client('').apis.groups
-      end
-
-      # A Pharos::Kube::Client instance for the session's host and
-      # the specified api version.
-      # @param version [String]
-      # @return [Pharos::Kube::Client]
-      # @yield [Pharos::Kube::Client]
-      def resource_client(version = 'v1')
-        client = Pharos::Kube.client(@host, version)
-        block_given? ? yield(client) : client
+        client('').apis.groups
       end
     end
   end
