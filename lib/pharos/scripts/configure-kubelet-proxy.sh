@@ -28,6 +28,7 @@ if [ ! -e /etc/kubernetes/kubelet.conf ]; then
     mkdir -p /etc/systemd/system/kubelet.service.d
     cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-kubelet-proxy.conf
 [Service]
+ExecStartPre=-/sbin/swapoff -a
 ExecStart=
 ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0 --address=127.0.0.1
 EOF
