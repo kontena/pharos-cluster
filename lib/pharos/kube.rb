@@ -59,10 +59,6 @@ module Pharos
       session(host).stack(name, vars).apply
     end
 
-    def self.apply_resource(host, name, vars = {})
-      session(host).stack(name, vars).apply
-    end
-
     def self.prune_stack(host, name, checksum = nil)
       session(host).stack(name).prune(checksum)
     end
