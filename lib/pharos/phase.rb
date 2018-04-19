@@ -14,8 +14,17 @@ module Pharos
       "#{self.class.title} @ #{@host}"
     end
 
-    def self.register_component(component)
-      Pharos::Phases.register_component component
+    # Register a component to the Pharos::Phases component registry
+    # @param name [String]
+    # @param version [String]
+    # @param license [String]
+    def self.register_component(name, version:, license:)
+      slug = name.gsub(/[^a-z0-9]+/, '_')
+      Pharos::Phases.components[slug] = Pharos::Phases::Component.new(
+        name: name.to_s,
+        version: version,
+        license: license
+      )
     end
 
     # @param host [Pharos::Configuration::Host]
@@ -70,6 +79,12 @@ module Pharos
     # @return [Hash]
     def self.cluster_context
       @@cluster_context ||= {} # rubocop:disable Style/ClassVars
+    end
+
+    private
+
+    def components
+      Pharos::Phases.components
     end
   end
 end

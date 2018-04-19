@@ -5,13 +5,7 @@ module Pharos
     class ConfigureNetwork < Pharos::Phase
       title "Configure network"
 
-      WEAVE_VERSION = '2.3.0'
-
-      register_component(
-        Pharos::Phases::Component.new(
-          name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0'
-        )
-      )
+      register_component 'weave-net', version: '2.3.0', license: 'Apache License 2.0'
 
       def call
         ensure_passwd
@@ -45,7 +39,7 @@ module Pharos
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,
-          version: WEAVE_VERSION
+          version: components.weave_net.version
         )
       end
 
