@@ -25,8 +25,8 @@ module Pharos
           'configure-etcd.sh',
           PEER_IP: @host.private_address || @host.address,
           INITIAL_CLUSTER: initial_cluster.join(','),
-          ETCD_VERSION: components.etcd.version,
-          KUBE_VERSION: components.kubernetes.version,
+          ETCD_VERSION: components['etcd'].version,
+          KUBE_VERSION: components['kubernetes'].version,
           ARCH: @host.cpu_arch.name,
           PEER_NAME: "etcd#{peer_index + 1}"
         )

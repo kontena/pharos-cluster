@@ -19,8 +19,7 @@ module Pharos
     # @param version [String]
     # @param license [String]
     def self.register_component(name, version:, license:)
-      slug = name.gsub(/[^a-z0-9]+/, '_')
-      Pharos::Phases.components[slug] = Pharos::Phases::Component.new(
+      Pharos::Phases.components[name] = Pharos::Phases::Component.new(
         name: name,
         version: version,
         license: license

@@ -12,7 +12,7 @@ module Pharos
         exec_script(
           'configure-cfssl.sh',
           ARCH: @host.cpu_arch.name,
-          VERSION: components.cfssl.version
+          VERSION: components['cfssl'].version
         )
       end
     end

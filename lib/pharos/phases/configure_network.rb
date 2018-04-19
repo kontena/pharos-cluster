@@ -39,7 +39,7 @@ module Pharos
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,
-          version: components.weave_net.version
+          version: components['weave-net'].version
         )
       end
 

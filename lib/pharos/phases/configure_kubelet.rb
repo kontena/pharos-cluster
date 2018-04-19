@@ -32,7 +32,7 @@ module Pharos
       def configure_kubelet_proxy
         exec_script(
           'configure-kubelet-proxy.sh',
-          KUBE_VERSION: components.kubernetes.version,
+          KUBE_VERSION: components['kubernetes'].version,
           ARCH: @host.cpu_arch.name,
           MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
         )
@@ -42,8 +42,8 @@ module Pharos
         logger.info { "Configuring Kubernetes packages ..." }
         exec_script(
           'configure-kube.sh',
-          KUBE_VERSION: components.kubernetes.version,
-          KUBEADM_VERSION: components.kubeadm.version,
+          KUBE_VERSION: components['kubernetes'].version,
+          KUBEADM_VERSION: components['kubeadm'].version,
           ARCH: @host.cpu_arch.name
         )
       end

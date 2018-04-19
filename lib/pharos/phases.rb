@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'dry-struct'
-require 'ostruct'
 
 module Pharos
   module Phases
@@ -13,9 +12,9 @@ module Pharos
       attribute :license, Pharos::Types::String
     end
 
-    class ComponentRegistry < OpenStruct
+    class ComponentRegistry < Hash
       def sort_by(&block)
-        @table.values.sort_by(&block)
+        values.sort_by(&block)
       end
     end
 

@@ -19,7 +19,7 @@ module Pharos
         logger.info { "Configuring heapster ..." }
         Pharos::Kube.apply_stack(
           @master.address, 'heapster',
-          version: components.heapster.version,
+          version: components['heapster'].version,
           arch: @host.cpu_arch,
           client_cert: cert.to_pem
         )

@@ -23,13 +23,13 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{components.docker.version}-0ubuntu1~16.04.2"
+            DOCKER_VERSION: "#{components['docker'].version}-0ubuntu1~16.04.2"
           )
         elsif crio?
           logger.info { "Configuring container runtime (cri-o) packages ..." }
           exec_script(
             'configure-cri-o.sh',
-            CRIO_VERSION: components.cri_o.version,
+            CRIO_VERSION: components['cri_o'].version,
             CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
             CPU_ARCH: @host.cpu_arch.name
           )
