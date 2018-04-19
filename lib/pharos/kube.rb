@@ -13,8 +13,7 @@ module Pharos
     # @param host [Pharos::Configuration::Host]
     # @return [Pharos::Kube::Session]
     def self.session(host)
-      @sessions ||= {}
-      @sessions[host] ||= Session.new(host)
+      Session.new(host)
     end
 
     # @param host [Pharos::Configuration::Host]
