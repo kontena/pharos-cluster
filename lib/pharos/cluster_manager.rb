@@ -72,7 +72,7 @@ module Pharos
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
 
-      apply_phase(Phases::LabelNode, config.hosts, kube: true, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode, config.hosts, kube: true, parallel: false) # NOTE: uses the kube API for each node, not threadsafe
     end
 
     def apply_phase(phase_class, hosts, **options)
