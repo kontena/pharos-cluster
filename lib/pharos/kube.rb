@@ -34,15 +34,5 @@ module Pharos
     def self.config_exists?(host)
       File.exist?(host_config_path(host))
     end
-
-    # Shortcuts / compatibility:
-
-    def self.apply_stack(host, name, vars = {})
-      session(host).stack(name).apply(vars)
-    end
-
-    def self.prune_stack(host, name, checksum = nil)
-      session(host).stack(name).prune(checksum)
-    end
   end
 end
