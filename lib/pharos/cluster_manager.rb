@@ -67,6 +67,8 @@ module Pharos
     end
 
     def apply_phase(phase_class, hosts, **options)
+      return if hosts.empty?
+      
       puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
       phase_manager.apply(phase_class, hosts, **options)
