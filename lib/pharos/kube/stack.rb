@@ -9,12 +9,10 @@ module Pharos
 
       # @param session [Pharos::Kube::Session]
       # @param name [String] stack name
-      # @param vars [Hash] variables for ERB evaluation
-      def initialize(session, name, vars = {})
+      def initialize(session, name)
         @session = session
         @name = name
         @resource_path = RESOURCE_PATH.join(name).freeze
-        @vars = vars
         freeze
       end
 
@@ -26,17 +24,17 @@ module Pharos
 
       # A list of resources
       # @return [Array<Pharos::Kube::Resource>]
-      def resources
+      def load_resources(vars)
         resource_files.map do |resource_file|
-          @session.resource(Pharos::YamlFile.new(resource_file).load(@vars))
+          @session.resource(Pharos::YamlFile.new(resource_file).load(vars))
         end
       end
 
       # Applies the stack onto the kube cluster
       # @return [Array<Kubeclient::Resource>]
-      def apply
+      def apply(**vars)
         with_pruning do |checksum|
-          resources.map do |resource|
+          load_resources(vars).map do |resource|
             metadata = resource.metadata
             metadata.labels ||= {}
             metadata.annotations ||= {}

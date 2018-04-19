@@ -56,7 +56,7 @@ module Pharos
     # Shortcuts / compatibility:
 
     def self.apply_stack(host, name, vars = {})
-      session(host).stack(name, vars).apply
+      session(host).stack(name).apply(vars)
     end
 
     def self.prune_stack(host, name, checksum = nil)
