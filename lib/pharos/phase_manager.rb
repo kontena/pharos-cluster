@@ -12,9 +12,9 @@ module Pharos
     end
 
     # @param dirs [Array<String>]
-    def initialize(ssh_manager:, **options)
+    def initialize(config, ssh_manager:)
+      @config = config
       @ssh_manager = ssh_manager
-      @options = options
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
@@ -53,16 +53,18 @@ module Pharos
     end
 
     # @return [Pharos::Phase]
-    def prepare_phase(phase_class, host, ssh: false, **options)
-      options = @options.merge(options)
-
+    def prepare_phase(phase_class, host, ssh: false, kube: false, **options)
+      options[:config] = @config
       options[:ssh] = @ssh_manager.client_for(host) if ssh
+      options[:kube] = Pharos::Kube.session(@config.master_host) if kube
 
       phase_class.new(host, **options)
     end
 
-    def apply(phase_class, hosts, parallel: false, **options)
-      phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
+    def apply(phase_class, hosts, parallel: false, kube: false, **options)
+      fail "kube is not threadsafe for parallel phases: #{phase_class}" if kube && parallel
+
+      phases = hosts.map { |host| prepare_phase(phase_class, host, kube: kube, **options) }
 
       run(phases, parallel: parallel) do |phase|
         start = Time.now

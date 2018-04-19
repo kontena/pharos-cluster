@@ -21,12 +21,12 @@ module Pharos
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
-    # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, ssh: nil, master: nil)
+    # @param kube [Pharos::Kube::Session]
+    def initialize(host, config: nil, ssh: nil, kube: nil)
       @host = host
       @config = config
       @ssh = ssh
-      @master = master
+      @kube = kube
     end
 
     def logger

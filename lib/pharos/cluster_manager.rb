@@ -19,9 +19,8 @@ module Pharos
 
     # @return [Pharos::AddonManager]
     def phase_manager
-      @phase_manager = Pharos::PhaseManager.new(
+      @phase_manager = Pharos::PhaseManager.new(@config,
         ssh_manager: ssh_manager,
-        config: @config
       )
     end
 
@@ -55,15 +54,15 @@ module Pharos
       apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
 
       # master is now configured and can be used
-      apply_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
-      apply_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
-      apply_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
-      apply_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: @config_content)
+      apply_phase(Phases::ConfigureDNS, [config.master_host], kube: true)
+      apply_phase(Phases::ConfigureNetwork, [config.master_host], kube: true)
+      apply_phase(Phases::ConfigureMetrics, [config.master_host], kube: true)
+      apply_phase(Phases::StoreClusterYAML, [config.master_host], kube: true, config_content: @config_content)
       apply_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
 
-      apply_phase(Phases::LabelNode, config.hosts, master: config.master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode, config.hosts, kube: true, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
     def apply_phase(phase_class, hosts, **options)
