@@ -1,21 +1,23 @@
 require 'pharos/phases/label_node'
 
 describe Pharos::Phases::LabelNode do
-  let(:master) { Pharos::Configuration::Host.new(address: '1.1.1.1') }
+  let(:kube_session) { instance_double(Pharos::Kube::Session) }
   let(:worker) { Pharos::Configuration::Host.new(address: '2.2.2.2', labels: {foo: 'bar'}) }
-  let(:subject) { described_class.new(worker, master: master) }
+  let(:subject) { described_class.new(worker, kube: kube_session) }
 
+  let(:kube_client) { double(:kube_client) }
+
+  before do
+    allow(kube_session).to receive(:client).with(no_args).and_return(kube_client)
+  end
 
   describe '#find_node' do
-    let(:kube) { double(:kube) }
-
     before(:each) do
-      allow(subject).to receive(:kube).and_return(kube)
       allow(subject).to receive(:sleep)
     end
 
     it 'finds node via address' do
-      allow(kube).to receive(:get_nodes).and_return([
+      expect(kube_client).to receive(:get_nodes).and_return([
         Kubeclient::Resource.new({
           status: {
             addresses: [
@@ -28,7 +30,7 @@ describe Pharos::Phases::LabelNode do
     end
 
     it 'returns nil if node not found' do
-      allow(kube).to receive(:get_nodes).and_return([
+      expect(kube_client).to receive(:get_nodes).at_least(:once).and_return([
         Kubeclient::Resource.new({
           status: {
             addresses: [
