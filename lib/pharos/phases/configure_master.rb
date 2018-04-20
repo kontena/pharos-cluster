@@ -181,9 +181,9 @@ module Pharos
       # TODO: lock down permissions on key
       def copy_external_etcd_certs
         @ssh.exec!('sudo mkdir -p /etc/pharos/etcd')
-        @ssh.write_file('/etc/pharos/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
-        @ssh.write_file('/etc/pharos/etcd/certificate.pem', File.read(@config.etcd.certificate))
-        @ssh.write_file('/etc/pharos/etcd/certificate-key.pem', File.read(@config.etcd.key))
+        @ssh.file('/etc/pharos/etcd/ca-certificate.pem').write(File.open(@config.etcd.ca_certificate))
+        @ssh.file('/etc/pharos/etcd/certificate.pem').write(File.open(@config.etcd.certificate))
+        @ssh.file('/etc/pharos/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
       end
 
       # @param config [Hash]
