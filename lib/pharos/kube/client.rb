@@ -10,7 +10,7 @@ module Pharos
       def self.for_host(host, version)
         config = Pharos::Kube.host_config(host)
         path_prefix = version == 'v1' ? 'api' : 'apis'
-        api_version, api_group = version.split('/').reverse
+        api_group, api_version = version.split('/')
 
         new(
           (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
