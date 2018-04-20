@@ -1,0 +1,48 @@
+{
+    "pharos_api": {
+        "sensitive": false,
+        "type": "map",
+        "value": {
+            "endpoint": "api.example.com"
+        }
+    },
+    "pharos_hosts": {
+        "sensitive": false,
+        "type": "map",
+        "value": {
+            "masters": [
+                {
+                    "address": [
+                        "147.75.100.11"
+                    ],
+                    "private_address": [
+                        "10.80.4.139"
+                    ],
+                    "role": "master",
+                    "user": "root"
+                }
+            ],
+            "workers": [
+                {
+                    "address": [
+                        "147.75.102.245",
+                        "147.75.100.113",
+                        "147.75.100.9"
+                    ],
+                    "label": [
+                        {
+                            "foo": "bar"
+                        }
+                    ],
+                    "private_address": [
+                        "10.80.4.129",
+                        "10.80.4.145",
+                        "10.80.4.149"
+                    ],
+                    "role": "worker",
+                    "user": "ubuntu"
+                }
+            ]
+        }
+    }
+}

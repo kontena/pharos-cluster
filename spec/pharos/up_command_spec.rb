@@ -60,4 +60,18 @@ describe Pharos::UpCommand do
       end
     end
   end
+
+  describe '#load_terraform' do
+    let(:config) { Hash.new }
+
+    it 'loads hosts from json file' do
+      subject.load_terraform(fixtures_dir('terraform/tf.json'), config)
+      expect(config['hosts'].size).to eq(4)
+    end
+
+    it 'loads api.endpoint from json file' do
+      subject.load_terraform(fixtures_dir('terraform/with_api_endpoint.json'), config)
+      expect(config.dig('api', 'endpoint')).to eq('api.example.com')
+    end
+  end
 end
