@@ -60,7 +60,7 @@ module Pharos
           end
 
           if checksum
-            objects = objects.select { |obj|
+            objects.select! { |obj|
               annotations = obj.metadata.annotations
               annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
             }
