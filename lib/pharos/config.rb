@@ -14,6 +14,8 @@ module Pharos
   class Config < Dry::Struct
     HOSTS_PER_DNS_REPLICA = 10
 
+    attr_accessor :content
+
     constructor_type :schema
 
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
@@ -61,6 +63,11 @@ module Pharos
       else
         etcd_hosts
       end
+    end
+
+    # @return [Array<Pharos::Configuration::Node>]
+    def etcd_ca_hosts
+      @etcd_ca_hosts ||= etcd_hosts.first(2)
     end
   end
 end

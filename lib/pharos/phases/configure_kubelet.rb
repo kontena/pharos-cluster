@@ -4,6 +4,9 @@ module Pharos
   module Phases
     class ConfigureKubelet < Pharos::Phase
       title "Configure kubelet"
+      runs_on :worker_hosts
+      uses_ssh
+      runs_parallel
 
       register_component(
         Pharos::Phases::Component.new(

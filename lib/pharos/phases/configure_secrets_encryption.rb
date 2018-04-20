@@ -6,6 +6,8 @@ module Pharos
   module Phases
     class ConfigureSecretsEncryption < Pharos::Phase
       title "Configure secrets encryption"
+      runs_on :master_hosts
+      uses_ssh
 
       PHAROS_DIR = '/etc/pharos'
       SECRETS_CFG_DIR = (PHAROS_DIR + '/secrets-encryption').freeze

@@ -4,6 +4,10 @@ module Pharos
   module Phases
     class JoinNode < Pharos::Phase
       title "Join nodes"
+      runs_on :worker_hosts
+      uses_ssh
+      runs_parallel
+
       PROXY_ADDRESS = '127.0.0.1:6443'
 
       def already_joined?

@@ -4,6 +4,10 @@ module Pharos
   module Phases
     class ConfigureEtcd < Pharos::Phase
       title 'Configure etcd'
+      runs_on :etcd_hosts
+      uses_ssh
+      runs_parallel
+
       CA_PATH = '/etc/pharos/pki'
 
       register_component(

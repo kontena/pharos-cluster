@@ -4,6 +4,9 @@ module Pharos
   module Phases
     class ConfigureCfssl < Pharos::Phase
       title "Configure cfssl"
+      runs_on :etcd_hosts
+      uses_ssh
+      runs_parallel
 
       register_component(
         Pharos::Phases::Component.new(

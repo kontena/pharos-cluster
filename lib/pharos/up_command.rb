@@ -42,7 +42,8 @@ module Pharos
       # so that the certs etc. can be referenced more easily
       Dir.chdir(config_yaml.dirname) do
         config = build_config(config_hash)
-        configure(config, config_content: config_content)
+        config.content = config_content
+        configure(config)
       end
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
@@ -93,9 +94,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    # @param config_content [String]
-    def configure(config, config_content:)
-      manager = ClusterManager.new(config, config_content: config_content, pastel: pastel)
+    def configure(config)
+      manager = ClusterManager.new(config, pastel: pastel)
       start_time = Time.now
 
       puts pastel.green("==> Sharpening tools ...")

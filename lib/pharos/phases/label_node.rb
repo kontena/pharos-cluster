@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class LabelNode < Pharos::Phase
       title "Label nodes"
+      runs_on :hosts
 
       def call
         unless @host.labels

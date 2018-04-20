@@ -53,10 +53,10 @@ module Pharos
     end
 
     # @return [Pharos::Phase]
-    def prepare_phase(phase_class, host, ssh: false, **options)
+    def prepare_phase(phase_class, host, **options)
       options = @options.merge(options)
 
-      options[:ssh] = @ssh_manager.client_for(host) if ssh
+      options[:ssh] = @ssh_manager.client_for(host) if phase_class.uses_ssh?
 
       phase_class.new(host, **options)
     end

@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureMetrics < Pharos::Phase
       title "Configure metrics"
+      runs_on :master_host
 
       register_component(
         Pharos::Phases::Component.new(
