@@ -79,5 +79,12 @@ describe Pharos::Kube::Stack do
 
       subject.prune('42')
     end
+
+    it "deletes all resources without a checksum" do
+      expect(resource1).to receive(:delete)
+      expect(resource2).to receive(:delete)
+
+      subject.prune()
+    end
   end
 end
