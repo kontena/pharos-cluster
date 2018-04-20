@@ -62,12 +62,6 @@ module Pharos
         exist? && yield(self)
       end
 
-      # Downloads the remote file to a local path or IO
-      # @param local_path [String,IO]
-      def download(local_path)
-        @session.download(@path, local_path)
-      end
-
       # Moves the current file to target path
       # @param target [String]
       def move(target)
