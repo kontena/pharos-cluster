@@ -26,16 +26,18 @@ module Pharos
 
     # @return [Pharos::AddonManager]
     def phase_manager
-      @phase_manager = Pharos::PhaseManager.new(@config,
+      @phase_manager = Pharos::PhaseManager.new(
+        @config,
         ssh_manager: ssh_manager,
-        kube_session: kube_session,
+        kube_session: kube_session
       )
     end
 
     # @return [Pharos::AddonManager]
     def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new(@config,
-        kube_session: kube_session,
+      @addon_manager ||= Pharos::AddonManager.new(
+        @config,
+        kube_session: kube_session
       )
     end
 

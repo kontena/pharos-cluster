@@ -14,7 +14,7 @@ module Pharos
     # @param config [Pharos::Config]
     # @param ssh_manager [Pharos::SSH::Manager]
     # @param kube_session [Pharos::Kube::Session]
-    def initialize(config, ssh_manager:, kube_session: )
+    def initialize(config, ssh_manager:, kube_session:)
       @config = config
       @ssh_manager = ssh_manager
       @kube_session = kube_session

@@ -19,7 +19,7 @@ module Pharos
 
     # @param config [Pharos::Configuration]
     # @param kube_session [Pharos::Kube::Session]
-    def initialize(config, kube_session: )
+    def initialize(config, kube_session:)
       @config = config
       @kube_session = kube_session
     end

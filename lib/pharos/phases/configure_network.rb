@@ -19,21 +19,19 @@ module Pharos
       end
 
       def ensure_passwd
-        begin
-          @kube.client.get_secret('weave-passwd', 'kube-system')
-        rescue Kubeclient::ResourceNotFoundError
-          logger.info { "Configuring overlay network shared secret ..." }
-          weave_passwd = Kubeclient::Resource.new(
-            metadata: {
-              name: 'weave-passwd',
-              namespace: 'kube-system'
-            },
-            data: {
-              'weave-passwd': Base64.strict_encode64(generate_password)
-            }
-          )
-          @kube.client.create_secret(weave_passwd)
-        end
+        @kube.client.get_secret('weave-passwd', 'kube-system')
+      rescue Kubeclient::ResourceNotFoundError
+        logger.info { "Configuring overlay network shared secret ..." }
+        weave_passwd = Kubeclient::Resource.new(
+          metadata: {
+            name: 'weave-passwd',
+            namespace: 'kube-system'
+          },
+          data: {
+            'weave-passwd': Base64.strict_encode64(generate_password)
+          }
+        )
+        @kube.client.create_secret(weave_passwd)
       end
 
       def ensure_resources
