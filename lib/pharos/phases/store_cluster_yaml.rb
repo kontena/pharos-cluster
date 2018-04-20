@@ -4,12 +4,7 @@ module Pharos
   module Phases
     class StoreClusterYAML < Pharos::Phase
       title "Store cluster YAML"
-
-      # @param config_content [String]
-      def initialize(host, config_content:, **options)
-        super(host, **options)
-        @config_content = config_content
-      end
+      runs_on :master_host
 
       def call
         logger.info { "Storing cluster configuration to configmap" }
@@ -27,7 +22,7 @@ module Pharos
             name: 'pharos-config'
           },
           data: {
-            'cluster.yml' => @config_content,
+            'cluster.yml' => @config.content,
             'pharos-version' => Pharos::VERSION
           }
         )

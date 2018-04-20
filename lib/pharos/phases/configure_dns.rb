@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureDNS < Pharos::Phase
       title "Configure DNS"
+      runs_on :master_host
 
       def call
         patch_kubedns(

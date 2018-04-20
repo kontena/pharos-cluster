@@ -4,6 +4,7 @@ require 'logger'
 
 module Pharos
   class Phase
+
     # @return [String]
     def self.title(title = nil)
       @title = title if title
@@ -16,6 +17,27 @@ module Pharos
 
     def self.register_component(component)
       Pharos::Phases.register_component component
+    end
+
+    def self.runs_on(target_type = nil)
+      return @runs_on if target_type.nil?
+      @runs_on ||= target_type
+    end
+
+    def self.runs_parallel
+      @parallel = true
+    end
+
+    def self.parallel?
+      !!@parallel
+    end
+
+    def self.uses_ssh
+      @uses_ssh = true
+    end
+
+    def self.uses_ssh?
+      !!@uses_ssh
     end
 
     # @param host [Pharos::Configuration::Host]

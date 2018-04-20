@@ -4,6 +4,9 @@ module Pharos
   module Phases
     class MigrateWorker < Pharos::Phase
       title "Migrate worker"
+      runs_on :worker_hosts
+      uses_ssh
+      runs_parallel
 
       def call
         migrate_0_5_to_0_6 if migrate_0_5_to_0_6?

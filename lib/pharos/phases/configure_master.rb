@@ -6,6 +6,8 @@ module Pharos
   module Phases
     class ConfigureMaster < Pharos::Phase
       title "Configure master"
+      runs_on :master_hosts
+      uses_ssh
 
       KUBE_DIR = '/etc/kubernetes'
       PHAROS_DIR = '/etc/pharos'

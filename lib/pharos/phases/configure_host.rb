@@ -4,6 +4,9 @@ module Pharos
   module Phases
     class ConfigureHost < Pharos::Phase
       title "Configure hosts"
+      runs_on :hosts
+      uses_ssh
+      runs_parallel
 
       register_component(
         Pharos::Phases::Component.new(

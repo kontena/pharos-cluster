@@ -4,6 +4,8 @@ module Pharos
   module Phases
     class ConfigureClient < Pharos::Phase
       title "Configure kube client"
+      runs_on :master_host
+      uses_ssh
 
       def call
         Dir.mkdir(config_dir, 0o700) unless Dir.exist?(config_dir)

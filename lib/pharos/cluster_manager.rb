@@ -6,10 +6,9 @@ module Pharos
 
     attr_reader :config
 
-    def initialize(config, config_content:, **opts)
+    def initialize(config, **options)
       @config = config
-      @config_content = config_content
-      @pastel = opts.fetch(:pastel) { Pastel.new }
+      @pastel = options.fetch(:pastel) { Pastel.new }
     end
 
     # @return [Pharos::SSH::Manager]
@@ -21,7 +20,8 @@ module Pharos
     def phase_manager
       @phase_manager = Pharos::PhaseManager.new(
         ssh_manager: ssh_manager,
-        config: @config
+        config: @config,
+        master: @config.master_host
       )
     end
 
@@ -41,37 +41,42 @@ module Pharos
     end
 
     def apply_phases
-      apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::MigrateMaster, config.master_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureCfssl, config.etcd_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureEtcdCa, config.etcd_hosts[0...1], ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: true)
+      [
+        :ValidateHost,
+        :MigrateMaster,
+        :ConfigureHost,
+        :ConfigureCfssl,
+        :ConfigureEtcdCa,
+        :ConfigureEtcd,
 
-      apply_phase(Phases::ConfigureSecretsEncryption, config.master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: config.master_host)
-      apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
-      apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
+        :ConfigureSecretsEncryption,
+        :ConfigureMaster,
+        :MigrateWorker,
+        :ConfigureKubelet, # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
+        :ConfigureClient,
 
-      # master is now configured and can be used
-      apply_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
-      apply_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
-      apply_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
-      apply_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: @config_content)
-      apply_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
+        # master is now configured and can be used
+        :ConfigureDNS,
+        :ConfigureNetwork,
+        :ConfigureMetrics,
+        :StoreClusterYAML,
+        :ConfigureBootstrap, # using `kubeadm token`, not the kube API
 
-      apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
+        :JoinNode,
 
-      apply_phase(Phases::LabelNode, config.hosts, master: config.master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+        :LabelNode # NOTE: uses the @master kube API for each node, not threadsafe
+      ].each do |phase|
+        apply_phase(Phases.const_get(phase))
+      end
     end
 
-    def apply_phase(phase_class, hosts, **options)
+    def apply_phase(phase_class)
+      hosts = Array(config.send(phase_class.runs_on))
       return if hosts.empty?
 
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      puts @pastel.cyan("==> #{phase_class.title} @ #{phase_class.runs_on}")
 
-      phase_manager.apply(phase_class, hosts, **options)
+      phase_manager.apply(phase_class, hosts)
     end
 
     def apply_addons

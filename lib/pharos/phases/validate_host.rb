@@ -4,6 +4,9 @@ module Pharos
   module Phases
     class ValidateHost < Pharos::Phase
       title "Validate hosts"
+      runs_on :hosts
+      uses_ssh
+      runs_parallel
 
       def call
         logger.info { "Checking sudo access ..." }
