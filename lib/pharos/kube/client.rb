@@ -6,9 +6,9 @@ require 'deep_merge'
 module Pharos
   module Kube
     class Client < ::Kubeclient::Client
-      # @param host [Pharos::Configuration::Host]
-      def self.for_host(host, version)
-        config = Pharos::Kube.host_config(host)
+      # @param endpoint [String]
+      def self.from_config(endpoint, version)
+        config = Pharos::Kube.config(endpoint)
         path_prefix = version == 'v1' ? 'api' : 'apis'
         api_group, api_version = version.split('/')
 

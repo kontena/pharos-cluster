@@ -10,16 +10,16 @@ module Pharos
     autoload :Stack, 'pharos/kube/stack'
     autoload :Session, 'pharos/kube/session'
 
-    # @param host [Pharos::Configuration::Host]
+    # @param endpoint [String]
     # @return [Pharos::Kube::Session]
-    def self.session(host)
-      Session.new(host)
+    def self.session(endpoint)
+      Session.new(endpoint)
     end
 
-    # @param host [Pharos::Configuration::Host]
+    # @param endpoint [String]
     # @return [Kubeclient::Config]
-    def self.host_config(host)
-      Kubeclient::Config.read(host_config_path(host))
+    def self.config(endpoint)
+      Kubeclient::Config.read(config_path(endpoint))
     end
 
     # @return [String]
@@ -27,16 +27,16 @@ module Pharos
       File.join(Dir.home, '.pharos')
     end
 
-    # @param host [Pharos::Configuration::Host]
+    # @param endpoint [String]
     # @return [String]
-    def self.host_config_path(host)
-      File.join(config_dir, host.api_address)
+    def self.config_path(endpoint)
+      File.join(config_dir, endpoint)
     end
 
-    # @param host [Pharos::Configuration::Host]
+    # @param endpoint [String]
     # @return [Boolean]
-    def self.host_config_exists?(host)
-      File.exist?(host_config_path(host))
+    def self.config_exists?(endpoint)
+      File.exist?(config_path(endpoint))
     end
   end
 end

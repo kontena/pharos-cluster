@@ -62,5 +62,10 @@ module Pharos
         etcd_hosts
       end
     end
+
+    # @return [String]
+    def api_endpoint
+      api&.endpoint || master_host.address
+    end
   end
 end

@@ -84,9 +84,6 @@ module Pharos
 
       config = Pharos::Config.new(schema)
 
-      # inject api_endpoint to each host object
-      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
-
       signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
       config

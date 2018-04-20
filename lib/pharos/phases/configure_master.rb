@@ -135,7 +135,7 @@ module Pharos
         extra_sans = Set.new(['localhost'])
         extra_sans << @host.address
         extra_sans << @host.private_address if @host.private_address
-        extra_sans << @host.api_endpoint if @host.api_endpoint
+        extra_sans << @config.api.endpoint if @config.api&.endpoint
 
         extra_sans.to_a
       end

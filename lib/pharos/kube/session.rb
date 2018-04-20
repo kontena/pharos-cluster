@@ -5,26 +5,26 @@ require_relative '../kube'
 module Pharos
   module Kube
     class Session
-      # @param host [Pharos::Configuration::Host]
-      def initialize(host)
-        @host = host
+      # @param endpoint [String]
+      def initialize(endpoint)
+        @endpoint = endpoint
         @clients = {}
       end
 
       # @return [String]
       def to_s
-        @host.to_s
+        @endpoint
       end
 
       # @return [Boolean]
       def configured?
-        Pharos::Kube.host_config_exists?(@host)
+        Pharos::Kube.config_exists?(@endpoint)
       end
 
       # @param host [String]
       # @return [Kubeclient::Client]
       def client(version = 'v1')
-        @clients[version] ||= Pharos::Kube::Client.for_host(@host, version)
+        @clients[version] ||= Pharos::Kube::Client.from_config(@endpoint, version)
       end
 
       # Returns a new resource associated with this session

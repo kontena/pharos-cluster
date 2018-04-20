@@ -16,7 +16,7 @@ module Pharos
     #
     # @return [Pharos::Kube::Session]
     def kube_session
-      @kube_session ||= Pharos::Kube.session(@config.master_host)
+      @kube_session ||= Pharos::Kube.session(@config.api_endpoint)
     end
 
     # @return [Pharos::SSH::Manager]
