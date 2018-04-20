@@ -20,10 +20,10 @@ describe Pharos::Addon do
   end
 
   let(:cpu_arch) { double(:cpu_arch) }
-  let(:master) { double(:host, address: '1.1.1.1') }
+  let(:kube_session) { instance_double(Pharos::Kube::Session) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch) }
+  subject { test_addon.new(config, kube: kube_session, cpu_arch: cpu_arch) }
 
   describe ".name" do
     it "returns configured name" do
@@ -57,13 +57,20 @@ describe Pharos::Addon do
   end
 
   describe "#apply_stack" do
+    let(:stack) { instance_double(Pharos::Kube::Stack) }
+
+    before do
+      allow(kube_session).to receive(:stack).with('test-addon').and_return(stack)
+    end
+
     it "applies stack with correct parameters" do
-      expect(Pharos::Kube).to receive(:apply_stack).with(
-        master.address, subject.class.name, {
-          name: subject.class.name, version: subject.class.version,
-          config: anything, arch: anything
-        }
+      expect(stack).to receive(:apply).with(
+        name: subject.class.name,
+        version: subject.class.version,
+        config: anything,
+        arch: anything
       )
+      
       subject.apply_stack
     end
   end
