@@ -20,7 +20,7 @@ module Pharos
     attribute :api, Pharos::Configuration::Api
     attribute :network, Pharos::Configuration::Network
     attribute :cloud, Pharos::Configuration::Cloud
-    attribute :addons, Pharos::Types::Hash
+    attribute :addons, Pharos::Types::Hash.default({})
     attribute :etcd, Pharos::Configuration::Etcd
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
