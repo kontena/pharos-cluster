@@ -60,15 +60,13 @@ module Pharos
           end
 
           if checksum
-            prunables = objects.select do |obj|
+            objects = objects.select { |obj|
               annotations = obj.metadata.annotations
               annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
-            end
-          else
-            prunables = objects
+            }
           end
 
-          prunables.each do |obj|
+          objects.each do |obj|
             obj.apiVersion = api_group.preferredVersion.groupVersion
             pruned << obj if @session.resource(obj).delete
           end
