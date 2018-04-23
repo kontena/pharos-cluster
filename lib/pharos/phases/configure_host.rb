@@ -5,17 +5,8 @@ module Pharos
     class ConfigureHost < Pharos::Phase
       title "Configure hosts"
 
-      register_component(
-        Pharos::Phases::Component.new(
-          name: 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0'
-        )
-      )
-
-      register_component(
-        Pharos::Phases::Component.new(
-          name: 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0'
-        )
-      )
+      register_component 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0'
+      register_component 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0'
 
       def call
         logger.info { "Configuring essential packages ..." }
@@ -32,13 +23,13 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2"
+            DOCKER_VERSION: "#{components['docker'].version}-0ubuntu1~16.04.2"
           )
         elsif crio?
           logger.info { "Configuring container runtime (cri-o) packages ..." }
           exec_script(
             'configure-cri-o.sh',
-            CRIO_VERSION: Pharos::CRIO_VERSION,
+            CRIO_VERSION: components['cri_o'].version,
             CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
             CPU_ARCH: @host.cpu_arch.name
           )

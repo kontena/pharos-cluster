@@ -5,11 +5,8 @@ module Pharos
     class ConfigureKubelet < Pharos::Phase
       title "Configure kubelet"
 
-      register_component(
-        Pharos::Phases::Component.new(
-          name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
-        )
-      )
+      register_component 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
+      register_component 'kubeadm', version: Pharos::KUBEADM_VERSION, license: 'Apache License 2.0'
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
 
@@ -35,7 +32,7 @@ module Pharos
       def configure_kubelet_proxy
         exec_script(
           'configure-kubelet-proxy.sh',
-          KUBE_VERSION: Pharos::KUBE_VERSION,
+          KUBE_VERSION: components['kubernetes'].version,
           ARCH: @host.cpu_arch.name,
           MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
         )
@@ -45,8 +42,8 @@ module Pharos
         logger.info { "Configuring Kubernetes packages ..." }
         exec_script(
           'configure-kube.sh',
-          KUBE_VERSION: Pharos::KUBE_VERSION,
-          KUBEADM_VERSION: Pharos::KUBEADM_VERSION,
+          KUBE_VERSION: components['kubernetes'].version,
+          KUBEADM_VERSION: components['kubeadm'].version,
           ARCH: @host.cpu_arch.name
         )
       end

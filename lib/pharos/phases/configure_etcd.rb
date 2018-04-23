@@ -6,11 +6,7 @@ module Pharos
       title 'Configure etcd'
       CA_PATH = '/etc/pharos/pki'
 
-      register_component(
-        Pharos::Phases::Component.new(
-          name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0'
-        )
-      )
+      register_component 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0'
 
       def call
         sync_ca
@@ -29,8 +25,8 @@ module Pharos
           'configure-etcd.sh',
           PEER_IP: @host.private_address || @host.address,
           INITIAL_CLUSTER: initial_cluster.join(','),
-          ETCD_VERSION: Pharos::ETCD_VERSION,
-          KUBE_VERSION: Pharos::KUBE_VERSION,
+          ETCD_VERSION: components['etcd'].version,
+          KUBE_VERSION: components['kubernetes'].version,
           ARCH: @host.cpu_arch.name,
           PEER_NAME: "etcd#{peer_index + 1}"
         )
