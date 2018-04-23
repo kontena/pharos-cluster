@@ -22,8 +22,9 @@ describe Pharos::Addon do
   let(:cpu_arch) { double(:cpu_arch) }
   let(:master) { double(:host, address: '1.1.1.1') }
   let(:config) { {foo: 'bar'} }
+  let(:addon_manager) { instance_double(Pharos::AddonManager) }
 
-  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch) }
+  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch, addon_manager: addon_manager) }
 
   describe ".name" do
     it "returns configured name" do

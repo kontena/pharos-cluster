@@ -17,6 +17,8 @@ module Pharos
       end
     end
 
+    attr_reader :config
+
     # @param config [Pharos::Configuration]
     def initialize(config)
       @config = config
@@ -42,6 +44,7 @@ module Pharos
 
     def options
       {
+        addon_manager: self,
         master: @config.master_host,
         cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs
       }
