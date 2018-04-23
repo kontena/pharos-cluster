@@ -5,9 +5,10 @@ describe Pharos::Addons::IngressNginx do
   let(:config) { { foo: 'bar'} }
   let(:cpu_arch) { double(:cpu_arch ) }
   let(:master) { double(:host, address: '1.1.1.1') }
+  let(:addon_manager) { instance_double(Pharos::AddonManager) }
 
   subject do
-    described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch)
+    described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, addon_manager: addon_manager)
   end
 
   describe "#validate" do

@@ -1,7 +1,8 @@
 describe Pharos::Kube::Stack do
   let(:session) { double }
   let(:resource) { double(metadata: OpenStruct.new, apply: true) }
-  subject { described_class.new(session, 'ingress-nginx', default_backend: double(image: 'foo'), configmap: {}, node_selector: {}, arch: double(name: 'foo'), version: '1', image: 'foo') }
+  let(:addon_manager) { instance_double(Pharos::AddonManager) }
+  subject { described_class.new(session, 'ingress-nginx', default_backend: double(image: 'foo'), configmap: {}, node_selector: {}, arch: double(name: 'foo'), version: '1', image: 'foo', worker_hosts: 2) }
 
   describe '#resource_files' do
     it 'returns a list of .yml and .yml.erb files in the stack directory' do
