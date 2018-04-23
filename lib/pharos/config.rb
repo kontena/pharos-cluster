@@ -21,7 +21,7 @@ module Pharos
     attribute :api, Pharos::Configuration::Api
     attribute :network, Pharos::Configuration::Network
     attribute :cloud, Pharos::Configuration::Cloud
-    attribute :addons, Pharos::Types::Hash
+    attribute :addons, Pharos::Types::Hash.default({})
     attribute :etcd, Pharos::Configuration::Etcd
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
@@ -55,17 +55,14 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def etcd_hosts
+      return [] if etcd&.endpoints
+
       etcd_hosts = hosts.select { |h| h.role == 'etcd' }
       if etcd_hosts.empty?
         master_hosts
       else
         etcd_hosts
       end
-    end
-
-    # @return [Pharos::Configuration::Host]
-    def etcd_host
-      etcd_hosts[0]
     end
   end
 end

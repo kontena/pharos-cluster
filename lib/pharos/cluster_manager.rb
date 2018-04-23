@@ -45,9 +45,10 @@ module Pharos
       apply_phase(Phases::MigrateMaster, config.master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureCfssl, config.etcd_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureEtcdCa, [config.etcd_host], ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureEtcdCa, config.etcd_hosts[0...1], ssh: true, parallel: false)
       apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: true)
 
+      apply_phase(Phases::ConfigureSecretsEncryption, config.master_hosts, ssh: true, parallel: false)
       apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
       apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: config.master_host)
       apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
@@ -66,6 +67,8 @@ module Pharos
     end
 
     def apply_phase(phase_class, hosts, **options)
+      return if hosts.empty?
+
       puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
       phase_manager.apply(phase_class, hosts, **options)

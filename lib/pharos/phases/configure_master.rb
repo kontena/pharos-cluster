@@ -6,12 +6,12 @@ module Pharos
   module Phases
     class ConfigureMaster < Pharos::Phase
       title "Configure master"
+
       KUBE_DIR = '/etc/kubernetes'
       PHAROS_DIR = '/etc/pharos'
       SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub).freeze
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
-
       SECRETS_CFG_DIR = (PHAROS_DIR + '/secrets-encryption').freeze
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
 
@@ -59,8 +59,6 @@ module Pharos
         push_authentication_token_webhook_config if @config.authentication&.token_webhook
 
         copy_kube_certs
-
-        configure_secrets_encryption
 
         logger.info { "Initializing control plane ..." }
 
@@ -110,7 +108,9 @@ module Pharos
           configure_internal_etcd(config)
         end
 
-        config['apiServerExtraArgs'] = {}
+        config['apiServerExtraArgs'] = {
+          'apiserver-count' => @config.master_hosts.size.to_s
+        }
         config['apiServerExtraVolumes'] = []
 
         # Only if authentication token webhook option are given
@@ -183,9 +183,9 @@ module Pharos
       # TODO: lock down permissions on key
       def copy_external_etcd_certs
         @ssh.exec!('sudo mkdir -p /etc/pharos/etcd')
-        @ssh.write_file('/etc/pharos/etcd/ca-certificate.pem', File.read(@config.etcd.ca_certificate))
-        @ssh.write_file('/etc/pharos/etcd/certificate.pem', File.read(@config.etcd.certificate))
-        @ssh.write_file('/etc/pharos/etcd/certificate-key.pem', File.read(@config.etcd.key))
+        @ssh.file('/etc/pharos/etcd/ca-certificate.pem').write(File.open(@config.etcd.ca_certificate))
+        @ssh.file('/etc/pharos/etcd/certificate.pem').write(File.open(@config.etcd.certificate))
+        @ssh.file('/etc/pharos/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
       end
 
       # @param config [Hash]
@@ -331,30 +331,6 @@ module Pharos
         @ssh.file(PHAROS_DIR + '/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
       end
 
-      def secrets_encryption_exist?
-        logger.debug { "Checking if secrets encryption is already configured ..." }
-        cfg_file = @ssh.file(SECRETS_CFG_FILE)
-        return false unless cfg_file.exist?
-        return false unless cfg_file.read.match?(/aescbc/)
-        logger.debug { "Secrets encryption is already configured ..." }
-        true
-      end
-
-      def configure_secrets_encryption
-        logger.info { "Creating secrets encryption configuration ..." }
-        @ssh.exec!("sudo install -m 0700 -d #{SECRETS_CFG_DIR}")
-        # Generate keys
-        key1 = Base64.strict_encode64(SecureRandom.random_bytes(32))
-        key2 = Base64.strict_encode64(SecureRandom.random_bytes(32))
-        cluster_context['secrets_encryption'] = {
-          'key1' => key1,
-          'key2' => key2
-        }
-        cfg_file = @ssh.file(SECRETS_CFG_FILE)
-        cfg_file.write(parse_resource_file('secrets/encryption-config.yml.erb', key1: key1, key2: key2))
-        cfg_file.chmod('0700')
-      end
-
       def upgrade
         logger.info { "Upgrading control plane ..." }
         exec_script(
@@ -362,9 +338,6 @@ module Pharos
           VERSION: Pharos::KUBEADM_VERSION,
           ARCH: @host.cpu_arch.name
         )
-        unless secrets_encryption_exist?
-          configure_secrets_encryption
-        end
         cfg = generate_config
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")

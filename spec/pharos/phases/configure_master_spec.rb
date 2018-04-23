@@ -179,6 +179,20 @@ describe Pharos::Phases::ConfigureMaster do
       end
     end
 
+    context 'with multiple masters' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..3).map { |i| Pharos::Configuration::Host.new(role: 'master') },
+        network: {},
+        addons: {},
+        etcd: {}
+      ) }
+
+      it 'comes with proper apiserver-count' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'apiserver-count')).to eq("3")
+      end
+    end
+
     context 'with kube-proxy ipvs configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
@@ -287,35 +301,6 @@ describe Pharos::Phases::ConfigureMaster do
         config = subject.generate_authentication_token_webhook_config(webhook_config)
         expect(config['users'][0]['user']['client-key']).to eq('/etc/pharos/token_webhook/key.pem')
       end
-    end
-  end
-
-  describe '#secrets_encryption_exist' do
-
-    subject { described_class.new(ssh: ssh) }
-
-    let(:ssh) { instance_double(Pharos::SSH::Client, :file => remote_file) }
-
-    let(:remote_file) { double }
-
-    it 'returns false if no config file existing' do
-      subject.instance_variable_set(:@ssh, ssh)
-      expect(remote_file).to receive(:exist?).and_return(false)
-      expect(subject.secrets_encryption_exist?).to be_falsey
-    end
-
-    it 'returns false if aescbc not configured' do
-      subject.instance_variable_set(:@ssh, ssh)
-      expect(remote_file).to receive(:exist?).and_return(true)
-      expect(remote_file).to receive(:read).and_return(fixture("secrets_cfg_no_encryption.yaml"))
-      expect(subject.secrets_encryption_exist?).to be_falsey
-    end
-
-    it 'returns true if aescbc already configured' do
-      subject.instance_variable_set(:@ssh, ssh)
-      expect(remote_file).to receive(:exist?).and_return(true)
-      expect(remote_file).to receive(:read).and_return(fixture("secrets_cfg.yaml"))
-      expect(subject.secrets_encryption_exist?).to be_truthy
     end
   end
 end

@@ -2,7 +2,7 @@ require 'pharos/terraform/json_parser'
 
 describe Pharos::Terraform::JsonParser do
 
-  let(:subject) { described_class.new(fixture('tf.json')) }
+  let(:subject) { described_class.new(fixture('terraform/tf.json')) }
 
   describe '#hosts' do
     it 'parses valid terraform json file' do
