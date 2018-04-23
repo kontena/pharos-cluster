@@ -133,7 +133,11 @@ module Pharos
 
         # Set secrets config location and mount it to api server
         config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
-
+        config['apiServerExtraVolumes'] << {
+          'name' => 'k8s-secrets-config',
+          'hostPath' => SECRETS_CFG_DIR,
+          'mountPath' => SECRETS_CFG_DIR
+        }
         config
       end
 
@@ -216,6 +220,19 @@ module Pharos
           "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
           "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
         )
+        config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
+      end
+
+      def volume_mounts_for_audit_webhook
+        volume_mounts = []
+        volume_mount = {
+          'name' => 'k8s-audit-webhook',
+          'hostPath' => AUDIT_CFG_DIR,
+          'mountPath' => AUDIT_CFG_DIR
+        }
+        volume_mounts << volume_mount
+
+        volume_mounts
       end
 
       def authentication_token_webhook_args(cache_ttl = nil)

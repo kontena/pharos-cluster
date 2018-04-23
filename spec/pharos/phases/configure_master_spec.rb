@@ -32,6 +32,11 @@ describe Pharos::Phases::ConfigureMaster do
       it 'comes with proper audit config' do
         config = subject.generate_config
         expect(config.dig('apiServerExtraArgs', 'audit-webhook-config-file')).to eq('/etc/pharos/audit/webhook.yml')
+        expect(config.dig('apiServerExtraVolumes')).to include({
+          'name' => 'k8s-audit-webhook',
+          'hostPath' => '/etc/pharos/audit',
+          'mountPath' => '/etc/pharos/audit'
+        })
       end
     end
 
@@ -71,6 +76,10 @@ describe Pharos::Phases::ConfigureMaster do
     it 'comes with secrets encryption config' do
       config = subject.generate_config
       expect(config.dig('apiServerExtraArgs', 'experimental-encryption-provider-config')).to eq(described_class::SECRETS_CFG_FILE)
+      expect(config['apiServerExtraVolumes']).to include({'name' => 'k8s-secrets-config',
+        'hostPath' => described_class::SECRETS_CFG_DIR,
+        'mountPath' => described_class::SECRETS_CFG_DIR
+      })
     end
 
     context 'with etcd endpoint configuration' do
