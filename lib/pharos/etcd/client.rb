@@ -4,30 +4,37 @@ require 'json'
 module Pharos
   module Etcd
     class Client
-      CURL = 'sudo curl -s --connect-timeout 2 --cacert /etc/pharos/pki/ca.pem --cert /etc/pharos/pki/etcd/client.pem --key /etc/pharos/pki/etcd/client-key.pem https://localhost:2379'
+      CURL = 'sudo curl -sSf --connect-timeout 2 --cacert /etc/pharos/pki/ca.pem --cert /etc/pharos/pki/etcd/client.pem --key /etc/pharos/pki/etcd/client-key.pem https://localhost:2379'
+
+      class Error; end
 
       def initialize(ssh)
         @ssh = ssh
       end
 
+      # @return [Boolean]
       def healthy?
-        response = @ssh.exec!("#{CURL}/health")
-        response.stdout == '{"health": "true"}'
-      rescue
-        false
+        result = @ssh.exec("#{CURL}/health")
+        return false if result.error?
+
+        data = JSON.parse(result.stdout)
+        data['health'] == 'true'
       end
 
       # @return [Array<Hash>]
       def members
         result = @ssh.exec("#{CURL}/v2/members")
+        raise Error, "Cannot fetch etcd members" if result.error?
+
         JSON.parse(result.stdout)['members']
-      rescue JSON::ParserError
-        []
       end
 
       # @param host [Pharos::Configuration::Host]
       def add_member(host)
-        @ssh.exec!("#{CURL}/v2/members -X POST -H 'Content-Type: application/json' -d '{\"peerURLs\":[\"https://#{host.peer_address}:2380\"]}'")
+        data = {
+          peerURLs: ["https://#{host.peer_address}:2380"]
+        }
+        @ssh.exec!("#{CURL}/v2/members -X POST -H 'Content-Type: application/json' -d @-", stdin: JSON.dump(data))
       end
     end
   end
