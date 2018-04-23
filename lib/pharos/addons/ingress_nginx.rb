@@ -38,7 +38,8 @@ module Pharos
         apply_stack(
           configmap: config.configmap || {},
           node_selector: config.node_selector || {},
-          image: image_name
+          image: image_name,
+          worker_hosts: addon_manager.config.worker_hosts.size
         )
       end
     end
