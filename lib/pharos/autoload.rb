@@ -37,4 +37,8 @@ module Pharos
   module Configuration
     autoload :Host, 'pharos/configuration/host'
   end
+
+  module Etcd
+    autoload :Client, 'pharos/etcd/client'
+  end
 end

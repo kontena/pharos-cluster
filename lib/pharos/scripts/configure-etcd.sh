@@ -35,7 +35,7 @@ spec:
     - --peer-client-cert-auth=true
     - --initial-cluster=${INITIAL_CLUSTER}
     - --initial-cluster-token=pharos-etcd-token
-    - --initial-cluster-state=new
+    - --initial-cluster-state=${INITIAL_CLUSTER_STATE}
 
     image: k8s.gcr.io/etcd-${ARCH}:${ETCD_VERSION}
     livenessProbe:
@@ -84,7 +84,12 @@ fi
 
 echo "Waiting etcd to launch on port 2380..."
 
-while ! nc -z ${PEER_IP} 2380; do
+etcd_healthy() {
+  response=$(curl -s --cacert /etc/pharos/pki/ca.pem --cert /etc/pharos/pki/etcd/client.pem --key /etc/pharos/pki/etcd/client-key.pem https://${PEER_IP}:2379/health)
+  [ "${response}" = '{"health": "true"}' ]
+}
+
+while ! etcd_healthy; do
   sleep 1
 done
 

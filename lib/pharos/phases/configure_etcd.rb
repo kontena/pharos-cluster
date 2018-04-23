@@ -16,11 +16,10 @@ module Pharos
         sync_ca
 
         logger.info(@host.address) { 'Configuring etcd certs ...' }
-        peer_index = @config.etcd_hosts.find_index { |h| h == @host }
         exec_script(
           'configure-etcd-certs.sh',
           PEER_IP: @host.private_address || @host.address,
-          PEER_NAME: "etcd#{peer_index + 1}",
+          PEER_NAME: peer_name(@host),
           ARCH: @host.cpu_arch.name
         )
 
@@ -32,17 +31,23 @@ module Pharos
           ETCD_VERSION: Pharos::ETCD_VERSION,
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
-          PEER_NAME: "etcd#{peer_index + 1}"
+          PEER_NAME: peer_name(@host),
+          INITIAL_CLUSTER_STATE: initial_cluster_state
         )
       end
 
       # @return [Array<String>]
       def initial_cluster
-        i = 0
         @config.etcd_hosts.map { |h|
-          i += 1
-          "etcd#{i}=https://#{h.peer_address}:2380"
+          "#{peer_name(h)}=https://#{h.peer_address}:2380"
         }
+      end
+
+      # @param peer [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_name(peer)
+        peer_index = @config.etcd_hosts.find_index { |h| h == peer }
+        "etcd#{peer_index + 1}"
       end
 
       def sync_ca
@@ -55,6 +60,11 @@ module Pharos
           path = File.join(CA_PATH, file)
           @ssh.file(path).write(crt)
         end
+      end
+
+      # @return [String,NilClass]
+      def initial_cluster_state
+        cluster_context['etcd-initial-cluster-state']
       end
     end
   end
