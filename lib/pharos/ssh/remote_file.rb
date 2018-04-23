@@ -69,36 +69,43 @@ module Pharos
       end
 
       # True if the path points to a something that is writable
+      # @return [Boolean]
       def writable?
         test?('w')
       end
 
       # True if the path points to a socket
+      # @return [Boolean]
       def socket?
         test?('S')
       end
 
       # True if the path points to a symlink
+      # @return [Boolean]
       def symlink?
         test?('L')
       end
 
       # True if the path points to a named pipe
+      # @return [Boolean]
       def pipe?
         test?('p')
       end
 
       # True if the path points to something that is readable
+      # @return [Boolean]
       def readable?
         test?('r')
       end
 
       # True if the path points to something that is executable
+      # @return [Boolean]
       def executable?
         test?('x')
       end
 
       # True if the path points to a file which is larger than zero bytes
+      # @return [Boolean]
       def non_zero?
         test?('s')
       end
