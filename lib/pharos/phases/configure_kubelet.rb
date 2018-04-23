@@ -17,7 +17,7 @@ module Pharos
 
       def call
         configure_cni
-        upload_cloud_config if @config.cloud&.config
+        push_cloud_config if @config.cloud&.config
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
@@ -25,7 +25,7 @@ module Pharos
         ensure_dropin(build_systemd_dropin)
       end
 
-      def upload_cloud_config
+      def push_cloud_config
         @ssh.exec!("sudo mkdir -p #{PHAROS_DIR}")
         @ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
