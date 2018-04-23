@@ -50,10 +50,57 @@ module Pharos
         @client.exec!("sudo cat #{escaped_path}")
       end
 
-      # True if the file exists
+      # True if the path points to something that exists
       # @return [Boolean]
       def exist?
-        @client.exec!("sudo test -e #{escaped_path}")
+        test?('e')
+      end
+
+      # True if the path points to a directory
+      # @return [Boolean]
+      def directory?
+        test?('d')
+      end
+
+      # True if the path points to a regular file
+      # @return [Boolean]
+      def file?
+        test?('f')
+      end
+
+      # True if the path points to a something that is writable
+      def writable?
+        test?('w')
+      end
+
+      # True if the path points to a socket
+      def socket?
+        test?('S')
+      end
+
+      # True if the path points to a symlink
+      def symlink?
+        test?('L')
+      end
+
+      # True if the path points to a named pipe
+      def pipe?
+        test?('p')
+      end
+
+      # True if the path points to something that is readable
+      def readable?
+        test?('r')
+      end
+
+      # True if the path points to something that is executable
+      def executable?
+        test?('x')
+      end
+
+      # True if the path points to a file which is larger than zero bytes
+      def non_zero?
+        test?('s')
       end
 
       # Performs the block if the remote file exists, otherwise returns false
@@ -91,6 +138,10 @@ module Pharos
       end
 
       private
+
+      def test?(flag)
+        @client.exec?("sudo test -#{flag} #{escaped_path}")
+      end
 
       def temp_file_path(prefix: nil)
         File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}")
