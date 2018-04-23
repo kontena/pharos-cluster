@@ -12,14 +12,22 @@ module Pharos
       )
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
+      PHAROS_DIR = "/etc/pharos"
+      CLOUD_CONFIG_FILE = (PHAROS_DIR + '/cloud-config')
 
       def call
         configure_cni
+        upload_cloud_config if @config.cloud&.config
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
         logger.info { 'Configuring kubelet ...' }
         ensure_dropin(build_systemd_dropin)
+      end
+
+      def upload_cloud_config
+        @ssh.exec!("sudo mkdir -p #{PHAROS_DIR}")
+        @ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
 
       # @param dropin [String]
@@ -93,6 +101,7 @@ module Pharos
         args << '--read-only-port=0'
         args << "--node-ip=#{node_ip}"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
+        args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
         args << "--hostname-override=#{@host.hostname}"
         args
       end
