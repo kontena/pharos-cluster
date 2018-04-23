@@ -53,7 +53,7 @@ module Pharos
       # True if the file exists. Assumes a bash-like shell.
       # @return [Boolean]
       def exist?
-        @client.exec?("[ -e #{escaped_path} ]")
+        @client.exec!("sudo sh -c 'test -e #{escaped_path} && echo true || echo false'").strip == "true"
       end
 
       # Performs the block if the remote file exists, otherwise returns false
