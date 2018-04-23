@@ -49,11 +49,6 @@ module Pharos
         "etcd#{peer_index + 1}"
       end
 
-      # @return [Boolean]
-      def first_peer?
-        @config.etcd_hosts[0] == @host
-      end
-
       # @return [String,NilClass]
       def initial_cluster_state
         cluster_context['etcd-initial-cluster-state']
