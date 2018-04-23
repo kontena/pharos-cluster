@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'net/ssh'
-require 'net/scp'
 require 'shellwords'
 
 module Pharos
@@ -70,24 +69,6 @@ module Pharos
       # @return [Boolean]
       def exec?(cmd, **options)
         exec(cmd, **options).success?
-      end
-
-      # @param local_path [String]
-      # @param remote_path [String]
-      # @param opts [Hash]
-      def upload(local_path, remote_path, opts = {})
-        require_session!
-        Out.debug("SSH[#{@host}]") { "upload from #{local_path}: #{remote_path}" }
-        @session.scp.upload!(local_path, remote_path, opts)
-      end
-
-      # @param remote_path [String]
-      # @param local_path [String]
-      # @param opts [Hash]
-      def download(remote_path, local_path, opts = {})
-        require_session!
-        Out.debug("SSH[#{@host}]") { "download to #{local_path}: #{remote_path}" }
-        @session.scp.download!(remote_path, local_path, opts)
       end
 
       def file(path)
