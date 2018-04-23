@@ -3,7 +3,8 @@
 set -e
 
 mkdir -p /etc/kubernetes/manifests
-cat <<EOF >/etc/kubernetes/manifests/pharos-etcd.yaml
+mkdir -p /etc/kubernetes/tmp
+cat  >/etc/kubernetes/tmp/pharos-etcd.yaml <<EOF && mv /etc/kubernetes/tmp/pharos-etcd.yaml /etc/kubernetes/manifests/pharos-etcd.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -65,6 +66,7 @@ spec:
       type: DirectoryOrCreate
     name: etcd-certs
 EOF
+
 
 if [ ! -e /etc/kubernetes/kubelet.conf ]; then
   mkdir -p /etc/systemd/system/kubelet.service.d
