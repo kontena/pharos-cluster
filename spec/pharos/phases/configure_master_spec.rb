@@ -32,11 +32,6 @@ describe Pharos::Phases::ConfigureMaster do
       it 'comes with proper audit config' do
         config = subject.generate_config
         expect(config.dig('apiServerExtraArgs', 'audit-webhook-config-file')).to eq('/etc/pharos/audit/webhook.yml')
-        expect(config.dig('apiServerExtraVolumes')).to include({
-          'name' => 'k8s-audit-webhook',
-          'hostPath' => '/etc/pharos/audit',
-          'mountPath' => '/etc/pharos/audit'
-        })
       end
     end
 
@@ -76,10 +71,6 @@ describe Pharos::Phases::ConfigureMaster do
     it 'comes with secrets encryption config' do
       config = subject.generate_config
       expect(config.dig('apiServerExtraArgs', 'experimental-encryption-provider-config')).to eq(described_class::SECRETS_CFG_FILE)
-      expect(config['apiServerExtraVolumes']).to include({'name' => 'k8s-secrets-config',
-        'hostPath' => described_class::SECRETS_CFG_DIR,
-        'mountPath' => described_class::SECRETS_CFG_DIR
-      })
     end
 
     context 'with etcd endpoint configuration' do
@@ -118,6 +109,38 @@ describe Pharos::Phases::ConfigureMaster do
         expect(config.dig('etcd', 'certFile')).to eq('/etc/pharos/etcd/certificate.pem')
         expect(config.dig('etcd', 'keyFile')).to eq('/etc/pharos/etcd/certificate-key.pem')
       end
+
+      it 'mounts pharos dir from host' do
+        pharos_volume_mount = {
+            'name' => 'pharos',
+            'hostPath' => '/etc/pharos',
+            'mountPath' => '/etc/pharos'
+        }
+        config = subject.generate_config
+        expect(config['apiServerExtraVolumes']).to include(pharos_volume_mount)
+      end
+    end
+
+    context 'with cloud configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        cloud: {
+          provider: 'aws',
+          config: './cloud-config'
+        }
+      ) }
+
+      it 'comes with proper cloud provider' do
+        config = subject.generate_config
+        expect(config['cloudProvider']).to eq('aws')
+      end
+
+      it 'comes with proper cloud config' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
+      end
     end
 
     context 'with authentication webhook configuration' do
@@ -146,21 +169,16 @@ describe Pharos::Phases::ConfigureMaster do
           .to eq('/etc/kubernetes/authentication/token-webhook-config.yaml')
       end
 
-      it 'comes with proper volumen mounts' do
+      it 'comes with proper volume mounts' do
         valid_volume_mounts =  [
           {
             'name' => 'k8s-auth-token-webhook',
             'hostPath' => '/etc/kubernetes/authentication',
             'mountPath' => '/etc/kubernetes/authentication'
-          },
-          {
-            'name' => 'pharos',
-            'hostPath' => '/etc/pharos',
-            'mountPath' => '/etc/pharos'
           }
         ]
         config = subject.generate_config
-        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0], valid_volume_mounts[1])
+        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0])
       end
     end
 
