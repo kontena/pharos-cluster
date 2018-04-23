@@ -50,10 +50,10 @@ module Pharos
         @client.exec!("sudo cat #{escaped_path}")
       end
 
-      # True if the file exists. Assumes a bash-like shell.
+      # True if the file exists
       # @return [Boolean]
       def exist?
-        @client.exec?("[ -e #{escaped_path} ]")
+        @client.exec!("sudo test -e #{escaped_path}")
       end
 
       # Performs the block if the remote file exists, otherwise returns false
