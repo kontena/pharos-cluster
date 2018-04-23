@@ -147,7 +147,7 @@ module Pharos
       private
 
       def test?(flag)
-        @client.exec?("sudo test -#{flag} #{escaped_path}")
+        @client.exec!("(sudo true || exit 1) && (sudo test -#{flag} #{escaped_path} && echo true || exit 0)").strip == "true"
       end
 
       def temp_file_path(prefix: nil)
