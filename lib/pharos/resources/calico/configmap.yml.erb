@@ -5,11 +5,6 @@ metadata:
   name: calico-config
   namespace: kube-system
 data:
-  # To enable Typha, set this to "calico-typha" *and* set a non-zero value for Typha replicas
-  # below.  We recommend using Typha if you have more than 50 nodes. Above 100 nodes it is
-  # essential.
-  typha_service_name: "none"
-
   ipv4_pool_cidr: "<%= ipv4_pool_cidr %>"
 
   # The CNI network configuration to install on each node.

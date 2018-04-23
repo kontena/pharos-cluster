@@ -88,10 +88,7 @@ spec:
               value: "true"
             # Typha support: controlled by the ConfigMap.
             - name: FELIX_TYPHAK8SSERVICENAME
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: typha_service_name
+              value: "none"
             # Set based on the k8s node name.
             - name: NODENAME
               valueFrom:
