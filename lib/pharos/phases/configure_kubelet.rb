@@ -12,8 +12,8 @@ module Pharos
       )
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
-      PHAROS_DIR = "/etc/pharos"
-      CLOUD_CONFIG_FILE = (PHAROS_DIR + '/cloud-config')
+      CLOUD_CONFIG_DIR = "/etc/pharos/cloud"
+      CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
 
       def call
         configure_cni
@@ -26,7 +26,7 @@ module Pharos
       end
 
       def push_cloud_config
-        @ssh.exec!("sudo mkdir -p #{PHAROS_DIR}")
+        @ssh.exec!("sudo mkdir -p #{CLOUD_CONFIG_DIR}")
         @ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
 

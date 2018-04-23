@@ -70,7 +70,7 @@ describe Pharos::Phases::ConfigureKubelet do
 
       it 'adds cloud-config arg' do
         expect(subject.kubelet_extra_args).to include(
-          '--cloud-config=/etc/pharos/cloud-config'
+          '--cloud-config=/etc/pharos/cloud/cloud-config'
         )
       end
     end
