@@ -46,8 +46,7 @@ module Pharos
         logger.info { "Generating new encryption keys ..." }
 
         {
-          'key1' => Base64.strict_encode64(SecureRandom.random_bytes(32)),
-          'key2' => Base64.strict_encode64(SecureRandom.random_bytes(32))
+          'key1' => Base64.strict_encode64(SecureRandom.random_bytes(32))
         }
       end
 

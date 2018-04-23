@@ -68,7 +68,7 @@ module Pharos
       config['hosts'] ||= []
       config['api'] ||= {}
       config['hosts'] += tf_parser.hosts
-      config['api'].merge!(tf_parser.api)
+      config['api'].merge!(tf_parser.api) if tf_parser.api
       config
     end
 
