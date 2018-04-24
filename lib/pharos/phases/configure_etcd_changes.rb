@@ -55,7 +55,7 @@ module Pharos
           fail "Cannot remove majority of etcd peers"
         end
         remove_members.each do |m|
-          logger.info { "Remove old etcd peer #{m['peerURLs'].join(', ')} ..." }
+          logger.info { "Removing old etcd peer #{m['peerURLs'].join(', ')} ..." }
           etcd.remove_member(m['id'])
         end
 
