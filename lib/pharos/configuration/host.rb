@@ -32,7 +32,6 @@ module Pharos
 
       def kubelet_args(local_only: false)
         args = []
-        node_ip = private_address.nil? ? address : private_address
 
         if crio?
           args << '--container-runtime=remote'
@@ -47,7 +46,7 @@ module Pharos
           args << "--address=127.0.0.1"
         else
           args << '--read-only-port=0'
-          args << "--node-ip=#{node_ip}"
+          args << "--node-ip=#{peer_address}"
           args << "--hostname-override=#{hostname}"
         end
 
