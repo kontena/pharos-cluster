@@ -44,20 +44,8 @@ module Pharos
 
       def install
         configure_kubelet
-
         cfg = generate_config
-
-        # Copy etcd certs over if needed
-        if @config.etcd&.certificate
-          logger.info { "Pushing external etcd certificates ..." }
-          copy_external_etcd_certs
-        end
-
-        push_audit_config if @config.audit&.server
-
-        # Generate and upload authentication token webhook config file if needed
-        push_authentication_token_webhook_config if @config.authentication&.token_webhook
-
+        push_configs
         copy_kube_certs
 
         logger.info { "Initializing control plane ..." }
@@ -71,6 +59,49 @@ module Pharos
         logger.info { "Initialization of control plane succeeded!" }
         @ssh.exec!('install -m 0700 -d ~/.kube')
         @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
+      end
+
+      def configure
+        copy_kube_certs
+        push_configs
+        cfg = generate_config
+        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+          @ssh.exec!("sudo kubeadm alpha phase controlplane all --config #{tmp_file}")
+        end
+        cache_kube_certs
+        configure_kubelet
+      end
+
+      def upgrade
+        logger.info { "Upgrading control plane ..." }
+        exec_script(
+          "install-kubeadm.sh",
+          VERSION: Pharos::KUBEADM_VERSION,
+          ARCH: @host.cpu_arch.name
+        )
+        copy_kube_certs
+        push_configs
+        cfg = generate_config
+        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
+        end
+        logger.info { "Control plane upgrade succeeded!" }
+
+        cache_kube_certs
+        configure_kubelet
+      end
+
+      def push_configs
+        # Copy etcd certs over if needed
+        if @config.etcd&.certificate
+          logger.info { "Pushing external etcd certificates ..." }
+          copy_external_etcd_certs
+        end
+
+        push_audit_config if @config.audit&.server
+
+        # Generate and upload authentication token webhook config file if needed
+        push_authentication_token_webhook_config if @config.authentication&.token_webhook
       end
 
       def generate_config
@@ -310,22 +341,6 @@ module Pharos
         @ssh.file(PHAROS_DIR + '/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
       end
 
-      def upgrade
-        logger.info { "Upgrading control plane ..." }
-        exec_script(
-          "install-kubeadm.sh",
-          VERSION: Pharos::KUBEADM_VERSION,
-          ARCH: @host.cpu_arch.name
-        )
-        cfg = generate_config
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
-        end
-        logger.info { "Control plane upgrade succeeded!" }
-
-        configure_kubelet
-      end
-
       def push_audit_config
         logger.info { "Pushing audit configs to master ..." }
         @ssh.exec!("sudo mkdir -p #{AUDIT_CFG_DIR}")
@@ -343,15 +358,6 @@ module Pharos
         upload_authentication_token_webhook_config(auth_token_webhook_config)
         logger.info { "Pushing token authentication webhook certificates ..." }
         upload_authentication_token_webhook_certs(webhook_config)
-      end
-
-      def configure
-        cfg = generate_config
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm alpha phase certs all --config #{tmp_file}")
-          @ssh.exec!("sudo kubeadm alpha phase controlplane all --config #{tmp_file}")
-        end
-        configure_kubelet
       end
 
       def configure_kubelet
