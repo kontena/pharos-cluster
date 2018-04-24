@@ -8,8 +8,10 @@ module Pharos
       def call
         logger.info { "Checking sudo access ..." }
         check_sudo
-        logger.info { "Checking default shell ..." }
-        check_default_shell
+        logger.info { "Checking user's default shell ..." }
+        check_user_default_shell
+        logger.info { "Checking root's default shell ..." }
+        check_root_default_shell
         logger.info { "Gathering host facts ..." }
         gather_host_facts
         logger.info { "Validating distro and version ..." }
@@ -34,8 +36,16 @@ module Pharos
         raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
 
-      def check_default_shell
-        @ssh.exec!("$SHELL --version | grep 'GNU bash' > /dev/null && sudo sh -c '$SHELL --version' | grep 'GNU bash' > /dev/null")
+      def check_user_default_shell
+        @ssh.exec!("$SHELL --version | grep 'GNU bash' > /dev/null")
+      rescue Pharos::SSH::RemoteCommand::ExecError => exc
+        raise Pharos::InvalidHostError, "User #{@host.user}'s default shell is not bash"
+      end
+
+      def check_root_default_shell
+        @ssh.exec!("sudo su -c '$SHELL --version' | grep 'GNU bash' > /dev/null")
+      rescue Pharos::SSH::RemoteCommand::ExecError => exc
+        raise Pharos::InvalidHostError, "Root's default shell is not bash"
       end
 
       def gather_host_facts
