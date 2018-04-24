@@ -16,7 +16,7 @@ module Pharos
       CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
 
       def call
-        configure_cni
+        configure_weave_cni if @config.network.provider == 'weave'
         push_cloud_config if @config.cloud&.config
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
@@ -60,7 +60,7 @@ module Pharos
         )
       end
 
-      def configure_cni
+      def configure_weave_cni
         exec_script('configure-weave-cni.sh')
       end
 

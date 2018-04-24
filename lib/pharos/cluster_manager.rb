@@ -56,7 +56,8 @@ module Pharos
 
       # master is now configured and can be used
       apply_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
-      apply_phase(Phases::ConfigureNetwork, [config.master_host], master: config.master_host)
+      apply_phase(Phases::ConfigureWeave, [config.master_host], master: config.master_host) if config.network.provider == 'weave'
+      apply_phase(Phases::ConfigureCalico, [config.master_host], master: config.master_host) if config.network.provider == 'calico'
       apply_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
       apply_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: @config_content)
       apply_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
