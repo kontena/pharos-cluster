@@ -9,8 +9,9 @@ module Pharos
       def call
         store_initial_cluster_state
 
-        if etcd.healthy?
-          add_new_members if initial_cluster_state == 'existing'
+        if initial_cluster_state == 'existing' && etcd.healthy?
+          remove_old_members
+          add_new_members
         end
       end
 
@@ -31,9 +32,27 @@ module Pharos
             m['name'] == peer_name(h) && m['peerURLs'] == ["https://#{h.peer_address}:2380"]
           }
         }
+        if new_members.size > (member_list.size / 2.0).ceil
+          fail "Cannot add majority of etcd peers"
+        end
         new_members.each do |h|
           logger.info { "Adding new etcd peer #{peer_name(h)}, https://#{h.peer_address}:2380 ..." }
           etcd.add_member(h)
+        end
+      end
+
+      def remove_old_members
+        member_list = etcd.members
+        remove_members = member_list.select { |m|
+          !@config.etcd_hosts.find { |h|
+            m['name'] == peer_name(h) && m['peerURLs'] == ["https://#{h.peer_address}:2380"]
+          }
+        }
+        if remove_members.size > (member_list.size / 2.0).ceil
+          fail "Cannot remove majority of etcd peers"
+        end
+        remove_members.each do |m|
+          logger.info { "Remove old etcd peer #{m['name']}, #{m['peerURLs'].join(', ')} ..." }
         end
       end
 
