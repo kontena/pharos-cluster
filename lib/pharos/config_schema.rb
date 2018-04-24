@@ -33,10 +33,17 @@ module Pharos
           optional(:endpoint).filled(:str?)
         end
         optional(:network).schema do
+          optional(:provider).filled(included_in?: %(weave calico))
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
-          optional(:trusted_subnets).each(type?: String)
+          optional(:trusted_subnets).value(:none?)
+
+          optional(:weave).schema do
+            optional(:trusted_subnets).each(type?: String)
+          end
+          optional(:calico).schema do
+          end
         end
         optional(:etcd).schema do
           required(:endpoints).each(type?: String)
