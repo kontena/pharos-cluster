@@ -11,7 +11,7 @@ module Pharos
 
         if initial_cluster_state == 'existing' && etcd.healthy?
           removed = remove_old_members
-          sleep 10 if removed > 0
+          sleep 10 if removed > 0 # try to be gentle
           add_new_members
         end
       end
@@ -37,7 +37,7 @@ module Pharos
           fail "Cannot add multiple etcd peers at once"
         end
         new_members.each do |h|
-          logger.info { "Adding new etcd peer #{peer_name(h)}, https://#{h.peer_address}:2380 ..." }
+          logger.info { "Adding new etcd peer https://#{h.peer_address}:2380 ..." }
           etcd.add_member(h)
         end
 
@@ -55,7 +55,7 @@ module Pharos
           fail "Cannot remove majority of etcd peers"
         end
         remove_members.each do |m|
-          logger.info { "Remove old etcd peer #{m['name']}, #{m['peerURLs'].join(', ')} ..." }
+          logger.info { "Remove old etcd peer #{m['peerURLs'].join(', ')} ..." }
           etcd.remove_member(m['id'])
         end
 
@@ -65,13 +65,6 @@ module Pharos
       # @return [Pharos::Etcd::Client]
       def etcd
         @etcd ||= Pharos::Etcd::Client.new(@ssh)
-      end
-
-      # @param peer [Pharos::Configuration::Host]
-      # @return [String]
-      def peer_name(peer)
-        peer_index = @config.etcd_hosts.find_index { |h| h == peer }
-        "etcd#{peer_index + 1}"
       end
 
       # @return [String,NilClass]
