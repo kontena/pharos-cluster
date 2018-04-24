@@ -10,13 +10,14 @@ module Pharos
 
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String
+      attribute :private_interface, Pharos::Types::Strict::String
       attribute :role, Pharos::Types::Strict::String
       attribute :labels, Pharos::Types::Strict::Hash
       attribute :user, Pharos::Types::Strict::String.default('ubuntu')
       attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address
 
       def to_s
         address
@@ -27,7 +28,7 @@ module Pharos
       end
 
       def peer_address
-        private_address || address
+        private_address || private_interface_address || address
       end
 
       def kubelet_args(local_only: false)

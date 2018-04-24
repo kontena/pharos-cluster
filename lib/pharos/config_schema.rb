@@ -21,6 +21,7 @@ module Pharos
             schema do
               required(:address).filled
               optional(:private_address).filled
+              optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
               optional(:user).filled

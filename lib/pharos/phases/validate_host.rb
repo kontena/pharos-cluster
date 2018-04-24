@@ -36,6 +36,7 @@ module Pharos
         @host.os_release = os_release
         @host.cpu_arch = cpu_arch
         @host.hostname = hostname
+        @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
       end
 
       # @return [String]
@@ -73,6 +74,19 @@ module Pharos
         Pharos::Configuration::CpuArch.new(
           id: cpu['Architecture']
         )
+      end
+
+      # @param interface [String]
+      # @return [String]
+      def private_interface_address(interface)
+        @ssh.exec!("ip -o addr show dev #{interface} scope global | awk '{ print $4 }'").each_line do |line|
+          ip, prefixlen = line.split('/')
+
+          next if ip == @host.address
+
+          return ip
+        end
+        return nil
       end
     end
   end
