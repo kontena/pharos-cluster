@@ -80,13 +80,13 @@ module Pharos
       # @return [String]
       def private_interface_address(interface)
         @ssh.exec!("ip -o addr show dev #{interface} scope global | awk '{ print $4 }'").each_line do |line|
-          ip, prefixlen = line.split('/')
+          ip, _prefixlen = line.split('/')
 
           next if ip == @host.address
 
           return ip
         end
-        return nil
+        nil
       end
     end
   end
