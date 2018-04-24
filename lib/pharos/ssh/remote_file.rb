@@ -53,19 +53,13 @@ module Pharos
       # True if the file exists. Assumes a bash-like shell.
       # @return [Boolean]
       def exist?
-        @client.exec?("[ -e #{escaped_path} ]")
+        @client.exec!("sudo sh -c 'test -e #{escaped_path} && echo true || echo false'").strip == "true"
       end
 
       # Performs the block if the remote file exists, otherwise returns false
       # @yield [Pharos::SSH::RemoteFile]
       def with_existing
         exist? && yield(self)
-      end
-
-      # Downloads the remote file to a local path or IO
-      # @param local_path [String,IO]
-      def download(local_path)
-        @session.download(@path, local_path)
       end
 
       # Moves the current file to target path

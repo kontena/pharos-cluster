@@ -12,14 +12,22 @@ module Pharos
       )
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
+      CLOUD_CONFIG_DIR = "/etc/pharos/kubelet"
+      CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
 
       def call
         configure_cni
+        push_cloud_config if @config.cloud&.config
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
         logger.info { 'Configuring kubelet ...' }
         ensure_dropin(build_systemd_dropin)
+      end
+
+      def push_cloud_config
+        @ssh.exec!("sudo mkdir -p #{CLOUD_CONFIG_DIR}")
+        @ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
 
       # @param dropin [String]
@@ -37,7 +45,8 @@ module Pharos
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
-          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
+          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(','),
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
         )
       end
 
@@ -81,24 +90,10 @@ module Pharos
 
       # @return [Array<String>]
       def kubelet_extra_args
-        args = []
-        node_ip = @host.private_address.nil? ? @host.address : @host.private_address
-
-        if crio?
-          args << '--container-runtime=remote'
-          args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
-        end
-
-        args << '--read-only-port=0'
-        args << "--node-ip=#{node_ip}"
+        args = @host.kubelet_args
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
-        args << "--hostname-override=#{@host.hostname}"
+        args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
         args
-      end
-
-      def crio?
-        @host.container_runtime == 'cri-o'
       end
     end
   end

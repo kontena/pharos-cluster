@@ -44,7 +44,6 @@ module Pharos
           optional(:ca_certificate).filled(:str?)
           optional(:key).filled(:str?)
         end
-
         optional(:authentication).schema do
           optional(:token_webhook).schema do
             required(:config).schema do
@@ -64,6 +63,7 @@ module Pharos
         end
         optional(:cloud).schema do
           required(:provider).filled(:str?)
+          optional(:config).filled(:str?)
         end
         optional(:audit).schema do
           required(:server).filled(:str?)
