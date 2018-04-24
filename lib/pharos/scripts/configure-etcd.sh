@@ -2,9 +2,19 @@
 
 set -e
 
+etcd_healthy() {
+  response=$(curl -s --cacert /etc/pharos/pki/ca.pem --cert /etc/pharos/pki/etcd/client.pem --key /etc/pharos/pki/etcd/client-key.pem https://${PEER_IP}:2379/health)
+  [ "${response}" = '{"health": "true"}' ]
+}
+
+etcd_version_matches() {
+  grep -q "etcd-${ARCH}:${ETCD_VERSION}" /etc/kubernetes/manifests/pharos-etcd.yaml
+}
+
 mkdir -p /etc/kubernetes/manifests
 mkdir -p /etc/kubernetes/tmp
-cat  >/etc/kubernetes/tmp/pharos-etcd.yaml <<EOF && mv /etc/kubernetes/tmp/pharos-etcd.yaml /etc/kubernetes/manifests/pharos-etcd.yaml
+if [ ! -e /etc/kubernetes/manifests/pharos-etcd.yaml ] || [ ! etcd_version_matches ] || [ ! etcd_healthy ]; then
+  cat  >/etc/kubernetes/tmp/pharos-etcd.yaml <<EOF && mv /etc/kubernetes/tmp/pharos-etcd.yaml /etc/kubernetes/manifests/pharos-etcd.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -66,6 +76,7 @@ spec:
       type: DirectoryOrCreate
     name: etcd-certs
 EOF
+fi
 
 
 if [ ! -e /etc/kubernetes/kubelet.conf ]; then
@@ -83,14 +94,7 @@ EOF
 fi
 
 echo "Waiting etcd to launch on port 2380..."
-
-etcd_healthy() {
-  response=$(curl -s --cacert /etc/pharos/pki/ca.pem --cert /etc/pharos/pki/etcd/client.pem --key /etc/pharos/pki/etcd/client-key.pem https://${PEER_IP}:2379/health)
-  [ "${response}" = '{"health": "true"}' ]
-}
-
 while ! etcd_healthy; do
   sleep 1
 done
-
 echo "etcd launched"
