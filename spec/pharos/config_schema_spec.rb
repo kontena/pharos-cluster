@@ -102,6 +102,19 @@ describe Pharos::ConfigSchema do
         expect(result.success?).to be_truthy
       end
 
+      it 'works without cloud config' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "cloud" => {
+            "provider" => "external"
+          }
+        })
+        expect(result.success?).to be_truthy
+      end
+
       it 'errors without provider' do
         result = subject.call({
           "hosts" => [
@@ -109,6 +122,20 @@ describe Pharos::ConfigSchema do
           ],
           "addons" => {},
           "cloud" => {}
+        })
+        expect(result.success?).to be_falsey
+      end
+
+      it 'errors with invalid config format' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "cloud" => {
+            "provider" => "external",
+            "config" => {}
+          }
         })
         expect(result.success?).to be_falsey
       end
