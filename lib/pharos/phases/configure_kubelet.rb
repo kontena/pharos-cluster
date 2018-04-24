@@ -12,7 +12,7 @@ module Pharos
       )
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
-      CLOUD_CONFIG_DIR = "/etc/pharos/cloud"
+      CLOUD_CONFIG_DIR = "/etc/pharos/kubelet"
       CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
 
       def call
@@ -95,7 +95,6 @@ module Pharos
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
         args
       end
-
     end
   end
 end
