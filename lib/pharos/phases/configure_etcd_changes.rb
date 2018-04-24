@@ -10,7 +10,8 @@ module Pharos
         store_initial_cluster_state
 
         if initial_cluster_state == 'existing' && etcd.healthy?
-          remove_old_members
+          removed = remove_old_members
+          sleep 10 if removed > 0
           add_new_members
         end
       end
@@ -29,31 +30,36 @@ module Pharos
         member_list = etcd.members
         new_members = @config.etcd_hosts.select { |h|
           !member_list.find { |m|
-            m['name'] == peer_name(h) && m['peerURLs'] == ["https://#{h.peer_address}:2380"]
+            m['peerURLs'] == ["https://#{h.peer_address}:2380"]
           }
         }
-        if new_members.size > (member_list.size / 2.0).ceil
-          fail "Cannot add majority of etcd peers"
+        if new_members.size > 1
+          fail "Cannot add multiple etcd peers at once"
         end
         new_members.each do |h|
           logger.info { "Adding new etcd peer #{peer_name(h)}, https://#{h.peer_address}:2380 ..." }
           etcd.add_member(h)
         end
+
+        new_members.size
       end
 
       def remove_old_members
         member_list = etcd.members
         remove_members = member_list.select { |m|
           !@config.etcd_hosts.find { |h|
-            m['name'] == peer_name(h) && m['peerURLs'] == ["https://#{h.peer_address}:2380"]
+            m['peerURLs'] == ["https://#{h.peer_address}:2380"]
           }
         }
-        if remove_members.size > (member_list.size / 2.0).ceil
+        if remove_members.size / member_list.size.to_f >= 0.5
           fail "Cannot remove majority of etcd peers"
         end
         remove_members.each do |m|
           logger.info { "Remove old etcd peer #{m['name']}, #{m['peerURLs'].join(', ')} ..." }
+          etcd.remove_member(m['id'])
         end
+
+        remove_members.size
       end
 
       # @return [Pharos::Etcd::Client]
