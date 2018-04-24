@@ -29,6 +29,34 @@ module Pharos
       def peer_address
         private_address || address
       end
+
+      def kubelet_args(local_only: false)
+        args = []
+        node_ip = private_address.nil? ? address : private_address
+
+        if crio?
+          args << '--container-runtime=remote'
+          args << '--runtime-request-timeout=15m'
+          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
+        end
+
+        if local_only
+          args << "--pod-manifest-path=/etc/kubernetes/manifests/"
+          args << "--read-only-port=0"
+          args << "--cadvisor-port=0"
+          args << "--address=127.0.0.1"
+        else
+          args << '--read-only-port=0'
+          args << "--node-ip=#{node_ip}"
+          args << "--hostname-override=#{hostname}"
+        end
+
+        args
+      end
+
+      def crio?
+        container_runtime == 'cri-o'
+      end
     end
   end
 end
