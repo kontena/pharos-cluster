@@ -85,7 +85,7 @@ if [ ! -e /etc/kubernetes/kubelet.conf ]; then
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=
-ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0 --address=127.0.0.1
+ExecStart=/usr/bin/kubelet ${KUBELET_ARGS}
 EOF
 
   apt-mark unhold kubelet

@@ -37,7 +37,8 @@ module Pharos
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
-          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
+          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(','),
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
         )
       end
 
@@ -81,24 +82,10 @@ module Pharos
 
       # @return [Array<String>]
       def kubelet_extra_args
-        args = []
-        node_ip = @host.private_address.nil? ? @host.address : @host.private_address
-
-        if crio?
-          args << '--container-runtime=remote'
-          args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
-        end
-
-        args << '--read-only-port=0'
-        args << "--node-ip=#{node_ip}"
+        args = @host.kubelet_args
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
-        args << "--hostname-override=#{@host.hostname}"
-        args
-      end
 
-      def crio?
-        @host.container_runtime == 'cri-o'
+        args
       end
     end
   end
