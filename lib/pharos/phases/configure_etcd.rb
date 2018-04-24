@@ -32,7 +32,7 @@ module Pharos
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
           PEER_NAME: peer_name(@host),
-          INITIAL_CLUSTER_STATE: initial_cluster_state
+          INITIAL_CLUSTER_STATE: initial_cluster_state,
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
         )
       end
