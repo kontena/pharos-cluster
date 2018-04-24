@@ -38,13 +38,13 @@ module Pharos
 
       def check_user_default_shell
         @ssh.exec!("$SHELL --version | grep 'GNU bash' > /dev/null")
-      rescue Pharos::SSH::RemoteCommand::ExecError => exc
+      rescue Pharos::SSH::RemoteCommand::ExecError
         raise Pharos::InvalidHostError, "User #{@host.user}'s default shell is not bash"
       end
 
       def check_root_default_shell
         @ssh.exec!("sudo su -c '$SHELL --version' | grep 'GNU bash' > /dev/null")
-      rescue Pharos::SSH::RemoteCommand::ExecError => exc
+      rescue Pharos::SSH::RemoteCommand::ExecError
         raise Pharos::InvalidHostError, "Root's default shell is not bash"
       end
 
