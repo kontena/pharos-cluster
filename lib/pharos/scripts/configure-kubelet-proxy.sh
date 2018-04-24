@@ -3,7 +3,8 @@
 set -eu
 
 mkdir -p /etc/kubernetes/manifests
-cat <<EOF >/etc/kubernetes/manifests/pharos-proxy.yaml
+mkdir -p /etc/kubernetes/tmp
+cat >/etc/kubernetes/tmp/pharos-proxy.yaml <<EOF && mv /etc/kubernetes/tmp/pharos-proxy.yaml /etc/kubernetes/manifests/pharos-proxy.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -24,13 +25,14 @@ spec:
   hostNetwork: true
 EOF
 
+
 if [ ! -e /etc/kubernetes/kubelet.conf ]; then
     mkdir -p /etc/systemd/system/kubelet.service.d
     cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-kubelet-proxy.conf
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=
-ExecStart=/usr/bin/kubelet --pod-manifest-path=/etc/kubernetes/manifests/ --read-only-port=0 --cadvisor-port=0 --address=127.0.0.1
+ExecStart=/usr/bin/kubelet ${KUBELET_ARGS}
 EOF
 
     export DEBIAN_FRONTEND=noninteractive
