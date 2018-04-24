@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'json'
 
 module Pharos
@@ -9,27 +10,29 @@ module Pharos
       def call
         store_initial_cluster_state
 
-        if initial_cluster_state == 'existing' && etcd.healthy?
-          removed = remove_old_members
-          sleep 10 if removed > 0 # try to be gentle
-          add_new_members
-        end
+        return if initial_cluster_state != 'existing' || !etcd.healthy?
+
+        removed = remove_old_members
+        sleep 10 if removed.positive? # try to be gentle
+        add_new_members
       end
 
       def store_initial_cluster_state
         return if cluster_context['etcd-initial-cluster-state']
 
-        if @ssh.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
-          cluster_context['etcd-initial-cluster-state'] = 'existing'
-        else
-          cluster_context['etcd-initial-cluster-state'] = 'new'
-        end
+        state = if @ssh.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
+                  'existing'
+                else
+                  'new'
+                end
+
+        cluster_context['etcd-initial-cluster-state'] = state
       end
 
       def add_new_members
         member_list = etcd.members
-        new_members = @config.etcd_hosts.select { |h|
-          !member_list.find { |m|
+        new_members = @config.etcd_hosts.reject { |h|
+          member_list.find { |m|
             m['peerURLs'] == ["https://#{h.peer_address}:2380"]
           }
         }
@@ -46,8 +49,8 @@ module Pharos
 
       def remove_old_members
         member_list = etcd.members
-        remove_members = member_list.select { |m|
-          !@config.etcd_hosts.find { |h|
+        remove_members = member_list.reject { |m|
+          @config.etcd_hosts.find { |h|
             m['peerURLs'] == ["https://#{h.peer_address}:2380"]
           }
         }

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'json'
 
 module Pharos
@@ -37,9 +38,9 @@ module Pharos
         @ssh.exec!("#{CURL}/v2/members -X POST -H 'Content-Type: application/json' -d @-", stdin: JSON.dump(data))
       end
 
-      # @param id [String] etcd member id
-      def remove_member(id)
-        @ssh.exec!("#{CURL}/v2/members/#{id} -X DELETE")
+      # @param member_id [String] etcd member id
+      def remove_member(member_id)
+        @ssh.exec!("#{CURL}/v2/members/#{member_id} -X DELETE")
       end
     end
   end

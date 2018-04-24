@@ -36,11 +36,7 @@ module Pharos
         @host.os_release = os_release
         @host.cpu_arch = cpu_arch
         @host.hostname = hostname
-        if @host.role == 'master'
-          @host.checks = master_checks
-        else
-          @host.checks = worker_checks
-        end
+        @host.checks = @host.role == 'master' ? master_checks : worker_checks
       end
 
       # @return [String]
