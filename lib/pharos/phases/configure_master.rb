@@ -14,6 +14,8 @@ module Pharos
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
       SECRETS_CFG_DIR = (PHAROS_DIR + '/secrets-encryption').freeze
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
+      CLOUD_CFG_DIR = (PHAROS_DIR + '/cloud').freeze
+      CLOUD_CFG_FILE = (CLOUD_CFG_DIR + '/cloud-config').freeze
 
       def call
         logger.info { "Checking if Kubernetes control plane is already initialized ..." }
@@ -98,6 +100,7 @@ module Pharos
           copy_external_etcd_certs
         end
 
+        push_cloud_config if @config.cloud&.config
         push_audit_config if @config.audit&.server
 
         # Generate and upload authentication token webhook config file if needed
@@ -128,8 +131,13 @@ module Pharos
           config['criSocket'] = '/var/run/crio/crio.sock'
         end
 
+        config['apiServerExtraArgs'] = {
+          'apiserver-count' => @config.master_hosts.size.to_s
+        }
+
         if @config.cloud && @config.cloud.provider != 'external'
           config['cloudProvider'] = @config.cloud.provider
+          config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE if @config.cloud.config
         end
 
         # Only configure etcd if the external endpoints are given
@@ -139,10 +147,13 @@ module Pharos
           configure_internal_etcd(config)
         end
 
-        config['apiServerExtraArgs'] = {
-          'apiserver-count' => @config.master_hosts.size.to_s
-        }
-        config['apiServerExtraVolumes'] = []
+        config['apiServerExtraVolumes'] = [
+          {
+            'name' => 'pharos',
+            'hostPath' => PHAROS_DIR,
+            'mountPath' => PHAROS_DIR
+          }
+        ]
 
         # Only if authentication token webhook option are given
         configure_token_webhook(config) if @config.authentication&.token_webhook
@@ -157,7 +168,6 @@ module Pharos
           'hostPath' => SECRETS_CFG_DIR,
           'mountPath' => SECRETS_CFG_DIR
         }
-
         config
       end
 
@@ -271,12 +281,6 @@ module Pharos
           'mountPath' => AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR
         }
         volume_mounts << volume_mount
-        pharos_volume_mount = {
-          'name' => 'pharos',
-          'hostPath' => PHAROS_DIR,
-          'mountPath' => PHAROS_DIR
-        }
-        volume_mounts << pharos_volume_mount
         volume_mounts
       end
 
@@ -358,6 +362,12 @@ module Pharos
         upload_authentication_token_webhook_config(auth_token_webhook_config)
         logger.info { "Pushing token authentication webhook certificates ..." }
         upload_authentication_token_webhook_certs(webhook_config)
+      end
+
+      def push_cloud_config
+        logger.info { "Pushing cloud-config to master ..." }
+        @ssh.exec!('sudo mkdir -p ' + CLOUD_CFG_DIR)
+        @ssh.file(CLOUD_CFG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
 
       def configure_kubelet
