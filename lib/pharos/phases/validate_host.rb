@@ -36,6 +36,11 @@ module Pharos
         @host.os_release = os_release
         @host.cpu_arch = cpu_arch
         @host.hostname = hostname
+        if @host.role == 'master'
+          @host.checks = master_checks
+        else
+          @host.checks = worker_checks
+        end
       end
 
       # @return [String]
@@ -73,6 +78,30 @@ module Pharos
         Pharos::Configuration::CpuArch.new(
           id: cpu['Architecture']
         )
+      end
+
+      # @return [Hash]
+      def master_checks
+        data = {}
+        result = @ssh.exec("sudo curl -sSf --connect-timeout 1 --cacert /etc/kubernetes/pki/ca.crt https://localhost:6443/healthz")
+        data['api_healthy'] = (result.success? && result.stdout == 'ok')
+        data['ca_exists'] = @ssh.file('/etc/kubernetes/pki/ca.key').exist?
+
+        unless @config.etcd&.endpoints
+          etcd = Pharos::Etcd::Client.new(@ssh)
+          data['etcd_healthy'] = etcd.healthy?
+          data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/etcd/ca-key.pem').exist?
+        end
+
+        data.merge(worker_checks)
+      end
+
+      # @return [Hash]
+      def worker_checks
+        data = {}
+        data['kubelet_configured'] = @ssh.file('/etc/kubernetes/kubelet.conf').exist?
+
+        data
       end
     end
   end
