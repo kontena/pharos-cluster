@@ -3,7 +3,8 @@
 set -eu
 
 mkdir -p /etc/kubernetes/manifests
-cat <<EOF >/etc/kubernetes/manifests/pharos-proxy.yaml
+mkdir -p /etc/kubernetes/tmp
+cat >/etc/kubernetes/tmp/pharos-proxy.yaml <<EOF && mv /etc/kubernetes/tmp/pharos-proxy.yaml /etc/kubernetes/manifests/pharos-proxy.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -23,6 +24,7 @@ spec:
         value: "${MASTER_HOSTS}"
   hostNetwork: true
 EOF
+
 
 if [ ! -e /etc/kubernetes/kubelet.conf ]; then
     mkdir -p /etc/systemd/system/kubelet.service.d
