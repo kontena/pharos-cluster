@@ -5,6 +5,7 @@ module Pharos
     class ConfigureEtcd < Pharos::Phase
       title 'Configure etcd'
       CA_PATH = '/etc/pharos/pki'
+      POD_MANIFEST_PATH = '/etc/kubernetes/manifests/pharos-etcd.yml'
 
       register_component(
         Pharos::Phases::Component.new(
@@ -47,8 +48,12 @@ module Pharos
       # @param peer [Pharos::Configuration::Host]
       # @return [String]
       def peer_name(peer)
-        peer_index = @config.etcd_hosts.find_index { |h| h == peer }
-        "etcd#{peer_index + 1}"
+        file = @ssh.file(POD_MANIFEST_PATH)
+        if file.exist? && match = file.read.match(/--name=(\w+)/)
+          match[1]
+        else
+          peer.hostname.split('.')[0]
+        end
       end
 
       def sync_ca
