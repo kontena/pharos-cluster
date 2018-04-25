@@ -87,7 +87,7 @@ module Pharos
         unless @config.etcd&.endpoints
           etcd = Pharos::Etcd::Client.new(@ssh)
           data['etcd_healthy'] = etcd.healthy?
-          data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/etcd/ca-key.pem').exist?
+          data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/ca-key.pem').exist?
         end
 
         data.merge(worker_checks)
