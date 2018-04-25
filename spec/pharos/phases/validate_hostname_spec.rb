@@ -16,7 +16,7 @@ describe Pharos::Phases::ValidateHostname do
       ],
   ) }
 
-  subject { described_class.new(config.hosts[0], config: config, ssh: ssh, hosts: config.hosts) }
+  subject { described_class.new(config.hosts[0], config: config, ssh: ssh) }
 
 
   describe '#call' do
