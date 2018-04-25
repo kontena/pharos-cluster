@@ -125,12 +125,10 @@ module Pharos
           },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'false'
-          }
+          },
+          'noTaintMaster' => !@host.master_taint,
         }
 
-        if !@host.master_taint.nil?
-          config['noTaintMaster'] = !@host.master_taint
-        end
 
         if @host.container_runtime == 'cri-o'
           config['criSocket'] = '/var/run/crio/crio.sock'
