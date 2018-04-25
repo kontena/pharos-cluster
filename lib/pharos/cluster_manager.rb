@@ -38,33 +38,58 @@ module Pharos
       addon_manager.validate
     end
 
+    # @return [Array<Pharos::Configuration::Host>]
+    def sorted_master_hosts
+      config.master_hosts.sort_by(&:master_sort_score)
+    end
+
+    # @return [Array<Pharos::Configuration::Host>]
+    def sorted_etcd_hosts
+      config.etcd_hosts.sort_by(&:etcd_sort_score)
+    end
+
     def apply_phases
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::MigrateMaster, config.master_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureCfssl, config.etcd_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureEtcdCa, config.etcd_hosts[0...1], ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: true)
 
-      apply_phase(Phases::ConfigureSecretsEncryption, config.master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureMaster, config.master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true) # TODO: also run this phase in parallel for the master nodes, if not doing an upgrade?
-      apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
+      # we need to use sorted masters because phases expects that first one has
+      # ca etc config files
+      master_hosts = sorted_master_hosts
+
+      apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
+
+      unless @config.etcd&.hosts
+        # we need to use sorted etcd hosts because phases expects that first one has
+        # ca etc config files
+        etcd_hosts = sorted_etcd_hosts
+        apply_phase(Phases::ConfigureCfssl, etcd_hosts, ssh: true, parallel: true)
+        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], ssh: true, parallel: false)
+        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], ssh: true, parallel: false)
+        apply_phase(Phases::ConfigureEtcd, etcd_hosts, ssh: true, parallel: true)
+      end
+
+      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: master_hosts.first)
+      apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, parallel: false)
 
       # master is now configured and can be used
-      apply_phase(Phases::ConfigureDNS, [config.master_host], master: config.master_host)
-      apply_phase(Phases::ConfigureWeave, [config.master_host], master: config.master_host) if config.network.provider == 'weave'
-      apply_phase(Phases::ConfigureCalico, [config.master_host], master: config.master_host) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureMetrics, [config.master_host], master: config.master_host)
-      apply_phase(Phases::StoreClusterYAML, [config.master_host], master: config.master_host, config_content: @config_content)
-      apply_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
+      apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
+
+      apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
+      apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
+      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
+      apply_phase(Phases::StoreClusterYAML, [master_hosts.first], master: master_hosts.first, config_content: @config_content)
+      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
 
-      apply_phase(Phases::LabelNode, config.hosts, master: config.master_host, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
+    # @param phase_class [Pharos::Phase]
+    # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, **options)
       return if hosts.empty?
       Out.sub_header "#{phase_class.title} #{format_hosts(hosts)}"

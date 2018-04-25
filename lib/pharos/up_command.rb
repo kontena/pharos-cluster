@@ -109,9 +109,10 @@ module Pharos
       manager.apply_addons
 
       craft_time = Time.now - start_time
+
       Out.header "The cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})"
       Out.puts "    You can connect to the cluster with kubectl using:"
-      Out.puts "    export KUBECONFIG=~/.pharos/#{config.master_host.api_address}"
+      Out.puts "    export KUBECONFIG=~/.pharos/#{manager.sorted_master_hosts.first.api_address}"
 
       manager.disconnect
     end

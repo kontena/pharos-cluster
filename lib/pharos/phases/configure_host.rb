@@ -39,7 +39,7 @@ module Pharos
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
-            CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
+            CRIO_STREAM_ADDRESS: @host.peer_address,
             CPU_ARCH: @host.cpu_arch.name
           )
         else

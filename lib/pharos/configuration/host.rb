@@ -10,13 +10,14 @@ module Pharos
 
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String
+      attribute :private_interface, Pharos::Types::Strict::String
       attribute :role, Pharos::Types::Strict::String
       attribute :labels, Pharos::Types::Strict::Hash
       attribute :user, Pharos::Types::Strict::String.default('ubuntu')
       attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks
 
       def to_s
         hostname || address
@@ -27,12 +28,11 @@ module Pharos
       end
 
       def peer_address
-        private_address || address
+        private_address || private_interface_address || address
       end
 
       def kubelet_args(local_only: false)
         args = []
-        node_ip = private_address.nil? ? address : private_address
 
         if crio?
           args << '--container-runtime=remote'
@@ -47,7 +47,7 @@ module Pharos
           args << "--address=127.0.0.1"
         else
           args << '--read-only-port=0'
-          args << "--node-ip=#{node_ip}"
+          args << "--node-ip=#{peer_address}"
           args << "--hostname-override=#{hostname}"
         end
 
@@ -56,6 +56,28 @@ module Pharos
 
       def crio?
         container_runtime == 'cri-o'
+      end
+
+      # @return [Integer]
+      def master_sort_score
+        if checks['api_healthy']
+          0
+        elsif checks['kubelet_configured']
+          1
+        else
+          2
+        end
+      end
+
+      # @return [Integer]
+      def etcd_sort_score
+        if checks['etcd_healthy']
+          0
+        elsif checks['etcd_ca_exists']
+          1
+        else
+          2
+        end
       end
     end
   end

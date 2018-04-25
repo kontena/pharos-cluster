@@ -9,6 +9,7 @@ require_relative 'configuration/etcd'
 require_relative 'configuration/authentication'
 require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
+require_relative 'configuration/kube_proxy'
 
 module Pharos
   class Config < Dry::Struct
@@ -24,6 +25,7 @@ module Pharos
     attribute :etcd, Pharos::Configuration::Etcd
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
+    attribute :kube_proxy, Pharos::Configuration::KubeProxy
 
     # @return [Integer]
     def dns_replicas

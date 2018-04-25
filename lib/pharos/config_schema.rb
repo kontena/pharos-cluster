@@ -21,6 +21,7 @@ module Pharos
             schema do
               required(:address).filled
               optional(:private_address).filled
+              optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
               optional(:user).filled
@@ -74,6 +75,9 @@ module Pharos
         end
         optional(:audit).schema do
           required(:server).filled(:str?)
+        end
+        optional(:kube_proxy).schema do
+          optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
         end
         optional(:addons).value(type?: Hash)
 
