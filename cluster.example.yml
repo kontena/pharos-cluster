@@ -21,6 +21,7 @@ network:
   dns_replicas: 3
   service_cidr: 10.96.0.0/12
   pod_network_cidr: 10.32.0.0/12
+  provider: weave
   trusted_subnets:
     - 10.10.0.0/16
 authentication:

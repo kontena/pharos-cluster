@@ -17,10 +17,7 @@ module Pharos
 
       def migrate_0_5_to_0_6
         info 'Migrating from 0.5 to 0.6 ...'
-        exec_script(
-          'migrations/migrate_worker_05_to_06.sh',
-          PEER_IP: @master.peer_address
-        )
+        exec_script('migrations/migrate_worker_05_to_06.sh')
       end
     end
   end

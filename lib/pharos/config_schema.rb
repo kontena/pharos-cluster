@@ -33,10 +33,17 @@ module Pharos
           optional(:endpoint).filled(:str?)
         end
         optional(:network).schema do
+          optional(:provider).filled(included_in?: %(weave calico))
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
-          optional(:trusted_subnets).each(type?: String)
+          optional(:trusted_subnets).value(:none?)
+
+          optional(:weave).schema do
+            optional(:trusted_subnets).each(type?: String)
+          end
+          optional(:calico).schema do
+          end
         end
         optional(:etcd).schema do
           required(:endpoints).each(type?: String)
@@ -44,7 +51,6 @@ module Pharos
           optional(:ca_certificate).filled(:str?)
           optional(:key).filled(:str?)
         end
-
         optional(:authentication).schema do
           optional(:token_webhook).schema do
             required(:config).schema do
@@ -64,6 +70,7 @@ module Pharos
         end
         optional(:cloud).schema do
           required(:provider).filled(:str?)
+          optional(:config).filled(:str?)
         end
         optional(:audit).schema do
           required(:server).filled(:str?)

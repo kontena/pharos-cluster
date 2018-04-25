@@ -32,7 +32,8 @@ module Pharos
           ETCD_VERSION: Pharos::ETCD_VERSION,
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
-          PEER_NAME: "etcd#{peer_index + 1}"
+          PEER_NAME: "etcd#{peer_index + 1}",
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
         )
       end
 
