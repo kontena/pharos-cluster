@@ -27,7 +27,7 @@ module Pharos
               optional(:user).filled
               optional(:ssh_key_path).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
-              optional(:no_taint_master).filled(:bool?)
+              optional(:master_taint).filled(:bool?)
             end
           end
         end
