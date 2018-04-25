@@ -42,12 +42,12 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Host>]
     def sorted_master_hosts
-      config.master_hosts.sort_by { |h| h.master_sort_score }
+      config.master_hosts.sort_by(&:master_sort_score)
     end
 
     # @return [Array<Pharos::Configuration::Host>]
     def sorted_etcd_hosts
-      config.etcd_hosts.sort_by { |h| h.etcd_sort_score }
+      config.etcd_hosts.sort_by(&:etcd_sort_score)
     end
 
     def apply_phases
