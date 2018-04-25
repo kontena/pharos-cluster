@@ -1,12 +1,12 @@
 hosts:
   - address: 1.1.1.1
-    private_address: 10.10.1.1
+    private_interface: eth1
     user: root
     ssh_key_path: ~/.ssh/my_key
     role: master
     container_runtime: cri-o
   - address: 2.2.2.2
-    private_address: 10.10.1.2
+    private_interface: eth1
     role: worker
     container_runtime: cri-o
     labels:

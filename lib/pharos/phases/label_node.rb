@@ -29,7 +29,7 @@ module Pharos
       end
 
       def find_node
-        internal_ip = @host.private_address || @host.address
+        internal_ip = @host.peer_address
         node = nil
         retries = 0
         while node.nil? && retries < 10
