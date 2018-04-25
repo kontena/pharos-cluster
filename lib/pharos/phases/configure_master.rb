@@ -69,6 +69,7 @@ module Pharos
         cfg = generate_config
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm alpha phase controlplane all --config #{tmp_file}")
+          @ssh.exec!("sudo kubeadm alpha phase mark-master --config #{tmp_file}")
         end
         cache_kube_certs
         configure_kubelet
