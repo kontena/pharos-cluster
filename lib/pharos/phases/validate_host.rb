@@ -79,8 +79,9 @@ module Pharos
       # @param interface [String]
       # @return [String]
       def private_interface_address(interface)
-        @ssh.exec!("ip -o addr show dev #{interface} scope global | awk '{ print $4 }'").each_line do |line|
-          ip, _prefixlen = line.split('/')
+        @ssh.exec!("ip -o addr show dev #{interface} scope global").each_line do |line|
+          _index, _dev, _family, addr = line.split
+          ip, _prefixlen = addr.split('/')
 
           next if ip == @host.address
 
