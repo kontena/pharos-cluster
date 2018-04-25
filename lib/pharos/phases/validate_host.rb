@@ -36,6 +36,8 @@ module Pharos
         @host.os_release = os_release
         @host.cpu_arch = cpu_arch
         @host.hostname = hostname
+        @host.checks = @host.role == 'master' ? master_checks : worker_checks
+        @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
       end
 
       # @return [String]
@@ -73,6 +75,44 @@ module Pharos
         Pharos::Configuration::CpuArch.new(
           id: cpu['Architecture']
         )
+      end
+
+      # @return [Hash]
+      def master_checks
+        data = {}
+        result = @ssh.exec("sudo curl -sSf --connect-timeout 1 --cacert /etc/kubernetes/pki/ca.crt https://localhost:6443/healthz")
+        data['api_healthy'] = (result.success? && result.stdout == 'ok')
+        data['ca_exists'] = @ssh.file('/etc/kubernetes/pki/ca.key').exist?
+
+        unless @config.etcd&.endpoints
+          etcd = Pharos::Etcd::Client.new(@ssh)
+          data['etcd_healthy'] = etcd.healthy?
+          data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/ca-key.pem').exist?
+        end
+
+        data.merge(worker_checks)
+      end
+
+      # @return [Hash]
+      def worker_checks
+        data = {}
+        data['kubelet_configured'] = @ssh.file('/etc/kubernetes/kubelet.conf').exist?
+
+        data
+      end
+
+      # @param interface [String]
+      # @return [String]
+      def private_interface_address(interface)
+        @ssh.exec!("ip -o addr show dev #{interface} scope global").each_line do |line|
+          _index, _dev, _family, addr = line.split
+          ip, _prefixlen = addr.split('/')
+
+          next if ip == @host.address
+
+          return ip
+        end
+        nil
       end
     end
   end

@@ -9,6 +9,7 @@ require_relative 'configuration/etcd'
 require_relative 'configuration/authentication'
 require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
+require_relative 'configuration/kube_proxy'
 
 module Pharos
   class Config < Dry::Struct
@@ -20,10 +21,11 @@ module Pharos
     attribute :api, Pharos::Configuration::Api
     attribute :network, Pharos::Configuration::Network
     attribute :cloud, Pharos::Configuration::Cloud
-    attribute :addons, Pharos::Types::Hash
+    attribute :addons, Pharos::Types::Hash.default({})
     attribute :etcd, Pharos::Configuration::Etcd
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
+    attribute :kube_proxy, Pharos::Configuration::KubeProxy
 
     # @return [Integer]
     def dns_replicas
@@ -53,17 +55,14 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def etcd_hosts
+      return [] if etcd&.endpoints
+
       etcd_hosts = hosts.select { |h| h.role == 'etcd' }
       if etcd_hosts.empty?
         master_hosts
       else
         etcd_hosts
       end
-    end
-
-    # @return [Pharos::Configuration::Host]
-    def etcd_host
-      etcd_hosts[0]
     end
   end
 end

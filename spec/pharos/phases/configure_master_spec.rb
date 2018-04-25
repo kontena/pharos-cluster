@@ -118,6 +118,38 @@ describe Pharos::Phases::ConfigureMaster do
         expect(config.dig('etcd', 'certFile')).to eq('/etc/pharos/etcd/certificate.pem')
         expect(config.dig('etcd', 'keyFile')).to eq('/etc/pharos/etcd/certificate-key.pem')
       end
+
+      it 'mounts pharos dir from host' do
+        pharos_volume_mount = {
+            'name' => 'pharos',
+            'hostPath' => '/etc/pharos',
+            'mountPath' => '/etc/pharos'
+        }
+        config = subject.generate_config
+        expect(config['apiServerExtraVolumes']).to include(pharos_volume_mount)
+      end
+    end
+
+    context 'with cloud configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        cloud: {
+          provider: 'aws',
+          config: './cloud-config'
+        }
+      ) }
+
+      it 'comes with proper cloud provider' do
+        config = subject.generate_config
+        expect(config['cloudProvider']).to eq('aws')
+      end
+
+      it 'comes with proper cloud config' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
+      end
     end
 
     context 'with authentication webhook configuration' do
@@ -146,21 +178,16 @@ describe Pharos::Phases::ConfigureMaster do
           .to eq('/etc/kubernetes/authentication/token-webhook-config.yaml')
       end
 
-      it 'comes with proper volumen mounts' do
+      it 'comes with proper volume mounts' do
         valid_volume_mounts =  [
           {
             'name' => 'k8s-auth-token-webhook',
             'hostPath' => '/etc/kubernetes/authentication',
             'mountPath' => '/etc/kubernetes/authentication'
-          },
-          {
-            'name' => 'pharos',
-            'hostPath' => '/etc/pharos',
-            'mountPath' => '/etc/pharos'
           }
         ]
         config = subject.generate_config
-        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0], valid_volume_mounts[1])
+        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0])
       end
     end
 
@@ -190,6 +217,44 @@ describe Pharos::Phases::ConfigureMaster do
       it 'comes with proper apiserver-count' do
         config = subject.generate_config
         expect(config.dig('apiServerExtraArgs', 'apiserver-count')).to eq("3")
+      end
+    end
+
+    context 'with kube-proxy ipvs configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        kube_proxy: {
+          mode: 'ipvs',
+        }
+      ) }
+
+      it 'configures kube-proxy' do
+        config = subject.generate_config
+        expect(config.dig('kubeProxy', 'config')).to eq(
+          'mode' => 'ipvs',
+          'featureGates' => {
+            'SupportIPVSProxyMode' => true,
+          },
+        )
+      end
+    end
+
+    context 'with kube-proxy iptables configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        kube_proxy: {
+          mode: 'iptables',
+        }
+      ) }
+
+      it 'configures kube-proxy' do
+        config = subject.generate_config
+        expect(config.dig('kubeProxy', 'config')).to eq(
+          'mode' => 'iptables',
+          'featureGates' => {},
+        )
       end
     end
   end

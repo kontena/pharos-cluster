@@ -10,6 +10,7 @@ module Pharos
 
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String
+      attribute :private_interface, Pharos::Types::Strict::String
       attribute :role, Pharos::Types::Strict::String
       attribute :labels, Pharos::Types::Strict::Hash
       attribute :user, Pharos::Types::Strict::String.default('ubuntu')
@@ -17,7 +18,7 @@ module Pharos
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :no_taint_master, Pharos::Types::Strict::Bool
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks
 
       def to_s
         address
@@ -28,7 +29,56 @@ module Pharos
       end
 
       def peer_address
-        private_address || address
+        private_address || private_interface_address || address
+      end
+
+      def kubelet_args(local_only: false)
+        args = []
+
+        if crio?
+          args << '--container-runtime=remote'
+          args << '--runtime-request-timeout=15m'
+          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
+        end
+
+        if local_only
+          args << "--pod-manifest-path=/etc/kubernetes/manifests/"
+          args << "--read-only-port=0"
+          args << "--cadvisor-port=0"
+          args << "--address=127.0.0.1"
+        else
+          args << '--read-only-port=0'
+          args << "--node-ip=#{peer_address}"
+          args << "--hostname-override=#{hostname}"
+        end
+
+        args
+      end
+
+      def crio?
+        container_runtime == 'cri-o'
+      end
+
+      # @return [Integer]
+      def master_sort_score
+        if checks['api_healthy']
+          0
+        elsif checks['kubelet_configured']
+          1
+        else
+          2
+        end
+      end
+
+      # @return [Integer]
+      def etcd_sort_score
+        if checks['etcd_healthy']
+          0
+        elsif checks['etcd_ca_exists']
+          1
+        else
+          2
+        end
       end
     end
   end

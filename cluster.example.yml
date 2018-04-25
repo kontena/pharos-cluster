@@ -1,12 +1,12 @@
 hosts:
   - address: 1.1.1.1
-    private_address: 10.10.1.1
+    private_interface: eth1
     user: root
     ssh_key_path: ~/.ssh/my_key
     role: master
     container_runtime: cri-o
   - address: 2.2.2.2
-    private_address: 10.10.1.2
+    private_interface: eth1
     role: worker
     container_runtime: cri-o
     labels:
@@ -21,6 +21,7 @@ network:
   dns_replicas: 3
   service_cidr: 10.96.0.0/12
   pod_network_cidr: 10.32.0.0/12
+  provider: weave
   trusted_subnets:
     - 10.10.0.0/16
 authentication:
@@ -37,6 +38,8 @@ authentication:
     cache_ttl: 5m
 audit:
  server: "http://webhook.site/c700f7c0-cf9e-4a2b-b110-8777809b520b"
+kube_proxy:
+  mode: ipvs
 addons:
   ingress-nginx:
     enabled: true
