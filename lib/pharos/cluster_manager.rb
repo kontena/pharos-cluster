@@ -42,34 +42,12 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Host>]
     def sorted_master_hosts
-      @sorted_master_hosts ||= config.master_hosts.sort_by { |h| master_sort_score(h) }
-    end
-
-    # @param host [Pharos::Configuration::Host]
-    # @return [Integer]
-    def master_sort_score(host)
-      score = 0
-      return score if host.checks['api_healthy']
-      score += 1
-      return score if host.checks['kubelet_configured']
-
-      score + 1
+      config.master_hosts.sort_by { |h| h.master_sort_score }
     end
 
     # @return [Array<Pharos::Configuration::Host>]
     def sorted_etcd_hosts
-      @sorted_etcd_hosts ||= config.etcd_hosts.sort_by { |h| etcd_sort_score(h) }
-    end
-
-    # @param host [Pharos::Configuration::Host]
-    # @return [Integer]
-    def etcd_sort_score(host)
-      score = 0
-      return score if host.checks['etcd_healthy']
-      score += 1
-      return score if host.checks['etcd_ca_exists']
-
-      score + 1
+      config.etcd_hosts.sort_by { |h| h.etcd_sort_score }
     end
 
     def apply_phases

@@ -57,6 +57,28 @@ module Pharos
       def crio?
         container_runtime == 'cri-o'
       end
+
+      # @return [Integer]
+      def master_sort_score
+        if checks['api_healthy']
+          0
+        elsif checks['kubelet_configured']
+          1
+        else
+          2
+        end
+      end
+
+      # @return [Integer]
+      def etcd_sort_score
+        if checks['etcd_healthy']
+          0
+        elsif checks['etcd_ca_exists']
+          1
+        else
+          2
+        end
+      end
     end
   end
 end
