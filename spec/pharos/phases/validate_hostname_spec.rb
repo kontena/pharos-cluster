@@ -20,7 +20,7 @@ describe Pharos::Phases::ValidateHostname do
 
   describe '#call' do
     context 'no duplicate hostnames' do
-      it 'raises if no duplicates' do
+      it 'does not raise if no duplicates' do
         config.hosts[0].hostname = "host-0"
         config.hosts[1].hostname = "host-1"
         config.hosts[2].hostname = "host-2"
@@ -30,7 +30,7 @@ describe Pharos::Phases::ValidateHostname do
     end
 
     context 'duplicate hostnames' do
-      it 'raises if no duplicates' do
+      it 'raises if duplicates' do
         config.hosts[0].hostname = "foo"
         config.hosts[1].hostname = "foo"
         config.hosts[2].hostname = "foo"
