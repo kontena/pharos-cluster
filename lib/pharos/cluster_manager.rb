@@ -53,12 +53,16 @@ module Pharos
     def apply_phases
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
 
+      # we need to use sorted masters because phases expects that first one has
+      # ca etc config files
       master_hosts = sorted_master_hosts
 
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
 
       unless @config.etcd&.hosts
+        # we need to use sorted etcd hosts because phases expects that first one has
+        # ca etc config files
         etcd_hosts = sorted_etcd_hosts
         apply_phase(Phases::ConfigureCfssl, etcd_hosts, ssh: true, parallel: true)
         apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], ssh: true, parallel: false)
