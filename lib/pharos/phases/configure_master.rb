@@ -161,6 +161,8 @@ module Pharos
         # Configure audit related things if needed
         configure_audit_webhook(config) if @config.audit&.server
 
+        configure_kube_proxy(config) if @config.kube_proxy
+
         # Set secrets config location and mount it to api server
         config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
         config['apiServerExtraVolumes'] << {
@@ -176,6 +178,7 @@ module Pharos
         extra_sans = Set.new(['localhost'])
         extra_sans << @host.address
         extra_sans << @host.private_address if @host.private_address
+        extra_sans << @host.private_interface_address if @host.private_interface_address
         extra_sans << @host.api_endpoint if @host.api_endpoint
 
         extra_sans.to_a
@@ -326,6 +329,25 @@ module Pharos
 
         if webhook_config[:user][:client_key]
           config['users'][0]['user']['client-key'] = PHAROS_DIR + '/token_webhook/key.pem'
+        end
+
+        config
+      end
+
+      # @param config [Hash]
+      def configure_kube_proxy(config)
+        config['kubeProxy'] = {
+          'config' => {
+            'featureGates' => {}
+          }
+        }
+
+        if @config.kube_proxy.mode
+          config['kubeProxy']['config']['mode'] = @config.kube_proxy.mode
+        end
+
+        if @config.kube_proxy.mode == 'ipvs'
+          config['kubeProxy']['config']['featureGates']['SupportIPVSProxyMode'] = true
         end
 
         config

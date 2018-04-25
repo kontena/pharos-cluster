@@ -37,6 +37,7 @@ module Pharos
         @host.cpu_arch = cpu_arch
         @host.hostname = hostname
         @host.checks = @host.role == 'master' ? master_checks : worker_checks
+        @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
       end
 
       # @return [String]
@@ -98,6 +99,20 @@ module Pharos
         data['kubelet_configured'] = @ssh.file('/etc/kubernetes/kubelet.conf').exist?
 
         data
+      end
+
+      # @param interface [String]
+      # @return [String]
+      def private_interface_address(interface)
+        @ssh.exec!("ip -o addr show dev #{interface} scope global").each_line do |line|
+          _index, _dev, _family, addr = line.split
+          ip, _prefixlen = addr.split('/')
+
+          next if ip == @host.address
+
+          return ip
+        end
+        nil
       end
     end
   end
