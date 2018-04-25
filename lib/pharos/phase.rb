@@ -9,7 +9,7 @@ module Pharos
     end
 
     def to_s
-      "#{self.class.title} @ #{@host.address} (#{@host.role})"
+      "#{self.class.title} @ #{@host} (#{@host.role})"
     end
 
     def self.register_component(component)
@@ -62,7 +62,7 @@ module Pharos
 
     %i(debug info warn error fatal puts).each do |meth|
       define_method meth do |msg|
-        Out.send(meth, @host.address) { msg }
+        Out.send(meth, @host.to_s) { msg }
       end
       private meth
     end
