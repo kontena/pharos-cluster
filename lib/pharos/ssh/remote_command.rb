@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'shellwords'
+
 module Pharos
   module SSH
     class RemoteCommand
@@ -73,7 +75,7 @@ module Pharos
         result = Result.new
 
         response = @client.session.open_channel do |channel|
-          channel.exec @cmd do |_, success|
+          channel.exec basherize(@cmd) do |_, success|
             raise Error, "Failed to exec #{cmd}" unless success
 
             channel.on_data do |_, data|
@@ -126,7 +128,7 @@ module Pharos
       end
 
       def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
+        $stdout.write(INDENT + pastel.cyan("$ #{basherize(cmd)}" + (source ? " < #{source}" : "")) + "\n")
       end
 
       def debug_stdout(data)
@@ -144,6 +146,14 @@ module Pharos
 
       def debug_exit(exit_status)
         $stdout.write(INDENT + pastel.yellow("! #{exit_status}") + "\n")
+      end
+
+      def basherize(cmd)
+        if cmd.start_with?('sudo ')
+          "sudo -n bash --noprofile --norc -c -- %<cmd>s" % { cmd: cmd[/^sudo (.*)/, 1].shellescape }
+        else
+          "bash --noprofile --norc -c -- %<cmd>s" % { cmd: cmd.shellescape }
+        end
       end
     end
   end

@@ -27,7 +27,7 @@ module Pharos
       end
 
       def check_sudo
-        @ssh.exec!('sudo -n true')
+        @ssh.exec!('sudo true')
       rescue Pharos::SSH::RemoteCommand::ExecError => exc
         raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
