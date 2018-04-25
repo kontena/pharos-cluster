@@ -52,6 +52,7 @@ module Pharos
 
     def apply_phases
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ValidateHostnameUniqueness, [config.master_hosts.first])
 
       # we need to use sorted masters because phases expects that first one has
       # ca etc config files
