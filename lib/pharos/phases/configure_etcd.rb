@@ -19,7 +19,7 @@ module Pharos
         logger.info(@host.address) { 'Configuring etcd certs ...' }
         exec_script(
           'configure-etcd-certs.sh',
-          PEER_IP: @host.peer_address
+          PEER_IP: @host.peer_address,
           PEER_NAME: peer_name(@host),
           ARCH: @host.cpu_arch.name
         )
