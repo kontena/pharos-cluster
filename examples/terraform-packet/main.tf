@@ -15,11 +15,11 @@ variable "cluster_name" {
 }
 
 variable "master_plan" {
-  default = "baremetal_1"
+  default = "baremetal_0"
 }
 
 variable "worker_plan" {
-  default = "baremetal_1"
+  default = "baremetal_0"
 }
 
 variable "master_count" {
@@ -71,14 +71,13 @@ output "pharos_hosts" {
     workers = {
       address         = "${packet_device.pharos_worker.*.access_public_ipv4}"
       private_address = "${packet_device.pharos_worker.*.access_private_ipv4}"
+      user            = "root"
+      role            = "worker"
 
       label = {
         "beta.kubernetes.io/instance-type" = "${var.worker_plan}"
         "failure-domain.beta.kubernetes.io/region" = "${var.facility}"
       }
-
-      user = "root"
-      role = "worker"
     }
   }
 }
