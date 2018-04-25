@@ -14,3 +14,8 @@ systemctl enable crio
 # remove unnecessary cni plugins
 rm /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
 systemctl start crio
+
+# Install crictl binary
+curl -sSL https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.0.0-beta.0/crictl-v1.0.0-beta.0-linux-amd64.tar.gz | tar xz
+
+install -m 755 -o root -g root crictl /usr/bin/crictl && rm crictl
