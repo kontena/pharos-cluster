@@ -1,7 +1,6 @@
 require 'pharos/phases/validate_hostname'
 
 describe Pharos::Phases::ValidateHostname do
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
   let(:config) { Pharos::Config.new(
       hosts: [
         Pharos::Configuration::Host.new(
@@ -16,7 +15,7 @@ describe Pharos::Phases::ValidateHostname do
       ],
   ) }
 
-  subject { described_class.new(config.hosts[0], config: config, ssh: ssh) }
+  subject { described_class.new(config.hosts[0], config: config) }
 
 
   describe '#call' do
