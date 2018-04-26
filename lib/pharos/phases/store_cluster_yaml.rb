@@ -6,7 +6,7 @@ module Pharos
       title "Store cluster YAML"
 
       def call
-        logger.info { "Storing cluster configuration to configmap" }
+        logger.info { "Storing cluster configuration to configmap ..." }
         resource.apply
       end
 
