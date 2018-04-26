@@ -34,11 +34,18 @@ module Pharos
         end
       end
 
+      # ~One replica per two workers
+      # @return [Integer]
+      def replicas
+        1 + (@cluster_config.worker_hosts.size / 2)
+      end
+
       def install
         apply_stack(
           configmap: config.configmap || {},
           node_selector: config.node_selector || {},
-          image: image_name
+          image: image_name,
+          replicas: replicas
         )
       end
     end

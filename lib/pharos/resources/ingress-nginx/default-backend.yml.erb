@@ -6,12 +6,27 @@ metadata:
     app: default-http-backend
   namespace: ingress-nginx
 spec:
-  replicas: 1
+  replicas: <%= replicas %>
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   template:
     metadata:
       labels:
         app: default-http-backend
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - default-http-backend
+              topologyKey: "kubernetes.io/hostname"
       terminationGracePeriodSeconds: 60
       containers:
       - name: default-http-backend
