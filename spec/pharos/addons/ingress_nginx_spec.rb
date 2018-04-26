@@ -6,7 +6,7 @@ describe Pharos::Addons::IngressNginx do
     network: {},
     addons: {},
     etcd: {}
-) }
+  ) }
   let(:config) { { foo: 'bar'} }
   let(:cpu_arch) { double(:cpu_arch ) }
   let(:master) { double(:host, address: '1.1.1.1') }
@@ -54,6 +54,20 @@ describe Pharos::Addons::IngressNginx do
       it "returns default" do
         expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_IMAGE)
       end
+    end
+  end
+
+  describe '#replicas' do
+
+    it 'returns min 2 replicas' do
+      expect(subject.replicas).to eq(2)
+    end
+
+    it 'returns 7 replicas with 70 workers' do
+      69.times do
+        cluster_config.hosts << Pharos::Configuration::Host.new(role: 'worker')
+      end
+      expect(subject.replicas).to eq(7)
     end
   end
 end

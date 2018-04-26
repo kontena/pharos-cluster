@@ -34,10 +34,13 @@ module Pharos
         end
       end
 
-      # ~One replica per two workers
+      # ~One replica per 10 workers, min 2
       # @return [Integer]
       def replicas
-        2 + (@cluster_config.worker_hosts.size / 10)
+        r = (@cluster_config.worker_hosts.size / 10.to_f).ceil
+
+        return 2 if r < 2
+        r
       end
 
       def install
