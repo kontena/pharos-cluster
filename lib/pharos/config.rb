@@ -27,6 +27,8 @@ module Pharos
     attribute :audit, Pharos::Configuration::Audit
     attribute :kube_proxy, Pharos::Configuration::KubeProxy
 
+    attr_accessor :data
+
     # @return [Integer]
     def dns_replicas
       if network.dns_replicas
