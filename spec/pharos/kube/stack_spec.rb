@@ -39,4 +39,41 @@ describe Pharos::Kube::Stack do
       subject.apply
     end
   end
+
+  describe '#prune' do
+    let(:api_versions) { [ 'test/v1' ] }
+    let(:api_client) { instance_double(Pharos::Kube::Client) }
+    let(:api_entities) { {
+      'test' => double(entity_type: 'Test', resource_name: 'test')
+    } }
+    let(:resource1) { double(:resource1, metadata: OpenStruct.new(annotations: { 'pharos.kontena.io/stack-checksum' => '41' })) }
+    let(:resource2) { double(:resource1, metadata: OpenStruct.new(annotations: { 'pharos.kontena.io/stack-checksum' => '42' })) }
+    let(:api_resources) { [resource1, resource2] }
+
+    before do
+      allow(session).to receive(:api_versions).and_return(api_versions)
+      allow(session).to receive(:resource_client).with('test/v1').and_return(api_client)
+      allow(api_client).to receive(:entities).and_return(api_entities)
+      allow(api_client).to receive(:get_entities).with('Test', 'test', label_selector: 'pharos.kontena.io/stack=ingress-nginx').and_return(api_resources)
+      allow(session).to receive(:resource) do |resource_double| resource_double end
+
+      api_resources.each do |resource|
+        allow(resource).to receive(:apiVersion=).with('test/v1')
+        allow(resource).to receive(:kind=).with('Test')
+      end
+    end
+
+    it "deletes the resource with the wrong checksum" do
+      expect(resource1).to receive(:delete)
+
+      subject.prune('42')
+    end
+
+    it "deletes all resources with a mock checksum" do
+      expect(resource1).to receive(:delete)
+      expect(resource2).to receive(:delete)
+
+      subject.prune('-')
+    end
+  end
 end
