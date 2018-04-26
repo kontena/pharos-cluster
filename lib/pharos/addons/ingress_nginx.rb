@@ -37,7 +37,7 @@ module Pharos
       # ~One replica per two workers
       # @return [Integer]
       def replicas
-        1 + (@cluster_config.worker_hosts.size / 2)
+        2 + (@cluster_config.worker_hosts.size / 10)
       end
 
       def install
