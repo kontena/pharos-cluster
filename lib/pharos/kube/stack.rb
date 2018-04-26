@@ -58,6 +58,7 @@ module Pharos
             next if method_name.end_with?('_review')
             next if api_version == 'v1' && entity.resource_name == 'bindings' # XXX: the entity definition does not have the list verb... but kubeclient does not expose that
             next if api_version == 'v1' && entity.resource_name == 'componentstatuses' # apiserver ignores the ?labelSelector query
+            next if api_version == 'v1' && entity.resource_name == 'endpoints' # inherits stack labels from service, does not have any ownerReference...
 
             resources = client.get_entities(entity.entity_type, entity.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
             resources = resources.select do |obj|
