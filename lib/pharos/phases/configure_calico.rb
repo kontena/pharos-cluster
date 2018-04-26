@@ -30,6 +30,7 @@ module Pharos
         Pharos::Kube.apply_stack(
           @master.api_address, 'calico',
           ipv4_pool_cidr: @config.network.pod_network_cidr,
+          master_ip: @config.master_host.peer_address,
           version: CALICO_VERSION
         )
       end
