@@ -83,6 +83,7 @@ module Pharos
       end
 
       config = Pharos::Config.new(schema)
+      config.data = config_hash.freeze
 
       # inject api_endpoint to each host object
       config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
