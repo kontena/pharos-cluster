@@ -6,9 +6,8 @@ module Pharos
 
     attr_reader :config
 
-    def initialize(config, config_content:, **opts)
+    def initialize(config, **opts)
       @config = config
-      @config_content = config_content
       @pastel = opts.fetch(:pastel) { Pastel.new }
     end
 
