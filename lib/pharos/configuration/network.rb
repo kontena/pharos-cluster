@@ -15,6 +15,8 @@ module Pharos
 
       class Calico < Dry::Struct
         constructor_type :schema
+
+        attribute :ipip_mode, Pharos::Types::String.default('Always')
       end
 
       attribute :provider, Pharos::Types::String.default('weave')
