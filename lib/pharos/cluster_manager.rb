@@ -85,7 +85,6 @@ module Pharos
       apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
       apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::StoreClusterYAML, [master_hosts.first], master: master_hosts.first)
       apply_phase(Phases::ConfigureBootstrap, [master_hosts.first], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
@@ -109,6 +108,11 @@ module Pharos
 
         addon.apply
       end
+    end
+
+    def save_config
+      master_host = sorted_master_hosts.first
+      apply_phase(Phases::StoreClusterYAML, [master_host], master: master_host)
     end
 
     def disconnect
