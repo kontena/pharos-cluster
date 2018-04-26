@@ -6,9 +6,16 @@ module Pharos
       title "Configure bootstrap tokens"
 
       def call
-        info "Creating node bootstrap token ..."
+        if new_hosts?
+          info "Creating node bootstrap token ..."
+          cluster_context['join-command'] = @ssh.exec!("sudo kubeadm token create --print-join-command")
+        else
+          info "No new nodes, skipping bootstrap token creation ..."
+        end
+      end
 
-        cluster_context['join-command'] = @ssh.exec!("sudo kubeadm token create --print-join-command")
+      def new_hosts?
+        @config.worker_hosts.any? { |h| !h.checks['kubelet_configured'] }
       end
     end
   end

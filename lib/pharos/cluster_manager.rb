@@ -4,10 +4,11 @@ module Pharos
   class ClusterManager
     attr_reader :config
 
-    def initialize(config, config_content:, **opts)
+    # @param config [Pharos::Config]
+    # @param pastel [Pastel]
+    def initialize(config, pastel: Pastel.new)
       @config = config
-      @config_content = config_content
-      @pastel = opts.fetch(:pastel) { Pastel.new }
+      @pastel = pastel
     end
 
     # @return [Pharos::SSH::Manager]
@@ -50,7 +51,7 @@ module Pharos
 
     def apply_phases
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
-
+      apply_phase(Phases::ValidateHostname, config.hosts, ssh: false, parallel: false)
       # we need to use sorted masters because phases expects that first one has
       # ca etc config files
       master_hosts = sorted_master_hosts
@@ -80,7 +81,7 @@ module Pharos
       apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
       apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::StoreClusterYAML, [master_hosts.first], master: master_hosts.first, config_content: @config_content)
+      apply_phase(Phases::StoreClusterYAML, [master_hosts.first], master: master_hosts.first)
       apply_phase(Phases::ConfigureBootstrap, [master_hosts.first], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
