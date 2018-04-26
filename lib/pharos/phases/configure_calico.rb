@@ -31,6 +31,7 @@ module Pharos
           @master.api_address, 'calico',
           ipv4_pool_cidr: @config.network.pod_network_cidr,
           ipip_mode: @config.network.calico&.ipip_mode || 'Always',
+          ipip_enabled: @config.network.calico&.ipip_mode != 'Never',
           master_ip: @config.master_host.peer_address,
           version: CALICO_VERSION
         )
