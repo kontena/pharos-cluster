@@ -10,10 +10,10 @@ module Pharos
       def call
         save_config_locally
         config_map = previous_config_map
-        if config_map
-          cluster_context['previous-config-map'] = config_map
-          cluster_context['previous-config'] = build_config(config_map)
-        end
+        return unless config_map
+
+        cluster_context['previous-config-map'] = config_map
+        cluster_context['previous-config'] = build_config(config_map)
       end
 
       def save_config_locally

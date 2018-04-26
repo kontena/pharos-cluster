@@ -18,6 +18,8 @@ module Pharos
       Pharos::Phases.register_component component
     end
 
+    attr_reader :cluster_context
+
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
@@ -61,11 +63,6 @@ module Pharos
 
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
-    end
-
-    # @return [Hash]
-    def cluster_context
-      @cluster_context
     end
   end
 end

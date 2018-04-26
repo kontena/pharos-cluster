@@ -11,7 +11,7 @@ module Pharos
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
-      @context = Hash.new
+      @context = {}
     end
 
     # @return [Pharos::SSH::Manager]
