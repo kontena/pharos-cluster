@@ -19,14 +19,23 @@ describe Pharos::Kube::Stack do
   end
 
   describe '#apply' do
-    let(:session) { double(api_versions: []) }
+    let(:resource1) { double(:resource1, metadata: OpenStruct.new) }
+    let(:resources) { [resource1] }
+    let(:random_checksum) { '42' }
 
     before do
-      allow(session).to receive(:resource).with(an_instance_of(Hash)).at_least(:once).and_return(resource)
+      allow(subject).to receive(:resources).and_return(resources)
+      allow(subject).to receive(:random_checksum).and_return(random_checksum)
     end
 
     it 'applies all resources' do
-      expect(resource).to receive(:apply)
+      expect(resource1).to receive(:apply) do
+        expect(resource1.metadata.labels['pharos.kontena.io/stack']).to eq 'ingress-nginx'
+        expect(resource1.metadata.annotations['pharos.kontena.io/stack-checksum']).to eq random_checksum
+      end
+
+      expect(subject).to receive(:prune).with(random_checksum)
+
       subject.apply
     end
   end

@@ -15,7 +15,6 @@ module Pharos
         @name = name
         @resource_path = RESOURCE_PATH.join(name).freeze
         @vars = vars
-        freeze
       end
 
       # A list of .yml and yml.erb files in the stacks resource directory
@@ -83,8 +82,12 @@ module Pharos
 
       private
 
+      def random_checksum
+        SecureRandom.hex(16)
+      end
+
       def with_pruning
-        checksum = SecureRandom.hex(16)
+        checksum = random_checksum
         result = yield checksum
         prune(checksum)
         result
