@@ -6,9 +6,11 @@ module Pharos
 
     attr_reader :config
 
-    def initialize(config, **opts)
+    # @param config [Pharos::Config]
+    # @param pastel [Pastel]
+    def initialize(config, pastel: Pastel.new)
       @config = config
-      @pastel = opts.fetch(:pastel) { Pastel.new }
+      @pastel = pastel
     end
 
     # @return [Pharos::SSH::Manager]
