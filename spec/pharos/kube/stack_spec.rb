@@ -19,7 +19,7 @@ describe Pharos::Kube::Stack do
   end
 
   describe '#apply' do
-    let(:session) { double(api_groups: []) }
+    let(:session) { double(api_versions: []) }
 
     before do
       allow(session).to receive(:resource).with(an_instance_of(Hash)).at_least(:once).and_return(resource)

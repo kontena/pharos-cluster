@@ -53,10 +53,12 @@ module Pharos
       def prune(checksum)
         pruned = []
 
-        @session.api_groups.each do |api_group|
-          client = @session.resource_client(api_group.preferredVersion.groupVersion)
+        @session.api_versions.each do |api_version|
+          client = @session.resource_client(api_version)
           client.entities.each do |method_name, entity|
             next if method_name.end_with?('_review')
+            next if api_version == 'v1' && entity.resource_name == 'bindings' # XXX: the entity definition does not have the list verb... but kubeclient does not expose that
+            next if api_version == 'v1' && entity.resource_name == 'componentstatuses' # apiserver ignores the ?labelSelector query
 
             resources = client.get_entities(entity.entity_type, entity.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
             resources = resources.select do |obj|
@@ -66,7 +68,7 @@ module Pharos
 
             resources.each do |resource|
               # the items in a list are missing the apiVersion and kind
-              resource.apiVersion = api_group.preferredVersion.groupVersion
+              resource.apiVersion = api_version
               resource.kind = entity.entity_type
 
               next unless @session.resource(resource).delete
