@@ -41,7 +41,7 @@ module Pharos
       # @param configmap [Kubeclient::Resource]
       # @return [Pharos::Config]
       def build_config(configmap)
-        cluster_config = YAML.safe_load(configmap.data['cluster.yml'])
+        cluster_config = Pharos::YamlFile.new(StringIO.new(configmap.data['cluster.yml']), override_filename: "#{@host}:cluster.yml").load
         cluster_config['hosts'] ||= []
         data = Pharos::ConfigSchema.build.call(cluster_config)
         Pharos::Config.new(data)
