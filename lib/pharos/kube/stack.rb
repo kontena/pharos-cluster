@@ -54,22 +54,25 @@ module Pharos
         pruned = []
 
         @session.api_groups.each do |api_group|
-          group_client = @session.resource_client(api_group.preferredVersion.groupVersion)
+          client = @session.resource_client(api_group.preferredVersion.groupVersion)
+          client.entities.each do |method_name, entity|
+            next if method_name.end_with?('_review')
 
-          entities = group_client.entities.reject { |type, _| type.end_with?('_review') }
+            resources = client.get_entities(entity.entity_type, entity.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
+            resources = resources.select do |obj|
+              annotations = obj.metadata.annotations
+              annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+            end
 
-          objects = entities.flat_map do |type, meta|
-            group_client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
-          end
+            resources.each do |resource|
+              # the items in a list are missing the apiVersion and kind
+              resource.apiVersion = api_group.preferredVersion.groupVersion
+              resource.kind = entity.entity_type
 
-          prunables = objects.select do |obj|
-            annotations = obj.metadata.annotations
-            annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
-          end
+              next unless @session.resource(resource).delete
 
-          prunables.each do |obj|
-            obj.apiVersion = api_group.preferredVersion.groupVersion
-            pruned << obj if @session.resource(obj).delete
+              pruned << resource
+            end
           end
         end
 
