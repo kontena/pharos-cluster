@@ -1,13 +1,18 @@
 require "pharos/addons/ingress_nginx"
 
 describe Pharos::Addons::IngressNginx do
-
+  let(:cluster_config) { Pharos::Config.new(
+    hosts: [Pharos::Configuration::Host.new(role: 'worker')],
+    network: {},
+    addons: {},
+    etcd: {}
+) }
   let(:config) { { foo: 'bar'} }
   let(:cpu_arch) { double(:cpu_arch ) }
   let(:master) { double(:host, address: '1.1.1.1') }
 
   subject do
-    described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch)
+    described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
   end
 
   describe "#validate" do

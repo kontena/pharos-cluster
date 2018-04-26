@@ -23,7 +23,7 @@ describe Pharos::Addon do
   let(:master) { double(:host, address: '1.1.1.1') }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch) }
+  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil) }
 
   describe ".name" do
     it "returns configured name" do
