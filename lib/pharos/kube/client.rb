@@ -71,6 +71,17 @@ module Pharos
 
         get_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace)
       end
+
+      # @param resource [Kubeclient::Resource]
+      def delete_resource(resource, propagationPolicy: 'Foreground')
+        definition = entity_for_resource(resource)
+
+        delete_entity(definition.resource_name, resource.metadata.name, resource.metadata.namespace, delete_options: {
+          apiVersion: 'v1',
+          kind: 'DeleteOptions',
+          propagationPolicy: propagationPolicy
+        })
+      end
     end
   end
 end
