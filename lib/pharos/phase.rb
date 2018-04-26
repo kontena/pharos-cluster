@@ -22,11 +22,12 @@ module Pharos
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
     # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, ssh: nil, master: nil)
+    def initialize(host, config: nil, ssh: nil, master: nil, cluster_context: nil)
       @host = host
       @config = config
       @ssh = ssh
       @master = master
+      @cluster_context = cluster_context
     end
 
     def logger
@@ -64,12 +65,7 @@ module Pharos
 
     # @return [Hash]
     def cluster_context
-      self.class.cluster_context
-    end
-
-    # @return [Hash]
-    def self.cluster_context
-      @@cluster_context ||= {} # rubocop:disable Style/ClassVars
+      @cluster_context
     end
   end
 end

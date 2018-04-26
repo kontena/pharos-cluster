@@ -11,6 +11,7 @@ module Pharos
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
+      @context = Hash.new
     end
 
     # @return [Pharos::SSH::Manager]
@@ -22,13 +23,14 @@ module Pharos
     def phase_manager
       @phase_manager = Pharos::PhaseManager.new(
         ssh_manager: ssh_manager,
-        config: @config
+        config: @config,
+        cluster_context: @context
       )
     end
 
     # @return [Pharos::AddonManager]
     def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new(@config)
+      @addon_manager ||= Pharos::AddonManager.new(@config, @context)
     end
 
     # load phases/addons
