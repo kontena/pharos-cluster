@@ -2,8 +2,8 @@
 
 module Pharos
   module Phases
-    class StoreClusterYAML < Pharos::Phase
-      title "Store cluster YAML"
+    class StoreClusterConfiguration < Pharos::Phase
+      title "Store cluster configuration"
 
       def call
         logger.info { "Storing cluster configuration to configmap ..." }
@@ -23,9 +23,14 @@ module Pharos
           },
           data: {
             'cluster.yml' => data.to_yaml,
-            'pharos-version' => Pharos::VERSION
+            'pharos-version' => Pharos::VERSION,
+            'pharos-components' => components.to_yaml
           }
         )
+      end
+
+      def components
+        JSON.parse(Pharos::Phases.components_for_config(@config).sort_by(&:name).map(&:to_h).to_json)
       end
     end
   end
