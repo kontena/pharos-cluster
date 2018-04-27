@@ -45,11 +45,10 @@ module Pharos
       def check_role
         return if !@host.checks['kubelet_configured']
 
-        if @host.master? && !@host.checks['ca_exists']
-          raise Pharos::InvalidHostError, "Cannot change worker host role to master"
-        elsif @host.worker? && @host.checks['ca_exists']
-          raise Pharos::InvalidHostError, "Cannot change master host role to worker"
-        end
+        raise Pharos::InvalidHostError, "Cannot change worker host role to master" if @host.master? && !@host.checks['ca_exists']
+        raise Pharos::InvalidHostError, "Cannot change master host role to worker" if @host.worker? && @host.checks['ca_exists']
+
+        logger.debug { "#{@host.role} role matches" }
       end
 
       # @return [String]
