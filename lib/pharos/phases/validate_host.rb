@@ -43,8 +43,9 @@ module Pharos
       end
 
       def check_role
+        return if !@host.checks['kubelet_configured']
         return if @host.master? && @host.checks['ca_exists'] == true
-        return if @host.worker? && @host.checks['kubelet_configured'] && @host.checks['ca_exists'] != true
+        return if @host.worker? && @host.checks['ca_exists'] != true
 
         raise Pharos::InvalidHostError, "Cannot change role of an existing node"
       end
