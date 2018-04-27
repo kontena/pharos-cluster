@@ -54,6 +54,7 @@ module Pharos
       {
         master: @config.master_host,
         cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs
+        cluster_config: @config
       }
     end
 
