@@ -10,7 +10,8 @@ module Pharos
       )
 
       register_component(
-        name: 'pharos-kubelet-proxy', version: Pharos::KUBELET_PROXY_VERSION, license: 'Apache License 2.0'
+        name: 'pharos-kubelet-proxy', version: Pharos::KUBELET_PROXY_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| !c.worker_hosts.empty? }
       )
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
