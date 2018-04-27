@@ -71,13 +71,14 @@ module Pharos
       ObjectSpace.each_object(Class).select { |klass| klass < self }
     end
 
-    attr_reader :config, :cpu_arch
+    attr_reader :config, :cpu_arch, :cluster_config
 
-    def initialize(config = nil, enabled: true, master:, cpu_arch:)
+    def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
       @config = self.class.struct.new(config)
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch
+      @cluster_config = cluster_config
     end
 
     def name

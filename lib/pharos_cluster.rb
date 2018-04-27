@@ -13,5 +13,7 @@ module Pharos
   KUBEADM_VERSION = ENV.fetch('KUBEADM_VERSION') { KUBE_VERSION }
   ETCD_VERSION = ENV.fetch('ETCD_VERSION') { '3.1.12' }
   DOCKER_VERSION = '1.13.1'
+  KUBELET_PROXY_VERSION = '0.3.5'
+
   Out = Pharos::Output.new
 end

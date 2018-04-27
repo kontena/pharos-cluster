@@ -96,6 +96,12 @@ module Pharos
 
     # A green top level message
     # @param msg [String]
+    def super_header(msg)
+      puts(bright_green('==> %<msg>s' % { msg: msg }))
+    end
+
+    # A green top level message
+    # @param msg [String]
     def header(msg)
       puts(green('==> %<msg>s' % { msg: msg }))
     end
