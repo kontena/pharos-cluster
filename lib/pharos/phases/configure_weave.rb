@@ -8,9 +8,8 @@ module Pharos
       WEAVE_VERSION = '2.3.0'
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
+        enabled: Proc.new { |c| c.network.provider == 'weave' }
       )
 
       def call

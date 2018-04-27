@@ -8,9 +8,8 @@ module Pharos
       POD_MANIFEST_PATH = '/etc/kubernetes/manifests/pharos-etcd.yml'
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0',
+        enabled: Proc.new { |c| !c.etcd&.endpoints }
       )
 
       def call

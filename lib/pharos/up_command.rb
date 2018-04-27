@@ -18,6 +18,8 @@ module Pharos
       end
     end
 
+    option ['-y', '--yes'], :flag, 'Answer automatically yes to prompts'
+
     # @return [Pharos::YamlFile]
     def default_config_yaml
       if !$stdin.tty? && !$stdin.eof?
@@ -30,6 +32,7 @@ module Pharos
     end
 
     def execute
+      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
       puts pastel.green("==> Reading instructions ...")
       config_hash = load_config
       if tf_json
@@ -70,7 +73,7 @@ module Pharos
     # @return [Pharos::Config]
     def build_config(config_hash)
       schema_class = Pharos::ConfigSchema.build
-      schema = schema_class.call(config_hash)
+      schema = schema_class.call(Pharos::ConfigSchema::DEFAULT_DATA.merge(config_hash))
       unless schema.success?
         show_config_errors(schema.messages)
         exit 11
@@ -97,6 +100,9 @@ module Pharos
       manager.load
       manager.validate
 
+      show_component_versions(config)
+      prompt_continue(config)
+
       puts pastel.green("==> Starting to craft cluster ...")
       manager.apply_phases
 
@@ -111,6 +117,32 @@ module Pharos
       puts "    export KUBECONFIG=~/.pharos/#{manager.sorted_master_hosts.first.api_address}"
 
       manager.disconnect
+    end
+
+    # @param config [Pharos::Config]
+    def show_component_versions(config)
+      puts pastel.green("==> Using following software versions:")
+      Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
+        puts "    #{c.name}: #{c.version}"
+      end
+    end
+
+    # @param config [Pharos::Config]
+    def prompt_continue(config)
+      lexer = Rouge::Lexers::YAML.new
+      yaml = JSON.parse(config.to_h.to_json).to_yaml
+      puts pastel.green("==> Configuration is generated and shown below:")
+      if color?
+        puts rouge.format(lexer.lex(yaml))
+        puts ""
+      else
+        puts yaml
+      end
+      if $stdin.tty? && !yes?
+        exit 1 unless prompt.yes?('Continue?')
+      end
+    rescue TTY::Reader::InputInterrupt
+      exit 1
     end
 
     # @param secs [Integer]

@@ -6,9 +6,7 @@ module Pharos
       title "Configure kubelet"
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
       )
 
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"

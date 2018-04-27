@@ -8,15 +8,13 @@ module Pharos
       CALICO_VERSION = '3.1.0'
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
+        enabled: Proc.new { |c| c.network&.provider == 'calico' }
       )
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'calico-cni', version: CALICO_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'calico-cni', version: CALICO_VERSION, license: 'Apache License 2.0',
+        enabled: Proc.new { |c| c.network&.provider == 'calico' }
       )
 
       def validate
