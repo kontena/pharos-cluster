@@ -10,6 +10,8 @@ module Pharos
         check_sudo
         logger.info { "Gathering host facts ..." }
         gather_host_facts
+        logger.info { "Validating current role matches ..." }
+        check_role
         logger.info { "Validating distro and version ..." }
         check_distro_version
         logger.info { "Validating host configuration ..." }
@@ -36,8 +38,15 @@ module Pharos
         @host.os_release = os_release
         @host.cpu_arch = cpu_arch
         @host.hostname = hostname
-        @host.checks = @host.role == 'master' ? master_checks : worker_checks
+        @host.checks = host_checks
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
+      end
+
+      def check_role
+        return if @host.master? && @host.checks['ca_exists'] == true
+        return if @host.worker? && @host.checks['kubelet_configured'] && @host.checks['ca_exists'] != true
+
+        raise Pharos::InvalidHostError, "Cannot change role of an existing node"
       end
 
       # @return [String]
@@ -78,25 +87,18 @@ module Pharos
       end
 
       # @return [Hash]
-      def master_checks
+      def host_checks
         data = {}
         result = @ssh.exec("sudo curl -sSf --connect-timeout 1 --cacert /etc/kubernetes/pki/ca.crt https://localhost:6443/healthz")
         data['api_healthy'] = (result.success? && result.stdout == 'ok')
         data['ca_exists'] = @ssh.file('/etc/kubernetes/pki/ca.key').exist?
+        data['kubelet_configured'] = @ssh.file('/etc/kubernetes/kubelet.conf').exist?
 
         unless @config.etcd&.endpoints
           etcd = Pharos::Etcd::Client.new(@ssh)
           data['etcd_healthy'] = etcd.healthy?
           data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/ca-key.pem').exist?
         end
-
-        data.merge(worker_checks)
-      end
-
-      # @return [Hash]
-      def worker_checks
-        data = {}
-        data['kubelet_configured'] = @ssh.file('/etc/kubernetes/kubelet.conf').exist?
 
         data
       end

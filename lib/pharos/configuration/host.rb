@@ -79,6 +79,14 @@ module Pharos
           2
         end
       end
+
+      def master?
+        role == 'master'
+      end
+
+      def worker?
+        role == 'worker'
+      end
     end
   end
 end
