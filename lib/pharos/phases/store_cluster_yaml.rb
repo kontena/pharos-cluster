@@ -5,20 +5,15 @@ module Pharos
     class StoreClusterYAML < Pharos::Phase
       title "Store cluster YAML"
 
-      # @param config_content [String]
-      def initialize(host, config_content:, **options)
-        super(host, **options)
-        @config_content = config_content
-      end
-
       def call
-        logger.info { "Storing cluster configuration to configmap" }
+        logger.info { "Storing cluster configuration to configmap ..." }
         resource.apply
       end
 
       private
 
       def resource
+        data = JSON.parse(@config.data.to_json) # hack to get rid of symbols
         @kube.resource(
           apiVersion: 'v1',
           kind: 'ConfigMap',
@@ -27,7 +22,7 @@ module Pharos
             name: 'pharos-config'
           },
           data: {
-            'cluster.yml' => @config_content,
+            'cluster.yml' => data.to_yaml,
             'pharos-version' => Pharos::VERSION
           }
         )

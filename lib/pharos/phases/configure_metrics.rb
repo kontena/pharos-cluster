@@ -6,9 +6,7 @@ module Pharos
       title "Configure metrics"
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
-        )
+        name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
       )
 
       def call

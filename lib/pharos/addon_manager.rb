@@ -18,14 +18,24 @@ module Pharos
     end
 
     # @param config [Pharos::Configuration]
+    # @param cluster_context [Hash]
     # @param kube_session [Pharos::Kube::Session]
-    def initialize(config, kube_session:)
+    def initialize(config, cluster_context:, kube_session:)
       @config = config
+      @cluster_context = cluster_context
       @kube_session = kube_session
     end
 
     def configs
       @config.addons
+    end
+
+    def prev_configs
+      if config = @cluster_context['previous-config']
+        config.addons
+      else
+        {}
+      end
     end
 
     # @return [Array<Pharos::Addon>]
@@ -46,6 +56,7 @@ module Pharos
       {
         kube: @kube_session, # can only be used after Phases::ConfigureClient runs!
         cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs!
+        cluster_config: @config
       }
     end
 
@@ -73,11 +84,12 @@ module Pharos
     end
 
     def with_disabled_addons
-      addon_classes.each do |addon_class|
+      addon_classes.select { |addon_class|
+        prev_config = prev_configs[addon_class.name]
         config = configs[addon_class.name]
-        if config.nil? || !config["enabled"]
-          yield(addon_class)
-        end
+        prev_config && prev_config["enabled"] && (config.nil? || !config["enabled"])
+      }.each do |addon_class|
+        yield(addon_class)
       end
     end
   end

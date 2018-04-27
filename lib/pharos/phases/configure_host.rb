@@ -6,15 +6,13 @@ module Pharos
       title "Configure hosts"
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'docker' } }
       )
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
       )
 
       def call
@@ -39,7 +37,7 @@ module Pharos
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
-            CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
+            CRIO_STREAM_ADDRESS: @host.peer_address,
             CPU_ARCH: @host.cpu_arch.name
           )
         else

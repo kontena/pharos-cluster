@@ -51,24 +51,12 @@ module Pharos
         Resource.new(@session, @client.get_resource(@resource))
       end
 
-      # Deletes the resource from kube. Returns false if the resource
-      # does not exist.
+      # Deletes the resource from kube.
+      # Returns false if the resource does not exist.
+      #
       # @return [Kubeclient::Resource,FalseClass]
-      def delete
-        if attributes.metadata.selfLink
-          api_group = attributes.metadata.selfLink.split('/')[1]
-          path = attributes.metadata.selfLink.gsub("/#{api_group}/#{@api_version}", '')
-          @client.rest_client[path].delete
-        else
-          definition = entity_definition
-          @client.get_entity(definition.resource_name, metadata.name, metadata.namespace)
-          @client.delete_entity(
-            definition.resource_name, metadata.name, metadata.namespace,
-            kind: 'DeleteOptions',
-            apiVersion: 'v1',
-            propagationPolicy: 'Foreground'
-          )
-        end
+      def delete(**options)
+        @client.delete_resource(@resource, **options)
       rescue Kubeclient::ResourceNotFoundError
         false
       end
@@ -86,16 +74,6 @@ module Pharos
 
       def respond_to_missing?(meth, include_private = false)
         attributes.respond_to?(meth, include_private) || super
-      end
-
-      private
-
-      def underscored_entity
-        Kubeclient::ClientMixin.underscore_entity(kind)
-      end
-
-      def entity_definition
-        @client.entities[underscored_entity]
       end
     end
   end

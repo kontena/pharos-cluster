@@ -23,7 +23,7 @@ describe Pharos::Addon do
   let(:kube_session) { instance_double(Pharos::Kube::Session) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, kube: kube_session, cpu_arch: cpu_arch) }
+  subject { test_addon.new(config, kube: kube_session, cpu_arch: cpu_arch, cluster_config: nil) }
 
   describe ".name" do
     it "returns configured name" do
@@ -70,7 +70,7 @@ describe Pharos::Addon do
         config: anything,
         arch: anything
       )
-      
+
       subject.apply_stack
     end
   end

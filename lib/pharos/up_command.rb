@@ -18,6 +18,8 @@ module Pharos
       end
     end
 
+    option ['-y', '--yes'], :flag, 'Answer automatically yes to prompts'
+
     # @return [Pharos::YamlFile]
     def default_config_yaml
       if !$stdin.tty? && !$stdin.eof?
@@ -30,9 +32,9 @@ module Pharos
     end
 
     def execute
+      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
       puts pastel.green("==> Reading instructions ...")
       config_hash = load_config
-      config_content = read_config
       if tf_json
         puts pastel.green("==> Importing configuration from Terraform ...")
         load_terraform(tf_json, config_hash)
@@ -42,7 +44,7 @@ module Pharos
       # so that the certs etc. can be referenced more easily
       Dir.chdir(config_yaml.dirname) do
         config = build_config(config_hash)
-        configure(config, config_content: config_content)
+        configure(config)
       end
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
@@ -53,11 +55,6 @@ module Pharos
     # @return [Hash] hash presentation of cluster.yml
     def load_config
       config_yaml.load(ENV.to_h)
-    end
-
-    # @return [String] raw cluster.yml
-    def read_config
-      config_yaml.read(ENV.to_h)
     end
 
     # @param file [String]
@@ -76,13 +73,14 @@ module Pharos
     # @return [Pharos::Config]
     def build_config(config_hash)
       schema_class = Pharos::ConfigSchema.build
-      schema = schema_class.call(config_hash)
+      schema = schema_class.call(Pharos::ConfigSchema::DEFAULT_DATA.merge(config_hash))
       unless schema.success?
         show_config_errors(schema.messages)
         exit 11
       end
 
       config = Pharos::Config.new(schema)
+      config.data = config_hash.freeze
 
       signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
@@ -91,13 +89,16 @@ module Pharos
 
     # @param config [Pharos::Config]
     # @param config_content [String]
-    def configure(config, config_content:)
-      manager = ClusterManager.new(config, config_content: config_content, pastel: pastel)
+    def configure(config)
+      manager = ClusterManager.new(config, pastel: pastel)
       start_time = Time.now
 
       puts pastel.green("==> Sharpening tools ...")
       manager.load
       manager.validate
+
+      show_component_versions(config)
+      prompt_continue(config)
 
       puts pastel.green("==> Starting to craft cluster ...")
       manager.apply_phases
@@ -105,12 +106,39 @@ module Pharos
       puts pastel.green("==> Configuring addons ...")
       manager.apply_addons
 
+      manager.save_config
+
       craft_time = Time.now - start_time
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       puts "    You can connect to the cluster with kubectl using:"
       puts "    export KUBECONFIG=~/.pharos/#{config.api_endpoint}"
 
       manager.disconnect
+    end
+
+    # @param config [Pharos::Config]
+    def show_component_versions(config)
+      puts pastel.green("==> Using following software versions:")
+      Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
+        puts "    #{c.name}: #{c.version}"
+      end
+    end
+
+    # @param config [Pharos::Config]
+    def prompt_continue(config)
+      lexer = Rouge::Lexers::YAML.new
+      puts pastel.green("==> Configuration is generated and shown below:")
+      if color?
+        puts rouge.format(lexer.lex(config.to_yaml))
+        puts ""
+      else
+        puts yaml
+      end
+      if $stdin.tty? && !yes?
+        exit 1 unless prompt.yes?('Continue?')
+      end
+    rescue TTY::Reader::InputInterrupt
+      exit 1
     end
 
     # @param secs [Integer]

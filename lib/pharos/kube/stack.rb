@@ -50,25 +50,32 @@ module Pharos
       def prune(checksum = nil)
         pruned = []
 
-        @session.api_groups.each do |api_group|
-          group_client = @session.client(api_group.preferredVersion.groupVersion)
+        @session.api_versions.each do |api_version|
+          client = @session.client(api_version)
+          client.entities.each do |method_name, entity|
+            next if method_name.end_with?('_review')
+            next if api_version == 'v1' && entity.resource_name == 'bindings' # XXX: the entity definition does not have the list verb... but kubeclient does not expose that
+            next if api_version == 'v1' && entity.resource_name == 'componentstatuses' # apiserver ignores the ?labelSelector query
+            next if api_version == 'v1' && entity.resource_name == 'endpoints' # inherits stack labels from service, does not have any ownerReference...
 
-          entities = group_client.entities.reject { |type, _| type.end_with?('_review') }
+            resources = client.get_entities(entity.entity_type, entity.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
 
-          objects = entities.flat_map do |type, meta|
-            group_client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
-          end
+            if checksum
+              resources = resources.select do |obj|
+                annotations = obj.metadata.annotations
+                annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+              end
+            end
 
-          if checksum
-            objects.select! { |obj|
-              annotations = obj.metadata.annotations
-              annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
-            }
-          end
+            resources.each do |resource|
+              # the items in a list are missing the apiVersion and kind
+              resource.apiVersion = api_version
+              resource.kind = entity.entity_type
 
-          objects.each do |obj|
-            obj.apiVersion = api_group.preferredVersion.groupVersion
-            pruned << obj if @session.resource(obj).delete
+              next unless @session.resource(resource).delete
+
+              pruned << resource
+            end
           end
         end
 

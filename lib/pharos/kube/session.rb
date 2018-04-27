@@ -41,9 +41,18 @@ module Pharos
         Stack.new(self, name)
       end
 
-      # List of api groups available for the session
-      def api_groups
-        client('').apis.groups
+      # Discover preferred api group/version strings for this session
+      # @return [Array<String>] group/version or version
+      def api_versions
+        api_versions = []
+
+        resource_client('').apis.groups.each do |api_group|
+          api_versions << api_group.preferredVersion.groupVersion
+        end
+
+        api_versions << 'v1'
+
+        api_versions
       end
     end
   end

@@ -18,15 +18,18 @@ module Pharos
       Pharos::Phases.register_component component
     end
 
+    attr_reader :cluster_context
+
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
-    # @param kube [Pharos::Kube::Session]
-    def initialize(host, config: nil, ssh: nil, kube: nil)
+    # @param master [Pharos::Configuration::Host]
+    def initialize(host, config: nil, ssh: nil, kube: nil, cluster_context: nil)
       @host = host
       @config = config
       @ssh = ssh
       @kube = kube
+      @cluster_context = cluster_context
     end
 
     def logger
@@ -60,16 +63,6 @@ module Pharos
 
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
-    end
-
-    # @return [Hash]
-    def cluster_context
-      self.class.cluster_context
-    end
-
-    # @return [Hash]
-    def self.cluster_context
-      @@cluster_context ||= {} # rubocop:disable Style/ClassVars
     end
   end
 end
