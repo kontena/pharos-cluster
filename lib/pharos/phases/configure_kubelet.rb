@@ -9,6 +9,10 @@ module Pharos
         name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
       )
 
+      register_component(
+        name: 'pharos-kubelet-proxy', version: Pharos::KUBELET_PROXY_VERSION, license: 'Apache License 2.0'
+      )
+
       DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
       CLOUD_CONFIG_DIR = "/etc/pharos/kubelet"
       CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
@@ -43,6 +47,7 @@ module Pharos
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
+          VERSION: Pharos::KUBELET_PROXY_VERSION,
           MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(','),
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
         )
