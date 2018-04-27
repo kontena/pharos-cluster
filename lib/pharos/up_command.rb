@@ -130,10 +130,9 @@ module Pharos
     # @param config [Pharos::Config]
     def prompt_continue(config)
       lexer = Rouge::Lexers::YAML.new
-      yaml = JSON.parse(config.to_h.to_json).to_yaml
       puts pastel.green("==> Configuration is generated and shown below:")
       if color?
-        puts rouge.format(lexer.lex(yaml))
+        puts rouge.format(lexer.lex(config.to_yaml))
         puts ""
       else
         puts yaml

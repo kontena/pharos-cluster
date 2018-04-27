@@ -66,5 +66,10 @@ module Pharos
         etcd_hosts
       end
     end
+
+    # @return [String]
+    def to_yaml
+      JSON.parse(to_h.to_json).to_yaml
+    end
   end
 end
