@@ -45,9 +45,14 @@ module Pharos
       @master_hosts ||= hosts.select { |h| h.role == 'master' }
     end
 
+    # @return [Array<Pharos::Configuration::Node>]
+    def sorted_master_hosts
+      @sorted_master_hosts ||= master_hosts.sort_by(&:master_sort_score)
+    end
+
     # @return [Pharos::Configuration::Node]
     def master_host
-      @master_host ||= master_hosts.first
+      @master_host ||= sorted_master_hosts.first
     end
 
     # @return [Array<Pharos::Configuration::Node>]
@@ -55,21 +60,26 @@ module Pharos
       @worker_hosts ||= hosts.select { |h| h.role == 'worker' }
     end
 
+    # @return [Boolean]
+    def etcd_hosts?
+      !etcd&.endpoints
+    end
+
     # @return [Array<Pharos::Configuration::Node>]
     def etcd_hosts
-      return [] if etcd&.endpoints
+      return [] unless etcd_hosts?
 
-      etcd_hosts = hosts.select { |h| h.role == 'etcd' }
-      if etcd_hosts.empty?
-        master_hosts
+      @etcd_hosts ||= hosts.select { |h| h.role == 'etcd' }.sort_by(&:etcd_sort_score)
+
+      if @etcd_hosts.empty?
+        sorted_master_hosts
       else
-        etcd_hosts
+        @etcd_hosts
       end
     end
 
     # @return [String]
     def api_endpoint
-      # XXX: sort
       api&.endpoint || master_host.address
     end
 
