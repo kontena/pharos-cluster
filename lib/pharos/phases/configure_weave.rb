@@ -2,15 +2,14 @@
 
 module Pharos
   module Phases
-    class ConfigureNetwork < Pharos::Phase
-      title "Configure network"
+    class ConfigureWeave < Pharos::Phase
+      title "Configure Weave network"
 
       WEAVE_VERSION = '2.3.0'
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.network.provider == 'weave' }
       )
 
       def call
@@ -38,7 +37,7 @@ module Pharos
       end
 
       def ensure_resources
-        trusted_subnets = @config.network.trusted_subnets || []
+        trusted_subnets = @config.network.weave&.trusted_subnets || []
         logger.info { "Configuring overlay network ..." }
         Pharos::Kube.apply_stack(
           @master.api_address, 'weave',
