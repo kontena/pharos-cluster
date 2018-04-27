@@ -79,7 +79,7 @@ describe Pharos::Phases::ValidateHost do
         } }
 
         it 'does not raise' do
-          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+          expect{ subject.check_role }.to_not raise_error
         end
       end
 
@@ -91,7 +91,7 @@ describe Pharos::Phases::ValidateHost do
         } }
 
         it 'does not raise' do
-          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+          expect{ subject.check_role }.to_not raise_error
         end
       end
 
@@ -119,7 +119,7 @@ describe Pharos::Phases::ValidateHost do
         } }
 
         it 'does not raise' do
-          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+          expect{ subject.check_role }.to_not raise_error
         end
       end
 
@@ -143,7 +143,7 @@ describe Pharos::Phases::ValidateHost do
         } }
 
         it 'does not raise' do
-          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+          expect{ subject.check_role }.to_not raise_error
         end
       end
     end
