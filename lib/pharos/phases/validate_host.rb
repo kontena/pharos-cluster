@@ -43,10 +43,12 @@ module Pharos
       end
 
       def check_role
-        return if @host.master? && @host.checks['ca_exists'] == true
-        return if @host.worker? && @host.checks['kubelet_configured'] && @host.checks['ca_exists'] != true
+        return if !@host.checks['kubelet_configured']
 
-        raise Pharos::InvalidHostError, "Cannot change role of an existing node"
+        raise Pharos::InvalidHostError, "Cannot change worker host role to master" if @host.master? && !@host.checks['ca_exists']
+        raise Pharos::InvalidHostError, "Cannot change master host role to worker" if @host.worker? && @host.checks['ca_exists']
+
+        logger.debug { "#{@host.role} role matches" }
       end
 
       # @return [String]
@@ -89,15 +91,18 @@ module Pharos
       # @return [Hash]
       def host_checks
         data = {}
-        result = @ssh.exec("sudo curl -sSf --connect-timeout 1 --cacert /etc/kubernetes/pki/ca.crt https://localhost:6443/healthz")
-        data['api_healthy'] = (result.success? && result.stdout == 'ok')
-        data['ca_exists'] = @ssh.file('/etc/kubernetes/pki/ca.key').exist?
         data['kubelet_configured'] = @ssh.file('/etc/kubernetes/kubelet.conf').exist?
+        data['ca_exists'] = @ssh.file('/etc/kubernetes/pki/ca.key').exist?
+        data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/ca-key.pem').exist?
 
-        unless @config.etcd&.endpoints
+        if data['ca_exists']
+          result = @ssh.exec("sudo curl -sSf --connect-timeout 1 --cacert /etc/kubernetes/pki/ca.crt https://localhost:6443/healthz")
+          data['api_healthy'] = (result.success? && result.stdout == 'ok')
+        end
+
+        if data['etcd_ca_exists']
           etcd = Pharos::Etcd::Client.new(@ssh)
           data['etcd_healthy'] = etcd.healthy?
-          data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/ca-key.pem').exist?
         end
 
         data
