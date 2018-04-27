@@ -53,86 +53,99 @@ describe Pharos::Phases::ValidateHost do
   end
 
   describe '#check_role' do
-    it 'does not raise if unconfigured -> worker' do
-      worker = Pharos::Configuration::Host.new(
-        address: '192.0.2.1',
-        role: 'worker'
-      )
-      worker.checks = {
-        'ca_exists' => false,
-        'api_healthy' => false,
-        'kubelet_configured' => false
-      }
+    let(:role) { 'worker' }
+    let(:host) { Pharos::Configuration::Host.new(
+      address: '192.0.2.1',
+      role: role
+    ) }
+    let(:checks) { {
+      'ca_exists' => false,
+      'api_healthy' => false,
+      'kubelet_configured' => false
+    } }
+    before do
+      host.checks = checks
+    end
+    subject { described_class.new(host, config: config, ssh: ssh) }
 
-      subject = described_class.new(worker, config: config, ssh: ssh)
-      expect{ subject.check_role }.not_to raise_error
+    context 'for a worker node' do
+      let(:role) { 'worker' }
+
+      context 'that is unconfigured' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => false
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+        end
+      end
+
+      context 'that is configured as a worker' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => true
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+        end
+      end
+
+      context 'that is configured as a master' do
+        let(:checks) { {
+          'ca_exists' => true,
+          'api_healthy' => true,
+          'kubelet_configured' => true
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to raise_error(Pharos::InvalidHostError)
+        end
+      end
     end
 
-    it 'does not raise if unconfigured -> master' do
-      worker = Pharos::Configuration::Host.new(
-        address: '192.0.2.1',
-        role: 'master'
-      )
-      worker.checks = {
-        'ca_exists' => false,
-        'api_healthy' => false,
-        'kubelet_configured' => false
-      }
+    context 'for a master node' do
+      let(:role) { 'master' }
 
-      subject = described_class.new(worker, config: config, ssh: ssh)
-      expect{ subject.check_role }.not_to raise_error
+      context 'that is unconfigured' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => false
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+        end
+      end
+
+      context 'that is configured as a worker' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => true
+        } }
+
+        it 'raises' do
+          expect{ subject.check_role }.to raise_error(Pharos::InvalidHostError)
+        end
+      end
+
+      context 'that is configured as a master' do
+        let(:checks) { {
+          'ca_exists' => true,
+          'api_healthy' => true,
+          'kubelet_configured' => true
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error(Pharos::InvalidHostError)
+        end
+      end
     end
-
-    it 'does not raise if master -> master' do
-      config.hosts[0].checks = {
-        'ca_exists' => true,
-        'api_healthy' => true
-      }
-      subject.check_role
-    end
-
-    it 'raises if master -> worker' do
-      worker = Pharos::Configuration::Host.new(
-        address: '192.0.2.1',
-        role: 'worker'
-      )
-      worker.checks = {
-        'ca_exists' => true,
-        'api_healthy' => true,
-        'kubelet_configured' => true
-      }
-      subject = described_class.new(worker, config: config, ssh: ssh)
-      expect{ subject.check_role }.to raise_error
-    end
-
-    it 'does not raise if worker -> worker' do
-      worker = Pharos::Configuration::Host.new(
-        address: '192.0.2.1',
-        role: 'worker'
-      )
-      worker.checks = {
-        'ca_exists' => false,
-        'api_healthy' => false,
-        'kubelet_configured' => true
-      }
-
-      subject = described_class.new(worker, config: config, ssh: ssh)
-      expect{ subject.check_role }.not_to raise_error
-    end
-
-    it 'raises if worker -> master' do
-      master = Pharos::Configuration::Host.new(
-        address: '192.0.2.1',
-        role: 'master'
-      )
-      master.checks = {
-        'ca_exists' => false,
-        'api_healthy' => false,
-        'kubelet_configured' => true
-      }
-      subject = described_class.new(master, config: config, ssh: ssh)
-      expect{ subject.check_role }.to raise_error
-    end
-
   end
 end
