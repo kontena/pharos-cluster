@@ -5,6 +5,7 @@ describe Pharos::Phases::ValidateHost do
       hosts: [
         Pharos::Configuration::Host.new(
           address: '192.0.2.1',
+          role: 'master'
         ),
       ],
   ) }
@@ -49,5 +50,58 @@ describe Pharos::Phases::ValidateHost do
         expect(subject.private_interface_address('eth0')).to eq '10.18.0.5'
       end
     end
+  end
+
+  describe '#check_role' do
+    it 'does not raise if master -> master' do
+      config.hosts[0].checks = {
+        'ca_exists' => true,
+        'api_healthy' => true
+      }
+      subject.check_role
+    end
+
+    it 'raises if master -> worker' do
+      worker = Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: 'worker'
+      )
+      worker.checks = {
+        'ca_exists' => true,
+        'api_healthy' => true
+      }
+      subject = described_class.new(worker, config: config, ssh: ssh)
+      expect{ subject.check_role }.to raise_error
+    end
+
+    it 'does not raise if worker -> worker' do
+      worker = Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: 'worker'
+      )
+      worker.checks = {
+        'ca_exists' => false,
+        'api_healthy' => false,
+        'kubelet_configured' => true
+      }
+
+      subject = described_class.new(worker, config: config, ssh: ssh)
+      expect{ subject.check_role }.not_to raise_error
+    end
+
+    it 'raises if worker -> master' do
+      master = Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: 'master'
+      )
+      master.checks = {
+        'ca_exists' => false,
+        'api_healthy' => false,
+        'kubelet_configured' => true
+      }
+      subject = described_class.new(master, config: config, ssh: ssh)
+      expect{ subject.check_role }.to raise_error
+    end
+
   end
 end
