@@ -5,6 +5,14 @@ require 'dry-validation'
 
 module Pharos
   class ConfigSchema
+    DEFAULT_DATA = {
+      'hosts' => [],
+      'api' => {},
+      'network' => {},
+      'authentication' => {},
+      'kube_proxy' => {}
+    }.freeze
+
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition

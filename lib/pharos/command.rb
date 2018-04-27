@@ -16,5 +16,13 @@ module Pharos
     def pastel
       @pastel ||= Pastel.new(enabled: color?)
     end
+
+    def prompt
+      @prompt ||= TTY::Prompt.new(enable_color: color?)
+    end
+
+    def rouge
+      @rouge ||= Rouge::Formatters::Terminal256.new(Rouge::Themes::Github.new)
+    end
   end
 end
