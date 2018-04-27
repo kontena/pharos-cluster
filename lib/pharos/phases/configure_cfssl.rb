@@ -7,7 +7,7 @@ module Pharos
 
       register_component(
         name: 'cfssl', version: '1.2', license: 'MIT',
-        enabled: Proc.new { |c| !c.etcd&.endpoints }
+        enabled: proc { |c| !c.etcd&.endpoints }
       )
 
       def call

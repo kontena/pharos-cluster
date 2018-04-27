@@ -9,7 +9,7 @@ module Pharos
 
       register_component(
         name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0',
-        enabled: Proc.new { |c| !c.etcd&.endpoints }
+        enabled: proc { |c| !c.etcd&.endpoints }
       )
 
       def call

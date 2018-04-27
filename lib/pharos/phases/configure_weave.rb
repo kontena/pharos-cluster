@@ -9,7 +9,7 @@ module Pharos
 
       register_component(
         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
-        enabled: Proc.new { |c| c.network.provider == 'weave' }
+        enabled: proc { |c| c.network.provider == 'weave' }
       )
 
       def call

@@ -9,12 +9,12 @@ module Pharos
 
       register_component(
         name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
-        enabled: Proc.new { |c| c.network&.provider == 'calico' }
+        enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
       register_component(
         name: 'calico-cni', version: CALICO_VERSION, license: 'Apache License 2.0',
-        enabled: Proc.new { |c| c.network&.provider == 'calico' }
+        enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
       def validate

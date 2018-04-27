@@ -7,12 +7,12 @@ module Pharos
 
       register_component(
         name: 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0',
-        enabled: Proc.new { |c| c.hosts.any? { |h| h.container_runtime == 'docker' } }
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'docker' } }
       )
 
       register_component(
         name: 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0',
-        enabled: Proc.new { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
       )
 
       def call

@@ -5,7 +5,6 @@ require 'dry-validation'
 
 module Pharos
   class ConfigSchema
-
     DEFAULT_DATA = {
       'hosts' => [],
       'api' => {},
