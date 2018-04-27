@@ -6,7 +6,7 @@ metadata:
     app: default-http-backend
   namespace: ingress-nginx
 spec:
-  replicas: <%= replicas %>
+  replicas: <%= default_backend_replicas %>
   strategy:
     type: RollingUpdate
     rollingUpdate:

@@ -57,17 +57,17 @@ describe Pharos::Addons::IngressNginx do
     end
   end
 
-  describe '#replicas' do
+  describe '#default_backend_replicas' do
 
     it 'returns min 2 replicas' do
-      expect(subject.replicas).to eq(2)
+      expect(subject.default_backend_replicas).to eq(2)
     end
 
     it 'returns 7 replicas with 70 workers' do
       69.times do
         cluster_config.hosts << Pharos::Configuration::Host.new(role: 'worker')
       end
-      expect(subject.replicas).to eq(7)
+      expect(subject.default_backend_replicas).to eq(7)
     end
   end
 end

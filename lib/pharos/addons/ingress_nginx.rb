@@ -36,7 +36,7 @@ module Pharos
 
       # ~One replica per 10 workers, min 2
       # @return [Integer]
-      def replicas
+      def default_backend_replicas
         r = (@cluster_config.worker_hosts.size / 10.to_f).ceil
 
         return 2 if r < 2
@@ -48,7 +48,7 @@ module Pharos
           configmap: config.configmap || {},
           node_selector: config.node_selector || {},
           image: image_name,
-          replicas: replicas
+          default_backend_replicas: default_backend_replicas
         )
       end
     end
