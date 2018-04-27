@@ -127,6 +127,7 @@ describe Pharos::Phases::ConfigureMaster do
         }
         config = subject.generate_config
         expect(config['apiServerExtraVolumes']).to include(pharos_volume_mount)
+        expect(config['controllerManagerExtraVolumes']).to include(pharos_volume_mount)
       end
     end
 
@@ -149,6 +150,7 @@ describe Pharos::Phases::ConfigureMaster do
       it 'comes with proper cloud config' do
         config = subject.generate_config
         expect(config.dig('apiServerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
+        expect(config.dig('controllerManagerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
       end
     end
 
