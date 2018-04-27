@@ -90,15 +90,18 @@ module Pharos
       # @return [Hash]
       def host_checks
         data = {}
-        result = @ssh.exec("sudo curl -sSf --connect-timeout 1 --cacert /etc/kubernetes/pki/ca.crt https://localhost:6443/healthz")
-        data['api_healthy'] = (result.success? && result.stdout == 'ok')
-        data['ca_exists'] = @ssh.file('/etc/kubernetes/pki/ca.key').exist?
         data['kubelet_configured'] = @ssh.file('/etc/kubernetes/kubelet.conf').exist?
+        data['ca_exists'] = @ssh.file('/etc/kubernetes/pki/ca.key').exist?
+        data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/ca-key.pem').exist?
 
-        unless @config.etcd&.endpoints
+        if data['ca_exists']
+          result = @ssh.exec("sudo curl -sSf --connect-timeout 1 --cacert /etc/kubernetes/pki/ca.crt https://localhost:6443/healthz")
+          data['api_healthy'] = (result.success? && result.stdout == 'ok')
+        end
+
+        if data['etcd_ca_exists']
           etcd = Pharos::Etcd::Client.new(@ssh)
           data['etcd_healthy'] = etcd.healthy?
-          data['etcd_ca_exists'] = @ssh.file('/etc/pharos/pki/ca-key.pem').exist?
         end
 
         data
