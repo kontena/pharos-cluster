@@ -47,6 +47,10 @@ module Pharos
       end
     end
 
+    def self.to_h
+      { name: name, version: version, license: license }
+    end
+
     def self.schema(&block)
       @schema = Dry::Validation.Form(Schema, &block)
     end
