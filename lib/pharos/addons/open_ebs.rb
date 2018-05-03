@@ -10,11 +10,13 @@ module Pharos
       struct {
         attribute :default_replicas, Pharos::Types::Int
         attribute :default_capacity, Pharos::Types::String
+        attribute :default_class, Pharos::Types::Bool
       }
 
       schema {
         optional(:default_replicas).filled(:int?)
         optional(:default_capacity).filled(:str?)
+        optional(:default_class).filled(:bool?)
       }
 
       def validate
@@ -29,7 +31,8 @@ module Pharos
       def install
         apply_stack(
           default_replicas: config.default_replicas || default_replica_count,
-          default_capacity: config.default_capacity || '5G'
+          default_capacity: config.default_capacity || '5G',
+          is_default_class: config.default_class == true
         )
       end
     end

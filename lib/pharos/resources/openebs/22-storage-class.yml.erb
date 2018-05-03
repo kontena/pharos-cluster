@@ -2,6 +2,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
    name: openebs-standard
+   annotations:
+    storageclass.kubernetes.io/is-default-class: "<%= is_default_class %>"
 provisioner: openebs.io/provisioner-iscsi
 parameters:
   openebs.io/storage-pool: "default"
