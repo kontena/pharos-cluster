@@ -104,7 +104,7 @@ module Pharos
       show_component_versions(config)
       prompt_continue(config)
 
-      Out.header "Starting to craft cluster ..."
+      Out.header "Starting to craft the cluster ..."
       manager.apply_phases
 
       Out.header "Configuring addons ..."
