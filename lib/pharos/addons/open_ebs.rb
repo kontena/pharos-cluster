@@ -21,7 +21,7 @@ module Pharos
         optional(:default_storage_path).filled(:str?)
       }
 
-      DEFAULT_STORAGE_PATH = '/var/openebs'.freeze
+      DEFAULT_STORAGE_PATH = '/var/openebs'
 
       def validate
         super
