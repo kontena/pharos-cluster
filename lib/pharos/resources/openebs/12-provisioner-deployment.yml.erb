@@ -24,5 +24,9 @@ spec:
           value: "http://127.0.0.1:32515/dashboard/db/openebs-volume-stats?orgId=1"
         - name: OPENEBS_MONITOR_VOLKEY
           value: "&var-OpenEBS"
+        - name: OPENEBS_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         - name: MAYA_PORTAL_URL
           value: "https://mayaonline.io/"
