@@ -1,0 +1,12 @@
+---
+apiVersion: openebs.io/v1alpha1
+kind: StoragePool
+metadata:
+  name: default
+  type: hostdir
+spec:
+  path: "/var/openebs"
+  nodes: [ "all" ]
+  #maxVolSize: 10G #Max Volume Size
+  #maxAllocatedSize: 100G #Max Total Space allocated from this directory/mount
+---
