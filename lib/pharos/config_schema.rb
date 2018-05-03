@@ -5,6 +5,14 @@ require 'dry-validation'
 
 module Pharos
   class ConfigSchema
+    DEFAULT_DATA = {
+      'hosts' => [],
+      'api' => {},
+      'network' => {},
+      'authentication' => {},
+      'kube_proxy' => {}
+    }.freeze
+
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition
@@ -44,6 +52,7 @@ module Pharos
             optional(:trusted_subnets).each(type?: String)
           end
           optional(:calico).schema do
+            optional(:ipip_mode).filled(included_in?: %(Always, CrossSubnet, Never))
           end
         end
         optional(:etcd).schema do

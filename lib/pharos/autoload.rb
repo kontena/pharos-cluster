@@ -7,6 +7,12 @@ autoload :YAML, 'yaml'
 autoload :RestClient, 'rest-client'
 autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
+autoload :Rouge, 'rouge'
+
+module TTY
+  autoload :Prompt, 'tty-prompt'
+  autoload :Reader, 'tty-reader'
+end
 
 module Pharos
   autoload :Types, 'pharos/types'

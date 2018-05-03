@@ -6,9 +6,7 @@ module Pharos
       title "Configure metrics"
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
-        )
+        name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
       )
 
       def call
@@ -22,7 +20,7 @@ module Pharos
 
         info "Configuring heapster ..."
         Pharos::Kube.apply_stack(
-          @master.address, 'heapster',
+          @master.api_address, 'heapster',
           version: '1.5.1',
           arch: @host.cpu_arch,
           client_cert: cert.to_pem

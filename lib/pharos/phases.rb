@@ -10,6 +10,17 @@ module Pharos
       attribute :name, Pharos::Types::String
       attribute :version, Pharos::Types::String
       attribute :license, Pharos::Types::String
+      attribute :enabled, Pharos::Types::Instance(Proc)
+
+      def enabled?(config)
+        return true if enabled.nil?
+
+        enabled.call(config)
+      end
+
+      def to_h
+        super.tap { |s| s.delete(:enabled) }
+      end
     end
 
     # List of registered components
@@ -18,8 +29,14 @@ module Pharos
       @components ||= Set.new
     end
 
-    def self.register_component(component)
-      components << component
+    def self.register_component(opts)
+      components << Component.new(opts)
+    end
+
+    # @param config [Pharos::Config]
+    # @return [Array<Pharos::Phases::Component>]
+    def self.components_for_config(config)
+      components.select { |c| c.enabled?(config) }
     end
 
     # Finds a component using arguments provided in a sym: value hash

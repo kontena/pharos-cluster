@@ -47,6 +47,10 @@ module Pharos
       end
     end
 
+    def self.to_h
+      { name: name, version: version, license: license }
+    end
+
     def self.schema(&block)
       @schema = Dry::Validation.Form(Schema, &block)
     end
@@ -71,13 +75,14 @@ module Pharos
       ObjectSpace.each_object(Class).select { |klass| klass < self }
     end
 
-    attr_reader :config, :cpu_arch
+    attr_reader :config, :cpu_arch, :cluster_config
 
-    def initialize(config = nil, enabled: true, master:, cpu_arch:)
+    def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
       @config = self.class.struct.new(config)
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch
+      @cluster_config = cluster_config
     end
 
     def name

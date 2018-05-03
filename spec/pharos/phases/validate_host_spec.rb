@@ -5,6 +5,7 @@ describe Pharos::Phases::ValidateHost do
       hosts: [
         Pharos::Configuration::Host.new(
           address: '192.0.2.1',
+          role: 'master'
         ),
       ],
   ) }
@@ -47,6 +48,103 @@ describe Pharos::Phases::ValidateHost do
 
       it "returns the private IP" do
         expect(subject.private_interface_address('eth0')).to eq '10.18.0.5'
+      end
+    end
+  end
+
+  describe '#check_role' do
+    let(:role) { 'worker' }
+    let(:host) { Pharos::Configuration::Host.new(
+      address: '192.0.2.1',
+      role: role
+    ) }
+    let(:checks) { {
+      'ca_exists' => false,
+      'api_healthy' => false,
+      'kubelet_configured' => false
+    } }
+    before do
+      host.checks = checks
+    end
+    subject { described_class.new(host, config: config, ssh: ssh) }
+
+    context 'for a worker node' do
+      let(:role) { 'worker' }
+
+      context 'that is unconfigured' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => false
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error
+        end
+      end
+
+      context 'that is configured as a worker' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => true
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error
+        end
+      end
+
+      context 'that is configured as a master' do
+        let(:checks) { {
+          'ca_exists' => true,
+          'api_healthy' => true,
+          'kubelet_configured' => true
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to raise_error(Pharos::InvalidHostError)
+        end
+      end
+    end
+
+    context 'for a master node' do
+      let(:role) { 'master' }
+
+      context 'that is unconfigured' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => false
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error
+        end
+      end
+
+      context 'that is configured as a worker' do
+        let(:checks) { {
+          'ca_exists' => false,
+          'api_healthy' => false,
+          'kubelet_configured' => true
+        } }
+
+        it 'raises' do
+          expect{ subject.check_role }.to raise_error(Pharos::InvalidHostError)
+        end
+      end
+
+      context 'that is configured as a master' do
+        let(:checks) { {
+          'ca_exists' => true,
+          'api_healthy' => true,
+          'kubelet_configured' => true
+        } }
+
+        it 'does not raise' do
+          expect{ subject.check_role }.to_not raise_error
+        end
       end
     end
   end

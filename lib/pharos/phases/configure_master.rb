@@ -135,9 +135,14 @@ module Pharos
           'apiserver-count' => @config.master_hosts.size.to_s
         }
 
+        config['controllerManagerExtraArgs'] = {}
+
         if @config.cloud && @config.cloud.provider != 'external'
           config['cloudProvider'] = @config.cloud.provider
-          config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE if @config.cloud.config
+          if @config.cloud.config
+            config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
+            config['controllerManagerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
+          end
         end
 
         # Only configure etcd if the external endpoints are given
@@ -146,8 +151,15 @@ module Pharos
         else
           configure_internal_etcd(config)
         end
-
         config['apiServerExtraVolumes'] = [
+          {
+            'name' => 'pharos',
+            'hostPath' => PHAROS_DIR,
+            'mountPath' => PHAROS_DIR
+          }
+        ]
+
+        config['controllerManagerExtraVolumes'] = [
           {
             'name' => 'pharos',
             'hostPath' => PHAROS_DIR,
