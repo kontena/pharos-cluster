@@ -48,7 +48,7 @@ module Pharos
         raise Pharos::InvalidHostError, "Cannot change worker host role to master" if @host.master? && !@host.checks['ca_exists']
         raise Pharos::InvalidHostError, "Cannot change master host role to worker" if @host.worker? && @host.checks['ca_exists']
 
-        logger.debug { "#{@host.role} role matches" }
+        debug "#{@host.role} role matches"
       end
 
       # @return [String]
