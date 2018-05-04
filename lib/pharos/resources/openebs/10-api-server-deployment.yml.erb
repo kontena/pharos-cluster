@@ -13,7 +13,7 @@ spec:
       serviceAccountName: openebs-maya-operator
       containers:
       - name: maya-apiserver
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         image: openebs/m-apiserver:<%= version %>
         ports:
         - containerPort: 5656

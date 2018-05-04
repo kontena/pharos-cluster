@@ -13,7 +13,7 @@ spec:
       serviceAccountName: openebs-maya-operator
       containers:
       - name: openebs-provisioner
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         image: openebs/openebs-k8s-provisioner:<%= version %>
         env:
         - name: NODE_NAME
