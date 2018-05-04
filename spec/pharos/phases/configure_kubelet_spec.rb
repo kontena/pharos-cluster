@@ -16,7 +16,6 @@ describe Pharos::Phases::ConfigureKubelet do
 
   describe '#build_systemd_dropin' do
     it "returns a systemd unit" do
-      #puts config.inspect
       expect(subject.build_systemd_dropin).to eq <<~EOM
         [Service]
         Environment='KUBELET_EXTRA_ARGS=--read-only-port=0 --node-ip=192.168.42.1 --hostname-override='
