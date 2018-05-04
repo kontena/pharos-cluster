@@ -7,7 +7,8 @@ describe Pharos::Phases::ConfigureKubelet do
       hosts: [host],
       network: {},
       addons: {},
-      etcd: {}
+      etcd: {},
+      kubelet: {read_only_port: false}
   ) }
 
   let(:ssh) { instance_double(Pharos::SSH::Client) }
@@ -15,6 +16,7 @@ describe Pharos::Phases::ConfigureKubelet do
 
   describe '#build_systemd_dropin' do
     it "returns a systemd unit" do
+      #puts config.inspect
       expect(subject.build_systemd_dropin).to eq <<~EOM
         [Service]
         Environment='KUBELET_EXTRA_ARGS=--read-only-port=0 --node-ip=192.168.42.1 --hostname-override='
@@ -30,7 +32,8 @@ describe Pharos::Phases::ConfigureKubelet do
             service_cidr: '172.255.0.0/16',
           },
           addons: {},
-          etcd: {}
+          etcd: {},
+          kubelet: {}
       ) }
 
       it "uses the customized --cluster-dns" do
@@ -41,11 +44,33 @@ describe Pharos::Phases::ConfigureKubelet do
 
   describe "#kubelet_extra_args" do
     it 'returns extra args array' do
-      expect(subject.kubelet_extra_args).to eq([
+      expect(subject.kubelet_extra_args).to include(
         '--read-only-port=0',
         '--node-ip=192.168.42.1',
         '--hostname-override='
-      ])
+      )
+    end
+
+    context 'with kubelet config' do
+      let(:config) { Pharos::Config.new(
+        hosts: [host],
+        network: {
+          service_cidr: '172.255.0.0/16',
+        },
+        cloud: {
+          provider: 'aws',
+          config: './cloud-config'
+        },
+        addons: {},
+        etcd: {},
+        kubelet: { read_only_port: true}
+      ) }
+
+      it 'does not disable read only port' do
+        expect(subject.kubelet_extra_args).not_to include(
+          '--read-only-port=0'
+        )
+      end
     end
 
     context 'with cloud provider' do
@@ -59,7 +84,8 @@ describe Pharos::Phases::ConfigureKubelet do
           config: './cloud-config'
         },
         addons: {},
-        etcd: {}
+        etcd: {},
+        kubelet: {}
       ) }
 
       it 'adds cloud-provider arg' do
