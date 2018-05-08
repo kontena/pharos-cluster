@@ -7,7 +7,7 @@ module Pharos
 
       RESOURCE_LABEL = 'pharos.kontena.io/stack'
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
-      RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
+      DEFAULT_RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
 
       # @param session [Pharos::Kube::Session]
       # @param name [String] stack name
@@ -15,7 +15,7 @@ module Pharos
       def initialize(session, name, vars = {})
         @session = session
         @name = name
-        @resource_path = RESOURCE_PATH.join(name).freeze
+        @resource_path = Pathname.new(resource_path || File.join(DEFAULT_RESOURCE_PATH, name)).freeze
         @vars = vars
       end
 
