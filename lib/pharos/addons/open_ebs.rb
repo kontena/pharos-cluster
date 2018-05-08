@@ -10,13 +10,13 @@ module Pharos
       DEFAULT_CLASS_OPTS = {
         default_class: false,
         capacity: '5G'
-      }
+      }.freeze
 
       DEFAULT_STORAGE_PATH = '/var/openebs'
 
       DEFAULT_POOL_OPTS = {
         path: DEFAULT_STORAGE_PATH
-      }
+      }.freeze
 
       struct {
         attribute :default_storage_class, Pharos::Types::Hash.default(DEFAULT_CLASS_OPTS)
@@ -34,7 +34,6 @@ module Pharos
           optional(:path).filled(:str?)
         end
       }
-
 
       def validate
         super
