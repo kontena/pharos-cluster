@@ -61,8 +61,9 @@ module Pharos
     def each
       with_enabled_addons do |addon_class, config_hash|
         config = addon_class.validate(config_hash)
-
-        yield addon_class.new(config, enabled: true, **options)
+        addon = addon_class.new(config, enabled: true, **options)
+        addon.validate
+        yield addon
       end
 
       with_disabled_addons do |addon_class|

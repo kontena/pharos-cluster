@@ -131,5 +131,7 @@ module Pharos
     def prune_stack
       Pharos::Kube.prune_stack(@master.api_address, self.class.name, '-')
     end
+
+    def validate; end
   end
 end
