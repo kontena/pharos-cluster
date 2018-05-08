@@ -7,15 +7,17 @@ module Pharos
 
       RESOURCE_LABEL = 'pharos.kontena.io/stack'
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
-      DEFAULT_RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
+
+      attr_reader :name, :vars
 
       # @param session [Pharos::Kube::Session]
       # @param name [String] stack name
+      # @param resource_path [String] resource_path
       # @param vars [Hash] variables for ERB evaluation
-      def initialize(session, name, vars = {})
+      def initialize(session, name, resource_path, vars = {})
         @session = session
         @name = name
-        @resource_path = Pathname.new(resource_path || File.join(DEFAULT_RESOURCE_PATH, name)).freeze
+        @resource_path = Pathname.new(resource_path).freeze
         @vars = vars
       end
 

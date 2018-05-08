@@ -121,22 +121,24 @@ module Pharos
       Pharos::Kube.session(@master.api_address)
     end
 
-    def apply_stack(vars = {})
+    def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(__dir__ , 'addons', self.class.name),
+        kube_session, self.class.name, File.join(__dir__ , 'addons', self.class.name, 'resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,
           config: @config,
           arch: @cpu_arch
         )
-      ).apply
+      )
+    end
+
+    def apply_stack(vars = {})
+      kube_stack(vars).apply
     end
 
     def prune_stack
-      Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(__dir__ , 'addons', self.class.name)
-      ).prune('-')
+      kube_stack.prune('-')
     end
 
     def validate; end

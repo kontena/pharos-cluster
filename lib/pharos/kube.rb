@@ -10,6 +10,8 @@ module Pharos
     autoload :Stack, 'pharos/kube/stack'
     autoload :Session, 'pharos/kube/session'
 
+    RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
+
     # @param host [String]
     # @return [Kubeclient::Client]
     def self.client(host, version = 'v1')
@@ -56,15 +58,15 @@ module Pharos
     # Shortcuts / compatibility:
 
     def self.apply_stack(host, name, vars = {})
-      session(host).stack(name, vars).apply
+      session(host).stack(name, RESOURCE_PATH, vars).apply
     end
 
     def self.apply_resource(host, name, vars = {})
-      session(host).stack(name, vars).apply
+      session(host).stack(name, RESOURCE_PATH, vars).apply
     end
 
     def self.prune_stack(host, name, checksum)
-      session(host).stack(name).prune(checksum)
+      session(host).stack(name, RESOURCE_PATH).prune(checksum)
     end
   end
 end
