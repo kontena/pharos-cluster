@@ -89,9 +89,6 @@ module Pharos
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
         end
         optional(:addons).value(type?: Hash)
-        optional(:kubelet).schema do
-          optional(:read_only_port).filled(:bool?)
-        end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]

@@ -94,12 +94,7 @@ module Pharos
 
       # @return [Array<String>]
       def kubelet_extra_args
-        args = []
-        unless @config.kubelet.read_only_port
-          args << "--read-only-port=0"
-        end
-        args += @host.kubelet_args
-
+        args = @host.kubelet_args
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
         args
