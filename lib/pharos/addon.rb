@@ -118,7 +118,7 @@ module Pharos
 
     def apply_stack(vars = {})
       Pharos::Kube.apply_stack(
-        @master.address, self.class.name,
+        @master.api_address, self.class.name,
         vars.merge(
           name: self.class.name,
           version: self.class.version,
@@ -129,7 +129,7 @@ module Pharos
     end
 
     def prune_stack
-      Pharos::Kube.prune_stack(@master.address, self.class.name, '-')
+      Pharos::Kube.prune_stack(@master.api_address, self.class.name, '-')
     end
   end
 end
