@@ -3,6 +3,8 @@
 module Pharos
   module Kube
     class Stack
+      include Pharos::Logging
+
       RESOURCE_LABEL = 'pharos.kontena.io/stack'
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
       RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
@@ -36,6 +38,7 @@ module Pharos
       def apply
         with_pruning do |checksum|
           resources.map do |resource|
+            logger.debug { "Applying resource: #{resource.kind}/#{resource.metadata['name']}" }
             metadata = resource.metadata
             metadata.labels ||= {}
             metadata.annotations ||= {}

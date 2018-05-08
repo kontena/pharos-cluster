@@ -42,11 +42,9 @@ module Pharos
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
-          args << "--read-only-port=0"
           args << "--cadvisor-port=0"
           args << "--address=127.0.0.1"
         else
-          args << '--read-only-port=0'
           args << "--node-ip=#{peer_address}"
           args << "--hostname-override=#{hostname}"
         end
