@@ -10,7 +10,8 @@ module Pharos
       'api' => {},
       'network' => {},
       'authentication' => {},
-      'kube_proxy' => {}
+      'kube_proxy' => {},
+      'kubelet' => {}
     }.freeze
 
     # @return [Dry::Validation::Schema]
