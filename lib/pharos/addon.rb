@@ -123,7 +123,7 @@ module Pharos
 
     def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(__dir__ , 'addons', self.class.name, 'resources'),
+        kube_session, self.class.name, File.join(__dir__, 'addons', self.class.name, 'resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,
