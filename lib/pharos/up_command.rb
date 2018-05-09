@@ -101,6 +101,7 @@ module Pharos
       manager.validate
 
       show_component_versions(config)
+      show_addon_versions(manager)
       prompt_continue(config)
 
       puts pastel.green("==> Starting to craft cluster ...")
@@ -124,6 +125,13 @@ module Pharos
       puts pastel.green("==> Using following software versions:")
       Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
         puts "    #{c.name}: #{c.version}"
+      end
+    end
+
+    def show_addon_versions(manager)
+      puts pastel.green("==> Using following addons:")
+      manager.addon_manager.with_enabled_addons do |addon|
+        puts "    #{addon.name}: #{addon.version}"
       end
     end
 
