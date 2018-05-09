@@ -76,6 +76,8 @@ module Pharos
               resource.apiVersion = api_version
               resource.kind = entity.entity_type
 
+              logger.debug { "Pruning resource: #{resource.kind}/#{resource.metadata['name']}" }
+
               next unless @session.resource(resource).delete
 
               pruned << resource
