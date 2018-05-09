@@ -56,14 +56,23 @@ describe Pharos::Addon do
     end
   end
 
+  describe "#kube_stack" do
+    it "returns kube stack" do
+      stack = subject.kube_stack
+      expect(stack).to be_instance_of(Pharos::Kube::Stack)
+    end
+
+    it "allows to pass variables" do
+      stack = subject.kube_stack({ foo: 'bar' })
+      expect(stack.vars[:foo]).to eq('bar')
+    end
+  end
+
   describe "#apply_stack" do
-    it "applies stack with correct parameters" do
-      expect(Pharos::Kube).to receive(:apply_stack).with(
-        master.api_address, subject.class.name, {
-          name: subject.class.name, version: subject.class.version,
-          config: anything, arch: anything
-        }
-      )
+    it "applies stack" do
+      kube_stack = double(:kube_stack)
+      allow(subject).to receive(:kube_stack).and_return(kube_stack)
+      expect(kube_stack).to receive(:apply)
       subject.apply_stack
     end
   end
