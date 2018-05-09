@@ -123,21 +123,22 @@ module Pharos
 
     # @param config [Pharos::Config]
     def show_component_versions(config)
-      puts pastel.green("==> Using following software versions:")
+      Out.puts Out.green("==> Using following software versions:")
       Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
-        puts "    #{c.name}: #{c.version}"
+        Out.puts Out.green("    #{c.name}: #{c.version}")
       end
     end
 
     # @param config [Pharos::Config]
     def prompt_continue(config)
       lexer = Rouge::Lexers::YAML.new
-      puts pastel.green("==> Configuration is generated and shown below:")
       if color?
-        puts rouge.format(lexer.lex(config.to_yaml))
-        puts ""
+        Out.puts Out.green("==> Configuration is generated and shown below:")
+        Out.puts rouge.format(lexer.lex(config.to_yaml))
+        Out.puts ""
       else
-        puts yaml
+        Out.info "Configuration:"
+        Out.info yaml
       end
       if $stdin.tty? && !yes?
         exit 1 unless prompt.yes?('Continue?')
