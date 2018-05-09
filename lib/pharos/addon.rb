@@ -26,6 +26,21 @@ module Pharos
       end
     end
 
+    # @param subclass [Class]
+    def self.inherited(subclass)
+      subclass.addon_location = File.dirname(caller.first[/(.+\.rb):\d+:in/, 1])
+    end
+
+    # @param location [String]
+    def self.addon_location=(location)
+      @addon_location = location
+    end
+
+    # @return [String]
+    def self.addon_location
+      @addon_location || __dir__
+    end
+
     def self.name(name = nil)
       if name
         @name = name
@@ -123,7 +138,7 @@ module Pharos
 
     def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(__dir__, 'addons', self.class.name, 'resources'),
+        kube_session, self.class.name, File.join(self.class.addon_location, 'resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,
