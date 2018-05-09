@@ -1,4 +1,4 @@
-require "pharos/addons/open_ebs"
+require "pharos/addons/openebs/open_ebs"
 
 describe Pharos::Addons::OpenEbs do
   let(:cluster_config) { Pharos::Config.new(

@@ -116,9 +116,14 @@ module Pharos
       prune_stack
     end
 
-    def apply_stack(vars = {})
-      Pharos::Kube.apply_stack(
-        @master.api_address, self.class.name,
+    # @return [Pharos::Kube::Session]
+    def kube_session
+      Pharos::Kube.session(@master.api_address)
+    end
+
+    def kube_stack(vars = {})
+      Pharos::Kube::Stack.new(
+        kube_session, self.class.name, File.join(__dir__, 'addons', self.class.name, 'resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,
@@ -128,8 +133,12 @@ module Pharos
       )
     end
 
+    def apply_stack(vars = {})
+      kube_stack(vars).apply
+    end
+
     def prune_stack
-      Pharos::Kube.prune_stack(@master.api_address, self.class.name, '-')
+      kube_stack.prune('-')
     end
 
     def validate; end
