@@ -26,71 +26,70 @@ module Pharos
       end
     end
 
-    # @param subclass [Class]
-    def self.inherited(subclass)
-      subclass.addon_location = File.dirname(caller.first[/(.+\.rb):\d+:in/, 1])
-    end
+    class << self
+      attr_writer :addon_location
 
-    # @param location [String]
-    def self.addon_location=(location)
-      @addon_location = location
-    end
-
-    # @return [String]
-    def self.addon_location
-      @addon_location || __dir__
-    end
-
-    def self.name(name = nil)
-      if name
-        @name = name
-      else
-        @name
+      # @param subclass [Class]
+      def inherited(subclass)
+        subclass.addon_location = File.dirname(caller(1..1).first[/(.+\.rb):\d+:in/, 1])
       end
-    end
 
-    def self.version(version = nil)
-      if version
-        @version = version
-      else
-        @version
+      # @return [String]
+      def addon_location
+        @addon_location || __dir__
       end
-    end
 
-    def self.license(license = nil)
-      if license
-        @license = license
-      else
-        @license
+      def name(name = nil)
+        if name
+          @name = name
+        else
+          @name
+        end
       end
-    end
 
-    def self.to_h
-      { name: name, version: version, license: license }
-    end
-
-    def self.schema(&block)
-      @schema = Dry::Validation.Form(Schema, &block)
-    end
-
-    def self.struct(&block)
-      @struct ||= Class.new(Pharos::Addons::Struct, &block)
-    end
-
-    def self.validation
-      Dry::Validation.Form(Schema) { yield }
-    end
-
-    def self.validate(config)
-      if @schema
-        @schema.call(config)
-      else
-        validation {}.call(config)
+      def version(version = nil)
+        if version
+          @version = version
+        else
+          @version
+        end
       end
-    end
 
-    def self.descendants
-      ObjectSpace.each_object(Class).select { |klass| klass < self }
+      def license(license = nil)
+        if license
+          @license = license
+        else
+          @license
+        end
+      end
+
+      def to_h
+        { name: name, version: version, license: license }
+      end
+
+      def schema(&block)
+        @schema = Dry::Validation.Form(Schema, &block)
+      end
+
+      def struct(&block)
+        @struct ||= Class.new(Pharos::Addons::Struct, &block)
+      end
+
+      def validation
+        Dry::Validation.Form(Schema) { yield }
+      end
+
+      def validate(config)
+        if @schema
+          @schema.call(config)
+        else
+          validation {}.call(config)
+        end
+      end
+
+      def descendants
+        ObjectSpace.each_object(Class).select { |klass| klass < self }
+      end
     end
 
     attr_reader :config, :cpu_arch, :cluster_config
