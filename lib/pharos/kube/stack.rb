@@ -5,15 +5,17 @@ module Pharos
     class Stack
       RESOURCE_LABEL = 'pharos.kontena.io/stack'
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
-      RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
+
+      attr_reader :name, :vars
 
       # @param session [Pharos::Kube::Session]
       # @param name [String] stack name
+      # @param resource_path [String] resource_path
       # @param vars [Hash] variables for ERB evaluation
-      def initialize(session, name, vars = {})
+      def initialize(session, name, resource_path, vars = {})
         @session = session
         @name = name
-        @resource_path = RESOURCE_PATH.join(name).freeze
+        @resource_path = Pathname.new(resource_path).freeze
         @vars = vars
       end
 
@@ -71,6 +73,8 @@ module Pharos
               # the items in a list are missing the apiVersion and kind
               resource.apiVersion = api_version
               resource.kind = entity.entity_type
+
+              logger.debug { "Pruning resource: #{resource.kind}/#{resource.metadata['name']}" }
 
               next unless @session.resource(resource).delete
 

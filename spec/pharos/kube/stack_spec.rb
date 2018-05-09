@@ -1,7 +1,20 @@
 describe Pharos::Kube::Stack do
   let(:session) { double }
   let(:resource) { double(metadata: OpenStruct.new, apply: true) }
-  subject { described_class.new(session, 'ingress-nginx', default_backend: double(image: 'foo'), configmap: {}, node_selector: {}, arch: double(name: 'foo'), version: '1', image: 'foo', default_backend_replicas: 1) }
+  subject {
+    described_class.new(
+      session, 'ingress-nginx', File.realpath('./lib/pharos/addons/ingress-nginx/resources'),
+      {
+        default_backend: double(image: 'foo'),
+        configmap: {},
+        node_selector: {},
+        arch: double(name: 'foo'),
+        version: '1',
+        image: 'foo',
+        default_backend_replicas: 1
+      }
+    )
+  }
 
   describe '#resource_files' do
     it 'returns a list of .yml and .yml.erb files in the stack directory' do

@@ -10,7 +10,7 @@ module Pharos
     # @param dirs [Array<String>]
     def self.load_addons(*dirs)
       dirs.each do |dir|
-        Dir.glob(File.join(dir, '*.rb')).each { |f| require(f) }
+        Dir.glob(File.join(dir, '**', '*.rb')).each { |f| require(f) }
       end
     end
 
