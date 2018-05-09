@@ -156,5 +156,43 @@ describe Pharos::ConfigSchema do
         expect(result.messages).to eq :kube_proxy => { :mode => [ "must be one of: userspace, iptables, ipvs" ] }
       end
     end
+
+    describe 'kubelet' do
+      it 'works without kubelet' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {}
+        })
+        expect(result.success?).to be_truthy
+      end
+
+      it 'works with kubelet boolean read_only_port' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "kubelet" => {
+            "read_only_port": true
+          }
+        })
+        expect(result.success?).to be_truthy
+      end
+
+      it 'fails with kubelet non-boolean read_only_port' do
+        result = subject.call({
+          "hosts" => [
+            { address: '1.1.1.1', role: 'master' }
+          ],
+          "addons" => {},
+          "kubelet" => {
+            "read_only_port": "foobar"
+          }
+        })
+        expect(result.success?).to be_falsey
+      end
+    end
   end
 end
