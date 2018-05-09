@@ -36,9 +36,13 @@ module Pharos
       end
     end
 
+    def self.addons
+      @addons ||= {}
+    end
+
     # @return [Array<Pharos::Addon>]
     def addon_classes
-      @addon_classes ||= Pharos::Addon.descendants
+      self.class.addons.values
     end
 
     def validate
@@ -73,8 +77,9 @@ module Pharos
 
     def with_enabled_addons
       configs.each do |name, config|
-        klass = addon_classes.find { |a| a.name == name }
+        klass = self.class.addons[name]
         if klass && config["enabled"]
+          logger.debug { "Processing add-on #{name} from #{klass.source_location}" }
           yield(klass, config)
         elsif klass.nil?
           raise UnknownAddon, "unknown addon: #{name}"
@@ -88,6 +93,7 @@ module Pharos
         config = configs[addon_class.name]
         prev_config && prev_config["enabled"] && (config.nil? || !config["enabled"])
       }.each do |addon_class|
+        logger.debug { "Processing add-on #{klass.name} from #{klass.source_location}" }
         yield(addon_class)
       end
     end
