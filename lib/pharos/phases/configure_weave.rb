@@ -22,7 +22,7 @@ module Pharos
         begin
           kube_client.get_secret('weave-passwd', 'kube-system')
         rescue Kubeclient::ResourceNotFoundError
-          logger.info { "Configuring overlay network shared secret ..." }
+          info "Configuring overlay network shared secret ..."
           weave_passwd = Kubeclient::Resource.new(
             metadata: {
               name: 'weave-passwd',
@@ -38,7 +38,7 @@ module Pharos
 
       def ensure_resources
         trusted_subnets = @config.network.weave&.trusted_subnets || []
-        logger.info { "Configuring overlay network ..." }
+        info "Configuring overlay network ..."
         Pharos::Kube.apply_stack(
           @master.api_address, 'weave',
           trusted_subnets: trusted_subnets,

@@ -40,7 +40,7 @@ module Pharos
           fail "Cannot add multiple etcd peers at once"
         end
         new_members.each do |h|
-          logger.info { "Adding new etcd peer https://#{h.peer_address}:2380 ..." }
+          info "Adding new etcd peer https://#{h.peer_address}:2380 ..."
           etcd.add_member(h)
         end
 
@@ -58,7 +58,7 @@ module Pharos
           fail "Cannot remove majority of etcd peers"
         end
         remove_members.each do |m|
-          logger.info { "Removing old etcd peer #{m['peerURLs'].join(', ')} ..." }
+          info "Removing old etcd peer #{m['peerURLs'].join(', ')} ..."
           etcd.remove_member(m['id'])
         end
 

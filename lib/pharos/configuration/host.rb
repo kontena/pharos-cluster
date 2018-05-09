@@ -20,7 +20,7 @@ module Pharos
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks
 
       def to_s
-        address
+        hostname || address
       end
 
       def api_address

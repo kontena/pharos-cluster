@@ -24,7 +24,7 @@ module Pharos
       def call
         validate
 
-        logger.info { "Configuring overlay network ..." }
+        info "Configuring overlay network ..."
         Pharos::Kube.apply_stack(
           @master.api_address, 'calico',
           ipv4_pool_cidr: @config.network.pod_network_cidr,

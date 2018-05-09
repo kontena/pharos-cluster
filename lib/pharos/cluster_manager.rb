@@ -2,8 +2,6 @@
 
 module Pharos
   class ClusterManager
-    include Pharos::Logging
-
     attr_reader :config
 
     # @param config [Pharos::Config]
@@ -96,15 +94,25 @@ module Pharos
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, **options)
       return if hosts.empty?
-
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
-
+      Out.sub_header "#{phase_class.title} #{format_hosts(hosts)}"
       phase_manager.apply(phase_class, hosts, **options)
+    end
+
+    def format_hosts(hosts)
+      if hosts.size == config.hosts.size
+        "(on all hosts)"
+      elsif hosts.all? { |h| h.role == 'worker' }
+        "(on worker host#{'s' if hosts.size > 1})"
+      elsif hosts.all? { |h| h.role == 'master' }
+        "(on master host#{'s' if hosts.size > 1})"
+      else
+        ""
+      end
     end
 
     def apply_addons
       addon_manager.each do |addon|
-        puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
+        Out.sub_header "#{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}"
 
         addon.apply
       end

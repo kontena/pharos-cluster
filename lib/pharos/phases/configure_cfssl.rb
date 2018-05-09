@@ -11,7 +11,7 @@ module Pharos
       )
 
       def call
-        logger.info { 'Installing cfssl ...' }
+        info 'Installing cfssl ...'
         exec_script(
           'configure-cfssl.sh',
           ARCH: @host.cpu_arch.name

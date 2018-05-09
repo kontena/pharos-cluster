@@ -40,10 +40,6 @@ module Pharos
         end
       end
 
-      def self.debug?
-        @debug ||= !ENV['DEBUG'].to_s.empty?
-      end
-
       INDENT = "    "
 
       attr_reader :cmd
@@ -57,7 +53,6 @@ module Pharos
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
         @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
         @source = source
-        initialize_debug
         freeze
       end
 
@@ -68,7 +63,7 @@ module Pharos
       end
 
       def run
-        debug_cmd(@cmd, source: @source) if debug?
+        debug_cmd(@cmd, source: @source) if Out.debug?
 
         result = Result.new
 
@@ -80,20 +75,20 @@ module Pharos
               result.stdout << data
               result.output << data
 
-              debug_stdout(data) if debug?
+              debug_stdout(data) if Out.debug?
             end
 
             channel.on_extended_data do |_c, _type, data|
               result.stderr << data
               result.output << data
 
-              debug_stderr(data) if debug?
+              debug_stderr(data) if Out.debug?
             end
 
             channel.on_request("exit-status") do |_, data|
               result.exit_status = data.read_long
 
-              debug_exit(result.exit_status) if debug?
+              debug_exit(result.exit_status) if Out.debug?
             end
 
             if @stdin
@@ -110,40 +105,25 @@ module Pharos
 
       private
 
-      attr_reader :pastel
-
-      def initialize_debug
-        if self.class.debug?
-          @debug = true
-          @pastel = Pastel.new(enabled: $stdout.tty?)
-        else
-          @debug = false
-        end
-      end
-
-      def debug?
-        @debug
-      end
-
       def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
+        Out << INDENT << Out.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) << "\n"
       end
 
       def debug_stdout(data)
         data.each_line do |line|
-          $stdout.write(INDENT + pastel.dim(line.to_s))
+          Out << INDENT << Out.dim(line.to_s)
         end
       end
 
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stdout.write(INDENT + pastel.red(line.to_s))
+          Out << INDENT << Out.red(line.to_s)
         end
       end
 
       def debug_exit(exit_status)
-        $stdout.write(INDENT + pastel.yellow("! #{exit_status}") + "\n")
+        Out << INDENT << Out.yellow("! #{exit_status}") + "\n"
       end
     end
   end

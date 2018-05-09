@@ -3,8 +3,6 @@
 module Pharos
   module Kube
     class Stack
-      include Pharos::Logging
-
       RESOURCE_LABEL = 'pharos.kontena.io/stack'
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
 
@@ -40,7 +38,7 @@ module Pharos
       def apply
         with_pruning do |checksum|
           resources.map do |resource|
-            logger.debug { "Applying resource: #{resource.kind}/#{resource.metadata['name']}" }
+            Out.debug { "Applying resource: #{resource.kind}/#{resource.metadata['name']}" }
             metadata = resource.metadata
             metadata.labels ||= {}
             metadata.annotations ||= {}
@@ -76,7 +74,7 @@ module Pharos
               resource.apiVersion = api_version
               resource.kind = entity.entity_type
 
-              logger.debug { "Pruning resource: #{resource.kind}/#{resource.metadata['name']}" }
+              Out.debug { "Pruning resource: #{resource.kind}/#{resource.metadata['name']}" }
 
               next unless @session.resource(resource).delete
 

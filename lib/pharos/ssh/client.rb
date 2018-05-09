@@ -16,15 +16,8 @@ module Pharos
         @opts = opts
       end
 
-      def logger
-        @logger ||= Logger.new($stderr).tap do |logger|
-          logger.progname = "SSH[#{@host}]"
-          logger.level = ENV["DEBUG_SSH"] ? Logger::DEBUG : Logger::INFO
-        end
-      end
-
       def connect
-        logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
+        Out.debug("SSH") { "connect: #{@user}@#{@host} (#{@opts})" }
         @session = Net::SSH.start(@host, @user, @opts)
       end
 

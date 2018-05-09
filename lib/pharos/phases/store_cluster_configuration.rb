@@ -6,7 +6,7 @@ module Pharos
       title "Store cluster configuration"
 
       def call
-        logger.info { "Storing cluster configuration to configmap ..." }
+        info "Storing cluster configuration to configmap ..."
         resource.apply
       end
 

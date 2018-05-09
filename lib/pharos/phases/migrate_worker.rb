@@ -16,7 +16,7 @@ module Pharos
       end
 
       def migrate_0_5_to_0_6
-        logger.info { 'Migrating from 0.5 to 0.6 ...' }
+        info 'Migrating from 0.5 to 0.6 ...'
         exec_script('migrations/migrate_worker_05_to_06.sh')
       end
     end

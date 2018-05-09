@@ -2,12 +2,9 @@
 
 require 'dry-validation'
 require_relative 'addons/struct'
-require_relative 'logging'
 
 module Pharos
   class Addon
-    include Pharos::Logging
-
     class Schema < Dry::Validation::Schema
       configure do
         def duration?(value)

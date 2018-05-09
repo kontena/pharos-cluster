@@ -19,11 +19,12 @@ module Pharos
       def save_config_locally
         Dir.mkdir(config_dir, 0o700) unless Dir.exist?(config_dir)
 
-        logger.info { "Fetching kubectl config ..." }
+        info "Fetching kubectl config ..."
         config_data = remote_config_file.read
+
         File.chmod(0o600, config_file) if File.exist?(config_file)
         File.write(config_file, config_data.gsub(%r{(server: https://)(.+)(:6443)}, "\\1#{@host.api_address}\\3"), perm: 0o600)
-        logger.info { "Configuration saved to #{config_file}" }
+        info "Configuration saved to #{config_file}"
       end
 
       def remote_config_file

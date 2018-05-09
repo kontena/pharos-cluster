@@ -6,7 +6,7 @@ module Pharos
       title "Validate unique hostnames for all hosts"
 
       def call
-        logger.info { "Validating hostname uniqueness ..." }
+        info "Validating hostname uniqueness ..."
 
         duplicates = @config.hosts.reject { |h| h.address == @host.address }.select { |h| h.hostname == @host.hostname }
         return if duplicates.empty?

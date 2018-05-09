@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'logger'
-
 module Pharos
   class Phase
     # @return [String]
@@ -11,7 +9,7 @@ module Pharos
     end
 
     def to_s
-      "#{self.class.title} @ #{@host}"
+      "#{self.class.title} @ #{@host} (#{@host.role})"
     end
 
     def self.register_component(component)
@@ -30,16 +28,6 @@ module Pharos
       @ssh = ssh
       @master = master
       @cluster_context = cluster_context
-    end
-
-    def logger
-      @logger ||= Logger.new($stdout).tap do |logger|
-        logger.progname = @host.to_s
-        logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
-        logger.formatter = proc do |_severity, _datetime, progname, msg|
-          "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }
-        end
-      end
     end
 
     # @return [String]
@@ -63,6 +51,13 @@ module Pharos
 
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
+    end
+
+    %i(debug info warn error fatal puts).each do |meth|
+      define_method meth do |msg|
+        Out.send(meth, @host.to_s) { msg }
+      end
+      private meth
     end
   end
 end

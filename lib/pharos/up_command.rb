@@ -32,11 +32,12 @@ module Pharos
     end
 
     def execute
-      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
-      puts pastel.green("==> Reading instructions ...")
+      Out.super_header "KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})"
+      Out.header "Reading instructions ..."
+
       config_hash = load_config
       if tf_json
-        puts pastel.green("==> Importing configuration from Terraform ...")
+        Out.header "Importing configuration from Terraform ..."
         load_terraform(tf_json, config_hash)
       end
 
@@ -93,49 +94,51 @@ module Pharos
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config)
-      manager = ClusterManager.new(config, pastel: pastel)
+      manager = ClusterManager.new(config)
       start_time = Time.now
 
-      puts pastel.green("==> Sharpening tools ...")
+      Out.header "Sharpening tools ..."
       manager.load
       manager.validate
 
       show_component_versions(config)
       prompt_continue(config)
 
-      puts pastel.green("==> Starting to craft cluster ...")
+      Out.header "Starting to craft the cluster ..."
       manager.apply_phases
 
-      puts pastel.green("==> Configuring addons ...")
+      Out.header "Configuring addons ..."
       manager.apply_addons
 
       manager.save_config
 
       craft_time = Time.now - start_time
-      puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
-      puts "    You can connect to the cluster with kubectl using:"
-      puts "    export KUBECONFIG=~/.pharos/#{manager.sorted_master_hosts.first.api_address}"
+
+      Out.header "The cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})"
+      Out.puts "    You can connect to the cluster with kubectl using:"
+      Out.puts "    export KUBECONFIG=~/.pharos/#{manager.sorted_master_hosts.first.api_address}"
 
       manager.disconnect
     end
 
     # @param config [Pharos::Config]
     def show_component_versions(config)
-      puts pastel.green("==> Using following software versions:")
+      Out.puts Out.green("==> Using following software versions:")
       Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
-        puts "    #{c.name}: #{c.version}"
+        Out.puts Out.green("    #{c.name}: #{c.version}")
       end
     end
 
     # @param config [Pharos::Config]
     def prompt_continue(config)
       lexer = Rouge::Lexers::YAML.new
-      puts pastel.green("==> Configuration is generated and shown below:")
       if color?
-        puts rouge.format(lexer.lex(config.to_yaml))
-        puts ""
+        Out.puts Out.green("==> Configuration is generated and shown below:")
+        Out.puts rouge.format(lexer.lex(config.to_yaml))
+        Out.puts ""
       else
-        puts yaml
+        Out.info "Configuration:"
+        Out.info yaml
       end
       if $stdin.tty? && !yes?
         exit 1 unless prompt.yes?('Continue?')
@@ -156,7 +159,7 @@ module Pharos
     end
 
     def show_config_errors(errors)
-      warn "==> Invalid configuration file:"
+      warn "Invalid configuration file:"
       warn YAML.dump(errors)
     end
   end

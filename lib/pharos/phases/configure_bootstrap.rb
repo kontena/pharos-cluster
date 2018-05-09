@@ -7,10 +7,10 @@ module Pharos
 
       def call
         if new_hosts?
-          logger.info { "Creating node bootstrap token ..." }
+          info "Creating node bootstrap token ..."
           cluster_context['join-command'] = @ssh.exec!("sudo kubeadm token create --print-join-command")
         else
-          logger.info { "No new nodes, skipping bootstrap token creation ..." }
+          info "No new nodes, skipping bootstrap token creation ..."
         end
       end
 

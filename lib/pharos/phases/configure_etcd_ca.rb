@@ -8,12 +8,12 @@ module Pharos
       CA_FILES = %w(ca.pem ca-key.pem).freeze
 
       def call
-        logger.info { 'Configuring etcd certificate authority ...' }
+        info 'Configuring etcd certificate authority ...'
         exec_script(
           'configure-etcd-ca.sh',
           ARCH: @host.cpu_arch.name
         )
-        logger.info { 'Caching certificate authority files to memory ...' }
+        info 'Caching certificate authority files to memory ...'
         cache_ca_to_memory
       end
 

@@ -6,15 +6,15 @@ module Pharos
       title "Validate hosts"
 
       def call
-        logger.info { "Checking sudo access ..." }
+        info "Checking sudo access ..."
         check_sudo
-        logger.info { "Gathering host facts ..." }
+        info "Gathering host facts ..."
         gather_host_facts
-        logger.info { "Validating current role matches ..." }
+        info "Validating current role matches ..."
         check_role
-        logger.info { "Validating distro and version ..." }
+        info "Validating distro and version ..."
         check_distro_version
-        logger.info { "Validating host configuration ..." }
+        info "Validating host configuration ..."
         check_cpu_arch
       end
 
@@ -48,7 +48,7 @@ module Pharos
         raise Pharos::InvalidHostError, "Cannot change worker host role to master" if @host.master? && !@host.checks['ca_exists']
         raise Pharos::InvalidHostError, "Cannot change master host role to worker" if @host.worker? && @host.checks['ca_exists']
 
-        logger.debug { "#{@host.role} role matches" }
+        debug "#{@host.role} role matches"
       end
 
       # @return [String]
