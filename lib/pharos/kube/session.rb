@@ -52,7 +52,7 @@ module Pharos
       def api_versions
         api_versions = []
 
-        resource_client('').apis.groups.each do |api_group|
+        client('').apis.groups.each do |api_group|
           api_versions << api_group.preferredVersion.groupVersion
         end
 
