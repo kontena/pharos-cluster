@@ -32,7 +32,7 @@ module Pharos
     def addon_manager
       @addon_manager ||= Pharos::AddonManager.new(
         @config,
-        cluster_context: @context,
+        cluster_context: @context
       )
     end
 
