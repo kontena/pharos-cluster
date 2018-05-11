@@ -69,6 +69,7 @@ module Pharos
     def etcd_hosts
       return [] unless etcd_hosts?
 
+      # XXX: sort master hosts by etcd_sort_score
       @etcd_hosts ||= hosts.select { |h| h.role == 'etcd' }.sort_by(&:etcd_sort_score)
 
       if @etcd_hosts.empty?
