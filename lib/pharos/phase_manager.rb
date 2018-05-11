@@ -64,6 +64,7 @@ module Pharos
       options[:config] = @config
       options[:ssh] = @ssh_manager.client_for(host) if ssh
       options[:kube] = kube_session if kube # can only be used after Phases::ConfigureClient runs!
+      options[:cluster_context] = @cluster_context
 
       phase_class.new(host, **options)
     end
