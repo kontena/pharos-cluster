@@ -32,7 +32,6 @@ module Pharos
         @config,
         ssh_manager: ssh_manager,
         kube_session: kube_session,
-        config: @config,
         cluster_context: @context
       )
     end

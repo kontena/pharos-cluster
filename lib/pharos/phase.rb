@@ -23,7 +23,6 @@ module Pharos
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
-    # @param master [Pharos::Configuration::Host]
     def initialize(host, config: nil, ssh: nil, kube: nil, cluster_context: nil)
       @host = host
       @config = config
