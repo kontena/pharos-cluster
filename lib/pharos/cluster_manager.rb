@@ -106,7 +106,7 @@ module Pharos
     end
 
     def save_config
-      apply_phase(Phases::StoreClusterYAML, [config.master_host], kube: true)
+      apply_phase(Phases::StoreClusterConfiguration, [config.master_host], kube: true)
     end
 
     def disconnect

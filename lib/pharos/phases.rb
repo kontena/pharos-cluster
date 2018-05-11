@@ -17,6 +17,10 @@ module Pharos
 
         enabled.call(config)
       end
+
+      def to_h
+        super.tap { |s| s.delete(:enabled) }
+      end
     end
 
     # List of registered components

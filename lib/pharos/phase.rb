@@ -64,5 +64,10 @@ module Pharos
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
     end
+
+    # @return [Pharos::Kube::Stack]
+    def kube_stack(name)
+      @kube.stack(name, resource_path(name))
+    end
   end
 end

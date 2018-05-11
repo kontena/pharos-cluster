@@ -3,16 +3,20 @@
 module Pharos
   module Kube
     class Stack
+      include Pharos::Logging
+
       RESOURCE_LABEL = 'pharos.kontena.io/stack'
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
-      RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
+
+      attr_reader :name, :vars
 
       # @param session [Pharos::Kube::Session]
       # @param name [String] stack name
-      def initialize(session, name)
+      # @param resource_path [String] resource_path
+      def initialize(session, name, resource_path)
         @session = session
         @name = name
-        @resource_path = RESOURCE_PATH.join(name).freeze
+        @resource_path = Pathname.new(resource_path).freeze
       end
 
       # A list of .yml and yml.erb files in the stacks resource directory
@@ -23,7 +27,7 @@ module Pharos
 
       # A list of resources
       # @return [Array<Pharos::Kube::Resource>]
-      def load_resources(vars)
+      def load_resources(vars = {})
         resource_files.map do |resource_file|
           @session.resource(Pharos::YamlFile.new(resource_file).load(vars))
         end
@@ -31,9 +35,10 @@ module Pharos
 
       # Applies the stack onto the kube cluster
       # @return [Array<Kubeclient::Resource>]
-      def apply(**vars)
+      def apply(vars = {})
         with_pruning do |checksum|
           load_resources(vars).map do |resource|
+            logger.debug { "Applying resource: #{resource.kind}/#{resource.metadata['name']}" }
             metadata = resource.metadata
             metadata.labels ||= {}
             metadata.annotations ||= {}
@@ -71,6 +76,8 @@ module Pharos
               # the items in a list are missing the apiVersion and kind
               resource.apiVersion = api_version
               resource.kind = entity.entity_type
+
+              logger.debug { "Pruning resource: #{resource.kind}/#{resource.metadata['name']}" }
 
               next unless @session.resource(resource).delete
 

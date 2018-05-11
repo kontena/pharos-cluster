@@ -37,7 +37,7 @@ module Pharos
         trusted_subnets = @config.network.weave&.trusted_subnets || []
         logger.info { "Configuring overlay network ..." }
 
-        @kube.stack('weave').apply(
+        kube_stack('weave').apply(
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,

@@ -19,7 +19,7 @@ module Pharos
         cert, _key = cert_manager.ensure_client_certificate(user: 'heapster')
 
         logger.info { "Configuring heapster ..." }
-        @kube.stack('heapster').apply(
+        kube_stack('heapster').apply(
           version: '1.5.1',
           arch: @host.cpu_arch,
           client_cert: cert.to_pem

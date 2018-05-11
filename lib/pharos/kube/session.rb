@@ -36,9 +36,10 @@ module Pharos
 
       # Returns a new stack associated with this session
       # @param name [String]
+      # @param resource_path [String]
       # @return [Pharos::Kube::Stack]
-      def stack(name)
-        Stack.new(self, name)
+      def stack(name, resource_path)
+        Stack.new(self, name, resource_path)
       end
 
       # Discover preferred api group/version strings for this session

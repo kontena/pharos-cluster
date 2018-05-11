@@ -60,7 +60,7 @@ describe Pharos::Addon do
     let(:stack) { instance_double(Pharos::Kube::Stack) }
 
     before do
-      allow(kube_session).to receive(:stack).with('test-addon').and_return(stack)
+      allow(kube_session).to receive(:stack).with('test-addon', a_string_ending_with('lib/pharos/addons/test-addon/resources')).and_return(stack)
     end
 
     it "applies stack with correct parameters" do

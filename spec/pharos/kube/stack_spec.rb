@@ -1,6 +1,6 @@
 describe Pharos::Kube::Stack do
   let(:session) { instance_double(Pharos::Kube::Session) }
-  subject { described_class.new(session, 'ingress-nginx') }
+  subject { described_class.new(session, 'ingress-nginx', File.realpath('./lib/pharos/addons/ingress-nginx/resources')) }
 
   let(:vars) { {
     default_backend: double(image: 'foo'),
