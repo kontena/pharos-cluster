@@ -47,4 +47,8 @@ module Pharos
   module Etcd
     autoload :Client, 'pharos/etcd/client'
   end
+
+  module Host
+    autoload :UbuntuXenial, 'pharos/host/ubuntu_xenial'
+  end
 end

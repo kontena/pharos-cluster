@@ -85,6 +85,10 @@ module Pharos
       def worker?
         role == 'worker'
       end
+
+      def configurer(ssh)
+        Pharos::Host::UbuntuXenial.new(self, ssh)
+      end
     end
   end
 end
