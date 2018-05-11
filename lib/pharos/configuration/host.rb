@@ -16,6 +16,7 @@ module Pharos
       attribute :user, Pharos::Types::Strict::String.default('ubuntu')
       attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
+      attribute :master_taint, Pharos::Types::Strict::Bool.default(true)
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks
 
