@@ -27,7 +27,7 @@ module Pharos
 
       # A list of resources
       # @return [Array<Pharos::Kube::Resource>]
-      def load_resources(vars = {})
+      def load_resources(vars)
         resource_files.map do |resource_file|
           @session.resource(Pharos::YamlFile.new(resource_file).load(vars))
         end
@@ -35,7 +35,7 @@ module Pharos
 
       # Applies the stack onto the kube cluster
       # @return [Array<Kubeclient::Resource>]
-      def apply(vars = {})
+      def apply(vars)
         with_pruning do |checksum|
           load_resources(vars).map do |resource|
             logger.debug { "Applying resource: #{resource.kind}/#{resource.metadata['name']}" }
