@@ -66,6 +66,7 @@ module Pharos
       apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
 
       # master is now configured and can be used
+      apply_phase(Phases::FetchClusterConfiguration, [config.master_host], kube: true)
       apply_phase(Phases::ConfigureDNS, [config.master_host], kube: true)
       apply_phase(Phases::ConfigureWeave, [config.master_host], kube: true) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, [config.master_host], kube: true) if config.network.provider == 'calico'
