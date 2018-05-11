@@ -21,10 +21,15 @@ module Pharos
         Pharos::Kube.config_exists?(@endpoint)
       end
 
+      # @return [Kubeclient::Config]
+      def config
+        Pharos::Kube.config(@endpoint)
+      end
+
       # @param host [String]
       # @return [Kubeclient::Client]
       def client(version = 'v1')
-        @clients[version] ||= Pharos::Kube::Client.from_config(@endpoint, version)
+        @clients[version] ||= Pharos::Kube::Client.from_config(config, version)
       end
 
       # Returns a new resource associated with this session
