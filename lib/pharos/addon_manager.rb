@@ -19,11 +19,9 @@ module Pharos
 
     # @param config [Pharos::Configuration]
     # @param cluster_context [Hash]
-    # @param kube_session [Pharos::Kube::Session]
-    def initialize(config, cluster_context:, kube_session:)
+    def initialize(config, cluster_context:)
       @config = config
       @cluster_context = cluster_context
-      @kube_session = kube_session
     end
 
     def configs
@@ -52,9 +50,14 @@ module Pharos
       end
     end
 
+    # @return [Pharos::Kube::Session]
+    def kube_session
+      Pharos::Kube.session(@config.api_endpoint)
+    end
+
     def options
       {
-        kube: @kube_session, # can only be used after Phases::ConfigureClient runs!
+        kube: kube_session, # can only be used after Phases::ConfigureClient runs!
         cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs!
         cluster_config: @config
       }

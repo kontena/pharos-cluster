@@ -10,10 +10,13 @@ module Pharos
     autoload :Stack, 'pharos/kube/stack'
     autoload :Session, 'pharos/kube/session'
 
+    # NOTE: not threadsafe
+    #
     # @param endpoint [String]
     # @return [Pharos::Kube::Session]
     def self.session(endpoint)
-      Session.new(endpoint)
+      @session ||= {}
+      @session[endpoint] ||= Session.new(endpoint)
     end
 
     # @param endpoint [String]

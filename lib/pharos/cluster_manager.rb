@@ -14,13 +14,6 @@ module Pharos
       @context = {}
     end
 
-    # XXX: cannot be used until after Phases::ConfigureClient has completed!
-    #
-    # @return [Pharos::Kube::Session]
-    def kube_session
-      @kube_session ||= Pharos::Kube.session(@config.api_endpoint)
-    end
-
     # @return [Pharos::SSH::Manager]
     def ssh_manager
       @ssh_manager ||= Pharos::SSH::Manager.new
@@ -31,7 +24,6 @@ module Pharos
       @phase_manager = Pharos::PhaseManager.new(
         @config,
         ssh_manager: ssh_manager,
-        kube_session: kube_session,
         cluster_context: @context
       )
     end
@@ -41,7 +33,6 @@ module Pharos
       @addon_manager ||= Pharos::AddonManager.new(
         @config,
         cluster_context: @context,
-        kube_session: kube_session
       )
     end
 

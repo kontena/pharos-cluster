@@ -13,12 +13,15 @@ module Pharos
 
     # @param config [Pharos::Config]
     # @param ssh_manager [Pharos::SSH::Manager]
-    # @param kube_session [Pharos::Kube::Session]
-    def initialize(config, ssh_manager:, kube_session:, cluster_context:)
+    def initialize(config, ssh_manager:, cluster_context:)
       @config = config
       @ssh_manager = ssh_manager
       @cluster_context = cluster_context
-      @kube_session = kube_session
+    end
+
+    # @return [Pharos::Kube::Session]
+    def kube_session
+      Pharos::Kube.session(@config.api_endpoint)
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
@@ -58,11 +61,9 @@ module Pharos
 
     # @return [Pharos::Phase]
     def prepare_phase(phase_class, host, ssh: false, kube: false, **options)
-      fail "kube (#{kube}) is not yet configured for phase: #{phase_class}" if kube && !@kube_session.configured?
-
       options[:config] = @config
       options[:ssh] = @ssh_manager.client_for(host) if ssh
-      options[:kube] = @kube_session if kube
+      options[:kube] = kube_session if kube # can only be used after Phases::ConfigureClient runs!
 
       phase_class.new(host, **options)
     end
