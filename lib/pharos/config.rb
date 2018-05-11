@@ -9,6 +9,8 @@ require_relative 'configuration/etcd'
 require_relative 'configuration/authentication'
 require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
+require_relative 'configuration/kube_proxy'
+require_relative 'configuration/kubelet'
 
 module Pharos
   class Config < Dry::Struct
@@ -17,13 +19,17 @@ module Pharos
     constructor_type :schema
 
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
-    attribute :api, Pharos::Configuration::Api
     attribute :network, Pharos::Configuration::Network
-    attribute :cloud, Pharos::Configuration::Cloud
-    attribute :addons, Pharos::Types::Hash.default({})
+    attribute :kube_proxy, Pharos::Configuration::KubeProxy
+    attribute :api, Pharos::Configuration::Api
     attribute :etcd, Pharos::Configuration::Etcd
+    attribute :cloud, Pharos::Configuration::Cloud
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
+    attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :addons, Pharos::Types::Hash.default({})
+
+    attr_accessor :data
 
     # @return [Integer]
     def dns_replicas
@@ -61,6 +67,11 @@ module Pharos
       else
         etcd_hosts
       end
+    end
+
+    # @return [String]
+    def to_yaml
+      JSON.parse(to_h.to_json).to_yaml
     end
   end
 end

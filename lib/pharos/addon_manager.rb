@@ -18,12 +18,22 @@ module Pharos
     end
 
     # @param config [Pharos::Configuration]
-    def initialize(config)
+    # @param cluster_context [Hash]
+    def initialize(config, cluster_context)
       @config = config
+      @cluster_context = cluster_context
     end
 
     def configs
       @config.addons
+    end
+
+    def prev_configs
+      if config = @cluster_context['previous-config']
+        config.addons
+      else
+        {}
+      end
     end
 
     # @return [Array<Pharos::Addon>]
@@ -44,18 +54,20 @@ module Pharos
       {
         master: @config.master_host,
         cpu_arch: @config.master_host.cpu_arch, # needs to be resolved *after* Phases::ValidateHost runs
+        cluster_config: @config
       }
     end
 
     def each
       with_enabled_addons do |addon_class, config_hash|
         config = addon_class.validate(config_hash)
-
-        yield addon_class.new(config, enabled: true, master: @master, **options)
+        addon = addon_class.new(config, enabled: true, **options)
+        addon.validate
+        yield addon
       end
 
       with_disabled_addons do |addon_class|
-        yield addon_class.new(nil, enabled: false, master: @master, **options)
+        yield addon_class.new(nil, enabled: false, **options)
       end
     end
 
@@ -71,11 +83,12 @@ module Pharos
     end
 
     def with_disabled_addons
-      addon_classes.each do |addon_class|
+      addon_classes.select { |addon_class|
+        prev_config = prev_configs[addon_class.name]
         config = configs[addon_class.name]
-        if config.nil? || !config["enabled"]
-          yield(addon_class)
-        end
+        prev_config && prev_config["enabled"] && (config.nil? || !config["enabled"])
+      }.each do |addon_class|
+        yield(addon_class)
       end
     end
   end

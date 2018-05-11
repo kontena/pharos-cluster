@@ -20,10 +20,10 @@ describe Pharos::Addon do
   end
 
   let(:cpu_arch) { double(:cpu_arch) }
-  let(:master) { double(:host, address: '1.1.1.1') }
+  let(:master) { double(:host, api_address: '1.1.1.1') }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch) }
+  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil) }
 
   describe ".name" do
     it "returns configured name" do
@@ -59,7 +59,7 @@ describe Pharos::Addon do
   describe "#apply_stack" do
     it "applies stack with correct parameters" do
       expect(Pharos::Kube).to receive(:apply_stack).with(
-        master.address, subject.class.name, {
+        master.api_address, subject.class.name, {
           name: subject.class.name, version: subject.class.version,
           config: anything, arch: anything
         }

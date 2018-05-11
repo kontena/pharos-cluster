@@ -50,6 +50,10 @@ module Pharos
       end
     end
 
+    def self.to_h
+      { name: name, version: version, license: license }
+    end
+
     def self.schema(&block)
       @schema = Dry::Validation.Form(Schema, &block)
     end
@@ -74,13 +78,14 @@ module Pharos
       ObjectSpace.each_object(Class).select { |klass| klass < self }
     end
 
-    attr_reader :config, :cpu_arch
+    attr_reader :config, :cpu_arch, :cluster_config
 
-    def initialize(config = nil, enabled: true, master:, cpu_arch:)
+    def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
       @config = self.class.struct.new(config)
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch
+      @cluster_config = cluster_config
     end
 
     def name
@@ -113,7 +118,7 @@ module Pharos
 
     def apply_stack(vars = {})
       Pharos::Kube.apply_stack(
-        @master.address, self.class.name,
+        @master.api_address, self.class.name,
         vars.merge(
           name: self.class.name,
           version: self.class.version,
@@ -124,7 +129,9 @@ module Pharos
     end
 
     def prune_stack
-      Pharos::Kube.prune_stack(@master.address, self.class.name, '-')
+      Pharos::Kube.prune_stack(@master.api_address, self.class.name, '-')
     end
+
+    def validate; end
   end
 end

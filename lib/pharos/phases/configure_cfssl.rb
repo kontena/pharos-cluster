@@ -6,9 +6,8 @@ module Pharos
       title "Configure cfssl"
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'cfssl', version: '1.2', license: 'MIT'
-        )
+        name: 'cfssl', version: '1.2', license: 'MIT',
+        enabled: proc { |c| !c.etcd&.endpoints }
       )
 
       def call

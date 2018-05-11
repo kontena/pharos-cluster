@@ -127,6 +127,7 @@ describe Pharos::Phases::ConfigureMaster do
         }
         config = subject.generate_config
         expect(config['apiServerExtraVolumes']).to include(pharos_volume_mount)
+        expect(config['controllerManagerExtraVolumes']).to include(pharos_volume_mount)
       end
     end
 
@@ -149,6 +150,7 @@ describe Pharos::Phases::ConfigureMaster do
       it 'comes with proper cloud config' do
         config = subject.generate_config
         expect(config.dig('apiServerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
+        expect(config.dig('controllerManagerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
       end
     end
 
@@ -217,6 +219,44 @@ describe Pharos::Phases::ConfigureMaster do
       it 'comes with proper apiserver-count' do
         config = subject.generate_config
         expect(config.dig('apiServerExtraArgs', 'apiserver-count')).to eq("3")
+      end
+    end
+
+    context 'with kube-proxy ipvs configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        kube_proxy: {
+          mode: 'ipvs',
+        }
+      ) }
+
+      it 'configures kube-proxy' do
+        config = subject.generate_config
+        expect(config.dig('kubeProxy', 'config')).to eq(
+          'mode' => 'ipvs',
+          'featureGates' => {
+            'SupportIPVSProxyMode' => true,
+          },
+        )
+      end
+    end
+
+    context 'with kube-proxy iptables configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        kube_proxy: {
+          mode: 'iptables',
+        }
+      ) }
+
+      it 'configures kube-proxy' do
+        config = subject.generate_config
+        expect(config.dig('kubeProxy', 'config')).to eq(
+          'mode' => 'iptables',
+          'featureGates' => {},
+        )
       end
     end
   end

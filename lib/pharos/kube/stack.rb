@@ -3,6 +3,8 @@
 module Pharos
   module Kube
     class Stack
+      include Pharos::Logging
+
       RESOURCE_LABEL = 'pharos.kontena.io/stack'
       RESOURCE_ANNOTATION = 'pharos.kontena.io/stack-checksum'
       RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources'))).freeze
@@ -15,7 +17,6 @@ module Pharos
         @name = name
         @resource_path = RESOURCE_PATH.join(name).freeze
         @vars = vars
-        freeze
       end
 
       # A list of .yml and yml.erb files in the stacks resource directory
@@ -37,6 +38,7 @@ module Pharos
       def apply
         with_pruning do |checksum|
           resources.map do |resource|
+            logger.debug { "Applying resource: #{resource.kind}/#{resource.metadata['name']}" }
             metadata = resource.metadata
             metadata.labels ||= {}
             metadata.annotations ||= {}
@@ -53,23 +55,29 @@ module Pharos
       def prune(checksum)
         pruned = []
 
-        @session.api_groups.each do |api_group|
-          group_client = @session.resource_client(api_group.preferredVersion.groupVersion)
+        @session.api_versions.each do |api_version|
+          client = @session.resource_client(api_version)
+          client.entities.each do |method_name, entity|
+            next if method_name.end_with?('_review')
+            next if api_version == 'v1' && entity.resource_name == 'bindings' # XXX: the entity definition does not have the list verb... but kubeclient does not expose that
+            next if api_version == 'v1' && entity.resource_name == 'componentstatuses' # apiserver ignores the ?labelSelector query
+            next if api_version == 'v1' && entity.resource_name == 'endpoints' # inherits stack labels from service, does not have any ownerReference...
 
-          entities = group_client.entities.reject { |type, _| type.end_with?('_review') }
+            resources = client.get_entities(entity.entity_type, entity.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
+            resources = resources.select do |obj|
+              annotations = obj.metadata.annotations
+              annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+            end
 
-          objects = entities.flat_map do |type, meta|
-            group_client.get_entities(type, meta.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
-          end
+            resources.each do |resource|
+              # the items in a list are missing the apiVersion and kind
+              resource.apiVersion = api_version
+              resource.kind = entity.entity_type
 
-          prunables = objects.select do |obj|
-            annotations = obj.metadata.annotations
-            annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
-          end
+              next unless @session.resource(resource).delete
 
-          prunables.each do |obj|
-            obj.apiVersion = api_group.preferredVersion.groupVersion
-            pruned << obj if @session.resource(obj).delete
+              pruned << resource
+            end
           end
         end
 
@@ -78,8 +86,12 @@ module Pharos
 
       private
 
+      def random_checksum
+        SecureRandom.hex(16)
+      end
+
       def with_pruning
-        checksum = SecureRandom.hex(16)
+        checksum = random_checksum
         result = yield checksum
         prune(checksum)
         result

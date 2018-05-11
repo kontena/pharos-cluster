@@ -14,8 +14,9 @@ hosts:
     ssh_key_path: ~/.vagrant.d/insecure_private_key
 network:
   pod_network_cidr: 10.32.0.0/16
-  trusted_subnets:
-    - 192.168.100.0/24
+  weave:
+    trusted_subnets:
+      - 192.168.100.0/24
 addons:
   ingress-nginx:
     enabled: true

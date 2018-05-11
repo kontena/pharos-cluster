@@ -82,10 +82,10 @@ spec:
                   key: ipv4_pool_cidr
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
-              value: "Always"
+              value: "<%= ipip_mode %>"
             # Enable IP-in-IP within Felix.
             - name: FELIX_IPINIPENABLED
-              value: "true"
+              value: "<%= ipip_enabled ? 'true' : 'false' %>"
             # Typha support: controlled by the ConfigMap.
             - name: FELIX_TYPHAK8SSERVICENAME
               value: "none"
@@ -94,9 +94,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            # Auto-detect the BGP IP address.
+            # Auto-detect the BGP IP address
             - name: IP
               value: "autodetect"
+            - name: IP_AUTODETECTION_METHOD
+              value: "can-reach=<%= master_ip %>"
             - name: FELIX_HEALTHENABLED
               value: "true"
           securityContext:

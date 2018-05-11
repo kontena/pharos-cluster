@@ -46,22 +46,8 @@ module Pharos
 
       def install
         configure_kubelet
-
         cfg = generate_config
-
-        # Copy etcd certs over if needed
-        if @config.etcd&.certificate
-          logger.info { "Pushing external etcd certificates ..." }
-          copy_external_etcd_certs
-        end
-
-        push_cloud_config if @config.cloud&.config
-
-        push_audit_config if @config.audit&.server
-
-        # Generate and upload authentication token webhook config file if needed
-        push_authentication_token_webhook_config if @config.authentication&.token_webhook
-
+        push_configs
         copy_kube_certs
 
         logger.info { "Initializing control plane ..." }
@@ -75,6 +61,50 @@ module Pharos
         logger.info { "Initialization of control plane succeeded!" }
         @ssh.exec!('install -m 0700 -d ~/.kube')
         @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
+      end
+
+      def configure
+        copy_kube_certs
+        push_configs
+        cfg = generate_config
+        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+          @ssh.exec!("sudo kubeadm alpha phase controlplane all --config #{tmp_file}")
+        end
+        cache_kube_certs
+        configure_kubelet
+      end
+
+      def upgrade
+        logger.info { "Upgrading control plane ..." }
+        exec_script(
+          "install-kubeadm.sh",
+          VERSION: Pharos::KUBEADM_VERSION,
+          ARCH: @host.cpu_arch.name
+        )
+        copy_kube_certs
+        push_configs
+        cfg = generate_config
+        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
+        end
+        logger.info { "Control plane upgrade succeeded!" }
+
+        cache_kube_certs
+        configure_kubelet
+      end
+
+      def push_configs
+        # Copy etcd certs over if needed
+        if @config.etcd&.certificate
+          logger.info { "Pushing external etcd certificates ..." }
+          copy_external_etcd_certs
+        end
+
+        push_cloud_config if @config.cloud&.config
+        push_audit_config if @config.audit&.server
+
+        # Generate and upload authentication token webhook config file if needed
+        push_authentication_token_webhook_config if @config.authentication&.token_webhook
       end
 
       def generate_config
@@ -107,7 +137,10 @@ module Pharos
 
         if @config.cloud && @config.cloud.provider != 'external'
           config['cloudProvider'] = @config.cloud.provider
-          config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE if @config.cloud.config
+          if @config.cloud.config
+            config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
+            config['controllerManagerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
+          end
         end
 
         # Only configure etcd if the external endpoints are given
@@ -116,8 +149,15 @@ module Pharos
         else
           configure_internal_etcd(config)
         end
-
         config['apiServerExtraVolumes'] = [
+          {
+            'name' => 'pharos',
+            'hostPath' => PHAROS_DIR,
+            'mountPath' => PHAROS_DIR
+          }
+        ]
+
+        config['controllerManagerExtraVolumes'] = [
           {
             'name' => 'pharos',
             'hostPath' => PHAROS_DIR,
@@ -130,6 +170,8 @@ module Pharos
 
         # Configure audit related things if needed
         configure_audit_webhook(config) if @config.audit&.server
+
+        configure_kube_proxy(config) if @config.kube_proxy
 
         # Set secrets config location and mount it to api server
         config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
@@ -146,6 +188,7 @@ module Pharos
         extra_sans = Set.new(['localhost'])
         extra_sans << @host.address
         extra_sans << @host.private_address if @host.private_address
+        extra_sans << @host.private_interface_address if @host.private_interface_address
         extra_sans << @host.api_endpoint if @host.api_endpoint
 
         extra_sans.to_a
@@ -302,6 +345,25 @@ module Pharos
       end
 
       # @param config [Hash]
+      def configure_kube_proxy(config)
+        config['kubeProxy'] = {
+          'config' => {
+            'featureGates' => {}
+          }
+        }
+
+        if @config.kube_proxy.mode
+          config['kubeProxy']['config']['mode'] = @config.kube_proxy.mode
+        end
+
+        if @config.kube_proxy.mode == 'ipvs'
+          config['kubeProxy']['config']['featureGates']['SupportIPVSProxyMode'] = true
+        end
+
+        config
+      end
+
+      # @param config [Hash]
       def upload_authentication_token_webhook_config(config)
         @ssh.exec!('sudo mkdir -p ' + AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR)
         @ssh.file(AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR + '/token-webhook-config.yaml').write(config.to_yaml)
@@ -313,22 +375,6 @@ module Pharos
         @ssh.file(PHAROS_DIR + '/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
         @ssh.file(PHAROS_DIR + '/token_webhook/cert.pem').write(File.open(File.expand_path(webhook_config[:user][:client_certificate]))) if webhook_config[:user][:client_certificate]
         @ssh.file(PHAROS_DIR + '/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
-      end
-
-      def upgrade
-        logger.info { "Upgrading control plane ..." }
-        exec_script(
-          "install-kubeadm.sh",
-          VERSION: Pharos::KUBEADM_VERSION,
-          ARCH: @host.cpu_arch.name
-        )
-        cfg = generate_config
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
-        end
-        logger.info { "Control plane upgrade succeeded!" }
-
-        configure_kubelet
       end
 
       def push_audit_config
@@ -354,10 +400,6 @@ module Pharos
         logger.info { "Pushing cloud-config to master ..." }
         @ssh.exec!('sudo mkdir -p ' + CLOUD_CFG_DIR)
         @ssh.file(CLOUD_CFG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
-      end
-
-      def configure
-        configure_kubelet
       end
 
       def configure_kubelet

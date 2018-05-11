@@ -8,15 +8,13 @@ module Pharos
       CALICO_VERSION = '3.1.0'
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'calico-cni', version: CALICO_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'calico-cni', version: CALICO_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
       def validate
@@ -30,6 +28,9 @@ module Pharos
         Pharos::Kube.apply_stack(
           @master.api_address, 'calico',
           ipv4_pool_cidr: @config.network.pod_network_cidr,
+          ipip_mode: @config.network.calico&.ipip_mode || 'Always',
+          ipip_enabled: @config.network.calico&.ipip_mode != 'Never',
+          master_ip: @config.master_host.peer_address,
           version: CALICO_VERSION
         )
       end
