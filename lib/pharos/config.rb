@@ -69,16 +69,13 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def etcd_hosts
-      return [] unless etcd_hosts?
-
-      # XXX: sort master hosts by etcd_sort_score
-      @etcd_hosts ||= hosts.select { |h| h.role == 'etcd' }.sort_by(&:etcd_sort_score)
-
-      if @etcd_hosts.empty?
-        sorted_master_hosts
-      else
-        @etcd_hosts
-      end
+      @etcd_hosts ||= if !etcd_hosts?
+                        []
+                      elsif hosts.any? { |h| h.role == 'etcd' }
+                        hosts.select { |h| h.role == 'etcd' }.sort_by(&:etcd_sort_score)
+                      else
+                        hosts.select { |h| h.role == 'master' }.sort_by(&:etcd_sort_score)
+                      end
     end
 
     # @return [String]
