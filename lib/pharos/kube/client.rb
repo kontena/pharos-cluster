@@ -10,7 +10,12 @@ module Pharos
       # @param version [String] v1, apps/v1, ...
       def self.from_config(config, version)
         path_prefix = version == 'v1' ? 'api' : 'apis'
-        api_group, api_version = version.split('/')
+
+        if version.include? '/'
+          api_group, api_version = version.split('/')
+        else
+          api_group, api_version = nil, version
+        end
 
         new(
           (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
