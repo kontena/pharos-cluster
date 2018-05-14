@@ -69,13 +69,13 @@ module Pharos
       end
 
       # @return [Hash] path => PEM data
-       def pull_kube_certs
+      def pull_kube_certs
         certs = {}
         SHARED_CERT_FILES.each do |file|
           path = File.join(KUBE_DIR, 'pki', file)
           certs[file] = @ssh.file(path).read
         end
-         certs
+        certs
       end
     end
   end
