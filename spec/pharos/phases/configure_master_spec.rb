@@ -17,6 +17,13 @@ describe Pharos::Phases::ConfigureMaster do
   let(:ssh) { instance_double(Pharos::SSH::Client) }
   subject { described_class.new(master, config: config, ssh: ssh) }
 
+  before do
+    master.checks = {}
+    config.hosts.each do |host|
+      host.checks = {}
+    end
+  end
+
   describe '#generate_config' do
 
     context 'with auth configuration' do

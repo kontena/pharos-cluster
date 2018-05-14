@@ -8,13 +8,13 @@ describe Pharos::Addons::OpenEbs do
     etcd: {}
   ) }
   let(:cpu_arch) { double(:cpu_arch ) }
-  let(:master) { double(:host, address: '1.1.1.1') }
+  let(:kube_session) { instance_double(Pharos::Kube::Session) }
 
   describe '#validate' do
     context 'with more replicas than workers' do
       it 'raises' do
         config = {default_storage_class: {replicas: 5}}
-        subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+        subject = described_class.new(config, enabled: true, kube: kube_session, cpu_arch: cpu_arch, cluster_config: cluster_config)
         expect { subject.validate }.to raise_error Pharos::InvalidAddonError, "Cannot set more replicas than workers"
       end
     end
@@ -22,7 +22,7 @@ describe Pharos::Addons::OpenEbs do
     context 'with more replicas than workers' do
       it 'does not raise' do
         config = {default_storage_class: {replicas: 1}}
-        subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+        subject = described_class.new(config, enabled: true, kube: kube_session, cpu_arch: cpu_arch, cluster_config: cluster_config)
         subject.validate
       end
     end
@@ -32,7 +32,7 @@ describe Pharos::Addons::OpenEbs do
     context 'with 2 workers' do
       it 'returns number of workers' do
         cluster_config.hosts << Pharos::Configuration::Host.new(role: 'worker')
-        subject = described_class.new({}, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+        subject = described_class.new({}, enabled: true, kube: kube_session, cpu_arch: cpu_arch, cluster_config: cluster_config)
         expect(subject.default_replica_count).to eq(2)
       end
     end
@@ -42,7 +42,7 @@ describe Pharos::Addons::OpenEbs do
         4.times do
           cluster_config.hosts << Pharos::Configuration::Host.new(role: 'worker')
         end
-        subject = described_class.new({}, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+        subject = described_class.new({}, enabled: true, kube: kube_session, cpu_arch: cpu_arch, cluster_config: cluster_config)
         expect(subject.default_replica_count).to eq(3)
       end
     end
@@ -52,7 +52,7 @@ describe Pharos::Addons::OpenEbs do
     context 'with default config' do
       it 'applies stack with defaults' do
         config = { }
-        subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+        subject = described_class.new(config, enabled: true, kube: kube_session, cpu_arch: cpu_arch, cluster_config: cluster_config)
 
         expect(subject).to receive(:apply_stack).with(default_replicas: 1, default_capacity: '5G', is_default_class: false, default_storage_pool_path: '/var/openebs')
 
@@ -72,7 +72,7 @@ describe Pharos::Addons::OpenEbs do
             path: '/foo/bar'
           }
         }
-        subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+        subject = described_class.new(config, enabled: true, kube: kube_session, cpu_arch: cpu_arch, cluster_config: cluster_config)
 
         expect(subject).to receive(:apply_stack).with(default_replicas: 5, default_capacity: '12G', is_default_class: true, default_storage_pool_path: '/foo/bar')
 
@@ -89,7 +89,7 @@ describe Pharos::Addons::OpenEbs do
             path: '/foo/bar'
           }
         }
-        subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+        subject = described_class.new(config, enabled: true, kube: kube_session, cpu_arch: cpu_arch, cluster_config: cluster_config)
 
         expect(subject).to receive(:apply_stack).with(default_replicas: 5, default_capacity: '5G', is_default_class: true, default_storage_pool_path: '/foo/bar')
 

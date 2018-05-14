@@ -11,10 +11,17 @@ module Pharos
       end
     end
 
-    # @param dirs [Array<String>]
-    def initialize(ssh_manager:, **options)
+    # @param config [Pharos::Config]
+    # @param ssh_manager [Pharos::SSH::Manager]
+    def initialize(config, ssh_manager:, cluster_context:)
+      @config = config
       @ssh_manager = ssh_manager
-      @options = options
+      @cluster_context = cluster_context
+    end
+
+    # @return [Pharos::Kube::Session]
+    def kube_session
+      Pharos::Kube.session(@config.api_endpoint)
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
@@ -53,16 +60,19 @@ module Pharos
     end
 
     # @return [Pharos::Phase]
-    def prepare_phase(phase_class, host, ssh: false, **options)
-      options = @options.merge(options)
-
+    def prepare_phase(phase_class, host, ssh: false, kube: false, **options)
+      options[:config] = @config
       options[:ssh] = @ssh_manager.client_for(host) if ssh
+      options[:kube] = kube_session if kube # can only be used after Phases::ConfigureClient runs!
+      options[:cluster_context] = @cluster_context
 
       phase_class.new(host, **options)
     end
 
-    def apply(phase_class, hosts, parallel: false, **options)
-      phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
+    def apply(phase_class, hosts, parallel: false, kube: false, **options)
+      fail "kube is not threadsafe for parallel phases: #{phase_class}" if kube && parallel
+
+      phases = hosts.map { |host| prepare_phase(phase_class, host, kube: kube, **options) }
 
       run(phases, parallel: parallel) do |phase|
         start = Time.now

@@ -17,14 +17,10 @@ module Pharos
       attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks
+      attr_accessor :os_release, :cpu_arch, :hostname, :private_interface_address, :checks
 
       def to_s
         address
-      end
-
-      def api_address
-        api_endpoint || address
       end
 
       def peer_address
@@ -56,8 +52,12 @@ module Pharos
         container_runtime == 'cri-o'
       end
 
+      # prefer master hosts that are configured and healthy
+      #
       # @return [Integer]
       def master_sort_score
+        fail "Hosts cannot be sorted before checking" unless checks
+
         if checks['api_healthy']
           0
         elsif checks['kubelet_configured']
@@ -67,8 +67,12 @@ module Pharos
         end
       end
 
+      # prefer etcd hosts that are configured and healthy
+      #
       # @return [Integer]
       def etcd_sort_score
+        fail "Hosts cannot be sorted before checking" unless checks
+
         if checks['etcd_healthy']
           0
         elsif checks['etcd_ca_exists']

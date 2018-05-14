@@ -48,7 +48,7 @@ module Pharos
       def patch_kubedns(replicas:, max_surge:, max_unavailable:)
         logger.info { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
-        resource = Pharos::Kube.session(@master.api_address).resource(
+        resource = @kube.resource(
           apiVersion: 'extensions/v1beta1',
           kind: 'Deployment',
           metadata: {

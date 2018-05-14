@@ -23,12 +23,11 @@ module Pharos
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
-    # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, ssh: nil, master: nil, cluster_context: nil)
+    def initialize(host, config: nil, ssh: nil, kube: nil, cluster_context: nil)
       @host = host
       @config = config
       @ssh = ssh
-      @master = master
+      @kube = kube
       @cluster_context = cluster_context
     end
 
@@ -63,6 +62,11 @@ module Pharos
 
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
+    end
+
+    # @return [Pharos::Kube::Stack]
+    def kube_stack(name)
+      @kube.stack(name, resource_path(name))
     end
   end
 end

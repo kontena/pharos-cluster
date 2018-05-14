@@ -13,12 +13,10 @@ module Pharos
       # @param session [Pharos::Kube::Session]
       # @param name [String] stack name
       # @param resource_path [String] resource_path
-      # @param vars [Hash] variables for ERB evaluation
-      def initialize(session, name, resource_path, vars = {})
+      def initialize(session, name, resource_path)
         @session = session
         @name = name
         @resource_path = Pathname.new(resource_path).freeze
-        @vars = vars
       end
 
       # A list of .yml and yml.erb files in the stacks resource directory
@@ -29,17 +27,17 @@ module Pharos
 
       # A list of resources
       # @return [Array<Pharos::Kube::Resource>]
-      def resources
+      def load_resources(vars)
         resource_files.map do |resource_file|
-          @session.resource(Pharos::YamlFile.new(resource_file).load(@vars))
+          @session.resource(Pharos::YamlFile.new(resource_file).load(vars))
         end
       end
 
       # Applies the stack onto the kube cluster
       # @return [Array<Kubeclient::Resource>]
-      def apply
+      def apply(vars)
         with_pruning do |checksum|
-          resources.map do |resource|
+          load_resources(vars).map do |resource|
             logger.debug { "Applying resource: #{resource.kind}/#{resource.metadata['name']}" }
             metadata = resource.metadata
             metadata.labels ||= {}
@@ -54,11 +52,11 @@ module Pharos
 
       # @param checksum [String]
       # @return [Array<Kubeclient::Resource>]
-      def prune(checksum)
+      def prune(checksum = nil)
         pruned = []
 
         @session.api_versions.each do |api_version|
-          client = @session.resource_client(api_version)
+          client = @session.client(api_version)
           client.entities.each do |method_name, entity|
             next if method_name.end_with?('_review')
             next if api_version == 'v1' && entity.resource_name == 'bindings' # XXX: the entity definition does not have the list verb... but kubeclient does not expose that
@@ -66,9 +64,12 @@ module Pharos
             next if api_version == 'v1' && entity.resource_name == 'endpoints' # inherits stack labels from service, does not have any ownerReference...
 
             resources = client.get_entities(entity.entity_type, entity.resource_name, label_selector: "#{RESOURCE_LABEL}=#{@name}")
-            resources = resources.select do |obj|
-              annotations = obj.metadata.annotations
-              annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+
+            if checksum
+              resources = resources.select do |obj|
+                annotations = obj.metadata.annotations
+                annotations.nil? || annotations[RESOURCE_ANNOTATION] != checksum
+              end
             end
 
             resources.each do |resource|

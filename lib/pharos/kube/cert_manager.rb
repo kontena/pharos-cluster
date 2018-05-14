@@ -10,11 +10,11 @@ module Pharos
     # Generates a v1 secret and certificates.k8s.io/v1beta1 csr with the given name.
     # The secret is used to persist the private key, and the csr is used to obtain the signed certificate.
     class CertManager
-      # @param host [Pharos::Configuration::Host]
+      # @param session [Pharos::Kube::Session]
       # @param name [String]
       # @param namespace [String]
-      def initialize(host, name, namespace:)
-        @host = host
+      def initialize(session, name, namespace:)
+        @session = session
         @name = name
         @namespace = namespace
       end
@@ -54,7 +54,7 @@ module Pharos
             name: @name
           }
         )
-        resource_client = Pharos::Kube.client(@host.api_address, resource.apiVersion)
+        resource_client = @session.client(resource.apiVersion)
 
         begin
           resource = resource_client.get_resource(resource)
@@ -81,7 +81,7 @@ module Pharos
             usages: usages
           }
         )
-        resource_client = Pharos::Kube.client(@host.api_address, resource.apiVersion)
+        resource_client = @session.client(resource.apiVersion)
 
         begin
           # TODO: update/re-create if spec.request does not match (private key, subject or usages changed?), or cert is expiring...?
@@ -96,7 +96,7 @@ module Pharos
       # @param resource [Kubeclient::Resource]
       # @return [Kubeclient::Resource]
       def ensure_csr_approved(resource)
-        resource_client = Pharos::Kube.client(@host.api_address, resource.apiVersion)
+        resource_client = @session.client(resource.apiVersion)
 
         resource.status.conditions ||= []
 

@@ -6,6 +6,25 @@ require 'deep_merge'
 module Pharos
   module Kube
     class Client < ::Kubeclient::Client
+      # @param config [Kubeclient::Config]
+      # @param version [String] v1, apps/v1, ...
+      def self.from_config(config, version)
+        path_prefix = version == 'v1' ? 'api' : 'apis'
+
+        if version.include? '/'
+          api_group, api_version = version.split('/')
+        else
+          api_group, api_version = nil, version
+        end
+
+        new(
+          (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
+          api_version,
+          ssl_options: config.context.ssl_options,
+          auth_options: config.context.auth_options
+        )
+      end
+
       def entities
         if @entities.empty?
           discover

@@ -14,7 +14,7 @@ module Pharos
 
       def resource
         data = JSON.parse(@config.data.to_json) # hack to get rid of symbols
-        Pharos::Kube.session(@master).resource(
+        @kube.resource(
           apiVersion: 'v1',
           kind: 'ConfigMap',
           metadata: {

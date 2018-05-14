@@ -80,10 +80,10 @@ module Pharos
 
     attr_reader :config, :cpu_arch, :cluster_config
 
-    def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
+    def initialize(config = nil, enabled: true, kube:, cpu_arch:, cluster_config:)
       @config = self.class.struct.new(config)
       @enabled = enabled
-      @master = master
+      @kube = kube
       @cpu_arch = cpu_arch
       @cluster_config = cluster_config
     end
@@ -116,29 +116,22 @@ module Pharos
       prune_stack
     end
 
-    # @return [Pharos::Kube::Session]
-    def kube_session
-      Pharos::Kube.session(@master.api_address)
-    end
-
-    def kube_stack(vars = {})
-      Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(__dir__, 'addons', self.class.name, 'resources'),
-        vars.merge(
-          name: self.class.name,
-          version: self.class.version,
-          config: @config,
-          arch: @cpu_arch
-        )
-      )
+    def resources_path
+      File.join(__dir__, 'addons', self.class.name, 'resources')
     end
 
     def apply_stack(vars = {})
-      kube_stack(vars).apply
+      @kube.stack(self.class.name, resources_path).apply(
+        name: self.class.name,
+        version: self.class.version,
+        config: @config,
+        arch: @cpu_arch,
+        **vars
+      )
     end
 
     def prune_stack
-      kube_stack.prune('-')
+      @kube.stack(self.class.name, resources_path).prune
     end
 
     def validate; end

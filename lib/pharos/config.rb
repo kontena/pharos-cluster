@@ -47,9 +47,14 @@ module Pharos
       @master_hosts ||= hosts.select { |h| h.role == 'master' }
     end
 
+    # @return [Array<Pharos::Configuration::Node>]
+    def sorted_master_hosts
+      @sorted_master_hosts ||= master_hosts.sort_by(&:master_sort_score)
+    end
+
     # @return [Pharos::Configuration::Node]
     def master_host
-      @master_host ||= master_hosts.first
+      @master_host ||= sorted_master_hosts.first
     end
 
     # @return [Array<Pharos::Configuration::Node>]
@@ -57,19 +62,27 @@ module Pharos
       @worker_hosts ||= hosts.select { |h| h.role == 'worker' }
     end
 
+    # @return [Boolean]
+    def etcd_hosts?
+      !etcd&.endpoints
+    end
+
     # @return [Array<Pharos::Configuration::Node>]
     def etcd_hosts
-      return [] if etcd&.endpoints
-
-      etcd_hosts = hosts.select { |h| h.role == 'etcd' }
-      if etcd_hosts.empty?
-        master_hosts
-      else
-        etcd_hosts
-      end
+      @etcd_hosts ||= if !etcd_hosts?
+                        []
+                      elsif hosts.any? { |h| h.role == 'etcd' }
+                        hosts.select { |h| h.role == 'etcd' }.sort_by(&:etcd_sort_score)
+                      else
+                        hosts.select { |h| h.role == 'master' }.sort_by(&:etcd_sort_score)
+                      end
     end
 
     # @return [String]
+    def api_endpoint
+      api&.endpoint || master_host.address
+    end
+
     def to_yaml
       JSON.parse(to_h.to_json).to_yaml
     end

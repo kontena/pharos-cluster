@@ -82,9 +82,6 @@ module Pharos
       config = Pharos::Config.new(schema)
       config.data = config_hash.freeze
 
-      # inject api_endpoint to each host object
-      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
-
       signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
       config
@@ -114,7 +111,7 @@ module Pharos
       craft_time = Time.now - start_time
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       puts "    You can connect to the cluster with kubectl using:"
-      puts "    export KUBECONFIG=~/.pharos/#{manager.sorted_master_hosts.first.api_address}"
+      puts "    export KUBECONFIG=~/.pharos/#{config.api_endpoint}"
 
       manager.disconnect
     end

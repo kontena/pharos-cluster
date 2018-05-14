@@ -20,10 +20,10 @@ describe Pharos::Addon do
   end
 
   let(:cpu_arch) { double(:cpu_arch) }
-  let(:master) { double(:host, api_address: '1.1.1.1') }
+  let(:kube_session) { instance_double(Pharos::Kube::Session) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil) }
+  subject { test_addon.new(config, kube: kube_session, cpu_arch: cpu_arch, cluster_config: nil) }
 
   describe ".name" do
     it "returns configured name" do
@@ -56,23 +56,21 @@ describe Pharos::Addon do
     end
   end
 
-  describe "#kube_stack" do
-    it "returns kube stack" do
-      stack = subject.kube_stack
-      expect(stack).to be_instance_of(Pharos::Kube::Stack)
-    end
-
-    it "allows to pass variables" do
-      stack = subject.kube_stack({ foo: 'bar' })
-      expect(stack.vars[:foo]).to eq('bar')
-    end
-  end
-
   describe "#apply_stack" do
-    it "applies stack" do
-      kube_stack = double(:kube_stack)
-      allow(subject).to receive(:kube_stack).and_return(kube_stack)
-      expect(kube_stack).to receive(:apply)
+    let(:stack) { instance_double(Pharos::Kube::Stack) }
+
+    before do
+      allow(kube_session).to receive(:stack).with('test-addon', a_string_ending_with('lib/pharos/addons/test-addon/resources')).and_return(stack)
+    end
+
+    it "applies stack with correct parameters" do
+      expect(stack).to receive(:apply).with(
+        name: subject.class.name,
+        version: subject.class.version,
+        config: anything,
+        arch: anything
+      )
+
       subject.apply_stack
     end
   end

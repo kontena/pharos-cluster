@@ -10,58 +10,36 @@ module Pharos
     autoload :Stack, 'pharos/kube/stack'
     autoload :Session, 'pharos/kube/session'
 
-    RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
-
-    # @param host [String]
-    # @return [Kubeclient::Client]
-    def self.client(host, version = 'v1')
-      @kube_client ||= {}
-      unless @kube_client[version]
-        config = host_config(host)
-        path_prefix = version == 'v1' ? 'api' : 'apis'
-        api_version, api_group = version.split('/').reverse
-        @kube_client[version] = Pharos::Kube::Client.new(
-          (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
-          api_version,
-          ssl_options: config.context.ssl_options,
-          auth_options: config.context.auth_options
-        )
-      end
-      @kube_client[version]
-    end
-
-    # @param host [String]
+    # NOTE: not threadsafe
+    #
+    # @param endpoint [String]
     # @return [Pharos::Kube::Session]
-    def self.session(host)
-      @sessions ||= {}
-      @sessions[host] ||= Session.new(host)
+    def self.session(endpoint)
+      @session ||= {}
+      @session[endpoint] ||= Session.new(endpoint)
     end
 
-    # @param host [String]
+    # @param endpoint [String]
     # @return [Kubeclient::Config]
-    def self.host_config(host)
-      Kubeclient::Config.read(host_config_path(host))
+    def self.config(endpoint)
+      Kubeclient::Config.read(config_path(endpoint))
     end
 
-    # @param host [String]
     # @return [String]
-    def self.host_config_path(host)
-      File.join(Dir.home, ".pharos/#{host}")
+    def self.config_dir
+      File.join(Dir.home, '.pharos')
     end
 
-    # @param host [String]
+    # @param endpoint [String]
+    # @return [String]
+    def self.config_path(endpoint)
+      File.join(config_dir, endpoint)
+    end
+
+    # @param endpoint [String]
     # @return [Boolean]
-    def self.config_exists?(host)
-      File.exist?(host_config_path(host))
-    end
-
-    # Shortcuts / compatibility:
-
-    # @param host [String]
-    # @param name [String]
-    # @param vars [Hash]
-    def self.apply_stack(host, name, vars = {})
-      session(host).stack(name, File.join(RESOURCE_PATH, name), vars).apply
+    def self.config_exists?(endpoint)
+      File.exist?(config_path(endpoint))
     end
   end
 end

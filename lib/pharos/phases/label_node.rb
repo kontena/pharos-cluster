@@ -20,7 +20,7 @@ module Pharos
 
       # @param node [Kubeclient::Resource]
       def patch_node(node)
-        kube.patch_node(
+        @kube.client.patch_node(
           node.metadata.name,
           metadata: {
             labels: @host.labels
@@ -33,7 +33,7 @@ module Pharos
         node = nil
         retries = 0
         while node.nil? && retries < 10
-          node = kube.get_nodes.find { |n|
+          node = @kube.client.get_nodes.find { |n|
             n.status.addresses.any? { |a| a.type == 'InternalIP' && a.address == internal_ip }
           }
           unless node
@@ -43,10 +43,6 @@ module Pharos
         end
 
         node
-      end
-
-      def kube
-        @kube ||= Pharos::Kube.client(@master.api_address)
       end
     end
   end

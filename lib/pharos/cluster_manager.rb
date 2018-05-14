@@ -22,15 +22,18 @@ module Pharos
     # @return [Pharos::AddonManager]
     def phase_manager
       @phase_manager = Pharos::PhaseManager.new(
+        @config,
         ssh_manager: ssh_manager,
-        config: @config,
         cluster_context: @context
       )
     end
 
     # @return [Pharos::AddonManager]
     def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new(@config, @context)
+      @addon_manager ||= Pharos::AddonManager.new(
+        @config,
+        cluster_context: @context
+      )
     end
 
     # load phases/addons
@@ -45,51 +48,34 @@ module Pharos
       apply_phase(Phases::ValidateHostname, config.hosts, ssh: false, parallel: false)
     end
 
-    # @return [Array<Pharos::Configuration::Host>]
-    def sorted_master_hosts
-      config.master_hosts.sort_by(&:master_sort_score)
-    end
-
-    # @return [Array<Pharos::Configuration::Host>]
-    def sorted_etcd_hosts
-      config.etcd_hosts.sort_by(&:etcd_sort_score)
-    end
-
     def apply_phases
-      # we need to use sorted masters because phases expects that first one has
-      # ca etc config files
-      master_hosts = sorted_master_hosts
-
-      apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::MigrateMaster, config.master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
 
-      unless @config.etcd&.hosts
-        # we need to use sorted etcd hosts because phases expects that first one has
-        # ca etc config files
-        etcd_hosts = sorted_etcd_hosts
-        apply_phase(Phases::ConfigureCfssl, etcd_hosts, ssh: true, parallel: true)
-        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], ssh: true, parallel: false)
-        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], ssh: true, parallel: false)
-        apply_phase(Phases::ConfigureEtcd, etcd_hosts, ssh: true, parallel: true)
+      if config.etcd_hosts?
+        apply_phase(Phases::ConfigureCfssl, config.etcd_hosts, ssh: true, parallel: true)
+        apply_phase(Phases::ConfigureEtcdCa, [config.etcd_hosts.first], ssh: true, parallel: false)
+        apply_phase(Phases::ConfigureEtcdChanges, [config.etcd_hosts.first], ssh: true, parallel: false)
+        apply_phase(Phases::ConfigureEtcd, config.etcd_hosts, ssh: true, parallel: true)
       end
 
-      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: master_hosts.first)
+      apply_phase(Phases::ConfigureSecretsEncryption, config.sorted_master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureMaster, config.sorted_master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureClient, [config.master_host], ssh: true, parallel: false)
 
       # master is now configured and can be used
-      apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
-
-      apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
-      apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first], ssh: true) # using `kubeadm token`, not the kube API
+      apply_phase(Phases::FetchClusterConfiguration, [config.master_host], kube: true)
+      apply_phase(Phases::ConfigureDNS, [config.master_host], kube: true)
+      apply_phase(Phases::ConfigureWeave, [config.master_host], kube: true) if config.network.provider == 'weave'
+      apply_phase(Phases::ConfigureCalico, [config.master_host], kube: true) if config.network.provider == 'calico'
+      apply_phase(Phases::ConfigureMetrics, [config.master_host], kube: true)
+      apply_phase(Phases::ConfigureBootstrap, [config.master_host], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
 
-      apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode, config.hosts, kube: true, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
     # @param phase_class [Pharos::Phase]
@@ -111,8 +97,7 @@ module Pharos
     end
 
     def save_config
-      master_host = sorted_master_hosts.first
-      apply_phase(Phases::StoreClusterConfiguration, [master_host], master: master_host)
+      apply_phase(Phases::StoreClusterConfiguration, [config.master_host], kube: true)
     end
 
     def disconnect

@@ -25,8 +25,7 @@ module Pharos
         validate
 
         logger.info { "Configuring overlay network ..." }
-        Pharos::Kube.apply_stack(
-          @master.api_address, 'calico',
+        kube_stack('calico').apply(
           ipv4_pool_cidr: @config.network.pod_network_cidr,
           ipip_mode: @config.network.calico&.ipip_mode || 'Always',
           ipip_enabled: @config.network.calico&.ipip_mode != 'Never',

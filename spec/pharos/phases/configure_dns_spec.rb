@@ -1,7 +1,8 @@
 require "pharos/phases/configure_dns"
 
 describe Pharos::Phases::ConfigureDNS do
-  let(:master) { Pharos::Configuration::Host.new(address: 'test') }
+  let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.1') }
+  let(:kube_session) { instance_double(Pharos::Kube::Session) }
   let(:config_hosts_count) { 1 }
   let(:config_dns_replicas) { nil }
   let(:config) { Pharos::Config.new(
@@ -13,7 +14,7 @@ describe Pharos::Phases::ConfigureDNS do
       etcd: {}
   ) }
 
-  subject { described_class.new(master, config: config, master: master) }
+  subject { described_class.new(host, config: config, kube: kube_session) }
 
   describe '#call' do
     context "with one host" do
@@ -121,11 +122,9 @@ describe Pharos::Phases::ConfigureDNS do
   end
 
   describe '#patch_kubedns' do
-    let(:session) { double }
-    let(:resource) { double }
+    let(:resource) { double(:resource) }
     it "updates the resource" do
-      expect(Pharos::Kube).to receive(:session).with(master.api_address).and_return(session)
-      expect(session).to receive(:resource) do |hash|
+      expect(kube_session).to receive(:resource) do |hash|
         res = Kubeclient::Resource.new(hash)
         expect(res.apiVersion).to eq 'extensions/v1beta1'
         expect(res.kind).to eq 'Deployment'
@@ -136,6 +135,7 @@ describe Pharos::Phases::ConfigureDNS do
         expect(res.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
         expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution).to be_an Array
       end.and_return(resource)
+
       expect(resource).to receive(:update)
 
       subject.call

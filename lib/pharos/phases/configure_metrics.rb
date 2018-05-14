@@ -15,12 +15,11 @@ module Pharos
 
       def configure_heapster
         logger.info { "Provisioning client certificate for heapster ..." }
-        cert_manager = Pharos::Kube::CertManager.new(@master, 'heapster-client-cert', namespace: 'kube-system')
+        cert_manager = Pharos::Kube::CertManager.new(@kube, 'heapster-client-cert', namespace: 'kube-system')
         cert, _key = cert_manager.ensure_client_certificate(user: 'heapster')
 
         logger.info { "Configuring heapster ..." }
-        Pharos::Kube.apply_stack(
-          @master.api_address, 'heapster',
+        kube_stack('heapster').apply(
           version: '1.5.1',
           arch: @host.cpu_arch,
           client_cert: cert.to_pem
