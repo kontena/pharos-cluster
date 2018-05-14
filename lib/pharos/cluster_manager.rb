@@ -77,8 +77,8 @@ module Pharos
       apply_phase(Phases::SetupMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::UpgradeMaster, master_hosts, ssh: true, parallel: false)
 
-      apply_phase(Phases::ConfigureKubelet, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureKubelet, config.hosts, ssh: true, parallel: true)
 
       apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
       apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, parallel: false)
