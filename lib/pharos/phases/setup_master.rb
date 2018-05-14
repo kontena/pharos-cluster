@@ -35,14 +35,6 @@ module Pharos
         @ssh.file("/etc/pharos/audit/policy.yml").write(parse_resource_file('audit/policy.yml'))
       end
 
-      # @param config [Hash]
-      def push_authentication_token_webhook_config(config)
-        logger.info { "Pushing token authentication webhook config ..." }
-
-        @ssh.exec!('sudo mkdir -p /etc/kubernetes/authentication')
-        @ssh.file('/etc/kubernetes/authentication/token-webhook-config.yaml').write(config.to_yaml)
-      end
-
       # @param webhook_config [Hash]
       def push_authentication_token_webhook_certs(webhook_config)
         logger.info { "Pushing token authentication webhook certificates ..." }
@@ -56,9 +48,12 @@ module Pharos
       def push_authentication_token_webhook_config
         webhook_config = @config.authentication.token_webhook.config
 
-        auth_token_webhook_config = generate_authentication_token_webhook_config(webhook_config)
+        logger.info { "Pushing token authentication webhook config ..." }
+        auth_token_webhook_config = kubeadm.generate_authentication_token_webhook_config(webhook_config)
 
-        push_authentication_token_webhook_config(auth_token_webhook_config)
+        @ssh.exec!('sudo mkdir -p /etc/kubernetes/authentication')
+        @ssh.file('/etc/kubernetes/authentication/token-webhook-config.yaml').write(auth_token_webhook_config.to_yaml)
+
         push_authentication_token_webhook_certs(webhook_config)
       end
 
