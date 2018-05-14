@@ -6,19 +6,17 @@ module Pharos
       title "Configure hosts"
 
       def call
-        configurer = @host.configurer(@ssh)
-
         logger.info { "Configuring essential packages ..." }
-        configurer.install_essentials
+        host_configurer.install_essentials
 
         logger.info { "Configuring package repositories ..." }
-        configurer.configure_repos
+        host_configurer.configure_repos
 
         logger.info { "Configuring netfilter ..." }
-        configurer.configure_netfilter
+        host_configurer.configure_netfilter
 
         logger.info { "Configuring container runtime (docker) packages ..." }
-        configurer.configure_container_runtime
+        host_configurer.configure_container_runtime
       end
     end
   end

@@ -2,11 +2,6 @@
 
 set -e
 
-etcd_healthy() {
-  response=$(curl -s --cacert /etc/pharos/pki/ca.pem --cert /etc/pharos/pki/etcd/client.pem --key /etc/pharos/pki/etcd/client-key.pem https://${PEER_IP}:2379/health)
-  [ "${response}" = '{"health": "true"}' ]
-}
-
 etcd_version_matches() {
   grep -q "etcd-${ARCH}:${ETCD_VERSION}" /etc/kubernetes/manifests/pharos-etcd.yaml
 }
@@ -77,24 +72,3 @@ spec:
     name: etcd-certs
 EOF
 fi
-
-
-if [ ! -e /etc/kubernetes/kubelet.conf ]; then
-  mkdir -p /etc/systemd/system/kubelet.service.d
-  cat <<EOF >/etc/systemd/system/kubelet.service.d/5-pharos-etcd.conf
-[Service]
-ExecStartPre=-/sbin/swapoff -a
-ExecStart=
-ExecStart=/usr/bin/kubelet ${KUBELET_ARGS}
-EOF
-
-  apt-mark unhold kubelet
-  apt-get install -y kubelet=${KUBE_VERSION}-00
-  apt-mark hold kubelet
-fi
-
-echo "Waiting etcd to launch on port 2380..."
-while ! etcd_healthy; do
-  sleep 1
-done
-echo "etcd launched"

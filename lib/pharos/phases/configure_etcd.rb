@@ -35,6 +35,16 @@ module Pharos
           INITIAL_CLUSTER_STATE: initial_cluster_state,
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
         )
+
+        host_configurer.ensure_kubelet(
+          ARCH: @host.cpu_arch.name,
+          KUBE_VERSION: Pharos::KUBE_VERSION,
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
+        )
+        exec_script(
+          'wait-etcd.sh',
+          PEER_IP: @host.peer_address
+        )
       end
 
       # @return [Array<String>]

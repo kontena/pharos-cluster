@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'configurer'
+require_relative 'ubuntu'
 
 module Pharos
   module Host
-    class UbuntuXenial < Configurer
+    class UbuntuXenial < Ubuntu
       CRIO_VERSION = '1.10'
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'
@@ -23,27 +23,6 @@ module Pharos
         name: 'cfssl', version: CFSSL_VERSION, license: 'MIT',
         enabled: proc { |c| !c.etcd&.endpoints }
       )
-
-      def install_essentials
-        exec_script('configure-essentials.sh')
-      end
-
-      def configure_repos
-        exec_script('repos/cri-o.sh') if crio?
-        exec_script('repos/kube.sh')
-        exec_script('repos/update.sh')
-      end
-
-      def configure_netfilter
-        exec_script('configure-netfilter.sh')
-      end
-
-      def configure_cfssl
-        exec_script(
-          'configure-cfssl.sh',
-          ARCH: host.cpu_arch.name
-        )
-      end
 
       def configure_container_runtime
         if docker?

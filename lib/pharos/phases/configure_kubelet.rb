@@ -49,15 +49,21 @@ module Pharos
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
           VERSION: Pharos::KUBELET_PROXY_VERSION,
-          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(','),
-          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
+          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
+        )
+        host_configurer.ensure_kubelet(
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
+          KUBE_VERSION: Pharos::KUBE_VERSION,
+          ARCH: @host.cpu_arch.name,
         )
       end
 
       def configure_kube
         logger.info { "Configuring Kubernetes packages ..." }
         exec_script(
-          'configure-kube.sh',
+          'configure-kube.sh'
+        )
+        host_configurer.install_kubelet(
           KUBE_VERSION: Pharos::KUBE_VERSION,
           KUBEADM_VERSION: Pharos::KUBEADM_VERSION,
           ARCH: @host.cpu_arch.name
@@ -95,7 +101,7 @@ module Pharos
       # @return [Array<String>]
       def kubelet_extra_args
         args = []
-        unless @config.kubelet.read_only_port
+        unless @config.kubelet&.read_only_port
           args << "--read-only-port=0"
         end
         args += @host.kubelet_args
