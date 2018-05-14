@@ -6,7 +6,7 @@ module Pharos
       title "Upgrade master"
 
       def kubeadm
-        Pharos::Kubeadm.new(@config, @host)
+        Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
       end
 
       def upgrade?

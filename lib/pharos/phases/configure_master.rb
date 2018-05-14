@@ -9,7 +9,7 @@ module Pharos
       SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub).freeze
 
       def kubeadm
-        Pharos::Kubeadm.new(@config, @host)
+        Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
       end
 
       def install?
