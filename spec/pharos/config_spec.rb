@@ -30,6 +30,76 @@ describe Pharos::Config do
         end
       end
     end
+
+    describe 'taints' do
+      let(:data) { {
+        'hosts' => [
+          { 'address' => '192.0.2.1', 'role' => 'master' },
+        ]
+      } }
+
+      it 'loads as nil by default' do
+        expect(subject.hosts.first.taints).to eq nil
+      end
+
+      context 'with nil taints' do
+        let(:data) { {
+          'hosts' => [
+            { 'address' => '192.0.2.1', 'role' => 'master', 'taints' => nil },
+          ]
+        } }
+
+        it 'fails' do
+          expect{subject}.to raise_error(Pharos::ConfigError) do |error|
+            expect(error.errors).to eq :hosts => { 0 => { :taints => [ "must be an array" ] } }
+          end
+        end
+      end
+
+      context 'with empty taints' do
+        let(:data) { {
+          'hosts' => [
+            { 'address' => '192.0.2.1', 'role' => 'master', 'taints' => [] },
+          ]
+        } }
+
+        it 'loads as empty' do
+          expect(subject.hosts.first.taints).to eq []
+        end
+      end
+
+      context 'with taints' do
+        let(:data) { {
+          'hosts' => [
+            { 'address' => '192.0.2.1', 'role' => 'master', 'taints' => [
+                { 'key' => 'test', 'effect' => 'NoSchedule' },
+            ] },
+          ]
+        } }
+
+        it 'loads taints' do
+          expect(subject.hosts.first.taints).to eq [
+            Pharos::Configuration::Taint.new(key: 'test', effect: 'NoSchedule'),
+          ]
+        end
+      end
+
+      context 'with invalid effect' do
+        let(:data) { {
+          'hosts' => [
+            { 'address' => '192.0.2.1', 'role' => 'master', 'taints' => [
+                { 'key' => 'test', 'effect' => 'NoTest' },
+            ] },
+          ]
+        } }
+
+        it 'fails' do
+          expect{subject}.to raise_error(Pharos::ConfigError) do |error|
+            expect(error.errors).to eq :hosts => { 0 => { :taints => { 0 => { :effect => [ "must be one of: NoSchedule, NoExecute" ] } } } }
+          end
+        end
+      end
+    end
   end
 
   describe 'kube_proxy' do
