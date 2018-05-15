@@ -69,6 +69,7 @@ module Pharos
         cfg = generate_config
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm alpha phase controlplane all --config #{tmp_file}")
+          @ssh.exec!("sudo kubeadm alpha phase mark-master --config #{tmp_file}")
         end
         cache_kube_certs
         configure_kubelet
@@ -124,7 +125,8 @@ module Pharos
           },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'false'
-          }
+          },
+          'noTaintMaster' => !!@host.taints && !@host.taints.any?{|taint| taint.key == 'node-role.kubernetes.io/master' && taint.effect == 'NoSchedule' },
         }
 
         if @host.container_runtime == 'cri-o'
