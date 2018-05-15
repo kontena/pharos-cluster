@@ -14,6 +14,16 @@ module Pharos
       'kubelet' => {}
     }.freeze
 
+    # @param data [Hash]
+    # @raise [Pharos::ConfigError]
+    # @return [Hash]
+    def self.load(data)
+      schema = build
+      result = schema.call(DEFAULT_DATA.merge(data))
+      raise Pharos::ConfigError, result.messages unless result.success?
+      result.to_h
+    end
+
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition
