@@ -22,7 +22,7 @@ module Pharos
       def taints
         return [] unless @host.taints
 
-        @host.taints.map{|taint| taint.to_h }
+        @host.taints.map(&:to_h)
       end
 
       # @param node [Kubeclient::Resource]

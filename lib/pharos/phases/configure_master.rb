@@ -126,7 +126,7 @@ module Pharos
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'false'
           },
-          'noTaintMaster' => !!@host.taints && !@host.taints.any?{|taint| taint.key == 'node-role.kubernetes.io/master' && taint.effect == 'NoSchedule' },
+          'noTaintMaster' => !!@host.taints && @host.taints.none?{ |taint| taint.key == 'node-role.kubernetes.io/master' && taint.effect == 'NoSchedule' }
         }
 
         if @host.container_runtime == 'cri-o'
