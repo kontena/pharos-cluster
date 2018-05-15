@@ -14,13 +14,12 @@ describe Pharos::Phases::LabelNode do
       allow(subject).to receive(:sleep)
     end
 
-    it 'finds node via address' do
+    it 'finds node via hostname' do
+      worker.hostname = 'host-01'
       allow(kube).to receive(:get_nodes).and_return([
         Kubeclient::Resource.new({
-          status: {
-            addresses: [
-              { type: 'InternalIP', address: worker.address }
-            ]
+          metadata: {
+            name: worker.hostname
           }
         })
       ])
@@ -28,12 +27,11 @@ describe Pharos::Phases::LabelNode do
     end
 
     it 'returns nil if node not found' do
+      worker.hostname = 'host-01'
       allow(kube).to receive(:get_nodes).and_return([
         Kubeclient::Resource.new({
-          status: {
-            addresses: [
-              { type: 'InternalIP', address: 'a.b.c.d' }
-            ]
+          metadata: {
+            name: 'host-09'
           }
         })
       ])
