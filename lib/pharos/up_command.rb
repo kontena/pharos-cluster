@@ -46,6 +46,10 @@ module Pharos
         config = build_config(config_hash)
         configure(config)
       end
+    rescue Pharos::ConfigError => exc
+      show_config_errors(exc)
+      exit 11
+
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
       warn "#{ex.class.name} : #{ex.message}"
@@ -72,18 +76,7 @@ module Pharos
     # @param config_hash [Hash] hash presentation of cluster.yml
     # @return [Pharos::Config]
     def build_config(config_hash)
-      schema_class = Pharos::ConfigSchema.build
-      schema = schema_class.call(Pharos::ConfigSchema::DEFAULT_DATA.merge(config_hash))
-      unless schema.success?
-        show_config_errors(schema.messages)
-        exit 11
-      end
-
-      config = Pharos::Config.new(schema)
-      config.data = config_hash.freeze
-
-      # inject api_endpoint to each host object
-      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
+      config = Pharos::Config.load(config_hash)
 
       signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
@@ -155,9 +148,9 @@ module Pharos
       }.compact.reverse.join(' ')
     end
 
-    def show_config_errors(errors)
-      warn "==> Invalid configuration file:"
-      warn YAML.dump(errors)
+    # @param error [Pharos::ConfigError]
+    def show_config_errors(error)
+      warn "==> #{error}"
     end
   end
 end

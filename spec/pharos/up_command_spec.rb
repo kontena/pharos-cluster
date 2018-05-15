@@ -74,13 +74,4 @@ describe Pharos::UpCommand do
       expect(config.dig('api', 'endpoint')).to eq('api.example.com')
     end
   end
-
-  describe '#build_config' do
-    context 'kubelet' do
-      it 'returns config with kubelet default config if none given' do
-        config = subject.build_config({})
-        expect(config.kubelet.read_only_port).to eq(false)
-      end
-    end
-  end
 end

@@ -29,7 +29,7 @@ describe Pharos::ConfigSchema do
         expect(result.success?).to be_truthy
       end
 
-      it 'accepts config withoud addons' do
+      it 'accepts config without addons' do
         result = subject.call({
           "hosts" => [
             { address: '1.1.1.1', role: 'master' }
