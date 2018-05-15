@@ -18,7 +18,7 @@ module Pharos
 
     constructor_type :schema
 
-    # @param data [Hash]
+    # @param raw_data [Hash]
     # @raise [Pharos::ConfigError]
     # @return [Pharos::Config]
     def self.load(raw_data)
