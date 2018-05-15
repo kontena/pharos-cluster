@@ -49,7 +49,6 @@ module Pharos
     rescue Pharos::ConfigError => exc
       show_config_errors(exc)
       exit 11
-
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
       warn "#{ex.class.name} : #{ex.message}"

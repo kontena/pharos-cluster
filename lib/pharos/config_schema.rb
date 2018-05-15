@@ -20,7 +20,7 @@ module Pharos
     def self.load(data)
       schema = build
       result = schema.call(DEFAULT_DATA.merge(data))
-      raise Pharos::ConfigError.new(result.messages) unless result.success?
+      raise Pharos::ConfigError, result.messages unless result.success?
       result.to_h
     end
 
