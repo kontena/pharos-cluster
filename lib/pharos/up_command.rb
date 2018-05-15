@@ -47,7 +47,7 @@ module Pharos
         configure(config)
       end
     rescue Pharos::ConfigError => exc
-      show_config_errors(exc)
+      warn "==> #{exc}"
       exit 11
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
@@ -145,11 +145,6 @@ module Pharos
         next if n.zero?
         "#{n} #{name}#{'s' unless n == 1}"
       }.compact.reverse.join(' ')
-    end
-
-    # @param error [Pharos::ConfigError]
-    def show_config_errors(error)
-      warn "==> #{error}"
     end
   end
 end
