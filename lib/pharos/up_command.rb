@@ -33,17 +33,11 @@ module Pharos
 
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
-      puts pastel.green("==> Reading instructions ...")
-      config_hash = load_config
-      if tf_json
-        puts pastel.green("==> Importing configuration from Terraform ...")
-        load_terraform(tf_json, config_hash)
-      end
+      config = load_config
 
       # set workdir to the same dir where config was loaded from
       # so that the certs etc. can be referenced more easily
       Dir.chdir(config_yaml.dirname) do
-        config = build_config(config_hash)
         configure(config)
       end
     rescue Pharos::ConfigError => exc
@@ -55,30 +49,31 @@ module Pharos
       exit 1
     end
 
-    # @return [Hash] hash presentation of cluster.yml
+    # @return [Pharos::Config]
     def load_config
-      config_yaml.load(ENV.to_h)
+      puts pastel.green("==> Reading instructions ...")
+      config_hash = config_yaml.load(ENV.to_h)
+
+      load_terraform(tf_json, config_hash) if tf_json
+
+      config = Pharos::Config.load(config_hash)
+
+      signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
+
+      config
     end
 
     # @param file [String]
     # @param config [Hash]
     # @return [Hash]
     def load_terraform(file, config)
+      puts pastel.green("==> Importing configuration from Terraform ...")
+
       tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
       config['hosts'] ||= []
       config['api'] ||= {}
       config['hosts'] += tf_parser.hosts
       config['api'].merge!(tf_parser.api) if tf_parser.api
-      config
-    end
-
-    # @param config_hash [Hash] hash presentation of cluster.yml
-    # @return [Pharos::Config]
-    def build_config(config_hash)
-      config = Pharos::Config.load(config_hash)
-
-      signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
-
       config
     end
 
