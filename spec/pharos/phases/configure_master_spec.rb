@@ -259,6 +259,42 @@ describe Pharos::Phases::ConfigureMaster do
         )
       end
     end
+
+    describe 'noTaintMaster' do
+      it 'taints the master by default' do
+        expect(subject.generate_config['noTaintMaster']).to eq false
+      end
+
+      context 'with empty host taints' do
+        let(:master) { Pharos::Configuration::Host.new(
+          address: 'test',
+          private_address: 'private',
+          role: 'master',
+          taints: [],
+        ) }
+
+        it 'does not taint the master' do
+          expect(subject.generate_config['noTaintMaster']).to eq true
+
+        end
+      end
+
+      context 'with master taint' do
+        let(:master) { Pharos::Configuration::Host.new(
+          address: 'test',
+          private_address: 'private',
+          role: 'master',
+          taints: [
+            Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule'),
+            Pharos::Configuration::Taint.new(key: 'test', effect: 'NoSchedule'),
+          ],
+        ) }
+
+        it 'does not taint the master' do
+          expect(subject.generate_config['noTaintMaster']).to eq false
+        end
+      end
+    end
   end
 
   describe '#generate_authentication_token_webhook_config' do

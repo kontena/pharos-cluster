@@ -43,6 +43,13 @@ module Pharos
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
+              optional(:taints).each do
+                schema do
+                  optional(:key).filled(:str?)
+                  optional(:value).filled(:str?)
+                  required(:effect).filled(included_in?: ['NoSchedule', 'NoExecute'])
+                end
+              end
               optional(:user).filled
               optional(:ssh_key_path).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
