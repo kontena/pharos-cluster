@@ -17,11 +17,11 @@ describe Pharos::Phases::LabelNode do
     end
 
     it 'finds node via hostname' do
-      worker.hostname = 'host-01'
+      host.hostname = 'host-01'
       allow(kube).to receive(:get_nodes).and_return([
         Kubeclient::Resource.new({
           metadata: {
-            name: worker.hostname
+            name: host.hostname
           }
         })
       ])
@@ -29,7 +29,7 @@ describe Pharos::Phases::LabelNode do
     end
 
     it 'returns nil if node not found' do
-      worker.hostname = 'host-01'
+      host.hostname = 'host-01'
       allow(kube).to receive(:get_nodes).and_return([
         Kubeclient::Resource.new({
           metadata: {
