@@ -26,7 +26,7 @@ module Pharos
 
     # @return [Dry::Validation::Schema]
     def self.build
-      # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition
+      # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Form do
         configure do
           def self.messages
@@ -119,7 +119,7 @@ module Pharos
           end
         end
       end
-      # rubocop:enable Metrics/BlockLength, Lint/NestedMethodDefinition
+      # rubocop:enable Lint/NestedMethodDefinition
     end
   end
 end

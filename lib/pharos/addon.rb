@@ -5,7 +5,7 @@ require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
-
+  # @param name [String]
   def self.addon(name, &block)
     klass = Class.new(Pharos::Addon, &block).tap do |addon|
       addon.addon_location = block.source_location.first

@@ -57,3 +57,6 @@ Naming/UncommunicativeMethodParamName:
 # https://github.com/bbatsov/rubocop/issues/5887
 Lint/SplatKeywordArguments:
   Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
