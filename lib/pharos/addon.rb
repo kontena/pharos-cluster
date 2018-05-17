@@ -78,6 +78,10 @@ module Pharos
       ObjectSpace.each_object(Class).select { |klass| klass < self }
     end
 
+    class << self
+      attr_accessor :source_location
+    end
+
     attr_reader :config, :cpu_arch, :cluster_config
 
     def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)

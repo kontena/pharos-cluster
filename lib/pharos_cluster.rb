@@ -14,4 +14,14 @@ module Pharos
   ETCD_VERSION = ENV.fetch('ETCD_VERSION') { '3.1.12' }
   DOCKER_VERSION = '1.13.1'
   KUBELET_PROXY_VERSION = '0.3.5'
+
+  def self.addon(name, &block)
+    AddonManager.addons[name] = Class.new(Pharos::Addon, &block).tap do |addon|
+      addon.source_location = block.source_location.first
+      addon.name name
+    end
+
+    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
+    Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, AddonManager.addons[name])
+  end
 end
