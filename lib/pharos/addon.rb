@@ -5,6 +5,17 @@ require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
+
+  def self.addon(name, &block)
+    klass = Class.new(Pharos::Addon, &block).tap do |addon|
+      addon.addon_location = block.source_location.first
+      addon.name(name)
+    end
+
+    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
+    Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
+  end
+
   class Addon
     include Pharos::Logging
 
@@ -28,11 +39,6 @@ module Pharos
 
     class << self
       attr_writer :addon_location
-
-      # @param subclass [Class]
-      def inherited(subclass)
-        subclass.addon_location = File.dirname(caller(1..1).first[/(.+\.rb):\d+:in/, 1])
-      end
 
       # @return [String]
       def addon_location

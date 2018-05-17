@@ -1,6 +1,6 @@
 require "pharos/addons/openebs/open_ebs"
 
-describe Pharos::Addons::OpenEbs do
+describe Pharos::Addons::Openebs do
   let(:cluster_config) { Pharos::Config.new(
     hosts: [Pharos::Configuration::Host.new(role: 'worker')],
     network: {},
