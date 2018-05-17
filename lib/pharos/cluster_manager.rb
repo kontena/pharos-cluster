@@ -36,7 +36,7 @@ module Pharos
     # load phases/addons
     def load
       Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
-      addon_dirs = [__dir__ + '/addons/', File.join(Dir.pwd, 'extras')]
+      addon_dirs = [__dir__ + '/addons/'] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
       Pharos::AddonManager.load_addons(*addon_dirs)
     end
 

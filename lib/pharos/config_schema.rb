@@ -11,7 +11,8 @@ module Pharos
       'network' => {},
       'authentication' => {},
       'kube_proxy' => {},
-      'kubelet' => {}
+      'kubelet' => {},
+      'addon_paths' => []
     }.freeze
 
     # @param data [Hash]
@@ -106,6 +107,7 @@ module Pharos
         optional(:kube_proxy).schema do
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
         end
+        optional(:addon_paths).each(type?: String)
         optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
