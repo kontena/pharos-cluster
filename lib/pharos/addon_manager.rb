@@ -13,7 +13,7 @@ module Pharos
     # @param dirs [Array<String>]
     def self.load_addons(*dirs)
       dirs.each do |dir|
-        Dir.glob(File.join(dir, '*.rb')).each { |f| require(f) }
+        Dir.glob(File.join(dir, '**', '*.rb')).each { |f| require(f) }
       end
     end
 
@@ -61,8 +61,9 @@ module Pharos
     def each
       with_enabled_addons do |addon_class, config_hash|
         config = addon_class.validate(config_hash)
-
-        yield addon_class.new(config, enabled: true, **options)
+        addon = addon_class.new(config, enabled: true, **options)
+        addon.validate
+        yield addon
       end
 
       with_disabled_addons do |addon_class|

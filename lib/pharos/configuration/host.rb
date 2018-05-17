@@ -13,6 +13,7 @@ module Pharos
       attribute :private_interface, Pharos::Types::Strict::String
       attribute :role, Pharos::Types::Strict::String
       attribute :labels, Pharos::Types::Strict::Hash
+      attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String.default('ubuntu')
       attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
@@ -42,11 +43,9 @@ module Pharos
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
-          args << "--read-only-port=0"
           args << "--cadvisor-port=0"
           args << "--address=127.0.0.1"
         else
-          args << '--read-only-port=0'
           args << "--node-ip=#{peer_address}"
           args << "--hostname-override=#{hostname}"
         end

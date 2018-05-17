@@ -112,7 +112,7 @@ module Pharos
 
     def save_config
       master_host = sorted_master_hosts.first
-      apply_phase(Phases::StoreClusterYAML, [master_host], master: master_host)
+      apply_phase(Phases::StoreClusterConfiguration, [master_host], master: master_host)
     end
 
     def disconnect

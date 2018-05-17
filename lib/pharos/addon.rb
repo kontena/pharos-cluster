@@ -50,6 +50,10 @@ module Pharos
       end
     end
 
+    def self.to_h
+      { name: name, version: version, license: license }
+    end
+
     def self.schema(&block)
       @schema = Dry::Validation.Form(Schema, &block)
     end
@@ -112,9 +116,14 @@ module Pharos
       prune_stack
     end
 
-    def apply_stack(vars = {})
-      Pharos::Kube.apply_stack(
-        @master.address, self.class.name,
+    # @return [Pharos::Kube::Session]
+    def kube_session
+      Pharos::Kube.session(@master.api_address)
+    end
+
+    def kube_stack(vars = {})
+      Pharos::Kube::Stack.new(
+        kube_session, self.class.name, File.join(__dir__, 'addons', self.class.name, 'resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,
@@ -124,8 +133,14 @@ module Pharos
       )
     end
 
-    def prune_stack
-      Pharos::Kube.prune_stack(@master.address, self.class.name, '-')
+    def apply_stack(vars = {})
+      kube_stack(vars).apply
     end
+
+    def prune_stack
+      kube_stack.prune('-')
+    end
+
+    def validate; end
   end
 end

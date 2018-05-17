@@ -10,8 +10,19 @@ module Pharos
       'api' => {},
       'network' => {},
       'authentication' => {},
-      'kube_proxy' => {}
+      'kube_proxy' => {},
+      'kubelet' => {}
     }.freeze
+
+    # @param data [Hash]
+    # @raise [Pharos::ConfigError]
+    # @return [Hash]
+    def self.load(data)
+      schema = build
+      result = schema.call(DEFAULT_DATA.merge(data))
+      raise Pharos::ConfigError, result.messages unless result.success?
+      result.to_h
+    end
 
     # @return [Dry::Validation::Schema]
     def self.build
@@ -32,6 +43,13 @@ module Pharos
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
+              optional(:taints).each do
+                schema do
+                  optional(:key).filled(:str?)
+                  optional(:value).filled(:str?)
+                  required(:effect).filled(included_in?: ['NoSchedule', 'NoExecute'])
+                end
+              end
               optional(:user).filled
               optional(:ssh_key_path).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
@@ -89,6 +107,9 @@ module Pharos
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
         end
         optional(:addons).value(type?: Hash)
+        optional(:kubelet).schema do
+          optional(:read_only_port).filled(:bool?)
+        end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]

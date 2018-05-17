@@ -10,12 +10,28 @@ require_relative 'configuration/authentication'
 require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
 require_relative 'configuration/kube_proxy'
+require_relative 'configuration/kubelet'
 
 module Pharos
   class Config < Dry::Struct
     HOSTS_PER_DNS_REPLICA = 10
 
     constructor_type :schema
+
+    # @param raw_data [Hash]
+    # @raise [Pharos::ConfigError]
+    # @return [Pharos::Config]
+    def self.load(raw_data)
+      schema_data = Pharos::ConfigSchema.load(raw_data)
+
+      config = new(schema_data)
+      config.data = raw_data.freeze
+
+      # inject api_endpoint to each host object
+      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
+
+      config
+    end
 
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
     attribute :network, Pharos::Configuration::Network
@@ -25,6 +41,7 @@ module Pharos
     attribute :cloud, Pharos::Configuration::Cloud
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
+    attribute :kubelet, Pharos::Configuration::Kubelet
     attribute :addons, Pharos::Types::Hash.default({})
 
     attr_accessor :data

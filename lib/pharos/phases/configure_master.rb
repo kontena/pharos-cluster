@@ -69,6 +69,7 @@ module Pharos
         cfg = generate_config
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm alpha phase controlplane all --config #{tmp_file}")
+          @ssh.exec!("sudo kubeadm alpha phase mark-master --config #{tmp_file}")
         end
         cache_kube_certs
         configure_kubelet
@@ -107,6 +108,13 @@ module Pharos
         push_authentication_token_webhook_config if @config.authentication&.token_webhook
       end
 
+      def master_taint?
+        return true unless @host.taints
+
+        # matching the taint used by kubeadm
+        @host.taints.any?{ |taint| taint.key == 'node-role.kubernetes.io/master' && taint.effect == 'NoSchedule' }
+      end
+
       def generate_config
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
@@ -124,7 +132,8 @@ module Pharos
           },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'false'
-          }
+          },
+          'noTaintMaster' => !master_taint?
         }
 
         if @host.container_runtime == 'cri-o'
@@ -134,8 +143,6 @@ module Pharos
         config['apiServerExtraArgs'] = {
           'apiserver-count' => @config.master_hosts.size.to_s
         }
-
-        config['controllerManagerExtraArgs'] = {}
 
         if @config.cloud && @config.cloud.provider != 'external'
           config['cloudProvider'] = @config.cloud.provider
