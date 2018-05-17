@@ -24,6 +24,10 @@ module Pharos
         hostname || address
       end
 
+      def short_hostname
+        hostname && hostname.split('.').first
+      end
+
       def api_address
         api_endpoint || address
       end

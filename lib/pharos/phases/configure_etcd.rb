@@ -51,7 +51,7 @@ module Pharos
         if file.exist? && match = file.read.match(/--name=(\w+)/)
           match[1]
         else
-          peer.hostname.split('.')[0]
+          peer.short_hostname
         end
       end
 
