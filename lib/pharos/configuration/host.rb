@@ -25,7 +25,9 @@ module Pharos
       end
 
       def short_hostname
-        hostname && hostname.split('.').first
+        return nil unless hostname
+
+        hostname.split('.').first
       end
 
       def api_address
