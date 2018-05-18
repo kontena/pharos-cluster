@@ -1,12 +1,17 @@
 # frozen_string_literal: true
 
 require 'dry-validation'
-require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
   class Addon
     include Pharos::Logging
+
+    class Struct < Dry::Struct
+      constructor_type :schema
+
+      attribute :enabled, Pharos::Types::Strict::Bool
+    end
 
     class Schema < Dry::Validation::Schema
       configure do
@@ -55,23 +60,24 @@ module Pharos
     end
 
     def self.schema(&block)
-      @schema = Dry::Validation.Form(Schema, &block)
+      if block
+        @schema = Dry::Validation.Form(Schema, &block)
+      else
+        @schema ||= Dry::Validation.Form(Schema)
+      end
     end
 
     def self.struct(&block)
-      @struct ||= Class.new(Pharos::Addons::Struct, &block)
-    end
-
-    def self.validation
-      Dry::Validation.Form(Schema) { yield }
-    end
-
-    def self.validate(config)
-      if @schema
-        @schema.call(config)
+      if block
+        @struct = Class.new(Pharos::Addon::Struct, &block)
       else
-        validation {}.call(config)
+        @struct ||= Class.new(Pharos::Addon::Struct)
       end
+    end
+
+    # @return [Dry::Validation::Result]
+    def self.validate(config)
+      schema.call(config)
     end
 
     def self.descendants

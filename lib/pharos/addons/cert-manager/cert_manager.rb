@@ -7,7 +7,7 @@ module Pharos
       version '0.2.3'
       license 'Apache License 2.0'
 
-      class Issuer < Pharos::Addons::Struct
+      class Issuer < Dry::Struct
         attribute :name, Pharos::Types::String
         attribute :server, Pharos::Types::String.optional
         attribute :email, Pharos::Types::String.default('https://acme-v01.api.letsencrypt.org/directory')
