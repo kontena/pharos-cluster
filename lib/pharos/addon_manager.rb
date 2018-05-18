@@ -10,18 +10,12 @@ module Pharos
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
 
-    # @param dirs [Array<String>]
-    def self.load_addons(*dirs)
-      dirs.each do |dir|
-        Dir.glob(File.join(dir, '**', '*.rb')).each { |f| require(f) }
-      end
-    end
-
     # @param config [Pharos::Configuration]
     # @param cluster_context [Hash]
     def initialize(config, cluster_context)
       @config = config
       @cluster_context = cluster_context
+      @addon_classes = []
     end
 
     def configs
@@ -36,9 +30,18 @@ module Pharos
       end
     end
 
+    # @param dirs [Array<String>]
+    def load_addons(*dirs)
+      dirs.each do |dir|
+        Pharos::Addon.loads(dir).each do |addon_class|
+          @addon_classes << addon_class
+        end
+      end
+    end
+
     # @return [Array<Pharos::Addon>]
     def addon_classes
-      @addon_classes ||= Pharos::Addon.descendants
+      @addon_classes
     end
 
     def validate

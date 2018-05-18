@@ -36,7 +36,7 @@ module Pharos
     # load phases/addons
     def load
       Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
-      Pharos::AddonManager.load_addons(__dir__ + '/addons/')
+      addon_manager.load_addons(__dir__ + '/addons/')
     end
 
     def validate
