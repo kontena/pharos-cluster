@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'dry-struct'
 require 'dry-validation'
 require_relative 'logging'
 
