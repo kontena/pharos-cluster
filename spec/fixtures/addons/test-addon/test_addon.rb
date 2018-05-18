@@ -1,4 +1,3 @@
-name "test-addon"
 version "0.2.2"
 license "MIT"
 
