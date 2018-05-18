@@ -5,7 +5,7 @@ module Pharos
     class StoreClusterConfiguration < Pharos::Phase
       title "Store cluster configuration"
 
-      def initialize(*args, addon_manager: , **options)
+      def initialize(*args, addon_manager:, **options)
         super(*args, **options)
 
         @addon_manager = addon_manager
@@ -43,7 +43,7 @@ module Pharos
       def addons
         addons = []
 
-        @addon_manager.with_enabled_addons do |addon_class, addon_config|
+        @addon_manager.with_enabled_addons do |addon_class, _addon_config|
           addons << addon_class.to_h
         end
 

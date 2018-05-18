@@ -14,7 +14,7 @@ module Pharos
     # @return [Array<Class<Kontena::Pharos::Addon>>]
     def self.loads(path)
       paths = Dir.glob("#{path}/*")
-      paths.map{|path| self.load(path)}
+      paths.map{ |p| load(p) }
     end
 
     # Load addon class from local filesystem directory
@@ -65,16 +65,9 @@ module Pharos
       end
     end
 
-    def self.path=(path)
-      @path = path
-    end
-
-    def self.path
-      @path
-    end
-
-    def self.name=(name)
-      @name = name
+    class << self
+      attr_accessor :path
+      attr_writer :name
     end
 
     def self.name(name = nil)
@@ -176,7 +169,7 @@ module Pharos
 
     def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
-        kube_session, self.class.name, self.path('resources'),
+        kube_session, self.class.name, path('resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,

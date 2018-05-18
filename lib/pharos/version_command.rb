@@ -15,6 +15,7 @@ module Pharos
         puts "  - #{c.name}=#{c.version} (#{c.license})"
       end
     end
+
     def phases
       Pharos::Phases.components.sort_by(&:name)
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 name 'host-upgrades'
 version '0.1.0'
 license 'Apache License 2.0'

@@ -49,7 +49,5 @@ module Pharos
     autoload :Client, 'pharos/etcd/client'
   end
 
-  module Addons
-
-  end
+  module Addons; end
 end
