@@ -67,15 +67,7 @@ module Pharos
 
     class << self
       attr_accessor :path
-      attr_writer :name
-    end
-
-    def self.name(name = nil)
-      if name
-        @name = name
-      else
-        @name
-      end
+      attr_accessor :name
     end
 
     def self.version(version = nil)

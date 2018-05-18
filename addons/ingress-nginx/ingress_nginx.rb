@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-name 'ingress-nginx'
 version '0.12.0'
 license 'Apache License 2.0'
 
