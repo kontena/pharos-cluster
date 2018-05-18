@@ -15,13 +15,12 @@ module Pharos
         puts "  - #{c.name}=#{c.version} (#{c.license})"
       end
     end
-
     def phases
       Pharos::Phases.components.sort_by(&:name)
     end
 
     def addons
-      Pharos::Addon.descendants.sort_by(&:name)
+      Pharos::AddonManager.addon_classes.sort_by(&:name)
     end
 
     def load_phases
@@ -29,7 +28,7 @@ module Pharos
     end
 
     def load_addons
-      Pharos::AddonManager.load_addons([__dir__ + '/addons'])
+      Pharos::AddonManager.load_addons(__dir__ + '/addons')
     end
   end
 end
