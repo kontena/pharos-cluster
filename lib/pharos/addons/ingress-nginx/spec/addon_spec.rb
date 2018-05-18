@@ -1,6 +1,6 @@
-require "pharos/addons/ingress-nginx/ingress_nginx"
+require "pharos/addon"
 
-describe Pharos::Addons::IngressNginx do
+describe Pharos::Addon.load(__dir__ + '/../../ingress-nginx') do
   let(:cluster_config) { Pharos::Config.new(
     hosts: [Pharos::Configuration::Host.new(role: 'worker')],
     network: {},
@@ -44,7 +44,7 @@ describe Pharos::Addons::IngressNginx do
       let(:cpu_arch) { double(:cpu_arch, name: 'arm64' ) }
 
       it "returns default for arm64" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_ARM64_IMAGE)
+        expect(subject.image_name).to eq(described_class::DEFAULT_BACKEND_ARM64_IMAGE)
       end
     end
 
@@ -52,7 +52,7 @@ describe Pharos::Addons::IngressNginx do
       let(:cpu_arch) { double(:cpu_arch, name: 'amd64' ) }
 
       it "returns default" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_IMAGE)
+        expect(subject.image_name).to eq(described_class::DEFAULT_BACKEND_IMAGE)
       end
     end
   end

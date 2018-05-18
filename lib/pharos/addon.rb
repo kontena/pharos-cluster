@@ -34,7 +34,8 @@ module Pharos
         end
       end
 
-      # TODO: only needed for specs? Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, addon_class)
+      # cosmetic: assign the class a name for specs etc.
+      Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, addon_class)
 
       addon_class
     end

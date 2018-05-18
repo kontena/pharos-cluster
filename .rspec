@@ -1,1 +1,2 @@
 --require spec_helper
+--pattern {spec/**,lib/pharos/addons/*/spec}/*_spec.rb
