@@ -2,30 +2,12 @@ require "pharos/addon"
 
 describe Pharos::Addon do
   let(:test_addon) do
-    Class.new(described_class) do
-      name "test-addon"
-      version "0.2.2"
-      license "MIT"
-
-      struct {
-        attribute :foo, Pharos::Types::String
-        attribute :bar, Pharos::Types::String.default('baz')
-      }
-
-      schema {
-        required(:foo).filled(:str?)
-        optional(:bar).filled(:str?)
-      }
-    end
+    Pharos::Addon.load fixtures_path('addons/test-addon')
   end
 
   let(:cpu_arch) { double(:cpu_arch) }
   let(:master) { double(:host, api_address: '1.1.1.1') }
   let(:config) { {foo: 'bar'} }
-
-  before do
-    test_addon.path = __dir__
-  end
 
   subject { test_addon.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil) }
 
