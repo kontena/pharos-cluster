@@ -42,7 +42,7 @@ module Pharos
 
       def addons
         addons = []
-        
+
         @addon_manager.with_enabled_addons do |addon_class, addon_config|
           addons << addon_class.to_h
         end
