@@ -1,26 +1,22 @@
 describe Pharos::Kube::Stack do
   let(:session) { double }
   let(:resource) { double(metadata: OpenStruct.new, apply: true) }
+  let(:test_value) { SecureRandom.hex(16) }
   subject {
     described_class.new(
-      session, 'ingress-nginx', File.realpath('./lib/pharos/addons/ingress-nginx/resources'),
+      session, 'test', fixtures_path('resources/test'),
       {
-        default_backend: double(image: 'foo'),
-        configmap: {},
-        node_selector: {},
-        arch: double(name: 'foo'),
-        version: '1',
-        image: 'foo',
-        default_backend_replicas: 1
+        test: test_value,
       }
     )
   }
 
   describe '#resource_files' do
     it 'returns a list of .yml and .yml.erb files in the stack directory' do
-      file_list = subject.resource_files
-      expect(file_list.select { | f| f.fnmatch('*.yml.erb') }).not_to be_empty
-      expect(file_list.select { | f| f.fnmatch('*.yml') }).not_to be_empty
+      expect(subject.resource_files.map(&:to_s)).to eq [
+        fixtures_path('resources/test/bar.yml.erb'),
+        fixtures_path('resources/test/foo.yml'),
+      ]
     end
   end
 
@@ -43,7 +39,7 @@ describe Pharos::Kube::Stack do
 
     it 'applies all resources' do
       expect(resource1).to receive(:apply) do
-        expect(resource1.metadata.labels['pharos.kontena.io/stack']).to eq 'ingress-nginx'
+        expect(resource1.metadata.labels['pharos.kontena.io/stack']).to eq 'test'
         expect(resource1.metadata.annotations['pharos.kontena.io/stack-checksum']).to eq random_checksum
       end
 
@@ -67,7 +63,7 @@ describe Pharos::Kube::Stack do
       allow(session).to receive(:api_versions).and_return(api_versions)
       allow(session).to receive(:resource_client).with('test/v1').and_return(api_client)
       allow(api_client).to receive(:entities).and_return(api_entities)
-      allow(api_client).to receive(:get_entities).with('Test', 'test', label_selector: 'pharos.kontena.io/stack=ingress-nginx').and_return(api_resources)
+      allow(api_client).to receive(:get_entities).with('Test', 'test', label_selector: 'pharos.kontena.io/stack=test').and_return(api_resources)
       allow(session).to receive(:resource) do |resource_double| resource_double end
 
       api_resources.each do |resource|
