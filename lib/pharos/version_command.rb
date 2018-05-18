@@ -28,7 +28,7 @@ module Pharos
     end
 
     def load_addons
-      Pharos::AddonManager.load_addons(__dir__ + '/addons')
+      Pharos::AddonManager.load_addons
     end
   end
 end
