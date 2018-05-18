@@ -15,7 +15,7 @@ module Pharos
     # Defaults to loading built-in addons.
     #
     # @param path [String]
-    def self.load_addons(path = __dir__ + '/addons')
+    def self.load_addons(path = Pharos.addons_path)
       Pharos::Addon.loads(path).each do |addon_class|
         addon_classes << addon_class
       end
