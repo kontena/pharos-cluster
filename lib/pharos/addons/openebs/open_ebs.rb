@@ -15,12 +15,12 @@ Pharos.addon 'openebs' do
     path: DEFAULT_STORAGE_PATH
   }.freeze
 
-  struct {
+  config {
     attribute :default_storage_class, Pharos::Types::Hash.default(DEFAULT_CLASS_OPTS)
     attribute :default_storage_pool, Pharos::Types::Hash.default(DEFAULT_POOL_OPTS)
   }
 
-  schema {
+  config_schema {
     optional(:default_storage_class).schema do
       optional(:default_class).filled(:bool?)
       optional(:capacity).filled(:str?)

@@ -4,18 +4,18 @@ Pharos.addon 'ingress-nginx' do
   version '0.12.0'
   license 'Apache License 2.0'
 
-  struct {
+  config {
     attribute :configmap, Pharos::Types::Hash
     attribute :node_selector, Pharos::Types::Hash
     attribute :default_backend, Pharos::Types::Hash
   }
 
-  schema {
+  config_schema {
     optional(:configmap).filled(:hash?)
     optional(:node_selector).filled(:hash?)
-    optional(:default_backend).schema do
+    optional(:default_backend).schema {
       optional(:image).filled(:str?)
-    end
+    }
   }
 
   DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'

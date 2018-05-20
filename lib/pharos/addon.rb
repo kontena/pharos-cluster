@@ -6,6 +6,7 @@ require_relative 'logging'
 
 module Pharos
   # @param name [String]
+  # @return [Pharos::Addon]
   def self.addon(name, &block)
     klass = Class.new(Pharos::Addon, &block).tap do |addon|
       addon.addon_location = block.source_location.first
@@ -14,6 +15,8 @@ module Pharos
 
     # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
     Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
+    Pharos::AddonManager.addons << klass
+    klass
   end
 
   class Addon
@@ -73,12 +76,16 @@ module Pharos
         { name: name, version: version, license: license }
       end
 
-      def schema(&block)
+      def config_schema(&block)
         @schema = Dry::Validation.Form(Schema, &block)
       end
 
-      def struct(&block)
-        @struct ||= Class.new(Pharos::Addons::Struct, &block)
+      def config(&block)
+        @config ||= Class.new(Pharos::Addons::Struct, &block)
+      end
+
+      def custom_type(&block)
+        Class.new(Pharos::Addons::Struct, &block)
       end
 
       def validation
@@ -101,7 +108,7 @@ module Pharos
     attr_reader :config, :cpu_arch, :cluster_config
 
     def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
-      @config = self.class.struct.new(config)
+      @config = self.class.config.new(config)
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch

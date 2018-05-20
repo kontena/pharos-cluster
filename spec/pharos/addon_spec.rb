@@ -2,17 +2,16 @@ require "pharos/addon"
 
 describe Pharos::Addon do
   let(:test_addon) do
-    Class.new(described_class) do
-      name "test-addon"
+    Pharos.addon 'test-addon' do
       version "0.2.2"
       license "MIT"
 
-      struct {
+      config {
         attribute :foo, Pharos::Types::String
         attribute :bar, Pharos::Types::String.default('baz')
       }
 
-      schema {
+      config_schema {
         required(:foo).filled(:str?)
         optional(:bar).filled(:str?)
       }
