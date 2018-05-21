@@ -81,7 +81,7 @@ module Pharos
 
     def with_enabled_addons
       configs.each do |name, config|
-        klass = addon_classes.find { |a| a.name == name }
+        klass = addon_classes.find { |a| a.addon_name == name }
         if klass && config["enabled"]
           yield(klass, config)
         elsif klass.nil?
@@ -92,8 +92,8 @@ module Pharos
 
     def with_disabled_addons
       addon_classes.select { |addon_class|
-        prev_config = prev_configs[addon_class.name]
-        config = configs[addon_class.name]
+        prev_config = prev_configs[addon_class.addon_name]
+        config = configs[addon_class.addon_name]
         prev_config && prev_config["enabled"] && (config.nil? || !config["enabled"])
       }.each do |addon_class|
         yield(addon_class)

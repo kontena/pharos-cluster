@@ -35,7 +35,7 @@ module Pharos
       end
 
       def addons
-        JSON.parse(Pharos::Addon.descendants.map(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.to_json)
+        JSON.parse(Pharos::AddonManager.addons.map(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.to_json)
       end
     end
   end

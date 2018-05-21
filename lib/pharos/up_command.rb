@@ -118,7 +118,7 @@ module Pharos
     def show_addon_versions(manager)
       puts pastel.green("==> Using following addons:")
       manager.addon_manager.with_enabled_addons do |addon|
-        puts "    #{addon.name}: #{addon.version}"
+        puts "    #{addon.addon_name}: #{addon.version}"
       end
     end
 

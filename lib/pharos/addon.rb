@@ -9,7 +9,7 @@ module Pharos
   # @return [Pharos::Addon]
   def self.addon(name, &block)
     klass = Class.new(Pharos::Addon, &block).tap do |addon|
-      addon.addon_location = block.source_location.first
+      addon.addon_location = File.dirname(block.source_location.first)
       addon.addon_name = name
     end
 
@@ -181,9 +181,9 @@ module Pharos
     # @return [Pharos::Kube::Stack]
     def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(self.class.addon_location, 'resources'),
+        kube_session, name, File.join(self.class.addon_location, 'resources'),
         vars.merge(
-          name: self.class.name,
+          name: name,
           version: self.class.version,
           config: config,
           arch: cpu_arch
