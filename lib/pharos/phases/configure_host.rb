@@ -15,6 +15,11 @@ module Pharos
         enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
       )
 
+      register_component(
+        name: 'crictl', version: Pharos::CRICTL_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
+      )
+
       def call
         logger.info { "Configuring essential packages ..." }
         exec_script('configure-essentials.sh')
@@ -37,6 +42,7 @@ module Pharos
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
+            CRICTL_VERSION: Pharos::CRICTL_VERSION,
             CRIO_STREAM_ADDRESS: @host.peer_address,
             CPU_ARCH: @host.cpu_arch.name
           )
