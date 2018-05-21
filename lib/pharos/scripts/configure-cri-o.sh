@@ -15,9 +15,15 @@ systemctl enable crio
 rm /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
 systemctl start crio
 
-# Install crictl binary
+# Install crictl binary if needed
 CRICTL_DOWNLOAD_SHA="597a4db0289870d81d0377396ddaf4c23725a47b33b30856e6291c2b958786f3"
-curl -sSL https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.0.0-beta.0/crictl-${CRICTL_VERSION}-linux-${CPU_ARCH}.tar.gz -o /tmp/crictl.tar.gz
-echo "$CRICTL_DOWNLOAD_SHA  /tmp/crictl.tar.gz" | shasum -a256 -c
-tar xzf /tmp/crictl.tar.gz
-install -m 755 -o root -g root crictl /usr/bin/crictl && rm crictl
+CURRENT_VERSION=$(which crictl 1>/dev/null && criversion=$(crictl -v) && echo ${criversion##* })
+CRICTL_EXISTS=$?
+
+if [ $CRICTL_EXISTS -eq 1 ] || [ $CURRENT_VERSION != $CRICTL_VERSION ]; then
+    # Not installed or wrong version
+    curl -sSL https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.0.0-beta.0/crictl-${CRICTL_VERSION}-linux-${CPU_ARCH}.tar.gz -o /tmp/crictl.tar.gz
+    echo "$CRICTL_DOWNLOAD_SHA  /tmp/crictl.tar.gz" | shasum -a256 -c
+    tar xzf /tmp/crictl.tar.gz
+    install -m 755 -o root -g root crictl /usr/local/bin/crictl && rm crictl
+fi
