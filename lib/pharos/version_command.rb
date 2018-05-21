@@ -12,7 +12,7 @@ module Pharos
       end
       puts "Addon versions:"
       addons.each do |c|
-        puts "  - #{c.name}=#{c.version} (#{c.license})"
+        puts "  - #{c.addon_name}=#{c.version} (#{c.license})"
       end
     end
 

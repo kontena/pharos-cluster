@@ -24,9 +24,9 @@ describe Pharos::Addon do
 
   subject { test_addon.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil) }
 
-  describe ".name" do
+  describe ".addon_name" do
     it "returns configured name" do
-      expect(test_addon.name).to eq("test-addon")
+      expect(test_addon.addon_name).to eq("test-addon")
     end
   end
 

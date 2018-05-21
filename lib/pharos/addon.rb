@@ -10,7 +10,7 @@ module Pharos
   def self.addon(name, &block)
     klass = Class.new(Pharos::Addon, &block).tap do |addon|
       addon.addon_location = block.source_location.first
-      addon.name(name)
+      addon.addon_name = name
     end
 
     # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
@@ -41,19 +41,12 @@ module Pharos
     end
 
     class << self
+      attr_accessor :addon_name
       attr_writer :addon_location
 
       # @return [String]
       def addon_location
         @addon_location || __dir__
-      end
-
-      def name(name = nil)
-        if name
-          @name = name
-        else
-          @name
-        end
       end
 
       def version(version = nil)
@@ -73,7 +66,7 @@ module Pharos
       end
 
       def to_h
-        { name: name, version: version, license: license }
+        { name: addon_name, version: version, license: license }
       end
 
       def config_schema(&block)
@@ -135,7 +128,7 @@ module Pharos
     end
 
     def name
-      self.class.name
+      self.class.addon_name
     end
 
     def duration
