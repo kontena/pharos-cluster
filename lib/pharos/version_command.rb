@@ -29,7 +29,7 @@ module Pharos
     end
 
     def load_addons
-      Pharos::AddonManager.load_addons([__dir__ + '/addons'])
+      Pharos::AddonManager.load_addons([File.join(__dir__, '..', '..', 'addons'),])
     end
   end
 end
