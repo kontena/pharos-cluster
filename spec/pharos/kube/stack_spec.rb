@@ -3,7 +3,7 @@ describe Pharos::Kube::Stack do
   let(:resource) { double(metadata: OpenStruct.new, apply: true) }
   subject {
     described_class.new(
-      session, 'ingress-nginx', File.realpath('./lib/pharos/addons/ingress-nginx/resources'),
+      session, 'ingress-nginx', File.realpath('./addons/ingress-nginx/resources'),
       {
         default_backend: double(image: 'foo'),
         configmap: {},
