@@ -10,7 +10,6 @@ module Pharos
   def self.addon(name, &block)
     klass = Class.new(Pharos::Addon, &block).tap do |addon|
       addon.addon_location = block.source_location.first
-      addon.name(name)
     end
 
     # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
