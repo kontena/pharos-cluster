@@ -55,6 +55,32 @@ describe Pharos::Addon do
     end
   end
 
+  describe ".install" do
+    let(:subject) do
+      Pharos.addon 'test-addon-install' do
+        version "0.2.2"
+        license "MIT"
+
+        config {
+          attribute :justatest, Pharos::Types::String
+        }
+
+        install {
+          config.justatest
+          install
+        }
+      end.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil)
+    end
+
+    it 'runs install block on apply' do
+      expect(subject.config).to receive(:justatest)
+      kube_stack = double(:kube_stack)
+      allow(subject).to receive(:kube_stack).and_return(kube_stack)
+      expect(kube_stack).to receive(:apply)
+      subject.apply
+    end
+  end
+
   describe "#kube_stack" do
     it "returns kube stack" do
       stack = subject.kube_stack
@@ -73,6 +99,14 @@ describe Pharos::Addon do
       allow(subject).to receive(:kube_stack).and_return(kube_stack)
       expect(kube_stack).to receive(:apply)
       subject.apply_stack
+    end
+  end
+
+  describe '#kube_client' do
+    it 'returns kube client' do
+      client = double(:client)
+      allow(Pharos::Kube).to receive(:client).with(master.api_address, 'v1').and_return(client)
+      expect(subject.kube_client).to eq(client)
     end
   end
 end

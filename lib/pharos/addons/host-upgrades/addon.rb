@@ -12,9 +12,9 @@ Pharos.addon 'host-upgrades' do
     required(:interval).filled(:str?, :duration?)
   }
 
-  def install
-    apply_stack(
+  install {
+    install(
       interval: duration.parse(config.interval).to_sec
     )
-  end
+  }
 end

@@ -18,6 +18,15 @@ Pharos.addon 'ingress-nginx' do
     }
   }
 
+  install {
+    install(
+      configmap: config.configmap || {},
+      node_selector: config.node_selector || {},
+      image: image_name,
+      default_backend_replicas: default_backend_replicas
+    )
+  }
+
   DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'
   DEFAULT_BACKEND_IMAGE = 'docker.io/kontena/pharos-default-backend:0.0.2'
 
@@ -38,14 +47,5 @@ Pharos.addon 'ingress-nginx' do
 
     return 2 if r < 2
     r
-  end
-
-  def install
-    apply_stack(
-      configmap: config.configmap || {},
-      node_selector: config.node_selector || {},
-      image: image_name,
-      default_backend_replicas: default_backend_replicas
-    )
   end
 end

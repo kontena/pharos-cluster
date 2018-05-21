@@ -32,6 +32,15 @@ Pharos.addon 'openebs' do
     end
   }
 
+  install {
+    install(
+      default_replicas: config.default_storage_class[:replicas] || default_replica_count,
+      default_capacity: config.default_storage_class[:capacity] || '5G',
+      is_default_class: config.default_storage_class[:default_class] == true,
+      default_storage_pool_path: config.default_storage_pool[:path]
+    )
+  }
+
   def validate
     super
     raise Pharos::InvalidAddonError, "Cannot set more replicas than workers" if config.default_storage_class[:replicas] && config.default_storage_class[:replicas] > cluster_config.worker_hosts.count
@@ -39,14 +48,5 @@ Pharos.addon 'openebs' do
 
   def default_replica_count
     cluster_config.worker_hosts.count < 3 ? cluster_config.worker_hosts.count : 3
-  end
-
-  def install
-    apply_stack(
-      default_replicas: config.default_storage_class[:replicas] || default_replica_count,
-      default_capacity: config.default_storage_class[:capacity] || '5G',
-      is_default_class: config.default_storage_class[:default_class] == true,
-      default_storage_pool_path: config.default_storage_pool[:path]
-    )
   end
 end

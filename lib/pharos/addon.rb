@@ -84,14 +84,32 @@ module Pharos
         @config ||= Class.new(Pharos::Addons::Struct, &block)
       end
 
+      def config?
+        !@config.nil?
+      end
+
       def custom_type(&block)
         Class.new(Pharos::Addons::Struct, &block)
+      end
+
+      # @return [Hash]
+      def hooks
+        @hooks ||= {}
+      end
+
+      def install(&block)
+        hooks[:install] = block
+      end
+
+      def uninstall(&block)
+        hooks[:uninstall] = block
       end
 
       def validation
         Dry::Validation.Form(Schema) { yield }
       end
 
+      # @param config [Hash]
       def validate(config)
         if @schema
           @schema.call(config)
@@ -105,10 +123,15 @@ module Pharos
       end
     end
 
-    attr_reader :config, :cpu_arch, :cluster_config
+    attr_reader :config, :cpu_arch, :cluster_config, :master
 
+    # @param config [Hash]
+    # @param enabled [Boolean]
+    # @param master [Pharos::Configuration::Host,NilClass]
+    # @param cpu_arch [String, NilClass]
+    # @param cluster_config [Pharos::Config, NilClass]
     def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
-      @config = self.class.config.new(config)
+      @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(config)
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch
@@ -129,33 +152,52 @@ module Pharos
 
     def apply
       if enabled?
+        apply_install
+      else
+        apply_uninstall
+      end
+    end
+
+    def hooks
+      self.class.hooks
+    end
+
+    def apply_install
+      if hooks[:install]
+        self.instance_eval(&hooks[:install])
+      else
         install
+      end
+    end
+
+    def apply_uninstall
+      if hooks[:uninstall]
+        self.instance_eval(&hooks[:uninstall])
       else
         uninstall
       end
     end
 
-    def install
-      apply_stack
-    end
-
-    def uninstall
-      prune_stack
-    end
-
     # @return [Pharos::Kube::Session]
     def kube_session
-      Pharos::Kube.session(@master.api_address)
+      Pharos::Kube.session(master.api_address)
     end
 
+    # @return [Kubeclient]
+    def kube_client
+      kube_session.resource_client
+    end
+
+    # @param vars [Hash]
+    # @return [Pharos::Kube::Stack]
     def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
         kube_session, self.class.name, File.join(self.class.addon_location, 'resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,
-          config: @config,
-          arch: @cpu_arch
+          config: config,
+          arch: cpu_arch
         )
       )
     end
@@ -163,10 +205,12 @@ module Pharos
     def apply_stack(vars = {})
       kube_stack(vars).apply
     end
+    alias_method :install, :apply_stack
 
     def prune_stack
       kube_stack.prune('-')
     end
+    alias_method :uninstall, :prune_stack
 
     def validate; end
   end
