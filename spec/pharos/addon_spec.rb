@@ -93,12 +93,12 @@ describe Pharos::Addon do
     end
   end
 
-  describe "#apply_stack" do
-    it "applies stack" do
+  describe "#apply_resources" do
+    it "applies addon resources" do
       kube_stack = double(:kube_stack)
       allow(subject).to receive(:kube_stack).and_return(kube_stack)
       expect(kube_stack).to receive(:apply)
-      subject.apply_stack
+      subject.apply_resources
     end
   end
 
