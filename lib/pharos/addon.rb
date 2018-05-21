@@ -116,10 +116,6 @@ module Pharos
           validation {}.call(config)
         end
       end
-
-      def descendants
-        ObjectSpace.each_object(Class).select { |klass| klass < self }
-      end
     end
 
     attr_reader :config, :cpu_arch, :cluster_config, :master
