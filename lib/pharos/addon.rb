@@ -153,7 +153,7 @@ module Pharos
 
     def apply_install
       if hooks[:install]
-        self.instance_eval(&hooks[:install])
+        instance_eval(&hooks[:install])
       else
         apply_resources
       end
@@ -161,7 +161,7 @@ module Pharos
 
     def apply_uninstall
       if hooks[:uninstall]
-        self.instance_eval(&hooks[:uninstall])
+        instance_eval(&hooks[:uninstall])
       else
         delete_resources
       end
@@ -191,15 +191,16 @@ module Pharos
       )
     end
 
-    def apply_stack(vars = {})
+    # @param vars [Hash]
+    # @return [Array<Kubeclient::Resource>]
+    def apply_resources(vars = {})
       kube_stack(vars).apply
     end
-    alias_method :apply_resources, :apply_stack
 
-    def prune_stack
+    # @return [Array<Kubeclient::Resource>]
+    def delete_resources
       kube_stack.prune('-')
     end
-    alias_method :delete_resources, :prune_stack
 
     def validate; end
   end
