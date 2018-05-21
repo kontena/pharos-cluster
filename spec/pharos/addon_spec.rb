@@ -67,7 +67,7 @@ describe Pharos::Addon do
 
         install {
           config.justatest
-          install
+          apply_resources
         }
       end.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil)
     end

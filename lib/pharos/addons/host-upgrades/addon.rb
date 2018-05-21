@@ -13,7 +13,7 @@ Pharos.addon 'host-upgrades' do
   }
 
   install {
-    install(
+    apply_resources(
       interval: duration.parse(config.interval).to_sec
     )
   }

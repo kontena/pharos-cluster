@@ -19,7 +19,7 @@ Pharos.addon 'ingress-nginx' do
   }
 
   install {
-    install(
+    apply_resources(
       configmap: config.configmap || {},
       node_selector: config.node_selector || {},
       image: image_name,

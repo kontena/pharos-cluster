@@ -33,7 +33,7 @@ Pharos.addon 'openebs' do
   }
 
   install {
-    install(
+    apply_resources(
       default_replicas: config.default_storage_class[:replicas] || default_replica_count,
       default_capacity: config.default_storage_class[:capacity] || '5G',
       is_default_class: config.default_storage_class[:default_class] == true,

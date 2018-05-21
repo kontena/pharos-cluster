@@ -54,9 +54,9 @@ describe Pharos::Addons::Openebs do
         config = { }
         subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
 
-        expect(subject).to receive(:apply_stack).with(default_replicas: 1, default_capacity: '5G', is_default_class: false, default_storage_pool_path: '/var/openebs')
+        expect(subject).to receive(:apply_resources).with(default_replicas: 1, default_capacity: '5G', is_default_class: false, default_storage_pool_path: '/var/openebs')
 
-        subject.install
+        subject.apply_install
       end
     end
 
@@ -74,9 +74,9 @@ describe Pharos::Addons::Openebs do
         }
         subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
 
-        expect(subject).to receive(:apply_stack).with(default_replicas: 5, default_capacity: '12G', is_default_class: true, default_storage_pool_path: '/foo/bar')
+        expect(subject).to receive(:apply_resources).with(default_replicas: 5, default_capacity: '12G', is_default_class: true, default_storage_pool_path: '/foo/bar')
 
-        subject.install
+        subject.apply_install
       end
 
       it 'applies stack with given partial config' do
@@ -91,9 +91,9 @@ describe Pharos::Addons::Openebs do
         }
         subject = described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
 
-        expect(subject).to receive(:apply_stack).with(default_replicas: 5, default_capacity: '5G', is_default_class: true, default_storage_pool_path: '/foo/bar')
+        expect(subject).to receive(:apply_resources).with(default_replicas: 5, default_capacity: '5G', is_default_class: true, default_storage_pool_path: '/foo/bar')
 
-        subject.install
+        subject.apply_install
       end
     end
   end
