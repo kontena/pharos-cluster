@@ -21,7 +21,7 @@ module Pharos
     end
 
     def addons
-      Pharos::Addon.descendants.sort_by(&:name)
+      Pharos::AddonManager.addon_classes.sort_by(&:name)
     end
 
     def load_phases
@@ -29,7 +29,7 @@ module Pharos
     end
 
     def load_addons
-      Pharos::AddonManager.load_addons([__dir__ + '/addons'])
+      Pharos::AddonManager.load_addons
     end
   end
 end

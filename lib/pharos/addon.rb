@@ -1,12 +1,51 @@
 # frozen_string_literal: true
 
+require 'dry-struct'
 require 'dry-validation'
-require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
   class Addon
     include Pharos::Logging
+
+    # Load addon classes from filesystem path
+    #
+    # @param path [String] path to dir containing */*.rb addon dirs
+    # @return [Array<Class<Kontena::Pharos::Addon>>]
+    def self.loads(path)
+      paths = Dir.glob("#{path}/*")
+      paths.map{ |p| load(p) }
+    end
+
+    # Load addon class from local filesystem directory
+    #
+    # @param path [String]
+    # @return [Class<Kontena::Pharos::Addon>]
+    def self.load(path)
+      name = File.basename(path, '/')
+
+      addon_class = Class.new(self) do |cls|
+        cls.path = path
+        cls.name = name
+
+        Dir.glob("#{path}/*.rb") do |filepath|
+          File.open(filepath, "r") do |file|
+            cls.class_eval(file.read, file.path)
+          end
+        end
+      end
+
+      # cosmetic: assign the class a name for specs etc.
+      Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, addon_class)
+
+      addon_class
+    end
+
+    class Struct < Dry::Struct
+      constructor_type :schema
+
+      attribute :enabled, Pharos::Types::Strict::Bool
+    end
 
     class Schema < Dry::Validation::Schema
       configure do
@@ -26,12 +65,9 @@ module Pharos
       end
     end
 
-    def self.name(name = nil)
-      if name
-        @name = name
-      else
-        @name
-      end
+    class << self
+      attr_accessor :path
+      attr_accessor :name
     end
 
     def self.version(version = nil)
@@ -55,27 +91,24 @@ module Pharos
     end
 
     def self.schema(&block)
-      @schema = Dry::Validation.Form(Schema, &block)
-    end
-
-    def self.struct(&block)
-      @struct ||= Class.new(Pharos::Addons::Struct, &block)
-    end
-
-    def self.validation
-      Dry::Validation.Form(Schema) { yield }
-    end
-
-    def self.validate(config)
-      if @schema
-        @schema.call(config)
+      if block
+        @schema = Dry::Validation.Form(Schema, &block)
       else
-        validation {}.call(config)
+        @schema ||= Dry::Validation.Form(Schema)
       end
     end
 
-    def self.descendants
-      ObjectSpace.each_object(Class).select { |klass| klass < self }
+    def self.struct(&block)
+      if block
+        @struct = Class.new(Pharos::Addon::Struct, &block)
+      else
+        @struct ||= Class.new(Pharos::Addon::Struct)
+      end
+    end
+
+    # @return [Dry::Validation::Result]
+    def self.validate(config)
+      schema.call(config)
     end
 
     attr_reader :config, :cpu_arch, :cluster_config
@@ -90,6 +123,11 @@ module Pharos
 
     def name
       self.class.name
+    end
+
+    # @return [String]
+    def path(*parts)
+      File.join(self.class.path, *parts)
     end
 
     def duration
@@ -123,7 +161,7 @@ module Pharos
 
     def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(__dir__, 'addons', self.class.name, 'resources'),
+        kube_session, self.class.name, path('resources'),
         vars.merge(
           name: self.class.name,
           version: self.class.version,

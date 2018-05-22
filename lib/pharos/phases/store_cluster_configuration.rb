@@ -5,6 +5,12 @@ module Pharos
     class StoreClusterConfiguration < Pharos::Phase
       title "Store cluster configuration"
 
+      def initialize(*args, addon_manager:, **options)
+        super(*args, **options)
+
+        @addon_manager = addon_manager
+      end
+
       def call
         logger.info { "Storing cluster configuration to configmap ..." }
         resource.apply
@@ -35,7 +41,13 @@ module Pharos
       end
 
       def addons
-        JSON.parse(Pharos::Addon.descendants.map(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.to_json)
+        addons = []
+
+        @addon_manager.with_enabled_addons do |addon_class, _addon_config|
+          addons << addon_class.to_h
+        end
+
+        JSON.parse(addons.to_json)
       end
     end
   end

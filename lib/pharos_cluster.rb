@@ -14,4 +14,9 @@ module Pharos
   ETCD_VERSION = ENV.fetch('ETCD_VERSION') { '3.1.12' }
   DOCKER_VERSION = '1.13.1'
   KUBELET_PROXY_VERSION = '0.3.5'
+
+  # @return [String]
+  def self.addons_path
+    File.expand_path '../addons', __dir__
+  end
 end

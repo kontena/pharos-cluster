@@ -36,7 +36,7 @@ module Pharos
     # load phases/addons
     def load
       Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
-      Pharos::AddonManager.load_addons(__dir__ + '/addons/')
+      Pharos::AddonManager.load_addons
     end
 
     def validate
@@ -112,7 +112,7 @@ module Pharos
 
     def save_config
       master_host = sorted_master_hosts.first
-      apply_phase(Phases::StoreClusterConfiguration, [master_host], master: master_host)
+      apply_phase(Phases::StoreClusterConfiguration, [master_host], master: master_host, addon_manager: addon_manager)
     end
 
     def disconnect

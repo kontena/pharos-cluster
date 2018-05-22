@@ -10,11 +10,20 @@ module Pharos
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
 
-    # @param dirs [Array<String>]
-    def self.load_addons(*dirs)
-      dirs.each do |dir|
-        Dir.glob(File.join(dir, '**', '*.rb')).each { |f| require(f) }
+    # Load addon classes.
+    # Can be called multiple times.
+    # Defaults to loading built-in addons.
+    #
+    # @param path [String]
+    def self.load_addons(path = Pharos.addons_path)
+      Pharos::Addon.loads(path).each do |addon_class|
+        addon_classes << addon_class
       end
+    end
+
+    # @return [Array<Class<Pharos::Addon>>]
+    def self.addon_classes
+      @addon_classes ||= []
     end
 
     # @param config [Pharos::Configuration]
@@ -36,9 +45,9 @@ module Pharos
       end
     end
 
-    # @return [Array<Pharos::Addon>]
+    # @return [Array<Class<Pharos::Addon>>]
     def addon_classes
-      @addon_classes ||= Pharos::Addon.descendants
+      self.class.addon_classes
     end
 
     def validate
