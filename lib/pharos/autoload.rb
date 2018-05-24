@@ -43,6 +43,7 @@ module Pharos
 
   module Configuration
     autoload :Host, 'pharos/configuration/host'
+    autoload :Taint, 'pharos/configuration/taint'
   end
 
   module Etcd

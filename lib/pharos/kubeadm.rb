@@ -36,7 +36,8 @@ module Pharos
           },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'false'
-          }
+          },
+          'noTaintMaster' => !master_taint?
         }
 
         if @host.container_runtime == 'cri-o'
@@ -93,6 +94,13 @@ module Pharos
           'mountPath' => SECRETS_CFG_DIR
         }
         config
+      end
+
+      def master_taint?
+        return true unless @host.taints
+
+        # matching the taint used by kubeadm
+        @host.taints.any?{ |taint| taint.key == 'node-role.kubernetes.io/master' && taint.effect == 'NoSchedule' }
       end
 
       # @return [Array<String>]

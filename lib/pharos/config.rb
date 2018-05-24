@@ -18,6 +18,21 @@ module Pharos
 
     constructor_type :schema
 
+    # @param raw_data [Hash]
+    # @raise [Pharos::ConfigError]
+    # @return [Pharos::Config]
+    def self.load(raw_data)
+      schema_data = Pharos::ConfigSchema.load(raw_data)
+
+      config = new(schema_data)
+      config.data = raw_data.freeze
+
+      # inject api_endpoint to each host object
+      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
+
+      config
+    end
+
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
     attribute :network, Pharos::Configuration::Network
     attribute :kube_proxy, Pharos::Configuration::KubeProxy

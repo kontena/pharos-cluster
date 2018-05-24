@@ -13,6 +13,7 @@ module Pharos
       attribute :private_interface, Pharos::Types::Strict::String
       attribute :role, Pharos::Types::Strict::String
       attribute :labels, Pharos::Types::Strict::Hash
+      attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String.default('ubuntu')
       attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
