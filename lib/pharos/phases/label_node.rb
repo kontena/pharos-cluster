@@ -6,16 +6,23 @@ module Pharos
       title "Label nodes"
 
       def call
-        unless @host.labels
-          logger.info { "No labels set ... " }
+        unless @host.labels || @host.taints
+          logger.info { "No labels or taints set ... " }
           return
         end
 
         node = find_node
         raise Pharos::Error, "Cannot set labels, node not found" if node.nil?
 
-        logger.info { "Configuring node labels ... " }
+        logger.info { "Configuring node labels and taints ... " }
         patch_node(node)
+      end
+
+      # @return [Array{Hash}]
+      def taints
+        return [] unless @host.taints
+
+        @host.taints.map(&:to_h)
       end
 
       # @param node [Kubeclient::Resource]
@@ -23,18 +30,20 @@ module Pharos
         kube.patch_node(
           node.metadata.name,
           metadata: {
-            labels: @host.labels
+            labels: @host.labels || {}
+          },
+          spec: {
+            taints: taints
           }
         )
       end
 
       def find_node
-        internal_ip = @host.peer_address
         node = nil
         retries = 0
         while node.nil? && retries < 10
           node = kube.get_nodes.find { |n|
-            n.status.addresses.any? { |a| a.type == 'InternalIP' && a.address == internal_ip }
+            n.metadata.name == @host.hostname
           }
           unless node
             retries += 1

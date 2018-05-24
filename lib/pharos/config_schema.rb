@@ -14,6 +14,16 @@ module Pharos
       'kubelet' => {}
     }.freeze
 
+    # @param data [Hash]
+    # @raise [Pharos::ConfigError]
+    # @return [Hash]
+    def self.load(data)
+      schema = build
+      result = schema.call(DEFAULT_DATA.merge(data))
+      raise Pharos::ConfigError, result.messages unless result.success?
+      result.to_h
+    end
+
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition
@@ -33,6 +43,13 @@ module Pharos
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
+              optional(:taints).each do
+                schema do
+                  optional(:key).filled(:str?)
+                  optional(:value).filled(:str?)
+                  required(:effect).filled(included_in?: ['NoSchedule', 'NoExecute'])
+                end
+              end
               optional(:user).filled
               optional(:ssh_key_path).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
