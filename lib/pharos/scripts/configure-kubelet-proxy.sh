@@ -17,7 +17,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-    - image: docker.io/kontena/pharos-kubelet-proxy-${ARCH}:${VERSION}
+    - image: quay.io/kontena/pharos-kubelet-proxy-${ARCH}:${VERSION}
       name: proxy
       env:
       - name: KUBE_MASTERS
