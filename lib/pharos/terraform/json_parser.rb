@@ -31,6 +31,17 @@ module Pharos
         hosts
       end
 
+      # @return [Hash]
+      def addons
+        addons = {}
+        addons_hash = data.dig('pharos_addons', 'value') || {}
+        addons_hash.each do |name, array|
+          addons[name] = array.first
+        end
+
+        addons
+      end
+
       # @return [String,NilClass]
       def api
         @api ||= data.dig('pharos_api', 'value')
