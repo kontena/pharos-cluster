@@ -25,6 +25,7 @@ module Pharos
           'kind' => 'MasterConfiguration',
           'nodeName' => @host.hostname,
           'kubernetesVersion' => Pharos::KUBE_VERSION,
+          'imageRepository' => @config.image_repository,
           'api' => {
             'advertiseAddress' => @host.peer_address,
             'controlPlaneEndpoint' => 'localhost'

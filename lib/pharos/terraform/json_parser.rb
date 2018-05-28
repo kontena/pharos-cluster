@@ -60,6 +60,7 @@ module Pharos
         host[:labels] = bundle['label'][0] if bundle['label']
         host[:user] = bundle['user'] if bundle['user']
         host[:ssh_key_path] = bundle['ssh_key_path'] if bundle['ssh_key_path']
+        host[:container_runtime] = bundle['container_runtime'] if bundle['container_runtime']
 
         host
       end
