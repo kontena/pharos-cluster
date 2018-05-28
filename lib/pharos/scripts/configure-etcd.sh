@@ -47,7 +47,7 @@ spec:
     - --initial-cluster-token=pharos-etcd-token
     - --initial-cluster-state=${INITIAL_CLUSTER_STATE}
 
-    image: k8s.gcr.io/etcd-${ARCH}:${ETCD_VERSION}
+    image: ${IMAGE_REPO}/etcd-${ARCH}:${ETCD_VERSION}
     livenessProbe:
       exec:
         command:
@@ -85,7 +85,7 @@ if [ ! -e /etc/kubernetes/kubelet.conf ]; then
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=
-ExecStart=/usr/bin/kubelet ${KUBELET_ARGS}
+ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
 EOF
 
   apt-mark unhold kubelet

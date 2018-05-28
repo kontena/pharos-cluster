@@ -1,6 +1,6 @@
 require "pharos/phases/configure_master"
 
-describe Pharos::Phases::ConfigureMaster do
+describe Pharos::Kubeadm::ConfigGenerator do
   let(:master) { Pharos::Configuration::Host.new(address: 'test', private_address: 'private', role: 'master') }
   let(:config_hosts_count) { 1 }
 
@@ -15,7 +15,7 @@ describe Pharos::Phases::ConfigureMaster do
   ) }
 
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(master, config: config, ssh: ssh) }
+  subject { described_class.new(config, master) }
 
   describe '#generate_config' do
 
