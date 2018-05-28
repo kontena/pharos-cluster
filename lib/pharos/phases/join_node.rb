@@ -22,9 +22,7 @@ module Pharos
           join_command << '--cri-socket /var/run/crio/crio.sock'
         end
         join_command << "--node-name #{@host.hostname}"
-        # CRI related pre-flight checks ignored as they cause false negative:
-        # https://github.com/kubernetes/kubeadm/issues/814
-        join_command << "--ignore-preflight-errors DirAvailable--etc-kubernetes-manifests,cri"
+        join_command << "--ignore-preflight-errors DirAvailable--etc-kubernetes-manifests"
 
         @ssh.exec!('sudo ' + join_command.join(' '))
       end
