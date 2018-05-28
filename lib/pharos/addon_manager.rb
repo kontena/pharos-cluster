@@ -10,11 +10,19 @@ module Pharos
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
 
+    # @return [Array<Class<Pharos::Addon>>]
+    def self.addons
+      @addons ||= []
+    end
+
     # @param dirs [Array<String>]
+    # @return [Array<Class<Pharos::Addon>>]
     def self.load_addons(*dirs)
       dirs.each do |dir|
-        Dir.glob(File.join(dir, '**', '*.rb')).each { |f| require(f) }
+        Dir.glob(File.join(dir, '**', 'addon.rb')).each { |f| require(f) }
       end
+
+      addons
     end
 
     # @param config [Pharos::Configuration]
@@ -36,9 +44,9 @@ module Pharos
       end
     end
 
-    # @return [Array<Pharos::Addon>]
+    # @return [Array<Class<Pharos::Addon>>]
     def addon_classes
-      @addon_classes ||= Pharos::Addon.descendants
+      self.class.addons
     end
 
     def validate
@@ -73,7 +81,7 @@ module Pharos
 
     def with_enabled_addons
       configs.each do |name, config|
-        klass = addon_classes.find { |a| a.name == name }
+        klass = addon_classes.find { |a| a.addon_name == name }
         if klass && config["enabled"]
           yield(klass, config)
         elsif klass.nil?
@@ -84,8 +92,8 @@ module Pharos
 
     def with_disabled_addons
       addon_classes.select { |addon_class|
-        prev_config = prev_configs[addon_class.name]
-        config = configs[addon_class.name]
+        prev_config = prev_configs[addon_class.addon_name]
+        config = configs[addon_class.addon_name]
         prev_config && prev_config["enabled"] && (config.nil? || !config["enabled"])
       }.each do |addon_class|
         yield(addon_class)

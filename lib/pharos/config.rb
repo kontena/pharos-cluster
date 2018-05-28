@@ -42,6 +42,7 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
 
     attr_accessor :data
