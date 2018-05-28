@@ -17,10 +17,8 @@ systemctl start crio
 
 # Install crictl binary if needed
 CRICTL_DOWNLOAD_SHA="597a4db0289870d81d0377396ddaf4c23725a47b33b30856e6291c2b958786f3"
-CURRENT_VERSION=$(which crictl 1>/dev/null && criversion=$(crictl -v) && echo ${criversion##* })
-CRICTL_EXISTS=$?
 
-if [ $CRICTL_EXISTS -eq 1 ] || [ $CURRENT_VERSION != $CRICTL_VERSION ]; then
+if ! which crictl > /dev/null || [ "$(crictl -v)" != "$CRICTL_VERSION" ]; then
     # Not installed or wrong version
     curl -sSL https://bintray.com/kontena/pharos-bin/download_file?file_path=crictl-${CRICTL_VERSION}-linux-${CPU_ARCH}.tar.gz -o /tmp/crictl.tar.gz
     echo "$CRICTL_DOWNLOAD_SHA  /tmp/crictl.tar.gz" | shasum -a256 -c
