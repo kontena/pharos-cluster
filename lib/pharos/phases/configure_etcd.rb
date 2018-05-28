@@ -27,6 +27,7 @@ module Pharos
           'configure-etcd.sh',
           PEER_IP: @host.peer_address,
           INITIAL_CLUSTER: initial_cluster.join(','),
+          IMAGE_REPO: @config.image_repository,
           ETCD_VERSION: Pharos::ETCD_VERSION,
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,

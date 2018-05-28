@@ -5,7 +5,7 @@ set -ue
 mkdir -p /etc/systemd/system/crio.service.d
 cat <<EOF >/etc/systemd/system/crio.service.d/10-cgroup.conf
 [Service]
-Environment='CRIO_STORAGE_OPTIONS=--cgroup-manager=cgroupfs --stream-address=$CRIO_STREAM_ADDRESS --pause-image=k8s.gcr.io/pause-${CPU_ARCH}:3.1'
+Environment='CRIO_STORAGE_OPTIONS=--cgroup-manager=cgroupfs --stream-address=$CRIO_STREAM_ADDRESS --pause-image=${IMAGE_REPO}/pause-${CPU_ARCH}:3.1'
 ExecStartPre=/sbin/sysctl -w net.ipv4.ip_forward=1
 EOF
 

@@ -41,6 +41,7 @@ module Pharos
         logger.info { "Configuring overlay network ..." }
         Pharos::Kube.apply_stack(
           @master.api_address, 'weave',
+          image_repository: @config.image_repository,
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,

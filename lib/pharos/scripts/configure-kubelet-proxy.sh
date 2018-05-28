@@ -17,7 +17,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-    - image: docker.io/kontena/pharos-kubelet-proxy-${ARCH}:${VERSION}
+    - image: ${IMAGE_REPO}/pharos-kubelet-proxy-${ARCH}:${VERSION}
       name: proxy
       env:
       - name: KUBE_MASTERS
@@ -32,7 +32,7 @@ if [ ! -e /etc/kubernetes/kubelet.conf ]; then
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=
-ExecStart=/usr/bin/kubelet ${KUBELET_ARGS}
+ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
 EOF
 
     export DEBIAN_FRONTEND=noninteractive
