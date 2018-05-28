@@ -47,6 +47,7 @@ module Pharos
         exec_script(
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          IMAGE_REPO: @config.image_repository,
           ARCH: @host.cpu_arch.name,
           VERSION: Pharos::KUBELET_PROXY_VERSION,
           MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(','),
