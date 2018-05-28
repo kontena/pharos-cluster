@@ -112,6 +112,7 @@ module Pharos
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
         end
+        optional(:image_repository).filled(:str?)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]

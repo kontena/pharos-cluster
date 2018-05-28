@@ -47,7 +47,7 @@ spec:
     - --initial-cluster-token=pharos-etcd-token
     - --initial-cluster-state=${INITIAL_CLUSTER_STATE}
 
-    image: k8s.gcr.io/etcd-${ARCH}:${ETCD_VERSION}
+    image: ${IMAGE_REPO}/etcd-${ARCH}:${ETCD_VERSION}
     livenessProbe:
       exec:
         command:
