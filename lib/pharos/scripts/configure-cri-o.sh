@@ -14,3 +14,15 @@ systemctl enable crio
 # remove unnecessary cni plugins
 rm /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
 systemctl start crio
+
+# Install crictl binary if needed
+
+
+if ! which crictl > /dev/null || [ "$(crictl -v)" != "$CRICTL_VERSION" ]; then
+    # Not installed or wrong version
+    curl -sSL https://bintray.com/kontena/pharos-bin/download_file?file_path=crictl-v${CRICTL_VERSION}-linux-${CPU_ARCH}.tar.gz -o /tmp/crictl.tar.gz
+    curl -sSL https://bintray.com/kontena/pharos-bin/download_file?file_path=crictl-v${CRICTL_VERSION}-linux-${CPU_ARCH}.tar.gz.asc -o /tmp/crictl.tar.gz.asc
+    gpg --verify /tmp/crictl.tar.gz.asc /tmp/crictl.tar.gz
+    tar xzf /tmp/crictl.tar.gz
+    install -m 755 -o root -g root crictl /usr/local/bin/crictl && rm crictl
+fi
