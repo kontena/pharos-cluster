@@ -22,7 +22,7 @@ CRICTL_EXISTS=$?
 
 if [ $CRICTL_EXISTS -eq 1 ] || [ $CURRENT_VERSION != $CRICTL_VERSION ]; then
     # Not installed or wrong version
-    curl -sSL https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.0.0-beta.0/crictl-${CRICTL_VERSION}-linux-${CPU_ARCH}.tar.gz -o /tmp/crictl.tar.gz
+    curl -sSL https://bintray.com/kontena/pharos-bin/download_file?file_path=crictl-${CRICTL_VERSION}-linux-${CPU_ARCH}.tar.gz -o /tmp/crictl.tar.gz
     echo "$CRICTL_DOWNLOAD_SHA  /tmp/crictl.tar.gz" | shasum -a256 -c
     tar xzf /tmp/crictl.tar.gz
     install -m 755 -o root -g root crictl /usr/local/bin/crictl && rm crictl
