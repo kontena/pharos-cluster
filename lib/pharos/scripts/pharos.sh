@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ## @param file
 file_exists() {
