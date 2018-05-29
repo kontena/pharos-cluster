@@ -3,8 +3,10 @@
 set -ue
 
 reload_daemon() {
-    systemctl daemon-reload
-    systemctl is-active --quiet crio && systemctl restart crio
+    if systemctl is-active --quiet crio; then
+        systemctl daemon-reload
+        systemctl restart crio
+    fi
 }
 
 mkdir -p /etc/systemd/system/crio.service.d

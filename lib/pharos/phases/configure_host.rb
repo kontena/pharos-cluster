@@ -39,8 +39,7 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2",
-            HTTP_PROXY: @host.http_proxy.to_s
+            DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2"
           )
         elsif crio?
           logger.info { "Configuring container runtime (cri-o) packages ..." }
@@ -50,8 +49,7 @@ module Pharos
             CRICTL_VERSION: Pharos::CRICTL_VERSION,
             CRIO_STREAM_ADDRESS: @host.peer_address,
             CPU_ARCH: @host.cpu_arch.name,
-            IMAGE_REPO: @config.image_repository,
-            HTTP_PROXY: @host.http_proxy.to_s
+            IMAGE_REPO: @config.image_repository
           )
         else
           raise Pharos::Error, "Unknown container runtime: #{@host.container_runtime}"

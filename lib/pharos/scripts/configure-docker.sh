@@ -18,8 +18,10 @@ cat <<EOF >/etc/docker/daemon.json
 EOF
 
 reload_daemon() {
-    systemctl daemon-reload
-    systemctl is-active --quiet docker && systemctl restart docker
+    if systemctl is-active --quiet docker; then
+        systemctl daemon-reload
+        systemctl restart docker
+    fi
 }
 
 if [ -n "$HTTP_PROXY" ]; then
