@@ -120,7 +120,7 @@ module Pharos
     # @param cpu_arch [String, NilClass]
     # @param cluster_config [Pharos::Config, NilClass]
     def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
-      @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(config.to_hash)
+      @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(Hash(config))
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch
