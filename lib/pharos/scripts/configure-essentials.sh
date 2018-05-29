@@ -2,17 +2,18 @@
 
 set -e
 
+. /usr/local/lib/pharos.sh
+
+env_file="/etc/environment"
+
 if [ "${SET_HTTP_PROXY}" = "true" ]; then
-    cat <<EOF >/etc/environment
-PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
-http_proxy="${HTTP_PROXY}"
-HTTP_PROXY="${HTTP_PROXY}"
-HTTPS_PROXY="${HTTP_PROXY}"
-EOF
+    lineinfile "^http_proxy=" "http_proxy=${HTTP_PROXY}" $env_file
+    lineinfile "^HTTP_PROXY=" "HTTP_PROXY=${HTTP_PROXY}" $env_file
+    lineinfile "^HTTPS_PROXY=" "HTTPS_PROXY=${HTTP_PROXY}" $env_file
 else
-    cat <<EOF >/etc/environment
-PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
-EOF
+    linefromfile "^http_proxy=" $env_file
+    linefromfile "^HTTP_PROXY=" $env_file
+    linefromfile "^HTTPS_PROXY=" $env_file
 fi
 
 if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
@@ -21,7 +22,6 @@ if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
     apt-get install -y apt-transport-https software-properties-common
 fi
 
-cat <<EOF >/etc/apt/apt.conf.d/20auto-upgrades
-APT::Periodic::Update-Package-Lists "1";
-APT::Periodic::Unattended-Upgrade "0";
-EOF
+autoupgrade_file="/etc/apt/apt.conf.d/20auto-upgrades"
+lineinfile "^APT::Periodic::Update-Package-Lists " 'APT::Periodic::Update-Package-Lists "1";' $autoupgrade_file
+lineinfile "^APT::Periodic::Unattended-Upgrade " 'APT::Periodic::Unattended-Upgrade "0";' $autoupgrade_file

@@ -22,6 +22,7 @@ module Pharos
 
       def call
         logger.info { "Configuring essential packages ..." }
+        @ssh.file('/usr/local/lib/pharos.sh').write(File.read(File.join(__dir__, '..', 'scripts', 'pharos.sh')))
         exec_script(
           'configure-essentials.sh',
           HTTP_PROXY: @host.http_proxy.to_s,
