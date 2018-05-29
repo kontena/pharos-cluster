@@ -9,6 +9,13 @@ Environment='CRIO_STORAGE_OPTIONS=--cgroup-manager=cgroupfs --stream-address=$CR
 ExecStartPre=/sbin/sysctl -w net.ipv4.ip_forward=1
 EOF
 
+if [ -n "$HTTP_PROXY" ]; then
+    cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=${HTTP_PROXY}"
+EOF
+fi
+
 DEBIAN_FRONTEND=noninteractive apt-get install -y cri-o-$CRIO_VERSION
 systemctl enable crio
 # remove unnecessary cni plugins

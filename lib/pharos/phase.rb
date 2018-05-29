@@ -53,6 +53,7 @@ module Pharos
     end
 
     # @param script [String] name of file under ../scripts/
+    # @param vars [Hash]
     def exec_script(script, vars = {})
       @ssh.exec_script!(
         script,
@@ -61,6 +62,9 @@ module Pharos
       )
     end
 
+    # @param path [String]
+    # @param vars [Hash]
+    # @return [Pharos::YamlFile]
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
     end
