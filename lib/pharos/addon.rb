@@ -114,13 +114,13 @@ module Pharos
 
     attr_reader :config, :cpu_arch, :cluster_config, :master
 
-    # @param config [Hash]
+    # @param config [Hash,Dry::Validation::Result]
     # @param enabled [Boolean]
     # @param master [Pharos::Configuration::Host,NilClass]
     # @param cpu_arch [String, NilClass]
     # @param cluster_config [Pharos::Config, NilClass]
     def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
-      @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(config)
+      @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(Hash(config))
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch

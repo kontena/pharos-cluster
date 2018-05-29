@@ -72,8 +72,14 @@ module Pharos
       tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
       config['hosts'] ||= []
       config['api'] ||= {}
+      config['addons'] ||= {}
       config['hosts'] += tf_parser.hosts
       config['api'].merge!(tf_parser.api) if tf_parser.api
+      config['addons'].each do |name, conf|
+        if addon_config = tf_parser.addons[name]
+          conf.merge!(addon_config)
+        end
+      end
       config
     end
 
