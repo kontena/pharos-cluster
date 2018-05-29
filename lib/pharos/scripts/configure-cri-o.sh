@@ -2,12 +2,32 @@
 
 set -ue
 
+reload_daemon() {
+    if systemctl is-active --quiet crio; then
+        systemctl daemon-reload
+        systemctl restart crio
+    fi
+}
+
 mkdir -p /etc/systemd/system/crio.service.d
 cat <<EOF >/etc/systemd/system/crio.service.d/10-cgroup.conf
 [Service]
 Environment='CRIO_STORAGE_OPTIONS=--cgroup-manager=cgroupfs --stream-address=$CRIO_STREAM_ADDRESS --pause-image=${IMAGE_REPO}/pause-${CPU_ARCH}:3.1'
 ExecStartPre=/sbin/sysctl -w net.ipv4.ip_forward=1
 EOF
+
+if [ -n "$HTTP_PROXY" ]; then
+    cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=${HTTP_PROXY}"
+EOF
+    reload_daemon
+else
+    if [ -f /etc/systemd/system/crio.service.d/http-proxy.conf ]; then
+        rm /etc/systemd/system/crio.service.d/http-proxy.conf
+        reload_daemon
+    fi
+fi
 
 DEBIAN_FRONTEND=noninteractive apt-get install -y cri-o-$CRIO_VERSION
 systemctl enable crio
