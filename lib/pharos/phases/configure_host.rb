@@ -24,7 +24,8 @@ module Pharos
         logger.info { "Configuring essential packages ..." }
         exec_script(
           'configure-essentials.sh',
-          HTTP_PROXY: @host.http_proxy
+          HTTP_PROXY: @host.http_proxy.to_s,
+          SET_HTTP_PROXY: @host.http_proxy.nil? ? 'false' : 'true'
         )
 
         logger.info { "Configuring package repositories ..." }
@@ -39,7 +40,7 @@ module Pharos
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
             DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2",
-            HTTP_PROXY: @host.http_proxy
+            HTTP_PROXY: @host.http_proxy.to_s
           )
         elsif crio?
           logger.info { "Configuring container runtime (cri-o) packages ..." }
@@ -50,7 +51,7 @@ module Pharos
             CRIO_STREAM_ADDRESS: @host.peer_address,
             CPU_ARCH: @host.cpu_arch.name,
             IMAGE_REPO: @config.image_repository,
-            HTTP_PROXY: @host.http_proxy
+            HTTP_PROXY: @host.http_proxy.to_s
           )
         else
           raise Pharos::Error, "Unknown container runtime: #{@host.container_runtime}"

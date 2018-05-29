@@ -2,6 +2,11 @@
 
 set -ue
 
+reload_daemon() {
+    systemctl daemon-reload
+    systemctl is-active --quiet crio && systemctl restart crio
+}
+
 mkdir -p /etc/systemd/system/crio.service.d
 cat <<EOF >/etc/systemd/system/crio.service.d/10-cgroup.conf
 [Service]
@@ -14,6 +19,12 @@ if [ -n "$HTTP_PROXY" ]; then
 [Service]
 Environment="HTTP_PROXY=${HTTP_PROXY}"
 EOF
+    reload_daemon
+else
+    if [ -f /etc/systemd/system/crio.service.d/http-proxy.conf ]; then
+        rm /etc/systemd/system/crio.service.d/http-proxy.conf
+        reload_daemon
+    fi
 fi
 
 DEBIAN_FRONTEND=noninteractive apt-get install -y cri-o-$CRIO_VERSION
