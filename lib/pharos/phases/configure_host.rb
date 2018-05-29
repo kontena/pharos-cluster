@@ -22,7 +22,7 @@ module Pharos
 
       def call
         logger.info { "Configuring essential packages ..." }
-        @ssh.file('/usr/local/lib/pharos.sh').write(File.read(File.join(__dir__, '..', 'scripts', 'pharos.sh')))
+        configure_script_library
         exec_script(
           'configure-essentials.sh',
           HTTP_PROXY: @host.http_proxy.to_s,
@@ -55,6 +55,14 @@ module Pharos
         else
           raise Pharos::Error, "Unknown container runtime: #{@host.container_runtime}"
         end
+      end
+
+      def configure_script_library
+        path = "/usr/local/share/pharos"
+        @ssh.exec("sudo mkdir -p #{path}")
+        @ssh.file("#{path}/util.sh").write(
+          File.read(File.join(__dir__, '..', 'scripts', 'pharos.sh'))
+        )
       end
 
       def configure_repos

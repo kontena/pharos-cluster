@@ -2,7 +2,7 @@
 
 set -e
 
-. /usr/local/lib/pharos.sh
+. /usr/local/share/pharos/util.sh
 
 env_file="/etc/environment"
 
