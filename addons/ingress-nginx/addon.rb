@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'ingress-nginx' do
-  version '0.12.0'
+  version '0.15.0'
   license 'Apache License 2.0'
 
   config {
