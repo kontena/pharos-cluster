@@ -9,7 +9,7 @@ Pharos.addon 'host-upgrades' do
   config {
     attribute :image_tag, Pharos::Types::String.default("edge")
     attribute :schedule, Pharos::Types::String.default("0 0 0 * * *")
-    attribute :schedule_window, Pharos::Types::String.default("2h")
+    attribute :schedule_window, Pharos::Types::String
     attribute :reboot, Pharos::Types::Bool.default(false)
     attribute :drain, Pharos::Types::Bool.default(true)
   }
