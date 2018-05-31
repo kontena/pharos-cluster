@@ -37,7 +37,10 @@ module Pharos
         logger.info { "Initializing control plane ..." }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm init --ignore-preflight-errors all --skip-token-print --config #{tmp_file}")
+          exec_script(
+            'kubeadm-init.sh',
+            TMP_FILE: tmp_file
+          )
         end
 
         logger.info { "Initialization of control plane succeeded!" }
@@ -54,8 +57,10 @@ module Pharos
         logger.info { "Configuring control plane ..." }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm alpha phase controlplane all --config #{tmp_file}")
-          @ssh.exec!("sudo kubeadm alpha phase mark-master --config #{tmp_file}")
+          exec_script(
+            'kubeadm-reconfigure.sh',
+            TMP_FILE: tmp_file
+          )
         end
       end
 
