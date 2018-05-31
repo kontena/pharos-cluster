@@ -20,7 +20,7 @@ Pharos.addon 'host-upgrades' do
       schedule: config.schedule,
       schedule_window: config.schedule_window,
       reboot: config.reboot,
-      drain: config.drain,
+      drain: config.reboot && config.drain,
       journal: false, # disabled ue to https://github.com/kontena/pharos-host-upgrades/issues/15
     )
   }
