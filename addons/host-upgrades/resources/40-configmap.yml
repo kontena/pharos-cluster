@@ -94,7 +94,7 @@ data:
 
     // Automatically upgrade packages from these (origin:archive) pairs
     Unattended-Upgrade::Allowed-Origins {
-    // "${distro_id}:${distro_codename}";
+      "${distro_id}:${distro_codename}";
     	"${distro_id}:${distro_codename}-security";
     	// Extended Security Maintenance; doesn't necessarily exist for
     	// every release and this system may not have it installed, but if
