@@ -39,7 +39,7 @@ module Pharos
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-init.sh',
-            TMP_FILE: tmp_file
+            CONFIG: tmp_file
           )
         end
 
@@ -59,7 +59,7 @@ module Pharos
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-reconfigure.sh',
-            TMP_FILE: tmp_file
+            CONFIG: tmp_file
           )
         end
       end
