@@ -1,0 +1,79 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: host-upgrades
+  namespace: kube-system
+  labels:
+    app: host-upgrades
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: host-upgrades
+    spec:
+      serviceAccountName: host-upgrades
+      containers:
+        - name: host-upgrades
+          image: "<%= image %>"
+          imagePullPolicy: IfNotPresent
+          command:
+            - pharos-host-upgrades
+          args:
+            - "--schedule=<%= schedule %>"
+            <% if schedule_window %>
+            - "--schedule-window=<%= schedule_window %>"
+            <% end %>
+            <% if reboot %>
+            - --reboot
+            <% end %>
+            <% if drain %>
+            - --drain
+            <% end %>
+          env:
+            - name: KUBE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KUBE_DAEMONSET
+              value: host-upgrades
+            - name: KUBE_NODE
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: config
+              mountPath: /etc/host-upgrades
+            - name: host
+              mountPath: /run/host-upgrades
+            - name: dbus
+              mountPath: /var/run/dbus
+            <% if journal %>
+            - name: journal
+              mountPath: /run/log/journal
+            <% end %>
+      volumes:
+        - name: config
+          configMap:
+            name: host-upgrades
+        - name: host
+          hostPath:
+            path: /run/host-upgrades
+            type: DirectoryOrCreate
+        - name: dbus
+          hostPath:
+            path: /var/run/dbus
+            type: Directory
+        <% if journal %>
+        - name: journal
+          hostPath:
+            path: /var/log/journal
+            type: Directory
+        <% end %>
+      restartPolicy: Always
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
