@@ -89,7 +89,8 @@ module Pharos
       end
 
       def configurer(ssh)
-        Pharos::Host::UbuntuXenial.new(self, ssh)
+        config = Pharos::Host::Configurer.config_for_os_release(os_release)
+        config.cls.new(self, ssh)
       end
     end
   end

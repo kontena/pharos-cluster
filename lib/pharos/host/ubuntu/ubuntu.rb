@@ -1,4 +1,4 @@
-require_relative 'configurer'
+# frozen_string_literal: true
 
 module Pharos
   module Host

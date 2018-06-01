@@ -6,6 +6,8 @@ module Pharos
       title "Validate hosts"
 
       def call
+        Pharos::HostConfigManager.load_configs
+
         logger.info { "Checking sudo access ..." }
         check_sudo
         logger.info { "Gathering host facts ..." }
@@ -19,7 +21,9 @@ module Pharos
       end
 
       def check_distro_version
-        return if @host.os_release.supported?
+        @host.configurer(@ssh) # load configurer
+        return if Pharos::Host::Configurer.supported_os?(@host.os_release)
+
         raise Pharos::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
       end
 

@@ -5,6 +5,8 @@ require_relative 'ubuntu'
 module Pharos
   module Host
     class UbuntuXenial < Ubuntu
+      register_config 'ubuntu', '16.04'
+
       CRIO_VERSION = '1.10'
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'

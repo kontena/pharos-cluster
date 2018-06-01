@@ -28,6 +28,7 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
+  autoload :HostConfigManager, 'pharos/host_config_manager'
 
   module SSH
     autoload :Client, 'pharos/ssh/client'
@@ -51,6 +52,6 @@ module Pharos
   end
 
   module Host
-    autoload :UbuntuXenial, 'pharos/host/ubuntu_xenial'
+    autoload :Configurer, 'pharos/host/configurer'
   end
 end
