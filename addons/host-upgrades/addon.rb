@@ -4,8 +4,6 @@ Pharos.addon 'host-upgrades' do
   version '0.0.0'
   license 'Apache License 2.0'
 
-  IMAGE = 'quay.io/kontena/pharos-host-upgrades'
-
   config {
     attribute :image_tag, Pharos::Types::String.default("edge")
     attribute :schedule, Pharos::Types::String.default("0 0 0 * * *")
@@ -16,7 +14,7 @@ Pharos.addon 'host-upgrades' do
 
   install {
     apply_resources(
-      image: "#{IMAGE}:#{config.image_tag}",
+      image_tag: config.image_tag,
       schedule: config.schedule,
       schedule_window: config.schedule_window,
       reboot: config.reboot,
