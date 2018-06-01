@@ -1,6 +1,6 @@
 require "pharos/phases/configure_master"
 
-describe Pharos::Phases::ConfigureMaster do
+describe Pharos::Kubeadm::ConfigGenerator do
   let(:master) { Pharos::Configuration::Host.new(address: 'test', private_address: 'private', role: 'master') }
   let(:config_hosts_count) { 1 }
 
@@ -15,7 +15,7 @@ describe Pharos::Phases::ConfigureMaster do
   ) }
 
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(master, config: config, ssh: ssh) }
+  subject { described_class.new(config, master) }
 
   describe '#generate_config' do
 
@@ -257,6 +257,42 @@ describe Pharos::Phases::ConfigureMaster do
           'mode' => 'iptables',
           'featureGates' => {},
         )
+      end
+    end
+
+    describe 'noTaintMaster' do
+      it 'taints the master by default' do
+        expect(subject.generate_config['noTaintMaster']).to eq false
+      end
+
+      context 'with empty host taints' do
+        let(:master) { Pharos::Configuration::Host.new(
+          address: 'test',
+          private_address: 'private',
+          role: 'master',
+          taints: [],
+        ) }
+
+        it 'does not taint the master' do
+          expect(subject.generate_config['noTaintMaster']).to eq true
+
+        end
+      end
+
+      context 'with master taint' do
+        let(:master) { Pharos::Configuration::Host.new(
+          address: 'test',
+          private_address: 'private',
+          role: 'master',
+          taints: [
+            Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule'),
+            Pharos::Configuration::Taint.new(key: 'test', effect: 'NoSchedule'),
+          ],
+        ) }
+
+        it 'does not taint the master' do
+          expect(subject.generate_config['noTaintMaster']).to eq false
+        end
       end
     end
   end

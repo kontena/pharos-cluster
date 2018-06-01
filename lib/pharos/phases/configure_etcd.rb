@@ -5,7 +5,6 @@ module Pharos
     class ConfigureEtcd < Pharos::Phase
       title 'Configure etcd'
       CA_PATH = '/etc/pharos/pki'
-      POD_MANIFEST_PATH = '/etc/kubernetes/manifests/pharos-etcd.yml'
 
       register_component(
         name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0',
@@ -28,6 +27,7 @@ module Pharos
           'configure-etcd.sh',
           PEER_IP: @host.peer_address,
           INITIAL_CLUSTER: initial_cluster.join(','),
+          IMAGE_REPO: @config.image_repository,
           ETCD_VERSION: Pharos::ETCD_VERSION,
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
@@ -39,7 +39,8 @@ module Pharos
         host_configurer.ensure_kubelet(
           ARCH: @host.cpu_arch.name,
           KUBE_VERSION: Pharos::KUBE_VERSION,
-          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
+          IMAGE_REPO: @config.image_repository
         )
         exec_script(
           'wait-etcd.sh',
@@ -57,12 +58,7 @@ module Pharos
       # @param peer [Pharos::Configuration::Host]
       # @return [String]
       def peer_name(peer)
-        file = @ssh.file(POD_MANIFEST_PATH)
-        if file.exist? && match = file.read.match(/--name=(\w+)/)
-          match[1]
-        else
-          peer.hostname.split('.')[0]
-        end
+        peer.hostname.split('.')[0]
       end
 
       def sync_ca

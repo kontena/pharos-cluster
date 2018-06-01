@@ -18,6 +18,21 @@ module Pharos
 
     constructor_type :schema
 
+    # @param raw_data [Hash]
+    # @raise [Pharos::ConfigError]
+    # @return [Pharos::Config]
+    def self.load(raw_data)
+      schema_data = Pharos::ConfigSchema.load(raw_data)
+
+      config = new(schema_data)
+      config.data = raw_data.freeze
+
+      # inject api_endpoint to each host object
+      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
+
+      config
+    end
+
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
     attribute :network, Pharos::Configuration::Network
     attribute :kube_proxy, Pharos::Configuration::KubeProxy
@@ -27,6 +42,8 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :image_repository, Pharos::Types::String.default('quay.io/kontena')
+    attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
 
     attr_accessor :data

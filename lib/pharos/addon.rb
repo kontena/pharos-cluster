@@ -5,6 +5,20 @@ require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
+  # @param name [String]
+  # @return [Pharos::Addon]
+  def self.addon(name, &block)
+    klass = Class.new(Pharos::Addon, &block).tap do |addon|
+      addon.addon_location = File.dirname(block.source_location.first)
+      addon.addon_name = name
+    end
+
+    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
+    Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
+    Pharos::AddonManager.addons << klass
+    klass
+  end
+
   class Addon
     include Pharos::Logging
 
@@ -26,62 +40,87 @@ module Pharos
       end
     end
 
-    def self.name(name = nil)
-      if name
-        @name = name
-      else
-        @name
+    class << self
+      attr_accessor :addon_name
+      attr_writer :addon_location
+
+      # @return [String]
+      def addon_location
+        @addon_location || __dir__
+      end
+
+      def version(version = nil)
+        if version
+          @version = version
+        else
+          @version
+        end
+      end
+
+      def license(license = nil)
+        if license
+          @license = license
+        else
+          @license
+        end
+      end
+
+      def to_h
+        { name: addon_name, version: version, license: license }
+      end
+
+      def config_schema(&block)
+        @schema = Dry::Validation.Form(Schema, &block)
+      end
+
+      def config(&block)
+        @config ||= Class.new(Pharos::Addons::Struct, &block)
+      end
+
+      def config?
+        !@config.nil?
+      end
+
+      def custom_type(&block)
+        Class.new(Pharos::Addons::Struct, &block)
+      end
+
+      # @return [Hash]
+      def hooks
+        @hooks ||= {}
+      end
+
+      def install(&block)
+        hooks[:install] = block
+      end
+
+      def uninstall(&block)
+        hooks[:uninstall] = block
+      end
+
+      def validation
+        Dry::Validation.Form(Schema) { yield }
+      end
+
+      # @param config [Hash]
+      def validate(config)
+        if @schema
+          @schema.call(config)
+        else
+          validation {}.call(config)
+        end
       end
     end
 
-    def self.version(version = nil)
-      if version
-        @version = version
-      else
-        @version
-      end
-    end
+    attr_reader :config, :cpu_arch, :cluster_config, :master
 
-    def self.license(license = nil)
-      if license
-        @license = license
-      else
-        @license
-      end
-    end
-
-    def self.to_h
-      { name: name, version: version, license: license }
-    end
-
-    def self.schema(&block)
-      @schema = Dry::Validation.Form(Schema, &block)
-    end
-
-    def self.struct(&block)
-      @struct ||= Class.new(Pharos::Addons::Struct, &block)
-    end
-
-    def self.validation
-      Dry::Validation.Form(Schema) { yield }
-    end
-
-    def self.validate(config)
-      if @schema
-        @schema.call(config)
-      else
-        validation {}.call(config)
-      end
-    end
-
-    def self.descendants
-      ObjectSpace.each_object(Class).select { |klass| klass < self }
-    end
-
-    attr_reader :config, :cpu_arch, :cluster_config
-
+    # @param config [Hash,Dry::Validation::Result]
+    # @param enabled [Boolean]
+    # @param master [Pharos::Configuration::Host,NilClass]
+    # @param cpu_arch [String, NilClass]
+    # @param cluster_config [Pharos::Config, NilClass]
     def initialize(config = nil, enabled: true, master:, cpu_arch:, cluster_config:)
-      @config = self.class.struct.new(config)
+      @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(Hash(config))
       @enabled = enabled
       @master = master
       @cpu_arch = cpu_arch
@@ -89,7 +128,7 @@ module Pharos
     end
 
     def name
-      self.class.name
+      self.class.addon_name
     end
 
     def duration
@@ -102,42 +141,64 @@ module Pharos
 
     def apply
       if enabled?
-        install
+        apply_install
       else
-        uninstall
+        apply_uninstall
       end
     end
 
-    def install
-      apply_stack
+    def hooks
+      self.class.hooks
     end
 
-    def uninstall
-      prune_stack
+    def apply_install
+      if hooks[:install]
+        instance_eval(&hooks[:install])
+      else
+        apply_resources
+      end
+    end
+
+    def apply_uninstall
+      if hooks[:uninstall]
+        instance_eval(&hooks[:uninstall])
+      else
+        delete_resources
+      end
     end
 
     # @return [Pharos::Kube::Session]
     def kube_session
-      Pharos::Kube.session(@master.api_address)
+      Pharos::Kube.session(master.api_address)
     end
 
+    # @return [Kubeclient]
+    def kube_client
+      kube_session.resource_client
+    end
+
+    # @param vars [Hash]
+    # @return [Pharos::Kube::Stack]
     def kube_stack(vars = {})
       Pharos::Kube::Stack.new(
-        kube_session, self.class.name, File.join(__dir__, 'addons', self.class.name, 'resources'),
+        kube_session, name, File.join(self.class.addon_location, 'resources'),
         vars.merge(
-          name: self.class.name,
+          name: name,
           version: self.class.version,
-          config: @config,
-          arch: @cpu_arch
+          config: config,
+          arch: cpu_arch
         )
       )
     end
 
-    def apply_stack(vars = {})
+    # @param vars [Hash]
+    # @return [Array<Kubeclient::Resource>]
+    def apply_resources(vars = {})
       kube_stack(vars).apply
     end
 
-    def prune_stack
+    # @return [Array<Kubeclient::Resource>]
+    def delete_resources
       kube_stack.prune('-')
     end
 

@@ -47,6 +47,7 @@ module Pharos
         exec_script(
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          IMAGE_REPO: @config.image_repository,
           ARCH: @host.cpu_arch.name,
           VERSION: Pharos::KUBELET_PROXY_VERSION,
           MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
@@ -55,6 +56,7 @@ module Pharos
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
+          IMAGE_REPO: @config.image_repository
         )
         exec_script(
           'wait-kubelet-proxy.sh'
@@ -109,6 +111,7 @@ module Pharos
         end
         args += @host.kubelet_args
 
+        args << "--pod-infra-container-image=#{@config.image_repository}/pause-#{@host.cpu_arch.name}:3.1"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
         args

@@ -35,8 +35,10 @@ module Pharos
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: CRIO_VERSION,
+            CRICTL_VERSION: Pharos::CRICTL_VERSION,
             CRIO_STREAM_ADDRESS: host.peer_address,
-            CPU_ARCH: host.cpu_arch.name
+            CPU_ARCH: host.cpu_arch.name,
+            IMAGE_REPO: config.image_repository
           )
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"

@@ -36,7 +36,11 @@ module Pharos
     # load phases/addons
     def load
       Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
-      Pharos::AddonManager.load_addons(__dir__ + '/addons/')
+      addon_dirs = [
+        File.join(__dir__, '..', '..', 'addons'),
+        File.join(Dir.pwd, 'addons')
+      ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+      Pharos::AddonManager.load_addons(*addon_dirs)
     end
 
     def validate
@@ -74,9 +78,13 @@ module Pharos
       end
 
       apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::SetupMaster, master_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::UpgradeMaster, master_hosts, ssh: true, parallel: false)
+
       apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: master_hosts.first)
-      apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureKubelet, config.hosts, ssh: true, parallel: true)
+
+      apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
       apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, parallel: false)
 
       # master is now configured and can be used

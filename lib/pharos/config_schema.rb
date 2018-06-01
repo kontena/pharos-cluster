@@ -11,12 +11,23 @@ module Pharos
       'network' => {},
       'authentication' => {},
       'kube_proxy' => {},
-      'kubelet' => {}
+      'kubelet' => {},
+      'addon_paths' => []
     }.freeze
+
+    # @param data [Hash]
+    # @raise [Pharos::ConfigError]
+    # @return [Hash]
+    def self.load(data)
+      schema = build
+      result = schema.call(DEFAULT_DATA.merge(data))
+      raise Pharos::ConfigError, result.messages unless result.success?
+      result.to_h
+    end
 
     # @return [Dry::Validation::Schema]
     def self.build
-      # rubocop:disable Metrics/BlockLength, Lint/NestedMethodDefinition
+      # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Form do
         configure do
           def self.messages
@@ -33,9 +44,17 @@ module Pharos
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
+              optional(:taints).each do
+                schema do
+                  optional(:key).filled(:str?)
+                  optional(:value).filled(:str?)
+                  required(:effect).filled(included_in?: ['NoSchedule', 'NoExecute'])
+                end
+              end
               optional(:user).filled
               optional(:ssh_key_path).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
+              optional(:http_proxy).filled(:str?)
             end
           end
         end
@@ -89,10 +108,12 @@ module Pharos
         optional(:kube_proxy).schema do
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
         end
+        optional(:addon_paths).each(type?: String)
         optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
         end
+        optional(:image_repository).filled(:str?)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]
@@ -102,7 +123,7 @@ module Pharos
           end
         end
       end
-      # rubocop:enable Metrics/BlockLength, Lint/NestedMethodDefinition
+      # rubocop:enable Lint/NestedMethodDefinition
     end
   end
 end

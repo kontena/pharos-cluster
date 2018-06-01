@@ -31,6 +31,17 @@ module Pharos
         hosts
       end
 
+      # @return [Hash]
+      def addons
+        addons = {}
+        addons_hash = data.dig('pharos_addons', 'value') || {}
+        addons_hash.each do |name, array|
+          addons[name] = array.first
+        end
+
+        addons
+      end
+
       # @return [String,NilClass]
       def api
         @api ||= data.dig('pharos_api', 'value')
@@ -49,6 +60,7 @@ module Pharos
         host[:labels] = bundle['label'][0] if bundle['label']
         host[:user] = bundle['user'] if bundle['user']
         host[:ssh_key_path] = bundle['ssh_key_path'] if bundle['ssh_key_path']
+        host[:container_runtime] = bundle['container_runtime'] if bundle['container_runtime']
 
         host
       end

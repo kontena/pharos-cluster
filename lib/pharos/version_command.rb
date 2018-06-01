@@ -12,7 +12,7 @@ module Pharos
       end
       puts "Addon versions:"
       addons.each do |c|
-        puts "  - #{c.name}=#{c.version} (#{c.license})"
+        puts "  - #{c.addon_name}=#{c.version} (#{c.license})"
       end
     end
 
@@ -21,7 +21,7 @@ module Pharos
     end
 
     def addons
-      Pharos::Addon.descendants.sort_by(&:name)
+      Pharos::AddonManager.addons.sort_by(&:name)
     end
 
     def load_phases
@@ -29,7 +29,7 @@ module Pharos
     end
 
     def load_addons
-      Pharos::AddonManager.load_addons([__dir__ + '/addons'])
+      Pharos::AddonManager.load_addons(File.join(__dir__, '..', '..', 'addons'))
     end
   end
 end
