@@ -6,7 +6,7 @@ module Pharos
       title "Setup master configuration files"
 
       def kubeadm
-        Pharos::Kubeadm.new(@config, @host)
+        Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
       end
 
       def call
