@@ -22,15 +22,13 @@ module Pharos
       )
 
       def configure_container_runtime
-        if docker?
-          exec_script(
-            'configure-docker.sh',
-            DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1"
-          )
-        else
-          raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
-        end
+        raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}" unless docker?
+
+        exec_script(
+          'configure-docker.sh',
+          DOCKER_PACKAGE: 'docker.io',
+          DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1"
+        )
       end
     end
   end

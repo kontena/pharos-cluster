@@ -7,11 +7,37 @@ module Pharos
 
       SCRIPT_LIBRARY = File.join(__dir__, '..', 'scripts', 'pharos.sh').freeze
 
-      @@configs = []
-
       def initialize(host, ssh)
         @host = host
         @ssh = ssh
+      end
+
+      def install_essentials
+        abstract_method!
+      end
+
+      def configure_repos
+        abstract_method!
+      end
+
+      def configure_netfilter
+        abstract_method!
+      end
+
+      def configure_cfssl
+        abstract_method!
+      end
+
+      def ensure_kubelet
+        abstract_method!
+      end
+
+      def install_kubelet
+        abstract_method!
+      end
+
+      def configure_container_runtime
+        abstract_method!
       end
 
       # @param path [Array]
@@ -76,8 +102,14 @@ module Pharos
         end
 
         def configs
-          @@configs
+          @@configs ||= [] # rubocop:disable Style/ClassVars
         end
+      end
+
+      private
+
+      def abstract_method!
+        raise NotImplementedError, 'This is an abstract base method. Implement in your subclass.'
       end
     end
   end

@@ -3,7 +3,6 @@
 module Pharos
   module Host
     class Ubuntu < Configurer
-
       def install_essentials
         exec_script(
           'configure-essentials.sh',

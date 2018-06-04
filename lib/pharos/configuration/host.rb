@@ -91,7 +91,7 @@ module Pharos
       # @param ssh [Pharos::SSH::Client]
       def configurer(ssh)
         configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
-        configurer.new(self, ssh) if configurer
+        configurer&.new(self, ssh)
       end
     end
   end
