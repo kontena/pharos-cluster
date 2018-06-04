@@ -88,9 +88,10 @@ module Pharos
         role == 'worker'
       end
 
+      # @param ssh [Pharos::SSH::Client]
       def configurer(ssh)
-        config = Pharos::Host::Configurer.config_for_os_release(os_release)
-        config.cls.new(self, ssh)
+        configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
+        configurer.new(self, ssh) if configurer
       end
     end
   end

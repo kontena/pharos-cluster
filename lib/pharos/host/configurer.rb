@@ -2,14 +2,10 @@
 
 module Pharos
   module Host
-    class Config < ::Dry::Struct
-      attribute :name, Pharos::Types::String
-      attribute :version, Pharos::Types::String
-      attribute :cls, Pharos::Types::Object
-    end
-
     class Configurer
       attr_reader :host, :ssh
+
+      SCRIPT_LIBRARY = File.join(__dir__, '..', 'scripts', 'pharos.sh').freeze
 
       @@configs = []
 
@@ -22,6 +18,18 @@ module Pharos
       # @return [String]
       def script_path(*path)
         File.join(__dir__, self.class.os_name, 'scripts', *path)
+      end
+
+      # @return [String]
+      def script_library_install_path
+        "/usr/local/share/pharos"
+      end
+
+      def configure_script_library
+        @ssh.exec("sudo mkdir -p #{script_library_install_path}")
+        @ssh.file("#{script_library_install_path}/util.sh").write(
+          File.read(SCRIPT_LIBRARY)
+        )
       end
 
       # @param script [String] name of file under ../scripts/
@@ -51,17 +59,20 @@ module Pharos
         def register_config(name, version)
           @os_name = name
           @os_version = version
-          config = Pharos::Host::Config.new(name: name, version: version, cls: self)
-          @@configs << config
-          config
+          configs << self
+          self
         end
 
+        # @param [Pharos::Configuration::OsRelease]
+        # @return [Boolean]
         def supported_os?(os_release)
-          @@configs.any? { |config| config.name == os_release.id && config.version == os_release.version }
+          os_name == os_release.id && os_version == os_release.version
         end
 
+        # @param [Pharos::Configuration::OsRelease]
+        # @return [Class<Configurer>, NilClass]
         def config_for_os_release(os_release)
-          @@configs.find { |config| config.name == os_release.id && config.version == os_release.version }
+          configs.find { |config| config.supported_os?(os_release) }
         end
 
         def configs

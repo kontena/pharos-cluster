@@ -6,8 +6,10 @@ module Pharos
       title "Configure hosts"
 
       def call
+        logger.info { "Configuring script helpers ..." }
+        host_configurer.configure_script_library
+
         logger.info { "Configuring essential packages ..." }
-        configure_script_library
         host_configurer.install_essentials
 
         logger.info { "Configuring package repositories ..." }
@@ -18,14 +20,6 @@ module Pharos
 
         logger.info { "Configuring container runtime (docker) packages ..." }
         host_configurer.configure_container_runtime
-      end
-
-      def configure_script_library
-        path = "/usr/local/share/pharos"
-        @ssh.exec("sudo mkdir -p #{path}")
-        @ssh.file("#{path}/util.sh").write(
-          File.read(File.join(__dir__, '..', 'scripts', 'pharos.sh'))
-        )
       end
     end
   end
