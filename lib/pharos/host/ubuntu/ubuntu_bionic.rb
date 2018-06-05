@@ -21,6 +21,11 @@ module Pharos
         enabled: proc { |c| !c.etcd&.endpoints }
       )
 
+      def configure_repos
+        exec_script("repos/pharos_bionic.sh")
+        exec_script('repos/update.sh')
+      end
+
       def configure_container_runtime
         raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}" unless docker?
 
