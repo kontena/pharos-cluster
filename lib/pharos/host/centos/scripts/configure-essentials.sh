@@ -8,6 +8,10 @@ if ! rpm -qi yum-plugin-versionlock ; then
     yum install -y yum-plugin-versionlock
 fi
 
+if ! rpm -qi nmap-ncat ; then
+    yum install -y nmap-ncat
+fi
+
 if ! rpm -qi chrony ; then
     yum install -y chrony
     systemctl enable chrony
