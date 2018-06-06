@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "clamp", "1.2.1"
   spec.add_runtime_dependency "pastel"
   spec.add_runtime_dependency "kubeclient"
-  spec.add_runtime_dependency "net-ssh", "5.0.0.beta2"
+  spec.add_runtime_dependency "net-ssh", "5.0.1"
   spec.add_runtime_dependency "ed25519", "1.2.4"
   spec.add_runtime_dependency "bcrypt_pbkdf", ">= 1.0", "< 2.0"
   spec.add_runtime_dependency "dry-types", "0.12.2"
@@ -39,5 +39,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.7"
   spec.add_development_dependency "fakefs", "~> 0.13"
-  spec.add_development_dependency "rubocop", "~> 0.53"
+  spec.add_development_dependency "rubocop", "~> 0.57"
 end
