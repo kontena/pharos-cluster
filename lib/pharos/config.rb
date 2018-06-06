@@ -50,13 +50,9 @@ module Pharos
 
     # @return [Integer]
     def dns_replicas
-      if network.dns_replicas
-        network.dns_replicas
-      elsif hosts.length == 1
-        1
-      else
-        1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
-      end
+      return network.dns_replicas if network.dns_replicas
+      return 1 if hosts.length == 1
+      1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
     end
 
     # @return [Array<Pharos::Configuration::Node>]
