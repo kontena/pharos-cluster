@@ -30,5 +30,5 @@ else
     linefromfile "^HTTPS_PROXY=" $env_file
 fi
 
-setenforce 0
+setenforce 0 || true
 lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
