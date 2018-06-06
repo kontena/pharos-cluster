@@ -4,19 +4,21 @@ set -e
 
 . /usr/local/share/pharos/util.sh
 
-if [ ! rpm -qi yum-plugin-versionlock ]; then
-    yum install yum-plugin-versionlock
+if ! rpm -qi yum-plugin-versionlock ; then
+    yum install -y yum-plugin-versionlock
 fi
 
-if [ ! rpm -qi chrony ]; then
-    yum install chrony
+if ! rpm -qi chrony ; then
+    yum install -y chrony
     systemctl enable chrony
     systemctl start chrony
 fi
 
 env_file="/etc/environment"
 
-lineinfile "^PATH=" "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" $env_file
+if ! grep -q "/usr/local/bin" $env_file ; then
+    echo "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" >> $env_file
+fi
 
 if [ "${SET_HTTP_PROXY}" = "true" ]; then
     lineinfile "^http_proxy=" "http_proxy=${HTTP_PROXY}" $env_file
