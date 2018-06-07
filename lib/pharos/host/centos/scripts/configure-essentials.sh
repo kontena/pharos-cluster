@@ -32,3 +32,8 @@ fi
 
 setenforce 0 || true
 lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
+
+if systemctl is-active --quiet firewalld; then
+    systemctl stop firewalld
+    systemctl disable firewalld
+fi
