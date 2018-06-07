@@ -8,6 +8,12 @@ module Pharos
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'
 
+      # @param path [Array]
+      # @return [String]
+      def script_path(*path)
+        File.join(__dir__, 'scripts', *path)
+      end
+
       def install_essentials
         exec_script(
           'configure-essentials.sh',
