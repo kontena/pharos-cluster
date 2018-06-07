@@ -6,7 +6,7 @@ module Pharos
       title "Configure master"
 
       KUBE_DIR = '/etc/kubernetes'
-      SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub).freeze
+      SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub front-proxy-ca.key front-proxy-ca.crt).freeze
 
       def kubeadm
         Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
