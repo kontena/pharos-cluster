@@ -2,9 +2,7 @@
 
 module Pharos
   module Host
-    class Centos7 < Configurer
-      register_config 'centos', '7'
-
+    class El7 < Configurer
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'
 

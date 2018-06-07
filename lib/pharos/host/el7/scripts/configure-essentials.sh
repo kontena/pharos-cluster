@@ -16,6 +16,9 @@ fi
 
 env_file="/etc/environment"
 
+lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" $env_file
+lineinfile "^LANG=" "LANG=en_US.utf-8" $env_file
+
 if ! grep -q "/usr/local/bin" $env_file ; then
     echo "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" >> $env_file
 fi
