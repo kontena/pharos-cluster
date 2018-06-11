@@ -1,6 +1,7 @@
 #!/bin/sh
 
 . /usr/local/share/pharos/util.sh
+. /usr/local/share/pharos/el7.sh
 
 set -e
 
@@ -12,10 +13,7 @@ ExecStart=
 ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --cgroup-driver=systemd --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
 EOF
 
-versionlock="/etc/yum/pluginconf.d/versionlock.list"
-linefromfile "^0:kubelet-" $versionlock
-yum install -y kubelet-${KUBE_VERSION}
-lineinfile "^0:kubelet-" "0:kubelet-${KUBE_VERSION}-0.*" $versionlock
+yum_install_with_lock "kubelet" $KUBE_VERSION
 
 if ! systemctl is-active --quiet kubelet; then
     systemctl enable kubelet
