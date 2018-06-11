@@ -39,7 +39,7 @@ module Pharos
       end
 
       # @param version [String]
-      def upgrade_kubeadm(version)
+      def upgrade_kubeadm(version) # rubocop:disable Lint/UnusedMethodArgument
         abstract_method!
       end
 
