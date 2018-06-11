@@ -7,7 +7,7 @@ etcd_healthy() {
   [ "${response}" = '{"health": "true"}' ]
 }
 
-echo "Waiting etcd to launch on port 2380..."
+echo "Waiting etcd to launch on port 2379..."
 while ! etcd_healthy; do
   sleep 1
 done
