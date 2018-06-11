@@ -38,6 +38,11 @@ module Pharos
         abstract_method!
       end
 
+      # @param version [String]
+      def upgrade_kubeadm(version)
+        abstract_method!
+      end
+
       def configure_container_runtime
         abstract_method!
       end

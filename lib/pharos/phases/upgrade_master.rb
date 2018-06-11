@@ -27,11 +27,7 @@ module Pharos
       end
 
       def upgrade_kubeadm
-        exec_script(
-          "install-kubeadm.sh",
-          VERSION: Pharos::KUBEADM_VERSION,
-          ARCH: @host.cpu_arch.name
-        )
+        host_configurer.upgrade_kubeadm(Pharos::KUBEADM_VERSION)
       end
 
       def upgrade

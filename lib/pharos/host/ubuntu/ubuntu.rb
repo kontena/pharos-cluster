@@ -41,6 +41,14 @@ module Pharos
           args
         )
       end
+
+      def upgrade_kubeadm(version)
+        exec_script(
+          "upgrade-kubeadm.sh",
+          VERSION: version,
+          ARCH: host.cpu_arch.name
+        )
+      end
     end
   end
 end
