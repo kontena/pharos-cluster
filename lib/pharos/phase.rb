@@ -68,5 +68,10 @@ module Pharos
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
     end
+
+    # @return [Pharos::Host::Configurer]
+    def host_configurer
+      @host.configurer(@ssh)
+    end
   end
 end

@@ -28,6 +28,7 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
+  autoload :HostConfigManager, 'pharos/host_config_manager'
 
   module SSH
     autoload :Client, 'pharos/ssh/client'
@@ -48,5 +49,9 @@ module Pharos
 
   module Etcd
     autoload :Client, 'pharos/etcd/client'
+  end
+
+  module Host
+    autoload :Configurer, 'pharos/host/configurer'
   end
 end
