@@ -70,7 +70,7 @@ module Pharos
         os_info = {}
         @ssh.file('/etc/os-release').each_line do |line|
           match = line.match(/^(.+)=(.+)$/)
-          os_info[match[1]] = match[2].delete('"')
+          os_info[match[1]] = match[2].delete('"') if match
         end
         Pharos::Configuration::OsRelease.new(
           id: os_info['ID'],

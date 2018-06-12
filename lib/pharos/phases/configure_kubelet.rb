@@ -68,7 +68,7 @@ module Pharos
         exec_script(
           'configure-kube.sh'
         )
-        host_configurer.install_kubelet(
+        host_configurer.install_kube_packages(
           KUBE_VERSION: Pharos::KUBE_VERSION,
           KUBEADM_VERSION: Pharos::KUBEADM_VERSION,
           ARCH: @host.cpu_arch.name

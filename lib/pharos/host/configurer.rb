@@ -34,7 +34,7 @@ module Pharos
       end
 
       # @param args [Hash]
-      def install_kubelet(args) # rubocop:disable Lint/UnusedMethodArgument
+      def install_kube_packages(args) # rubocop:disable Lint/UnusedMethodArgument
         abstract_method!
       end
 
@@ -85,8 +85,10 @@ module Pharos
       class << self
         attr_reader :os_name, :os_version
 
+        # @param component [Hash]
         def register_component(component)
-          Pharos::Phases.register_component component
+          component[:os_release] = Pharos::Configuration::OsRelease.new(id: os_name, version: os_version)
+          Pharos::Phases.register_component(component)
         end
 
         def register_config(name, version)
