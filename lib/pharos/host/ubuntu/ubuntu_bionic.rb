@@ -7,7 +7,6 @@ module Pharos
     class UbuntuBionic < Ubuntu
       register_config 'ubuntu', '18.04'
 
-      CRIO_VERSION = '1.10'
       DOCKER_VERSION = '17.12.1'
       CFSSL_VERSION = '1.2'
 

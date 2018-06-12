@@ -117,7 +117,12 @@ module Pharos
     def show_component_versions(config)
       puts pastel.green("==> Using following software versions:")
       Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
-        puts "    #{c.name}: #{c.version}"
+        if c.os_release
+          " (#{c.os_release.id} #{c.os_release.version})"
+        else
+          target = ""
+        end
+        puts "    #{c.name}: #{c.version}#{target}"
       end
     end
 

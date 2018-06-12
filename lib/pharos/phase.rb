@@ -15,7 +15,7 @@ module Pharos
     end
 
     def self.register_component(component)
-      Pharos::Phases.register_component component
+      Pharos::Phases.register_component(component)
     end
 
     attr_reader :cluster_context
