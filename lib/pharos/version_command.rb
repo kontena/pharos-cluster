@@ -12,8 +12,6 @@ module Pharos
       grouped_phases = phases.group_by { |c|
         if c.os_release
           "#{c.os_release.id} #{c.os_release.version}"
-        else
-          nil
         end
       }
       grouped_phases.each do |os, phases|
