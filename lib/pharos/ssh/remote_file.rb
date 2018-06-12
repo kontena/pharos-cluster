@@ -20,7 +20,7 @@ module Pharos
 
       # Removes the remote file
       def unlink
-        @client.exec!("rm #{escaped_path}")
+        @client.exec!("sudo rm #{escaped_path}")
       end
       alias rm unlink
 

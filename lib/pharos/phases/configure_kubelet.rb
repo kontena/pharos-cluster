@@ -14,7 +14,7 @@ module Pharos
         enabled: proc { |c| !c.worker_hosts.empty? }
       )
 
-      DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/05-pharos.conf"
+      DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/11-pharos.conf"
       CLOUD_CONFIG_DIR = "/etc/pharos/kubelet"
       CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
 
