@@ -34,7 +34,7 @@ module Pharos
       end
 
       # @param args [Hash]
-      def install_kubelet(args) # rubocop:disable Lint/UnusedMethodArgument
+      def install_kube_packages(args) # rubocop:disable Lint/UnusedMethodArgument
         abstract_method!
       end
 

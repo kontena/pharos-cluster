@@ -51,9 +51,9 @@ module Pharos
         )
       end
 
-      def install_kubelet(args)
+      def install_kube_packages(args)
         exec_script(
-          'install-kubelet.sh',
+          'install-kube-packages.sh',
           args
         )
       end
