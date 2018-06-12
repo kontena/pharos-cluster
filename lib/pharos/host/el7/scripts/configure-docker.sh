@@ -32,8 +32,6 @@ else
     fi
 fi
 
-export DEBIAN_FRONTEND=noninteractive
-
 yum install -y docker-${DOCKER_VERSION}
 
 if ! systemctl is-active --quiet docker; then

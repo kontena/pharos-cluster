@@ -22,8 +22,16 @@ fi
 
 if ! rpm -qi chrony ; then
     yum install -y chrony
-    systemctl enable chrony
-    systemctl start chrony
+    systemctl enable chronyd
+    systemctl start chronyd
+fi
+
+if ! rpm -qi conntrack-tools ; then
+    yum install -y conntrack-tools
+fi
+
+if ! rpm -qi iscsi-initiator-utils ; then
+    yum install -y iscsi-initiator-utils
 fi
 
 env_file="/etc/environment"
@@ -45,8 +53,10 @@ else
     linefromfile "^HTTPS_PROXY=" $env_file
 fi
 
-setenforce 0 || true
-lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
+if [ ! "$(getenforce)" = "Disabled" ]; then
+    setenforce 0 || true
+    lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
+fi
 
 if systemctl is-active --quiet firewalld; then
     systemctl stop firewalld
