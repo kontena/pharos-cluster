@@ -41,6 +41,7 @@ module Pharos
         File.join(Dir.pwd, 'addons')
       ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
       Pharos::AddonManager.load_addons(*addon_dirs)
+      Pharos::HostConfigManager.load_configs(@config)
     end
 
     def validate

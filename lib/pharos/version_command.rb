@@ -6,7 +6,6 @@ module Pharos
       puts "Kontena Pharos:"
       puts "  - pharos-cluster version #{Pharos::VERSION}"
       ClusterManager.new(Pharos::Config.new({}), pastel: false).load
-      Pharos::HostConfigManager.load_configs
 
       phases.each do |os, phases|
         title = (os || 'Common').capitalize
