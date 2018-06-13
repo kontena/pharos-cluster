@@ -18,9 +18,9 @@ module Pharos
 
         logger.info { "Joining host to the master ..." }
         join_command = cluster_context['join-command'].split(' ')
-        if @host.container_runtime == 'cri-o'
-          join_command << '--cri-socket /var/run/crio/crio.sock'
-        end
+
+        join_command << '--cri-socket /var/run/crio/crio.sock' if @host.crio?
+        join_command << '--cri-socket /run/containerd/containerd.sock' if @host.containerd?
         join_command << "--node-name #{@host.hostname}"
         join_command << "--ignore-preflight-errors DirAvailable--etc-kubernetes-manifests"
 

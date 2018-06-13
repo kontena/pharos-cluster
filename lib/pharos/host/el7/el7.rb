@@ -4,6 +4,7 @@ module Pharos
   module Host
     class El7 < Configurer
       DOCKER_VERSION = '1.13.1'
+      CONTAINERD_VERSION = '1.1.0'
       CFSSL_VERSION = '1.2'
 
       # @param path [Array]
@@ -36,12 +37,22 @@ module Pharos
       end
 
       def configure_container_runtime
-        raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}" unless docker?
-
-        exec_script(
-          'configure-docker.sh',
-          DOCKER_VERSION: DOCKER_VERSION
-        )
+        if docker?
+          exec_script(
+            'configure-docker.sh',
+            DOCKER_VERSION: DOCKER_VERSION
+          )
+        elsif containerd?
+          exec_script(
+            'configure-containerd.sh',
+            CONTAINERD_VERSION: CONTAINERD_VERSION,
+            CRIO_STREAM_ADDRESS: host.peer_address,
+            CPU_ARCH: host.cpu_arch.name,
+            IMAGE_REPO: cluster_config.image_repository
+          )
+        else
+          raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
+        end
       end
 
       def ensure_kubelet(args)
