@@ -3,33 +3,35 @@
 module Pharos
   class VersionCommand < Pharos::Command
     def execute
-      puts "pharos-cluster version #{Pharos::VERSION}"
-      manager = ClusterManager.new(Pharos::Config.new({}), pastel: false)
-      manager.load
+      puts "Kontena Pharos:"
+      puts "  - pharos-cluster version #{Pharos::VERSION}"
+      ClusterManager.new(Pharos::Config.new({}), pastel: false).load
       Pharos::HostConfigManager.load_configs
 
-      puts "3rd party versions:"
-      grouped_phases = phases.group_by { |c|
-        if c.os_release
-          "#{c.os_release.id} #{c.os_release.version}"
-        end
-      }
-      grouped_phases.each do |os, phases|
-        puts "  #{os || 'all host operating systems'}:"
+      phases.each do |os, phases|
+        title = (os || 'Common').capitalize
+        puts "#{title}:"
         phases.each do |c|
-          puts "    - #{c.name} #{c.version} (#{c.license})"
+          puts "  - #{c.name} #{c.version} (#{c.license})"
         end
       end
-      puts "Addon versions:"
+      puts "Add-ons:"
       addons.each do |c|
         puts "  - #{c.addon_name} #{c.version} (#{c.license})"
       end
     end
 
+    # @return [Array<Pharos::Phases::Component>]
     def phases
-      Pharos::Phases.components.sort_by(&:name)
+      phases = Pharos::Phases.components.sort_by(&:name)
+      phases.group_by { |c|
+        if c.os_release
+          "#{c.os_release.id} #{c.os_release.version}"
+        end
+      }
     end
 
+    # @return [Array<Pharos::Addon>]
     def addons
       Pharos::AddonManager.addons.sort_by(&:name)
     end
