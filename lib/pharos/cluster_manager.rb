@@ -100,6 +100,10 @@ module Pharos
       apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
+    def apply_reset
+      apply_phase(Phases::ResetHost, config.hosts, ssh: true, parallel: true)
+    end
+
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, **options)

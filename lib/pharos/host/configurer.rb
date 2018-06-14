@@ -47,6 +47,10 @@ module Pharos
         abstract_method!
       end
 
+      def reset
+        abstract_method!
+      end
+
       # @param path [Array]
       # @return [String]
       def script_path(*path)
