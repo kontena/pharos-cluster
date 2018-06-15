@@ -46,7 +46,7 @@ module Pharos
             CRICTL_VERSION: Pharos::CRICTL_VERSION,
             CRIO_STREAM_ADDRESS: host.peer_address,
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: config.image_repository
+            IMAGE_REPO: cluster_config.image_repository
           )
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"

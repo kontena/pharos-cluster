@@ -38,28 +38,4 @@ describe Pharos::Host::Configurer do
       ).to be_falsey
     end
   end
-
-  describe '#crio?' do
-    it 'returns true if host container runtime is crio' do
-      allow(host).to receive(:container_runtime).and_return('cri-o')
-      expect(subject.crio?).to be_truthy
-    end
-
-    it 'returns false if host container runtime is not crio' do
-      allow(host).to receive(:container_runtime).and_return('docker')
-      expect(subject.crio?).to be_falsey
-    end
-  end
-
-  describe '#docker?' do
-    it 'returns true if host container runtime is docker' do
-      allow(host).to receive(:container_runtime).and_return('docker')
-      expect(subject.docker?).to be_truthy
-    end
-
-    it 'returns false if host container runtime is not docker' do
-      allow(host).to receive(:container_runtime).and_return('cri-o')
-      expect(subject.docker?).to be_falsey
-    end
-  end
 end

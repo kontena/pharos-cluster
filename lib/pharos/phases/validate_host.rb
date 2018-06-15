@@ -6,8 +6,6 @@ module Pharos
       title "Validate hosts"
 
       def call
-        Pharos::HostConfigManager.load_configs
-
         logger.info { "Checking sudo access ..." }
         check_sudo
         logger.info { "Gathering host facts ..." }

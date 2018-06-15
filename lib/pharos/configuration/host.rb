@@ -58,6 +58,10 @@ module Pharos
         container_runtime == 'cri-o'
       end
 
+      def docker?
+        container_runtime == 'docker'
+      end
+
       # @return [Integer]
       def master_sort_score
         if checks['api_healthy']

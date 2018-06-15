@@ -79,15 +79,21 @@ module Pharos
       end
 
       def crio?
-        @host.container_runtime == 'cri-o'
+        @host.crio?
       end
 
       def docker?
-        @host.container_runtime == 'docker'
+        @host.docker?
+      end
+
+      # @return [Pharos::Config,NilClass]
+      def cluster_config
+        self.class.cluster_config
       end
 
       class << self
         attr_reader :os_name, :os_version
+        attr_accessor :cluster_config
 
         # @param component [Hash]
         def register_component(component)
