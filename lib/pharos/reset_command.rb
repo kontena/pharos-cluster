@@ -2,7 +2,6 @@
 
 module Pharos
   class ResetCommand < UpCommand
-
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
       config = load_config
@@ -32,7 +31,8 @@ module Pharos
       manager.validate
 
       if $stdin.tty? && !yes?
-        exit 1 unless prompt.yes?(pastel.red('Do you really want to reset (it will wipe configuration & data from all hosts)?'))
+        puts "\n\n"
+        exit 1 unless prompt.yes?(pastel.bright_yellow('==> Do you really want to reset (reset will wipe configuration & data from all hosts)?'), default: false)
       end
 
       puts pastel.green("==> Starting to reset cluster ...")
