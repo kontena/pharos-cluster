@@ -1,12 +1,22 @@
 #!/bin/sh
 
+rm -rf /etc/kubernetes/manifests
+sleep 5
 systemctl stop kubelet
 systemctl disable kubelet
 
-systemctl stop docker
-systemctl disable docker
+if which docker ; then
+    docker rm -fv $(docker ps -a -q)
+    systemctl stop docker
+    systemctl disable docker
+elif which crictl ; then
+    systemctl stop crio
+    systemctl disable crio
+    crictl rm $(crictl ps -a -q)
+fi
 
 kubeadm reset
+
 yum remove -y kubeadm kubelet kubectl docker
 
 sudo rm -rf /etc/kubernetes \

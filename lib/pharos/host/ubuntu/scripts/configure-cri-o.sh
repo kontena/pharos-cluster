@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ue
+set -e
 
 reload_daemon() {
     if systemctl is-active --quiet crio; then
