@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 Pharos.addon 'host-upgrades' do
-  version '0.0.0'
+  version '0.1.0'
   license 'Apache License 2.0'
 
   config {
-    attribute :image_tag, Pharos::Types::String.default("edge")
     attribute :schedule, Pharos::Types::String
     attribute :schedule_window, Pharos::Types::String
     attribute :reboot, Pharos::Types::Bool.default(false)
@@ -35,7 +34,6 @@ Pharos.addon 'host-upgrades' do
       end
     end
 
-    optional(:image_tag).filled(:str?)
     required(:schedule).filled(:str?, :schedule?)
     optional(:schedule_window).filled(:str?, :duration?)
     optional(:reboot).filled(:bool?)
@@ -44,7 +42,6 @@ Pharos.addon 'host-upgrades' do
 
   install {
     apply_resources(
-      image_tag: config.image_tag,
       schedule: config.schedule,
       schedule_window: config.schedule_window,
       reboot: config.reboot,

@@ -16,7 +16,7 @@ spec:
       serviceAccountName: host-upgrades
       containers:
         - name: host-upgrades
-          image: "quay.io/kontena/pharos-host-upgrades-<%= arch.name %>:<%= image_tag %>"
+          image: "quay.io/kontena/pharos-host-upgrades-<%= arch.name %>:<%= version %>"
           imagePullPolicy: IfNotPresent
           command:
             - pharos-host-upgrades
