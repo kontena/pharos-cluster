@@ -22,7 +22,7 @@ module Pharos
 
     # @return [Pharos::YamlFile]
     def default_config_yaml
-      if !$stdin.tty? && !$stdin.eof?
+      if !tty? && !stdin_eof?
         Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
       else
         cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
@@ -143,7 +143,7 @@ module Pharos
       else
         puts config.to_yaml
       end
-      if $stdin.tty? && !yes?
+      if tty? && !yes?
         exit 1 unless prompt.yes?('Continue?')
       end
     rescue TTY::Reader::InputInterrupt
