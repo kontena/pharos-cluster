@@ -58,6 +58,10 @@ module Pharos
         container_runtime == 'cri-o'
       end
 
+      def docker?
+        container_runtime == 'docker'
+      end
+
       # @return [Integer]
       def master_sort_score
         if checks['api_healthy']
@@ -86,6 +90,12 @@ module Pharos
 
       def worker?
         role == 'worker'
+      end
+
+      # @param ssh [Pharos::SSH::Client]
+      def configurer(ssh)
+        configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
+        configurer&.new(self, ssh)
       end
     end
   end

@@ -15,7 +15,7 @@ module Pharos
     end
 
     def self.register_component(component)
-      Pharos::Phases.register_component component
+      Pharos::Phases.register_component(component)
     end
 
     attr_reader :cluster_context
@@ -67,6 +67,11 @@ module Pharos
     # @return [Pharos::YamlFile]
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
+    end
+
+    # @return [Pharos::Host::Configurer]
+    def host_configurer
+      @host.configurer(@ssh)
     end
   end
 end

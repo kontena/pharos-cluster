@@ -52,8 +52,8 @@ if [ ! -e /etc/pharos/pki/config.json ]; then
         "${PEER_IP}"
     ],
     "key": {
-        "algo": "ecdsa",
-        "size": 256
+        "algo": "rsa",
+        "size": 2048
     },
     "names": [
         {
@@ -69,7 +69,7 @@ fi
 cd /etc/pharos/pki/etcd
 
 if [ ! -e server.pem ]; then
-    echo "Generating etcd client certificates ..."
+    echo "Generating etcd server certificates ..."
     cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server ../config.json | cfssljson -bare server
 fi
 

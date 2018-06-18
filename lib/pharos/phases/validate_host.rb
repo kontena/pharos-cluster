@@ -19,7 +19,9 @@ module Pharos
       end
 
       def check_distro_version
-        return if @host.os_release.supported?
+        @host.configurer(@ssh) # load configurer
+        return if Pharos::Host::Configurer.configs.any? { |config| config.supported_os?(@host.os_release) }
+
         raise Pharos::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
       end
 
@@ -66,11 +68,11 @@ module Pharos
         os_info = {}
         @ssh.file('/etc/os-release').each_line do |line|
           match = line.match(/^(.+)=(.+)$/)
-          os_info[match[1]] = match[2].delete('"')
+          os_info[match[1]] = match[2].delete('"') if match
         end
         Pharos::Configuration::OsRelease.new(
           id: os_info['ID'],
-          id_like: os_info['ID_LIKE'],
+          id_like: os_info['ID_LIKE'] || os_info['ID'],
           name: os_info['PRETTY_NAME'],
           version: os_info['VERSION_ID']
         )

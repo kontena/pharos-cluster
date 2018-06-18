@@ -41,6 +41,7 @@ module Pharos
         File.join(Dir.pwd, 'addons')
       ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
       Pharos::AddonManager.load_addons(*addon_dirs)
+      Pharos::HostConfigManager.load_configs(@config)
     end
 
     def validate
@@ -67,7 +68,7 @@ module Pharos
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
 
-      unless @config.etcd&.hosts
+      unless @config.etcd&.endpoints
         # we need to use sorted etcd hosts because phases expects that first one has
         # ca etc config files
         etcd_hosts = sorted_etcd_hosts

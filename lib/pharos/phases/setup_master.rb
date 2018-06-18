@@ -6,7 +6,7 @@ module Pharos
       title "Setup master configuration files"
 
       def kubeadm
-        Pharos::Kubeadm.new(@config, @host)
+        Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
       end
 
       def call
@@ -40,9 +40,9 @@ module Pharos
         logger.info { "Pushing token authentication webhook certificates ..." }
 
         @ssh.exec!("sudo mkdir -p /etc/pharos/token_webhook")
-        @ssh.file('/etc/pharos/token_webhook/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
-        @ssh.file('/etc/pharos/token_webhook/token_webhook/cert.pem').write(File.open(File.expand_path(webhook_config[:user][:client_certificate]))) if webhook_config[:user][:client_certificate]
-        @ssh.file('/etc/pharos/token_webhook/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
+        @ssh.file('/etc/pharos/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
+        @ssh.file('/etc/pharos/token_webhook/cert.pem').write(File.open(File.expand_path(webhook_config[:user][:client_certificate]))) if webhook_config[:user][:client_certificate]
+        @ssh.file('/etc/pharos/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
       end
 
       def push_authentication_token_webhook_config
