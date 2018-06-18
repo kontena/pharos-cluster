@@ -13,7 +13,11 @@ Pharos.addon 'host-upgrades' do
   }
 
   config_schema {
+    optional(:image_tag).filled(:str?)
     required(:schedule).filled(:str?)
+    optional(:schedule_window).filled(:str?)
+    optional(:reboot).filled(:bool?)
+    optional(:drain).filled(:bool?)
   }
 
   install {
