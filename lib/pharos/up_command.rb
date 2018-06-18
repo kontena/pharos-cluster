@@ -141,7 +141,7 @@ module Pharos
         puts rouge.format(lexer.lex(config.to_yaml))
         puts ""
       else
-        puts yaml
+        puts config.to_yaml
       end
       if $stdin.tty? && !yes?
         exit 1 unless prompt.yes?('Continue?')
