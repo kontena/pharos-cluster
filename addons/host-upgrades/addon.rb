@@ -14,7 +14,7 @@ Pharos.addon 'host-upgrades' do
 
   config_schema {
     configure do
-      SCHEDULE_RE = /^([*?]|[A-Z0-9\/,-]+)(\s+([*?]|[A-Z0-9\/,-]+)){5}|@\w+$/
+      SCHEDULE_RE = %r(^([*?]|[A-Z0-9/,-]+)(\s+([*?]|[A-Z0-9/,-]+)){5}|@\w+$)
       DURATION_RE = /^(\d+(\.\d+)?(ns|us|ms|s|m|h|))+$/
 
       def schedule?(value)
@@ -29,7 +29,7 @@ Pharos.addon 'host-upgrades' do
         super.merge(
           en: { errors: {
             schedule?: 'is not a valid cron schedule: https://github.com/kontena/pharos-host-upgrades#--schedule',
-            duration?: 'is not a valid Duration: https://golang.org/pkg/time/#ParseDuration',
+            duration?: 'is not a valid Duration: https://golang.org/pkg/time/#ParseDuration'
           } }
         )
       end
