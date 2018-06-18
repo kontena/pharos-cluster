@@ -13,8 +13,22 @@ Pharos.addon 'host-upgrades' do
   }
 
   config_schema {
+    configure do
+      SCHEDULE_RE = /^([*?]|[A-Z0-9\/,-]+)(\s+([*?]|[A-Z0-9\/,-]+)){5}|@\w+$/
+
+      def schedule?(value)
+        !!SCHEDULE_RE.match?(value)
+      end
+
+      def self.messages
+        super.merge(
+          en: { errors: { schedule?: 'is not a valid cron schedule: https://github.com/kontena/pharos-host-upgrades#--schedule' } }
+        )
+      end
+    end
+
     optional(:image_tag).filled(:str?)
-    required(:schedule).filled(:str?)
+    required(:schedule).filled(:str?, :schedule?)
     optional(:schedule_window).filled(:str?)
     optional(:reboot).filled(:bool?)
     optional(:drain).filled(:bool?)
