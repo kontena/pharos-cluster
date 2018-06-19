@@ -3,7 +3,7 @@ require "./addons/host-upgrades/addon"
 
 describe Pharos::Addons::HostUpgrades do
   let(:cluster_config) { Pharos::Config.load(
-    hosts: [ {role: 'worker'} ],
+    hosts: [ {role: 'master', address: '192.0.2.1'} ],
   ) }
   let(:config) { { } }
   let(:cpu_arch) { double(:cpu_arch ) }
@@ -74,32 +74,47 @@ describe Pharos::Addons::HostUpgrades do
         expect(result).to be_success, result.errors.inspect
       end
     end
+  end
 
-    describe 'duration' do
-      it "fails with invalid duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1'})
-
-        expect(result).to_not be_success
-        expect(result.errors.dig(:schedule_window)).to match [/is not a valid duration/]
+  describe '#schedule_window' do
+    context "by default" do
+      it "normalizes to zero" do
+        expect(subject.schedule_window).to eq '0'
       end
+    end
 
-      it "succeeds with a zero duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '0s'})
+    context "with a simple duration" do
+      let(:config) { { schedule_window: "1 day" } }
 
-        expect(result).to be_success, result.errors.inspect
+      it "normalizes to seconds" do
+        expect(subject.schedule_window).to eq '86400s'
       end
+    end
 
-      it "succeeds with a simple duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h'})
+    context "with a simple duration" do
+      let(:config) { { schedule_window: "1h30m" } }
 
-        expect(result).to be_success, result.errors.inspect
+      it "normalizes to seconds" do
+        expect(subject.schedule_window).to eq '5400s'
       end
+    end
 
-      it "succeeds with a complex duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h30m'})
+    it "handles a zero duration" do
+      result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '0s'})
 
-        expect(result).to be_success, result.errors.inspect
-      end
+      expect(result).to be_success, result.errors.inspect
+    end
+
+    it "handles a simple duration" do
+      result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h'})
+
+      expect(result).to be_success, result.errors.inspect
+    end
+
+    it "handles a complex duration" do
+      result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h30m'})
+
+      expect(result).to be_success, result.errors.inspect
     end
   end
 end

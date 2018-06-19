@@ -18,10 +18,19 @@ Pharos.addon 'host-upgrades' do
     optional(:drain).filled(:bool?)
   }
 
+  # @return [String]
+  def schedule_window
+    return '0' if !config.schedule_window
+
+    s = Fugit::Duration.parse(config.schedule_window).to_sec
+
+    "#{s}s"
+  end
+
   install {
     apply_resources(
       schedule: config.schedule,
-      schedule_window: config.schedule_window, # only supports h, m, s
+      schedule_window: schedule_window, # only supports h, m, s; not D, M, Y
       reboot: config.reboot,
       drain: config.reboot && config.drain,
       journal: false, # disabled due to https://github.com/kontena/pharos-host-upgrades/issues/15
