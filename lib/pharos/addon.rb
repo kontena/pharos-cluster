@@ -3,6 +3,10 @@
 require 'dry-validation'
 require 'fugit'
 
+class Fugit::Cron
+  attr_reader :seconds # XXX: missing from upstream
+end
+
 require_relative 'addons/struct'
 require_relative 'logging'
 
@@ -31,7 +35,12 @@ module Pharos
         end
 
         def cron?(value)
-          !Fugit::Cron.parse(value).nil?
+          cron = Fugit::Cron.parse(value)
+
+          return false if !cron
+          return false if cron.seconds != [0]
+
+          true
         end
 
         def self.messages

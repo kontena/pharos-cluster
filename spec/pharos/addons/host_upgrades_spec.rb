@@ -44,7 +44,7 @@ describe Pharos::Addons::HostUpgrades do
       end
 
       it "rejects long cron schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 0 0 * * *'})
+        result = described_class.validate({enabled: true, schedule: '30 0 0 * * *'})
 
         expect(result).to_not be_success
         expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
@@ -60,6 +60,14 @@ describe Pharos::Addons::HostUpgrades do
 
       it "normalizes it" do
         expect(subject.schedule).to eq '0 0 * * *'
+      end
+    end
+
+    context "with a seconds schedule" do
+      let(:schedule) { '0 30 3 * * *' }
+
+      it "normalizes it" do
+        expect(subject.schedule).to eq '30 3 * * *'
       end
     end
 
