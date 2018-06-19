@@ -98,23 +98,5 @@ describe Pharos::Addons::HostUpgrades do
         expect(subject.schedule_window).to eq '5400s'
       end
     end
-
-    it "handles a zero duration" do
-      result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '0s'})
-
-      expect(result).to be_success, result.errors.inspect
-    end
-
-    it "handles a simple duration" do
-      result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h'})
-
-      expect(result).to be_success, result.errors.inspect
-    end
-
-    it "handles a complex duration" do
-      result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h30m'})
-
-      expect(result).to be_success, result.errors.inspect
-    end
   end
 end
