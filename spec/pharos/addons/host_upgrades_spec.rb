@@ -36,8 +36,15 @@ describe Pharos::Addons::HostUpgrades do
         expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
       end
 
-      it "fails with invalid cron schedule" do
+      it "fails with short cron schedule" do
         result = described_class.validate({enabled: true, schedule: '0 * * *'})
+
+        expect(result).to_not be_success
+        expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
+      end
+
+      it "fails with long cron schedule" do
+        result = described_class.validate({enabled: true, schedule: '0 0 0 * * *'})
 
         expect(result).to_not be_success
         expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
