@@ -19,6 +19,13 @@ Pharos.addon 'host-upgrades' do
   }
 
   # @return [String]
+  def schedule
+    cron = Fugit::Cron.parse(config.schedule)
+
+    cron.to_cron_s
+  end
+
+  # @return [String]
   def schedule_window
     return '0' if !config.schedule_window
 
@@ -29,7 +36,7 @@ Pharos.addon 'host-upgrades' do
 
   install {
     apply_resources(
-      schedule: config.schedule,
+      schedule: schedule,
       schedule_window: schedule_window, # only supports h, m, s; not D, M, Y
       reboot: config.reboot,
       drain: config.reboot && config.drain,

@@ -49,29 +49,41 @@ describe Pharos::Addons::HostUpgrades do
         expect(result).to_not be_success
         expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
       end
+    end
+  end
 
-      it "accepts valid @ schedule" do
-        result = described_class.validate({enabled: true, schedule: '@daily'})
+  describe '#schedule' do
+    let(:config) { { schedule: schedule } }
 
-        expect(result).to be_success, result.errors.inspect
+    context "with a @ schedule" do
+      let(:schedule) { '@daily' }
+
+      it "normalizes it" do
+        expect(subject.schedule).to eq '0 0 * * *'
       end
+    end
 
-      it "accepts valid schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 0 * * *'})
+    context "with a simple schedule" do
+      let(:schedule) { '0 0 * * *' }
 
-        expect(result).to be_success, result.errors.inspect
+      it "passes it through" do
+        expect(subject.schedule).to eq schedule
       end
+    end
 
-      it "accepts range/interval schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 3-8/2 * * *'})
+    context "with a range/interval schedule" do
+      let(:schedule) { '0 3-8/2 * * *' }
 
-        expect(result).to be_success, result.errors.inspect
+      it "normalizes it" do
+        expect(subject.schedule).to eq '0 3,5,7 * * *'
       end
+    end
 
-      it "accepts weekday schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 3 * * MON,WED,FRI'})
+    context "with a weekday schedule" do
+      let(:schedule) { '0 3 * * 1,3,5' }
 
-        expect(result).to be_success, result.errors.inspect
+      it "normalizes it" do
+        expect(subject.schedule).to eq schedule
       end
     end
   end
