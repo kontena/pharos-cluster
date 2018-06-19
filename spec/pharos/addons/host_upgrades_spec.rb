@@ -22,53 +22,53 @@ describe Pharos::Addons::HostUpgrades do
     end
 
     describe 'schedule' do
-      it "fails with empty schedule" do
+      it "rejects empty schedule" do
         result = described_class.validate({enabled: true, schedule: ''})
 
         expect(result).to_not be_success
         expect(result.errors.dig(:schedule)).to eq ["must be filled"]
       end
 
-      it "fails with invalid schedule" do
+      it "rejects invalid schedule" do
         result = described_class.validate({enabled: true, schedule: '3'})
 
         expect(result).to_not be_success
         expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
       end
 
-      it "fails with short cron schedule" do
+      it "rejects short cron schedule" do
         result = described_class.validate({enabled: true, schedule: '0 * * *'})
 
         expect(result).to_not be_success
         expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
       end
 
-      it "fails with long cron schedule" do
+      it "rejects long cron schedule" do
         result = described_class.validate({enabled: true, schedule: '0 0 0 * * *'})
 
         expect(result).to_not be_success
         expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
       end
 
-      it "succeeds with valid @ schedule" do
+      it "accepts valid @ schedule" do
         result = described_class.validate({enabled: true, schedule: '@daily'})
 
         expect(result).to be_success, result.errors.inspect
       end
 
-      it "succeeds with valid schedule" do
+      it "accepts valid schedule" do
         result = described_class.validate({enabled: true, schedule: '0 0 * * *'})
 
         expect(result).to be_success, result.errors.inspect
       end
 
-      it "succeeds with range/interval schedule" do
+      it "accepts range/interval schedule" do
         result = described_class.validate({enabled: true, schedule: '0 3-8/2 * * *'})
 
         expect(result).to be_success, result.errors.inspect
       end
 
-      it "succeeds with weekday schedule" do
+      it "accepts weekday schedule" do
         result = described_class.validate({enabled: true, schedule: '0 3 * * MON,WED,FRI'})
 
         expect(result).to be_success, result.errors.inspect
