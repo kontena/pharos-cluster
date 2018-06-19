@@ -33,14 +33,14 @@ describe Pharos::Addons::HostUpgrades do
         result = described_class.validate({enabled: true, schedule: '3'})
 
         expect(result).to_not be_success
-        expect(result.errors.dig(:schedule)).to match [/is not a valid cron schedule/]
+        expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
       end
 
       it "fails with invalid cron schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 0 * * *'})
+        result = described_class.validate({enabled: true, schedule: '0 * * *'})
 
         expect(result).to_not be_success
-        expect(result.errors.dig(:schedule)).to match [/is not a valid cron schedule/]
+        expect(result.errors.dig(:schedule)).to match [/is not a valid crontab/]
       end
 
       it "succeeds with valid @ schedule" do
@@ -50,19 +50,19 @@ describe Pharos::Addons::HostUpgrades do
       end
 
       it "succeeds with valid schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 0 0 * * *'})
+        result = described_class.validate({enabled: true, schedule: '0 0 * * *'})
 
         expect(result).to be_success, result.errors.inspect
       end
 
       it "succeeds with range/interval schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 0 3-8/2 * * *'})
+        result = described_class.validate({enabled: true, schedule: '0 3-8/2 * * *'})
 
         expect(result).to be_success, result.errors.inspect
       end
 
       it "succeeds with weekday schedule" do
-        result = described_class.validate({enabled: true, schedule: '0 0 3 * * MON,WED,FRI'})
+        result = described_class.validate({enabled: true, schedule: '0 3 * * MON,WED,FRI'})
 
         expect(result).to be_success, result.errors.inspect
       end
@@ -70,26 +70,26 @@ describe Pharos::Addons::HostUpgrades do
 
     describe 'duration' do
       it "fails with invalid duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 0 * * *', schedule_window: '1 hour'})
+        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1'})
 
         expect(result).to_not be_success
-        expect(result.errors.dig(:schedule_window)).to match [/is not a valid Duration/]
+        expect(result.errors.dig(:schedule_window)).to match [/is not a valid duration/]
       end
 
       it "succeeds with a zero duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 0 * * *', schedule_window: '0'})
+        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '0s'})
 
         expect(result).to be_success, result.errors.inspect
       end
 
       it "succeeds with a simple duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 0 * * *', schedule_window: '1h'})
+        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h'})
 
         expect(result).to be_success, result.errors.inspect
       end
 
       it "succeeds with a complex duration" do
-        result = described_class.validate({enabled: true, schedule: '0 0 0 * * *', schedule_window: '1h30m'})
+        result = described_class.validate({enabled: true, schedule: '0 0 * * *', schedule_window: '1h30m'})
 
         expect(result).to be_success, result.errors.inspect
       end
