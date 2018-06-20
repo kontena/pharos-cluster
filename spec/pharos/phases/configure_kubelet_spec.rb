@@ -1,7 +1,11 @@
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do
-  let(:host) { Pharos::Configuration::Host.new(address: 'test', private_address: '192.168.42.1') }
+  let(:host) { 
+    host = Pharos::Configuration::Host.new(address: 'test', private_address: '192.168.42.1')
+    host.os_release = Pharos::Configuration::OsRelease.new(id: 'ubuntu', version: '16.04')
+    host
+  }
 
   let(:config) { Pharos::Config.new(
       hosts: [host],
@@ -72,6 +76,16 @@ describe Pharos::Phases::ConfigureKubelet do
       it 'does not disable read only port' do
         expect(subject.kubelet_extra_args).not_to include(
           '--read-only-port=0'
+        )
+      end
+    end
+
+    context 'centos/rhel 7' do
+      it 'adds kubelet extra args' do
+        host.os_release = Pharos::Configuration::OsRelease.new(id: 'centos', version: '7')
+        expect(subject.kubelet_extra_args).to include(
+          '--runtime-cgroups=/systemd/system.slice', 
+          '--kubelet-cgroups=/systemd/system.slice'
         )
       end
     end
