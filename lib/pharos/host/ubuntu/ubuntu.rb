@@ -28,6 +28,10 @@ module Pharos
         )
       end
 
+      def kubelet_extra_args
+        []
+      end
+
       def ensure_kubelet(args)
         exec_script(
           'ensure-kubelet.sh',

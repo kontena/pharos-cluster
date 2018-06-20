@@ -44,6 +44,10 @@ module Pharos
         )
       end
 
+      def kubelet_extra_args
+        ['--runtime-cgroups=/systemd/system.slice', '--kubelet-cgroups=/systemd/system.slice']
+      end
+
       def ensure_kubelet(args)
         exec_script(
           'ensure-kubelet.sh',
