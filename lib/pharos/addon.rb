@@ -3,12 +3,6 @@
 require 'dry-validation'
 require 'fugit'
 
-module Fugit
-  class Cron
-    attr_reader :seconds # XXX: missing from upstream
-  end
-end
-
 require_relative 'addons/struct'
 require_relative 'logging'
 
