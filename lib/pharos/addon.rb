@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'dry-validation'
+require 'fugit'
+
 require_relative 'addons/struct'
 require_relative 'logging'
 
@@ -28,9 +30,21 @@ module Pharos
           !Fugit::Duration.parse(value).nil?
         end
 
+        def cron?(value)
+          cron = Fugit::Cron.parse(value)
+
+          return false if !cron
+          return false if cron.seconds != [0]
+
+          true
+        end
+
         def self.messages
           super.merge(
-            en: { errors: { duration?: 'is not valid duration' } }
+            en: { errors: {
+              duration?: 'is not valid duration',
+              cron?: 'is not a valid crontab'
+            } }
           )
         end
       end
