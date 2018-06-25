@@ -10,7 +10,7 @@ mkdir -p /etc/systemd/system/kubelet.service.d
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=
-ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --cgroup-driver=systemd --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
+ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
 EOF
 
 yum_install_with_lock "kubelet" $KUBE_VERSION

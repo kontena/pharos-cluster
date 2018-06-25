@@ -28,6 +28,11 @@ module Pharos
         abstract_method!
       end
 
+      # @return [Array<String>]
+      def kubelet_extra_args
+        abstract_method!
+      end
+
       # @param args [Hash]
       def ensure_kubelet(args) # rubocop:disable Lint/UnusedMethodArgument
         abstract_method!
@@ -76,6 +81,10 @@ module Pharos
 
       def crio?
         @host.crio?
+      end
+
+      def containerd?
+        @host.containerd?
       end
 
       def docker?

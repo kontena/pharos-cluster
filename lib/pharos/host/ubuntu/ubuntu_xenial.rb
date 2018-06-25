@@ -13,12 +13,17 @@ module Pharos
 
       register_component(
         name: 'docker', version: DOCKER_VERSION, license: 'Apache License 2.0',
-        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'docker' } }
+        enabled: proc { |c| c.hosts.any? { |h| h.docker? } }
       )
 
       register_component(
         name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0',
-        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
+        enabled: proc { |c| c.hosts.any? { |h| h.crio? } }
+      )
+
+      register_component(
+        name: 'containerd', version: Pharos::CONTAINERD_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.containerd? } }
       )
 
       register_component(
@@ -45,6 +50,14 @@ module Pharos
             CRIO_VERSION: CRIO_VERSION,
             CRICTL_VERSION: Pharos::CRICTL_VERSION,
             CRIO_STREAM_ADDRESS: host.peer_address,
+            CPU_ARCH: host.cpu_arch.name,
+            IMAGE_REPO: cluster_config.image_repository
+          )
+        elsif containerd?
+          exec_script(
+            'configure-containerd.sh',
+            CONTAINERD_VERSION: Pharos::CONTAINERD_VERSION,
+            STREAM_ADDRESS: host.peer_address,
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: cluster_config.image_repository
           )

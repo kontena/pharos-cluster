@@ -36,11 +36,12 @@ module Pharos
       def kubelet_args(local_only: false)
         args = []
 
-        if crio?
+        if crio? || containerd?
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
         end
+        args << '--container-runtime-endpoint=unix:///var/run/crio/crio.sock' if crio?
+        args << '--container-runtime-endpoint=unix:///run/containerd/containerd.sock' if containerd?
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
@@ -56,6 +57,10 @@ module Pharos
 
       def crio?
         container_runtime == 'cri-o'
+      end
+
+      def containerd?
+        container_runtime == 'containerd'
       end
 
       def docker?
