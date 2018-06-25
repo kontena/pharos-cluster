@@ -146,8 +146,8 @@ module Pharos
       # Host /etc/resolv.conf is configured to use a nameserver at localhost in the host network namespace
       # @return [Boolean]
       def check_resolv_localhost
-        resolvers = read_resolv_nameservers.map{|ip| IPAddr.new(ip) }
-        resolvers.any? {|ip| LOCALNET.include?(ip) }
+        resolvers = read_resolv_nameservers.map{ |ip| IPAddr.new(ip) }
+        resolvers.any? { |ip| LOCALNET.include?(ip) }
       end
 
       # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
