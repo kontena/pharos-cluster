@@ -45,6 +45,7 @@ module Pharos
         @host.checks = host_checks
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
         @host.resolv_localhost = check_resolv_localhost
+        @host.systemd_resolved_stub = check_systemd_resolved_stub
       end
 
       def check_role
@@ -142,10 +143,18 @@ module Pharos
 
       LOCALNET = IPAddr.new('127.0.0.0/8')
 
+      # Host /etc/resolv.conf is configured to use a nameserver at localhost in the host network namespace
       # @return [Boolean]
       def check_resolv_localhost
         resolvers = read_resolv_nameservers.map{|ip| IPAddr.new(ip) }
         resolvers.any? {|ip| LOCALNET.include?(ip) }
+      end
+
+      # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
+      # @return [Boolean]
+      def check_systemd_resolved_stub
+        symlink = @ssh.exec!('readlink /etc/resolv.conf || echo').strip
+        symlink.end_with? '/run/systemd/resolve/stub-resolv.conf'
       end
     end
   end

@@ -102,7 +102,10 @@ module Pharos
           "--cluster-domain=cluster.local"
         ]
 
-        if @host.resolv_localhost
+        if @host.systemd_resolved_stub
+          # use usptream resolvers instead of systemd stub resolver at localhost for `dnsPolicy: Default` pods
+          args << '--resolv-conf=/run/systemd/resolve/resolv.conf'
+        elsif @host.resolv_localhost
           fail "Host has /etc/resolv.conf configured with localhost as a resolver"
         end
 

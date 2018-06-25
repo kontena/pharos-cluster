@@ -20,7 +20,7 @@ module Pharos
       attribute :http_proxy, Pharos::Types::Strict::String
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks
-      attr_accessor :resolv_localhost
+      attr_accessor :resolv_localhost, :systemd_resolved_stub
 
       def to_s
         address
