@@ -21,7 +21,7 @@ lineinfile() {
 
     for file in "$@"; do
         file_exists "$file" || return 1
-        grep -q "${match}" $file && sed "s/${match}.*/${line}/" -i $file || echo $line >> $file
+        grep -q "${match}" $file && sed "s|${match}.*|${line}|" -i $file || echo $line >> $file
     done
 
     return 0

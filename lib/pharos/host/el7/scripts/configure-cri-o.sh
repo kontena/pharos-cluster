@@ -11,8 +11,6 @@ reload_daemon() {
     fi
 }
 
-apt-get install -y conntrack libgpgme11
-
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
 cat <<"EOF" >${tmpfile}
 [Unit]
@@ -45,7 +43,6 @@ if [ "$(cat $tmpfile)" != "$(cat /etc/systemd/system/crio.service)" ]; then
 fi
 
 mkdir -p /etc/systemd/system/crio.service.d
-
 if [ -n "$HTTP_PROXY" ]; then
     cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
 [Service]
@@ -72,21 +69,19 @@ rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || tr
 
 orig_config=$(cat /etc/crio/crio.conf)
 lineinfile "^stream_address =" "stream_address = \"${CRIO_STREAM_ADDRESS}\"" "/etc/crio/crio.conf"
-lineinfile "^cgroup_manager =" "cgroup_manager = \"cgroupfs\"" "/etc/crio/crio.conf"
+lineinfile "^cgroup_manager =" "cgroup_manager = \"systemd\"" "/etc/crio/crio.conf"
 lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
-lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
+lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
     systemctl enable crio
     systemctl start crio
 else 
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
-        echo "SYSTEMD CHANGED!!!"
         reload_daemon
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
-        echo "CRIO CHANGED!!!"
         reload_daemon
     fi
 fi

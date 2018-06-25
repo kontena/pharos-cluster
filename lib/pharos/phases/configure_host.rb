@@ -18,7 +18,7 @@ module Pharos
         logger.info { "Configuring netfilter ..." }
         host_configurer.configure_netfilter
 
-        logger.info { "Configuring container runtime (docker) packages ..." }
+        logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
         host_configurer.configure_container_runtime
       end
     end

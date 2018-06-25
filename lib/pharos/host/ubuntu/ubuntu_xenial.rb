@@ -7,7 +7,6 @@ module Pharos
     class UbuntuXenial < Ubuntu
       register_config 'ubuntu', '16.04'
 
-      CRIO_VERSION = '1.10'
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'
 
@@ -42,8 +41,7 @@ module Pharos
         elsif crio?
           exec_script(
             'configure-cri-o.sh',
-            CRIO_VERSION: CRIO_VERSION,
-            CRICTL_VERSION: Pharos::CRICTL_VERSION,
+            CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: host.peer_address,
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: cluster_config.image_repository
