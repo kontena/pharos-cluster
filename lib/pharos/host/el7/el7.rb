@@ -4,7 +4,6 @@ module Pharos
   module Host
     class El7 < Configurer
       DOCKER_VERSION = '1.13.1'
-      CONTAINERD_VERSION = '1.1.0'
       CFSSL_VERSION = '1.2'
 
       # @param path [Array]
@@ -45,13 +44,21 @@ module Pharos
         elsif containerd?
           exec_script(
             'configure-containerd.sh',
-            CONTAINERD_VERSION: CONTAINERD_VERSION,
-            CRIO_STREAM_ADDRESS: host.peer_address,
+            CONTAINERD_VERSION: Pharos::CONTAINERD_VERSION,
+            STREAM_ADDRESS: host.peer_address,
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: cluster_config.image_repository
           )
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
+        end
+      end
+
+      def kubelet_extra_args
+        if containerd?
+          ['--runtime-cgroups=/system.slice/containerd.service']
+        else 
+          ['--cgroup-driver=systemd']
         end
       end
 

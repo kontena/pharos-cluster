@@ -40,8 +40,8 @@ module Pharos
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
         end
-        args << '--container-runtime-endpoint=/var/run/crio/crio.sock' if crio?
-        args << '--container-runtime-endpoint=/run/containerd/containerd.sock' if containerd?
+        args << '--container-runtime-endpoint=unix:///var/run/crio/crio.sock' if crio?
+        args << '--container-runtime-endpoint=unix:///run/containerd/containerd.sock' if containerd?
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"

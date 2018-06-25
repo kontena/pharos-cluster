@@ -8,7 +8,6 @@ module Pharos
       register_config 'ubuntu', '16.04'
 
       CRIO_VERSION = '1.10'
-      CONTAINERD_VERSION = '1.1.0'
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'
 
@@ -23,7 +22,7 @@ module Pharos
       )
 
       register_component(
-        name: 'containerd', version: CONTAINERD_VERSION, license: 'Apache License 2.0',
+        name: 'containerd', version: Pharos::CONTAINERD_VERSION, license: 'Apache License 2.0',
         enabled: proc { |c| c.hosts.any? { |h| h.containerd? } }
       )
 
@@ -57,8 +56,8 @@ module Pharos
         elsif containerd?
           exec_script(
             'configure-containerd.sh',
-            CONTAINERD_VERSION: CONTAINERD_VERSION,
-            CRIO_STREAM_ADDRESS: host.peer_address,
+            CONTAINERD_VERSION: Pharos::CONTAINERD_VERSION,
+            STREAM_ADDRESS: host.peer_address,
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: cluster_config.image_repository
           )

@@ -14,7 +14,7 @@ module Pharos
       )
 
       register_component(
-        name: 'containerd', version: El7::CONTAINERD_VERSION, license: 'Apache License 2.0',
+        name: 'containerd', version: Pharos::CONTAINERD_VERSION, license: 'Apache License 2.0',
         enabled: proc { |c| c.hosts.any? { |h| h.containerd? } }
       )
 
