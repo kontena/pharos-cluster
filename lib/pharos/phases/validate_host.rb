@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'ipaddr'
+
 module Pharos
   module Phases
     class ValidateHost < Pharos::Phase
@@ -42,6 +44,7 @@ module Pharos
         @host.hostname = hostname
         @host.checks = host_checks
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
+        @host.resolv_localhost = check_resolv_localhost
       end
 
       def check_role
@@ -122,6 +125,27 @@ module Pharos
           return ip
         end
         nil
+      end
+
+      # @return [Array<String>]
+      def read_resolv_nameservers
+        nameservers = []
+
+        @ssh.file('/etc/resolv.conf').each_line do |line|
+          if match = line.match(/nameserver (.+)/)
+            nameservers << match[1]
+          end
+        end
+
+        nameservers
+      end
+
+      LOCALNET = IPAddr.new('127.0.0.0/8')
+
+      # @return [Boolean]
+      def check_resolv_localhost
+        resolvers = read_resolv_nameservers.map{|ip| IPAddr.new(ip) }
+        resolvers.any? {|ip| LOCALNET.include?(ip) }
       end
     end
   end

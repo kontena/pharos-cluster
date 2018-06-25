@@ -97,10 +97,16 @@ module Pharos
 
       # @return [Array<String>]
       def kubelet_dns_args
-        [
+        args = [
           "--cluster-dns=#{@config.network.dns_service_ip}",
           "--cluster-domain=cluster.local"
         ]
+
+        if @host.resolv_localhost
+          fail "Host has /etc/resolv.conf configured with localhost as a resolver"
+        end
+
+        args
       end
 
       # @return [Array<String>]
