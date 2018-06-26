@@ -1,6 +1,5 @@
 hosts:
   - address: 192.168.100.100
-    private_address: 192.168.100.100 # just to advertise correct ip with vagrant
     user: vagrant
     role: master
     ssh_key_path: ~/.vagrant.d/insecure_private_key
@@ -12,16 +11,9 @@ hosts:
     user: vagrant
     role: worker
     ssh_key_path: ~/.vagrant.d/insecure_private_key
-  - address: 192.168.100.103
-    user: vagrant
-    role: worker
-    ssh_key_path: ~/.vagrant.d/insecure_private_key
-  - address: 192.168.100.104
-    user: vagrant
-    role: worker
-    ssh_key_path: ~/.vagrant.d/insecure_private_key
 network:
   pod_network_cidr: 10.32.0.0/16
+  service_cidr: 10.33.0.0/16
   weave:
     trusted_subnets:
       - 192.168.100.0/24
@@ -30,11 +22,3 @@ addons:
     enabled: true
     configmap:
       map-hash-bucket-size: "128"
-  openebs:
-    enabled: true
-    default_storage_pool:
-      path: /var/openebs
-    default_storage_class:
-      replicas: 3
-      capacity: 5G
-      default_class: true

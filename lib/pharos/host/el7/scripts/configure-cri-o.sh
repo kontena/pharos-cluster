@@ -4,22 +4,14 @@ set -e
 
 . /usr/local/share/pharos/util.sh
 
+yum install -y conntrack-tools libseccomp gpgme libassuan
+
 reload_daemon() {
     if systemctl is-active --quiet crio; then
         systemctl daemon-reload
         systemctl restart crio
     fi
 }
-
-export DEBIAN_FRONTEND=noninteractive 
-if dpkg -s cri-o-1.10 ; then
-    systemctl stop crio
-    systemctl disable crio
-    apt-get remove -y --purge cri-o-1.10
-    rm /etc/systemd/system/crio.service.d/10-cgroup.conf || true
-    systemctl daemon-reload
-fi
-apt-get install -y conntrack libgpgme11 libseccomp2 libassuan0
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
 cat <<"EOF" >${tmpfile}
@@ -55,7 +47,6 @@ else
 fi
 
 mkdir -p /etc/systemd/system/crio.service.d
-
 if [ -n "$HTTP_PROXY" ]; then
     cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
 [Service]
@@ -83,9 +74,9 @@ rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || tr
 
 orig_config=$(cat /etc/crio/crio.conf)
 lineinfile "^stream_address =" "stream_address = \"${CRIO_STREAM_ADDRESS}\"" "/etc/crio/crio.conf"
-lineinfile "^cgroup_manager =" "cgroup_manager = \"cgroupfs\"" "/etc/crio/crio.conf"
+lineinfile "^cgroup_manager =" "cgroup_manager = \"systemd\"" "/etc/crio/crio.conf"
 lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
-lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
+lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
     systemctl daemon-reload
