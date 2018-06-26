@@ -45,6 +45,7 @@ module Pharos
         @host.checks = host_checks
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
         @host.resolvconf = read_resolvconf
+        @host.routes = read_routes
       end
 
       def check_role
@@ -162,6 +163,28 @@ module Pharos
           nameserver_localhost: check_resolvconf_nameserver_localhost,
           systemd_resolved_stub: check_resolvconf_systemd_resolved_stub
         )
+      end
+
+      ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
+
+      # @return [Array<Pharos::Configuration::Host::Route>]
+      def read_routes
+        routes = []
+
+        @ssh.exec!("ip route").each_line do |line|
+          if match = ROUTE_REGEXP.match(line.strip)
+            captures = Hash[match.named_captures.map{|k, v| [k.to_sym, v]}]
+            route = Pharos::Configuration::Host::Route.new(**captures)
+
+            logger.debug { "ip route: #{route.inspect}"}
+
+            routes << route
+          else
+            logger.warn { "Unmatched `ip route` line: #{line.inspect}"}
+          end
+        end
+
+        routes
       end
     end
   end

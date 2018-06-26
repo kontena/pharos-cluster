@@ -13,6 +13,15 @@ module Pharos
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
       end
 
+      class Route < Dry::Struct
+        attribute :type, Pharos::Types::Strict::String.optional
+        attribute :prefix, Pharos::Types::Strict::String
+        attribute :via, Pharos::Types::Strict::String.optional
+        attribute :dev, Pharos::Types::Strict::String.optional
+        attribute :proto, Pharos::Types::Strict::String.optional
+        attribute :options, Pharos::Types::Strict::String.optional
+      end
+
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String
       attribute :private_interface, Pharos::Types::Strict::String
@@ -24,7 +33,7 @@ module Pharos
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :http_proxy, Pharos::Types::Strict::String
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
       def to_s
         address
