@@ -19,7 +19,7 @@ if dpkg -s cri-o-1.10 ; then
     rm /etc/systemd/system/crio.service.d/10-cgroup.conf || true
     systemctl daemon-reload
 fi
-apt-get install -y conntrack libdevmapper1.02.1 libgpgme11 libseccomp2
+apt-get install -y conntrack ibgpgme11 libseccomp2 libassuan
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
 cat <<"EOF" >${tmpfile}
