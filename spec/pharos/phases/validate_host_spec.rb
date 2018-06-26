@@ -168,7 +168,7 @@ describe Pharos::Phases::ValidateHost do
       let(:file_lines) { ['nameserver 8.8.8.8'] }
 
       it 'returns ok' do
-        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
           nameserver_localhost: false,
           systemd_resolved_stub: false,
         )
@@ -179,7 +179,7 @@ describe Pharos::Phases::ValidateHost do
       let(:file_lines) { ['nameserver 127.0.0.53'] }
 
       it 'returns nameserver_localhost' do
-        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: false,
         )
@@ -191,7 +191,7 @@ describe Pharos::Phases::ValidateHost do
       let(:file_readlink) { '../run/systemd/resolve/stub-resolv.conf' }
 
       it 'returns systemd_resolved_stub' do
-        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: true,
         )
@@ -203,7 +203,7 @@ describe Pharos::Phases::ValidateHost do
       let(:file_readlink) { '/run/resolvconf/resolv.conf' }
 
       it 'returns ok' do
-        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
           nameserver_localhost: false,
           systemd_resolved_stub: false,
         )
