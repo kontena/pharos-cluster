@@ -17,8 +17,32 @@ module Pharos
         enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
+      def kube_session
+        Pharos::Kube.session(@master.api_address)
+      end
+
+      # @param name [String]
+      # @return [Kubeclient::Resource, nil]
+      def get_ippool(name)
+        client = kube_session.resource_client('crd.projectcalico.org/v1')
+        ippool = client.get_entity('ippools', name)
+      rescue Kubeclient::ResourceNotFoundError => exc
+        nil
+      end
+
+      # @raise [StandardError]
+      def validate_ippool
+        return unless ippool = get_ippool('default-ipv4-ippool')
+
+        if ippool.spec.cidr != @config.network.pod_network_cidr
+          fail "cluster.yml network.pod_network_cidr has been changed: cluster has #{ippool.spec.cidr}, config has #{@config.network.pod_network_cidr}"
+        end
+      end
+
       def validate
         fail "Unsupported CPU architecture: #{@host.cpu_arch.name}" unless @host.cpu_arch.name == 'amd64'
+
+        validate_ippool
       end
 
       def call
