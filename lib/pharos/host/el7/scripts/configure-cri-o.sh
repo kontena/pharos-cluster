@@ -45,7 +45,7 @@ Restart=on-abnormal
 WantedBy=multi-user.target
 EOF
 
-if [ "$(cat $tmpfile)" != "$(cat /etc/systemd/system/crio.service)" ]; then
+if [ diff $tmpfile /etc/systemd/system/crio.service > /dev/null ]; then
     cat $tmpfile > /etc/systemd/system/crio.service
 fi
 
