@@ -174,7 +174,9 @@ module Pharos
         @ssh.exec!("ip route").each_line do |line|
           if match = ROUTE_REGEXP.match(line.strip)
             captures = Hash[match.named_captures.map{|k, v| [k.to_sym, v]}]
-            route = Pharos::Configuration::Host::Route.new(**captures)
+            captures[:prefix] = '0.0.0.0/0' if captures[:prefix] == 'default'
+
+            route = Pharos::Configuration::Host::Route.new(raw: line.strip, **captures)
 
             logger.debug { "ip route: #{route.inspect}"}
 

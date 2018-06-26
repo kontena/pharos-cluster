@@ -14,12 +14,25 @@ module Pharos
       end
 
       class Route < Dry::Struct
+        attribute :raw, Pharos::Types::Strict::String
+
         attribute :type, Pharos::Types::Strict::String.optional
         attribute :prefix, Pharos::Types::Strict::String
         attribute :via, Pharos::Types::Strict::String.optional
         attribute :dev, Pharos::Types::Strict::String.optional
         attribute :proto, Pharos::Types::Strict::String.optional
         attribute :options, Pharos::Types::Strict::String.optional
+
+        def to_s
+          @raw
+        end
+
+        def overlaps?(cidr)
+          prefix = IPAddr.new(@prefix)
+          cidr = IPAddr.new(cidr)
+
+          prefix.include?(cidr) || cidr.include?(prefix)
+        end
       end
 
       attribute :address, Pharos::Types::Strict::String
@@ -104,6 +117,12 @@ module Pharos
 
       def worker?
         role == 'worker'
+      end
+
+      # @param cidr [String]
+      # @return [Array<Pharos::Configuration::Host::Route>]
+      def overlapping_routes(cidr)
+        routes.select{|route| route.overlaps? cidr}
       end
 
       # @param ssh [Pharos::SSH::Client]
