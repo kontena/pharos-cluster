@@ -11,7 +11,15 @@ reload_daemon() {
     fi
 }
 
-apt-get install -y conntrack libgpgme11
+export DEBIAN_FRONTEND=noninteractive 
+if dpkg -s cri-o-1.10 ; then
+    systemctl stop crio
+    systemctl disable crio
+    apt-get remove -y --purge cri-o-1.10
+    rm /etc/systemd/system/crio.service.d/10-cgroup.conf || true
+    systemctl daemon-reload
+fi
+apt-get install -y conntrack libdevmapper1.02.1 libgpgme11 libseccomp2
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
 cat <<"EOF" >${tmpfile}
