@@ -153,8 +153,8 @@ module Pharos
       # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
       # @return [Boolean]
       def check_systemd_resolved_stub
-        symlink = @ssh.exec!('readlink /etc/resolv.conf || echo').strip
-        symlink.end_with? '/run/systemd/resolve/stub-resolv.conf'
+        symlink = @ssh.file('/etc/resolv.conf').readlink
+        !!symlink && symlink.end_with?('/run/systemd/resolve/stub-resolv.conf')
       end
     end
   end
