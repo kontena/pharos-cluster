@@ -53,10 +53,5 @@ Naming/UncommunicativeMethodParamName:
   AllowedNames:
     - cn
 
-# new in 0.56, seems to give false-positivies
-# https://github.com/bbatsov/rubocop/issues/5887
-Lint/SplatKeywordArguments:
-  Enabled: false
-
 Metrics/BlockLength:
   Enabled: false

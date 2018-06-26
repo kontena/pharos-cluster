@@ -5,7 +5,7 @@ module Pharos
     class ConfigureCalico < Pharos::Phase
       title "Configure Calico network"
 
-      CALICO_VERSION = '3.1.0'
+      CALICO_VERSION = '3.1.3'
 
       register_component(
         name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
@@ -24,7 +24,7 @@ module Pharos
       def call
         validate
 
-        logger.info { "Configuring overlay network ..." }
+        logger.info { "Configuring network ..." }
         Pharos::Kube.apply_stack(
           @master.api_address, 'calico',
           image_repository: @config.image_repository,

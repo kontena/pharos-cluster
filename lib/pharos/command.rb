@@ -24,5 +24,13 @@ module Pharos
     def rouge
       @rouge ||= Rouge::Formatters::Terminal256.new(Rouge::Themes::Github.new)
     end
+
+    def tty?
+      $stdin.tty?
+    end
+
+    def stdin_eof?
+      $stdin.eof?
+    end
   end
 end

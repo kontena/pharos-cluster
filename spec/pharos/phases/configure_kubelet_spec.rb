@@ -102,6 +102,12 @@ describe Pharos::Phases::ConfigureKubelet do
           '--cloud-config=/etc/pharos/kubelet/cloud-config'
         )
       end
+
+      it 'does not add node ip' do
+        expect(subject.kubelet_extra_args).not_to include(
+          "--node-ip=#{host.peer_address}"
+        )
+      end
     end
   end
 end
