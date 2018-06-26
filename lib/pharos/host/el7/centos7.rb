@@ -16,6 +16,11 @@ module Pharos
       )
 
       register_component(
+        name: 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
+      )
+
+      register_component(
         name: 'cfssl', version: CFSSL_VERSION, license: 'MIT',
         enabled: proc { |c| !c.etcd&.endpoints }
       )

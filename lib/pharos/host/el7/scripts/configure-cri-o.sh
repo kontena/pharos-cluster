@@ -4,6 +4,13 @@ set -e
 
 . /usr/local/share/pharos/util.sh
 
+yum install -y device-mapper-libs
+
+# hack to make cri-o happy
+if [ ! -e /lib64/libdevmapper.so.1.02.1 ]; then
+    ln -s /lib64/libdevmapper.so.1.02 /lib64/libdevmapper.so.1.02.1
+fi
+
 reload_daemon() {
     if systemctl is-active --quiet crio; then
         systemctl daemon-reload
