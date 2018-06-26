@@ -75,7 +75,7 @@ if [ ! "$(cat /etc/crio/.version)" = "$CRIO_VERSION" ]; then
     curl -sSL "${DL_URL}.asc" -o /tmp/cri-o.tar.gz.asc
     gpg --verify /tmp/cri-o.tar.gz.asc /tmp/cri-o.tar.gz
     tar -C / -xzf /tmp/cri-o.tar.gz
-    rm /tmp/cri-o.tar.gz
+    rm /tmp/cri-o.tar.gz rm /tmp/cri-o.tar.gz.asc
     echo $CRIO_VERSION > /etc/crio/.version 
 fi
 
