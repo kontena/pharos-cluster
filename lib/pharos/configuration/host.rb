@@ -22,7 +22,7 @@ module Pharos
         def self.parse(line)
           fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
 
-          captures = Hash[match.named_captures.map{|k, v| [k.to_sym, v]}]
+          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }]
           captures[:prefix] = '0.0.0.0/0' if captures[:prefix] == 'default'
 
           new(raw: line.strip, **captures)
@@ -136,7 +136,7 @@ module Pharos
       # @param cidr [String]
       # @return [Array<Pharos::Configuration::Host::Route>]
       def overlapping_routes(cidr)
-        routes.select{|route| route.overlaps? cidr}
+        routes.select{ |route| route.overlaps? cidr }
       end
 
       # @param ssh [Pharos::SSH::Client]

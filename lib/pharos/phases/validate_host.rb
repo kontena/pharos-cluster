@@ -167,7 +167,6 @@ module Pharos
         )
       end
 
-
       # @return [Array<Pharos::Configuration::Host::Route>]
       def read_routes
         routes = []
@@ -194,13 +193,15 @@ module Pharos
       end
 
       def validate_routes
+        # rubocop:disable Style/GuardClause
         if routes = overlapping_host_routes?(@config.network.pod_network_cidr)
-          fail "Overlapping host routes for .network.pod_network_cidr=#{@config.network.pod_network_cidr}: #{routes.map{|r| r.to_s}.join '; '}"
+          fail "Overlapping host routes for .network.pod_network_cidr=#{@config.network.pod_network_cidr}: #{routes.join '; '}"
         end
 
         if routes = overlapping_host_routes?(@config.network.service_cidr)
-          fail "Overlapping host routes for .network.service_cidr=#{@config.network.service_cidr}: #{routes.map{|r| r.to_s}.join '; '}"
+          fail "Overlapping host routes for .network.service_cidr=#{@config.network.service_cidr}: #{routes.join '; '}"
         end
+        # rubocop:enable Style/GuardClause
       end
     end
   end
