@@ -46,7 +46,7 @@ WantedBy=multi-user.target
 EOF
 
 if diff $tmpfile /etc/systemd/system/crio.service > /dev/null ; then
-    mv $tmpfile > /etc/systemd/system/crio.service
+    mv $tmpfile /etc/systemd/system/crio.service
 else 
     rm $tmpfile
 fi
