@@ -1,7 +1,14 @@
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do
-  let(:host) { Pharos::Configuration::Host.new(address: 'test', private_address: '192.168.42.1') }
+  let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+      nameserver_localhost: false,
+      systemd_resolved_stub: false,
+  ) }
+  let(:host) { Pharos::Configuration::Host.new(
+    address: 'test',
+    private_address: '192.168.42.1',
+  ) }
 
   let(:config) { Pharos::Config.new(
       hosts: [host],
@@ -15,6 +22,8 @@ describe Pharos::Phases::ConfigureKubelet do
   subject { described_class.new(host, config: config, ssh: ssh) }
 
   before(:each) do
+    host.resolvconf = host_resolvconf
+
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))
   end
 
