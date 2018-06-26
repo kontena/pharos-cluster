@@ -167,24 +167,16 @@ module Pharos
         )
       end
 
-      ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
 
       # @return [Array<Pharos::Configuration::Host::Route>]
       def read_routes
         routes = []
 
         @ssh.exec!("ip route").each_line do |line|
-          if match = ROUTE_REGEXP.match(line.strip)
-            captures = Hash[match.named_captures.map{|k, v| [k.to_sym, v]}]
-            captures[:prefix] = '0.0.0.0/0' if captures[:prefix] == 'default'
-
-            route = Pharos::Configuration::Host::Route.new(raw: line.strip, **captures)
-
-            logger.debug { "ip route: #{route.inspect}"}
-
-            routes << route
-          else
-            logger.warn { "Unmatched `ip route` line: #{line.inspect}"}
+          begin
+            routes << Pharos::Configuration::Host::Route.parse(line)
+          rescue RuntimeError => exc
+            logger.warn { exc }
           end
         end
 

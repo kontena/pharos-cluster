@@ -14,6 +14,20 @@ module Pharos
       end
 
       class Route < Dry::Struct
+        ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
+
+        # @param line [String]
+        # @return [Pharos::Configuration::Host::Route]
+        # @raise [RuntimeError] invalid route
+        def self.parse(line)
+          fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
+
+          captures = Hash[match.named_captures.map{|k, v| [k.to_sym, v]}]
+          captures[:prefix] = '0.0.0.0/0' if captures[:prefix] == 'default'
+
+          new(raw: line.strip, **captures)
+        end
+
         attribute :raw, Pharos::Types::Strict::String
 
         attribute :type, Pharos::Types::Strict::String.optional
