@@ -10,9 +10,10 @@ describe Pharos::Phases::ConfigureKubelet do
     private_address: '192.168.42.1',
   ) }
 
+  let(:config_network) { { }}
   let(:config) { Pharos::Config.new(
       hosts: [host],
-      network: {},
+      network: config_network,
       addons: {},
       etcd: {},
       kubelet: {read_only_port: false}
@@ -35,22 +36,6 @@ describe Pharos::Phases::ConfigureKubelet do
         Environment='KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local'
         ExecStartPre=-/sbin/swapoff -a
       EOM
-    end
-
-    context "with a different network.service_cidr" do
-      let(:config) { Pharos::Config.new(
-          hosts: [host],
-          network: {
-            service_cidr: '172.255.0.0/16',
-          },
-          addons: {},
-          etcd: {},
-          kubelet: {}
-      ) }
-
-      it "uses the customized --cluster-dns" do
-        expect(subject.build_systemd_dropin).to match /KUBELET_DNS_ARGS=--cluster-dns=172.255.0.10 --cluster-domain=cluster.local/
-      end
     end
   end
 
@@ -110,6 +95,28 @@ describe Pharos::Phases::ConfigureKubelet do
         expect(subject.kubelet_extra_args).to include(
           '--cloud-config=/etc/pharos/kubelet/cloud-config'
         )
+      end
+    end
+  end
+
+  describe '#kubelet_dns_args' do
+    it 'returns cluster service IP' do
+      expect(subject.kubelet_dns_args).to eq [
+        '--cluster-dns=10.96.0.10',
+        '--cluster-domain=cluster.local',
+      ]
+    end
+
+    context "with a different network.service_cidr" do
+      let(:config_network) { {
+          service_cidr: '172.255.0.0/16',
+      } }
+
+      it "uses the customized --cluster-dns" do
+        expect(subject.kubelet_dns_args).to eq [
+          '--cluster-dns=172.255.0.10',
+          '--cluster-domain=cluster.local',
+        ]
       end
     end
   end
