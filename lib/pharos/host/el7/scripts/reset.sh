@@ -10,9 +10,9 @@ if which docker ; then
     systemctl stop docker
     systemctl disable docker
 elif which crictl ; then
+    crictl rm $(crictl ps -a -q)
     systemctl stop crio
     systemctl disable crio
-    crictl rm $(crictl ps -a -q)
 fi
 
 kubeadm reset
@@ -21,18 +21,27 @@ yum remove -y kubeadm kubelet kubectl docker
 
 sudo rm -rf /etc/kubernetes \
     /etc/pharos \
-    /etc/kubernetes \
+    /etc/crio \
     /etc/systemd/system/kubelet.service \
     /etc/systemd/system/kubelet.service.d \
-    /var/etcd \
+    /etc/systemd/system/crio.service \ \
     ~/.kube \
     /var/lib/docker \
     /var/lib/containerd \
+    /var/lib/containers \
     /var/lib/kubelet \
     /opt/cni \
     /var/lib/etcd \
     /var/lib/weave \
-    /var/lib/calico
+    /var/lib/calico \
+    /usr/local/bin/crio \
+    /usr/local/bin/crio-config \
+    /usr/local/bin/conmon \
+    /usr/local/lib/cri-o-runc \
+    /usr/local/bin/crio \
+    /usr/local/bin/skopeo \
+    /usr/local/bin/runc \
+    /usr/local/bin/crictl
 
 systemctl daemon-reload
 systemctl reset-failed
