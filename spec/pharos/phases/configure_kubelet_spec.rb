@@ -119,5 +119,31 @@ describe Pharos::Phases::ConfigureKubelet do
         ]
       end
     end
+
+    context "with a systemd-resolved stub" do
+      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: true,
+          systemd_resolved_stub: true,
+      ) }
+
+      it "uses --resolv-conf" do
+        expect(subject.kubelet_dns_args).to eq [
+          '--cluster-dns=10.96.0.10',
+          '--cluster-domain=cluster.local',
+          '--resolv-conf=/run/systemd/resolve/resolv.conf',
+        ]
+      end
+    end
+
+    context "with a non-systemd-resolved localhost resolver" do
+      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: true,
+          systemd_resolved_stub: false,
+      ) }
+
+      it "fails" do
+        expect{subject.kubelet_dns_args}.to raise_error 'Host has /etc/resolv.conf configured with localhost as a resolver'
+      end
+    end
   end
 end
