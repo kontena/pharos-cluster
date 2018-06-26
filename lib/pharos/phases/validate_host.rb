@@ -18,6 +18,8 @@ module Pharos
         check_distro_version
         logger.info { "Validating host configuration ..." }
         check_cpu_arch
+        logger.info { "Validating host routes ..." }
+        validate_routes
       end
 
       def check_distro_version
@@ -187,6 +189,26 @@ module Pharos
         end
 
         routes
+      end
+
+      # @param cidr [String]
+      # @return [nil, Array<Pharos::Configuration::Host::Route>]
+      def overlapping_host_routes?(cidr)
+        routes = @config.network.filter_host_routes(@host.overlapping_routes(cidr))
+
+        return nil if routes.empty?
+
+        routes
+      end
+
+      def validate_routes
+        if routes = overlapping_host_routes?(@config.network.pod_network_cidr)
+          fail "Overlapping host routes for .network.pod_network_cidr=#{@config.network.pod_network_cidr}: #{routes.map{|r| r.to_s}.join '; '}"
+        end
+
+        if routes = overlapping_host_routes?(@config.network.service_cidr)
+          fail "Overlapping host routes for .network.service_cidr=#{@config.network.service_cidr}: #{routes.map{|r| r.to_s}.join '; '}"
+        end
       end
     end
   end
