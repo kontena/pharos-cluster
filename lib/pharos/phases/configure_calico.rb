@@ -25,8 +25,8 @@ module Pharos
       # @return [Kubeclient::Resource, nil]
       def get_ippool(name)
         client = kube_session.resource_client('crd.projectcalico.org/v1')
-        ippool = client.get_entity('ippools', name)
-      rescue Kubeclient::ResourceNotFoundError => exc
+        client.get_entity('ippools', name)
+      rescue Kubeclient::ResourceNotFoundError
         nil
       end
 
@@ -34,9 +34,9 @@ module Pharos
       def validate_ippool
         return unless ippool = get_ippool('default-ipv4-ippool')
 
-        if ippool.spec.cidr != @config.network.pod_network_cidr
-          fail "cluster.yml network.pod_network_cidr has been changed: cluster has #{ippool.spec.cidr}, config has #{@config.network.pod_network_cidr}"
-        end
+        return if ippool.spec.cidr == @config.network.pod_network_cidr
+
+        fail "cluster.yml network.pod_network_cidr has been changed: cluster has #{ippool.spec.cidr}, config has #{@config.network.pod_network_cidr}"
       end
 
       def validate
