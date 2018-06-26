@@ -33,7 +33,7 @@ module Pharos
         private_address || private_interface_address || address
       end
 
-      def kubelet_args(local_only: false)
+      def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 
         if crio?
@@ -47,7 +47,7 @@ module Pharos
           args << "--cadvisor-port=0"
           args << "--address=127.0.0.1"
         else
-          args << "--node-ip=#{peer_address}"
+          args << "--node-ip=#{peer_address}" if cloud_provider.nil?
           args << "--hostname-override=#{hostname}"
         end
 

@@ -109,7 +109,7 @@ module Pharos
         unless @config.kubelet&.read_only_port
           args << "--read-only-port=0"
         end
-        args += @host.kubelet_args
+        args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
         args << "--pod-infra-container-image=#{@config.image_repository}/pause-#{@host.cpu_arch.name}:3.1"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
