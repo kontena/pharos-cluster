@@ -44,10 +44,7 @@ module Pharos
         @host.hostname = hostname
         @host.checks = host_checks
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
-        @host.resolvconf = Pharos::Configuration::Host::ResolvConf.new(
-          nameserver_localhost: check_resolvconf_nameserver_localhost,
-          systemd_resolved_stub: check_resolvconf_systemd_resolved_stub,
-        )
+        @host.resolvconf = get_resolvconf
       end
 
       def check_role
@@ -157,6 +154,14 @@ module Pharos
       def check_resolvconf_systemd_resolved_stub
         symlink = @ssh.file('/etc/resolv.conf').readlink
         !!symlink && symlink.end_with?('/run/systemd/resolve/stub-resolv.conf')
+      end
+
+      # @return [Pharos::Configuration::Host::ResolvConf]
+      def get_resolvconf
+        Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: check_resolvconf_nameserver_localhost,
+          systemd_resolved_stub: check_resolvconf_systemd_resolved_stub,
+        )
       end
     end
   end

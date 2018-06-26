@@ -148,4 +148,66 @@ describe Pharos::Phases::ValidateHost do
       end
     end
   end
+
+  describe '#get_resolvconf' do
+    let(:file) { instance_double(Pharos::SSH::RemoteFile) }
+    let(:file_readlink) { nil }
+
+    before do
+      allow(ssh).to receive(:file).with('/etc/resolv.conf').and_return(file)
+
+      mock = allow(file).to receive(:each_line)
+      file_lines.each do |line|
+        mock = mock.and_yield(line)
+      end
+
+      allow(file).to receive(:readlink).and_return(file_readlink)
+    end
+
+    context 'for a normal resolv.conf' do
+      let(:file_lines) { ['nameserver 8.8.8.8'] }
+
+      it 'returns ok' do
+        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: false,
+          systemd_resolved_stub: false,
+        )
+      end
+    end
+
+    context 'for a normal resolv.conf with localhost' do
+      let(:file_lines) { ['nameserver 127.0.0.53'] }
+
+      it 'returns nameserver_localhost' do
+        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: true,
+          systemd_resolved_stub: false,
+        )
+      end
+    end
+
+    context 'for a systemd-resolved resolv.conf stub' do
+      let(:file_lines) { ['nameserver 127.0.0.53'] }
+      let(:file_readlink) { '../run/systemd/resolve/stub-resolv.conf' }
+
+      it 'returns systemd_resolved_stub' do
+        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: true,
+          systemd_resolved_stub: true,
+        )
+      end
+    end
+
+    context 'for a non-resolved resolv.conf symlink' do
+      let(:file_lines) { ['nameserver 8.8.8.8'] }
+      let(:file_readlink) { '/run/resolvconf/resolv.conf' }
+
+      it 'returns ok' do
+        expect(subject.get_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: false,
+          systemd_resolved_stub: false,
+        )
+      end
+    end
+  end
 end
