@@ -16,7 +16,7 @@ module Pharos
         # @return [Array<Pharos::Configuration::Host::Routes>]
         def self.filter_host_routes(routes)
           routes.reject{ |route|
-            route.dev == 'weave'
+            route.prefix == '0.0.0.0/0' || route.dev == 'weave'
           }
         end
       end
