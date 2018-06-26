@@ -87,16 +87,15 @@ lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
 lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
+    systemctl daemon-reload
     systemctl enable crio
     systemctl start crio
 else 
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
-        echo "SYSTEMD CHANGED!!!"
         reload_daemon
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
-        echo "CRIO CHANGED!!!"
         reload_daemon
     fi
 fi
