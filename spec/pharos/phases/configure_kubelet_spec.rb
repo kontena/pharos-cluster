@@ -1,11 +1,19 @@
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do
-  let(:host) { Pharos::Configuration::Host.new(address: 'test', private_address: '192.168.42.1') }
+  let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+      nameserver_localhost: false,
+      systemd_resolved_stub: false,
+  ) }
+  let(:host) { Pharos::Configuration::Host.new(
+    address: 'test',
+    private_address: '192.168.42.1',
+  ) }
 
+  let(:config_network) { { }}
   let(:config) { Pharos::Config.new(
       hosts: [host],
-      network: {},
+      network: config_network,
       addons: {},
       etcd: {},
       kubelet: {read_only_port: false}
@@ -15,6 +23,8 @@ describe Pharos::Phases::ConfigureKubelet do
   subject { described_class.new(host, config: config, ssh: ssh) }
 
   before(:each) do
+    host.resolvconf = host_resolvconf
+
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))
   end
 
@@ -26,22 +36,6 @@ describe Pharos::Phases::ConfigureKubelet do
         Environment='KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local'
         ExecStartPre=-/sbin/swapoff -a
       EOM
-    end
-
-    context "with a different network.service_cidr" do
-      let(:config) { Pharos::Config.new(
-          hosts: [host],
-          network: {
-            service_cidr: '172.255.0.0/16',
-          },
-          addons: {},
-          etcd: {},
-          kubelet: {}
-      ) }
-
-      it "uses the customized --cluster-dns" do
-        expect(subject.build_systemd_dropin).to match /KUBELET_DNS_ARGS=--cluster-dns=172.255.0.10 --cluster-domain=cluster.local/
-      end
     end
   end
 
@@ -107,6 +101,54 @@ describe Pharos::Phases::ConfigureKubelet do
         expect(subject.kubelet_extra_args).not_to include(
           "--node-ip=#{host.peer_address}"
         )
+      end
+    end
+  end
+
+  describe '#kubelet_dns_args' do
+    it 'returns cluster service IP' do
+      expect(subject.kubelet_dns_args).to eq [
+        '--cluster-dns=10.96.0.10',
+        '--cluster-domain=cluster.local',
+      ]
+    end
+
+    context "with a different network.service_cidr" do
+      let(:config_network) { {
+          service_cidr: '172.255.0.0/16',
+      } }
+
+      it "uses the customized --cluster-dns" do
+        expect(subject.kubelet_dns_args).to eq [
+          '--cluster-dns=172.255.0.10',
+          '--cluster-domain=cluster.local',
+        ]
+      end
+    end
+
+    context "with a systemd-resolved stub" do
+      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: true,
+          systemd_resolved_stub: true,
+      ) }
+
+      it "uses --resolv-conf" do
+        expect(subject.kubelet_dns_args).to eq [
+          '--cluster-dns=10.96.0.10',
+          '--cluster-domain=cluster.local',
+          '--resolv-conf=/run/systemd/resolve/resolv.conf',
+        ]
+      end
+    end
+
+    context "with a non-systemd-resolved localhost resolver" do
+      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: true,
+          systemd_resolved_stub: false,
+      ) }
+
+      it "fails" do
+        expect{subject.kubelet_dns_args}.to raise_error 'Host has /etc/resolv.conf configured with localhost as a resolver'
       end
     end
   end
