@@ -44,10 +44,14 @@ module Pharos
       Pharos::HostConfigManager.load_configs(@config)
     end
 
+    def gather_facts
+      apply_phase(Phases::GatherFacts, config.hosts, ssh: true, parallel: true)
+    end
+
     def validate
       addon_manager.validate
+      gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ValidateHostname, config.hosts, ssh: false, parallel: false)
     end
 
     # @return [Array<Pharos::Configuration::Host>]
@@ -99,6 +103,10 @@ module Pharos
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
 
       apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+    end
+
+    def apply_reset
+      apply_phase(Phases::ResetHost, config.hosts, ssh: true, parallel: true)
     end
 
     # @param phase_class [Pharos::Phase]
