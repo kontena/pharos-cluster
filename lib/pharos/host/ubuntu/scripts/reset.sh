@@ -10,7 +10,8 @@ if which docker ; then
     systemctl stop docker
     systemctl disable docker
 elif which crio ; then
-    crictl rm $(crictl ps -a -q)
+    crictl stopp $(crictl pods -q)
+    crictl rmp $(crictl pods -q)
     systemctl stop crio
     systemctl disable crio
 fi
@@ -24,7 +25,7 @@ rm -rf /etc/kubernetes \
     /etc/crio \
     /etc/systemd/system/kubelet.service \
     /etc/systemd/system/kubelet.service.d \
-    /etc/systemd/system/crio.service \ \
+    /etc/systemd/system/crio.service \
     ~/.kube \
     /var/lib/docker \
     /var/lib/containerd \
