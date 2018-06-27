@@ -6,14 +6,13 @@ systemctl stop kubelet
 systemctl disable kubelet
 
 if systemctl is-active --quiet docker ; then
-    docker rm -fv $(docker ps -a -q)
+    docker stop $(docker ps -q)
     systemctl stop docker
     systemctl disable docker
 fi
 
 if systemctl is-active --quiet crio ; then
     crictl stopp $(crictl pods -q)
-    crictl rmp $(crictl pods -q)
     systemctl stop crio
     systemctl disable crio
 fi
@@ -29,9 +28,6 @@ sudo rm -rf /etc/kubernetes \
     /etc/systemd/system/kubelet.service.d \
     /etc/systemd/system/crio.service \
     ~/.kube \
-    /var/lib/docker \
-    /var/lib/containerd \
-    /var/lib/containers \
     /var/lib/kubelet \
     /opt/cni \
     /var/lib/etcd \
@@ -41,7 +37,6 @@ sudo rm -rf /etc/kubernetes \
     /usr/local/bin/crio-config \
     /usr/local/bin/conmon \
     /usr/local/lib/cri-o-runc \
-    /usr/local/bin/crio \
     /usr/local/bin/skopeo \
     /usr/local/bin/runc \
     /usr/local/bin/crictl
