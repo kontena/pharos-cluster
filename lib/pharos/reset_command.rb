@@ -28,7 +28,7 @@ module Pharos
 
       puts pastel.green("==> Sharpening tools ...")
       manager.load
-      manager.validate
+      manager.gather_facts
 
       if $stdin.tty? && !yes?
         puts "\n\n"

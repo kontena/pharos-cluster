@@ -2,10 +2,14 @@
 
 module Pharos
   module Phases
-    class ValidateHostname < Pharos::Phase
-      title "Validate unique hostnames for all hosts"
+    class ValidateClusterHosts < Pharos::Phase
+      title "Validate cluster hosts"
 
       def call
+        validate_unique_hostnames
+      end
+
+      def validate_unique_hostnames
         logger.info { "Validating hostname uniqueness ..." }
 
         duplicates = @config.hosts.reject { |h| h.address == @host.address }.select { |h| h.hostname == @host.hostname }

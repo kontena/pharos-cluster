@@ -44,10 +44,15 @@ module Pharos
       Pharos::HostConfigManager.load_configs(@config)
     end
 
+    def gather_facts
+      apply_phase(Phases::GatherFacts, config.hosts, ssh: true, parallel: true)
+    end
+
     def validate
       addon_manager.validate
+      gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ValidateHostname, config.hosts, ssh: false, parallel: false)
+      apply_phase(Phases::ValidateClusterHosts, config.hosts, ssh: false, parallel: false)
     end
 
     # @return [Array<Pharos::Configuration::Host>]

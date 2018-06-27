@@ -1,6 +1,6 @@
-require 'pharos/phases/validate_hostname'
+require 'pharos/phases/validate_cluster_hosts'
 
-describe Pharos::Phases::ValidateHostname do
+describe Pharos::Phases::ValidateClusterHosts do
   let(:config) { Pharos::Config.new(
       hosts: [
         Pharos::Configuration::Host.new(
