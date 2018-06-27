@@ -82,6 +82,15 @@ module Pharos
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
       end
 
+      # @return [String, nil]
+      def readlink
+        target = @client.exec!("readlink #{escaped_path} || echo").strip
+
+        return nil if target.empty?
+
+        target
+      end
+
       # Yields each line in the remote file
       # @yield [String]
       def each_line

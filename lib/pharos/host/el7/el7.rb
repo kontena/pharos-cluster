@@ -22,6 +22,7 @@ module Pharos
 
       def configure_repos
         exec_script('repos/pharos_centos7.sh')
+        exec_script('repos/cri-o.sh') if crio?
       end
 
       def configure_netfilter
@@ -36,12 +37,22 @@ module Pharos
       end
 
       def configure_container_runtime
-        raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}" unless docker?
-
-        exec_script(
-          'configure-docker.sh',
-          DOCKER_VERSION: DOCKER_VERSION
-        )
+        if docker?
+          exec_script(
+            'configure-docker.sh',
+            DOCKER_VERSION: DOCKER_VERSION
+          )
+        elsif crio?
+          exec_script(
+            'configure-cri-o.sh',
+            CRIO_VERSION: Pharos::CRIO_VERSION,
+            CRIO_STREAM_ADDRESS: host.peer_address,
+            CPU_ARCH: host.cpu_arch.name,
+            IMAGE_REPO: cluster_config.image_repository
+          )
+        else
+          raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
+        end
       end
 
       def ensure_kubelet(args)

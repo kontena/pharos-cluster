@@ -45,6 +45,7 @@ module Pharos
   module Configuration
     autoload :Host, 'pharos/configuration/host'
     autoload :Taint, 'pharos/configuration/taint'
+    autoload :OsRelease, 'pharos/configuration/os_release'
   end
 
   module Etcd

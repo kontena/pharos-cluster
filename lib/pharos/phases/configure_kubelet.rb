@@ -97,10 +97,19 @@ module Pharos
 
       # @return [Array<String>]
       def kubelet_dns_args
-        [
+        args = [
           "--cluster-dns=#{@config.network.dns_service_ip}",
           "--cluster-domain=cluster.local"
         ]
+
+        if @host.resolvconf.systemd_resolved_stub
+          # use usptream resolvers instead of systemd stub resolver at localhost for `dnsPolicy: Default` pods
+          args << '--resolv-conf=/run/systemd/resolve/resolv.conf'
+        elsif @host.resolvconf.nameserver_localhost
+          fail "Host has /etc/resolv.conf configured with localhost as a resolver"
+        end
+
+        args
       end
 
       # @return [Array<String>]

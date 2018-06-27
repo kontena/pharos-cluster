@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'ipaddr'
+
 module Pharos
   module Phases
     class ValidateHost < Pharos::Phase
@@ -42,6 +44,7 @@ module Pharos
         @host.hostname = hostname
         @host.checks = host_checks
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
+        @host.resolvconf = read_resolvconf
       end
 
       def check_role
@@ -122,6 +125,43 @@ module Pharos
           return ip
         end
         nil
+      end
+
+      # @return [Array<String>]
+      def read_resolvconf_nameservers
+        nameservers = []
+
+        @ssh.file('/etc/resolv.conf').each_line do |line|
+          if match = line.match(/nameserver (.+)/)
+            nameservers << match[1]
+          end
+        end
+
+        nameservers
+      end
+
+      LOCALNET = IPAddr.new('127.0.0.0/8')
+
+      # Host /etc/resolv.conf is configured to use a nameserver at localhost in the host network namespace
+      # @return [Boolean]
+      def check_resolvconf_nameserver_localhost
+        resolvers = read_resolvconf_nameservers.map{ |ip| IPAddr.new(ip) }
+        resolvers.any? { |ip| LOCALNET.include?(ip) }
+      end
+
+      # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
+      # @return [Boolean]
+      def check_resolvconf_systemd_resolved_stub
+        symlink = @ssh.file('/etc/resolv.conf').readlink
+        !!symlink && symlink.end_with?('/run/systemd/resolve/stub-resolv.conf')
+      end
+
+      # @return [Pharos::Configuration::Host::ResolvConf]
+      def read_resolvconf
+        Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: check_resolvconf_nameserver_localhost,
+          systemd_resolved_stub: check_resolvconf_systemd_resolved_stub
+        )
       end
     end
   end

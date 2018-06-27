@@ -8,6 +8,11 @@ module Pharos
     class Host < Dry::Struct
       constructor_type :schema
 
+      class ResolvConf < Dry::Struct
+        attribute :nameserver_localhost, Pharos::Types::Strict::Bool
+        attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
+      end
+
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String
       attribute :private_interface, Pharos::Types::Strict::String
@@ -19,7 +24,7 @@ module Pharos
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :http_proxy, Pharos::Types::Strict::String
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf
 
       def to_s
         address
@@ -39,7 +44,7 @@ module Pharos
         if crio?
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
+          args << '--container-runtime-endpoint=unix:///var/run/crio/crio.sock'
         end
 
         if local_only
