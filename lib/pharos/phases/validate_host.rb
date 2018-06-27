@@ -12,6 +12,8 @@ module Pharos
         check_distro_version
         logger.info { "Validating host configuration ..." }
         check_cpu_arch
+        logger.info { "Validating hostname uniqueness ..." }
+        validate_unique_hostnames
       end
 
       def check_distro_version
@@ -33,6 +35,13 @@ module Pharos
         raise Pharos::InvalidHostError, "Cannot change master host role to worker" if @host.worker? && @host.checks['ca_exists']
 
         logger.debug { "#{@host.role} role matches" }
+      end
+
+      def validate_unique_hostnames
+        duplicates = @config.hosts.reject { |h| h.address == @host.address }.select { |h| h.hostname == @host.hostname }
+        return if duplicates.empty?
+
+        raise Pharos::InvalidHostError, "Duplicate hostname #{@host.hostname} for hosts #{duplicates.map(&:address).join(',')}"
       end
     end
   end
