@@ -5,11 +5,13 @@ sleep 5
 systemctl stop kubelet
 systemctl disable kubelet
 
-if which docker ; then
+if systemctl is-active --quiet docker ; then
     docker rm -fv $(docker ps -a -q)
     systemctl stop docker
     systemctl disable docker
-elif which crictl ; then
+fi
+
+if systemctl is-active --quiet crio ; then
     crictl stopp $(crictl pods -q)
     crictl rmp $(crictl pods -q)
     systemctl stop crio
