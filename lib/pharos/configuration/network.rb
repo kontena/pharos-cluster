@@ -10,7 +10,7 @@ module Pharos
       class Weave < Dry::Struct
         constructor_type :schema
 
-        attribute :trusted_subnets, Pharos::Types::Array.member(Pharos::Types::String)
+        attribute :trusted_subnets, Pharos::Types::Array.of(Pharos::Types::String)
       end
 
       class Calico < Dry::Struct

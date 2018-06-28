@@ -5,7 +5,7 @@ module Pharos
     class Etcd < Dry::Struct
       constructor_type :schema
 
-      attribute :endpoints, Pharos::Types::Array.member(Pharos::Types::String)
+      attribute :endpoints, Pharos::Types::Array.of(Pharos::Types::String)
       attribute :version, Pharos::Types::String
       attribute :certificate, Pharos::Types::String
       attribute :key, Pharos::Types::String
