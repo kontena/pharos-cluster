@@ -7,7 +7,7 @@ Pharos.addon 'kubernetes-dashboard' do
   install {
     apply_resources(heapster_version: '1.5.1')
 
-    logger.info { "~~> kubernetes-dashboard can be accessed via kubectl proxy at http://localhost:8001/ui" }
+    logger.info { "~~> kubernetes-dashboard can be accessed via kubectl proxy. Check proxy URL with: kubectl cluster-info" }
 
     service_account = kube_client.get_service_account('dashboard-admin', 'kube-system')
     token_secret = service_account.secrets[0]
