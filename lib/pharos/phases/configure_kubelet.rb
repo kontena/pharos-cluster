@@ -120,6 +120,7 @@ module Pharos
         end
         args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
+        args << "--authentication-token-webhook=true"
         args << "--pod-infra-container-image=#{@config.image_repository}/pause-#{@host.cpu_arch.name}:3.1"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
