@@ -63,5 +63,11 @@ module Pharos
     def self.apply_stack(host, name, vars = {})
       session(host).stack(name, File.join(RESOURCE_PATH, name), vars).apply
     end
+
+    # @param host [String]
+    # @param name [String]
+    def self.remove_stack(host, name)
+      session(host).stack(name, File.join(RESOURCE_PATH, name)).prune('-')
+    end
   end
 end
