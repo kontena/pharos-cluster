@@ -13,7 +13,6 @@ module Pharos
 
       def call
         configure_metrics_server
-        remove_heapster
       end
 
       def configure_metrics_server
@@ -23,14 +22,6 @@ module Pharos
           version: METRICS_SERVER_VERSION,
           image_repository: @config.image_repository,
           arch: @host.cpu_arch
-        )
-      end
-
-      # TODO: remove this in 1.3
-      def remove_heapster
-        logger.debug { "Removing heapster ..." }
-        Pharos::Kube.remove_stack(
-          @master.api_address, 'heapster'
         )
       end
     end
