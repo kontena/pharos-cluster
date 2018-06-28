@@ -5,7 +5,7 @@ Pharos.addon 'kubernetes-dashboard' do
   license 'Apache License 2.0'
 
   install {
-    apply_resources
+    apply_resources(heapster_version: '1.5.1')
 
     logger.info { "~~> kubernetes-dashboard can be accessed via kubectl proxy at http://localhost:8001/ui" }
 
