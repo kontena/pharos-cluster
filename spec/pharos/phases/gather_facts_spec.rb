@@ -113,4 +113,23 @@ describe Pharos::Phases::GatherFacts do
       end
     end
   end
+
+  describe '#read_routes' do
+    let(:routes) { [
+      'default via 192.0.2.1 dev eth0 onlink',
+      '192.0.2.0/24 dev eth0  proto kernel  scope link  src 192.0.2.11',
+      'wtf',
+    ] }
+
+    before do
+      allow(ssh).to receive(:exec!).with('ip route').and_return(routes.join "\n" + "\n")
+    end
+
+    it "returns valid routes" do
+      expect(subject.read_routes.map{|route| {prefix: route.prefix, via: route.via, dev: route.dev}}).to eq [
+        {prefix: 'default', via: '192.0.2.1', dev: 'eth0'},
+        {prefix: '192.0.2.0/24', via: nil, dev: 'eth0'},
+      ]
+    end
+  end
 end
