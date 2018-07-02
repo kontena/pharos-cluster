@@ -27,8 +27,9 @@ module Pharos
           new(raw: line.strip, **captures)
         end
 
-        attribute :raw, Pharos::Types::Strict::String
+        constructor_type :schema
 
+        attribute :raw, Pharos::Types::Strict::String
         attribute :type, Pharos::Types::Strict::String.optional
         attribute :prefix, Pharos::Types::Strict::String
         attribute :via, Pharos::Types::Strict::String.optional
