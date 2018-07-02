@@ -153,37 +153,47 @@ describe Pharos::Phases::ValidateHost do
       host.routes = routes
     end
 
-    context 'for an unconfigured calico host' do
-      let(:network_config) { {
-        provider: 'calico',
-        service_cidr: '10.96.0.0/12',
-        pod_network_cidr: '10.32.0.0/12',
-      }}
+    context 'for an unconfigured host' do
       let(:routes) { [
         Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
         Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
         Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
       ] }
 
-      it 'validates' do
-        expect{subject.validate_routes}.to_not raise_error
+      context 'with non-overlapping calico routes' do
+        let(:network_config) { {
+          provider: 'calico',
+          service_cidr: '10.96.0.0/12',
+          pod_network_cidr: '10.32.0.0/12',
+        }}
+
+        it 'validates' do
+          expect{subject.validate_routes}.to_not raise_error
+        end
       end
-    end
 
-    context 'for an unconfigured calico host with overlapping routes' do
-      let(:network_config) { {
-        provider: 'calico',
-        service_cidr: '10.96.0.0/12',
-        pod_network_cidr: '10.32.0.0/12',
-      }}
-      let(:routes) { [
-        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '10.32.1.1', dev: 'eth0'),
-        Pharos::Configuration::Host::Route.new(prefix: '10.32.1.0/24', dev: 'eth0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
-      ] }
+      context 'with overlapping calico pod network routes' do
+        let(:network_config) { {
+          provider: 'calico',
+          service_cidr: '10.96.0.0/12',
+          pod_network_cidr: '172.16.0.0/12',
+        }}
 
-      it 'fails validatoin' do
-        expect{subject.validate_routes}.to raise_error(RuntimeError, /Overlapping host routes for .network.pod_network_cidr/)
+        it 'fails validation' do
+          expect{subject.validate_routes}.to raise_error(RuntimeError, /Overlapping host routes for .network.pod_network_cidr/)
+        end
+      end
+
+      context 'with overlapping calico service routes' do
+        let(:network_config) { {
+          provider: 'calico',
+          service_cidr: '172.16.0.0/12',
+          pod_network_cidr: '10.32.0.0/12',
+        }}
+
+        it 'fails validation' do
+          expect{subject.validate_routes}.to raise_error(RuntimeError, /Overlapping host routes for .network.service_cidr/)
+        end
       end
     end
 
