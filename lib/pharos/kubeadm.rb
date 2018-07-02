@@ -36,7 +36,7 @@ module Pharos
             'podSubnet' => @config.network.pod_network_cidr
           },
           'controllerManagerExtraArgs' => {
-            'horizontal-pod-autoscaler-use-rest-clients' => 'false'
+            'horizontal-pod-autoscaler-use-rest-clients' => 'true'
           },
           'noTaintMaster' => !master_taint?
         }

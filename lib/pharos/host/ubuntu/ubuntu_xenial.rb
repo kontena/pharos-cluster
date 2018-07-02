@@ -50,6 +50,13 @@ module Pharos
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
       end
+
+      def reset
+        exec_script(
+          "reset.sh",
+          CRIO_VERSION: CRIO_VERSION
+        )
+      end
     end
   end
 end

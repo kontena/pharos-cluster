@@ -49,6 +49,10 @@ module Pharos
           ARCH: host.cpu_arch.name
         )
       end
+
+      def reset
+        exec_script("reset.sh")
+      end
     end
   end
 end

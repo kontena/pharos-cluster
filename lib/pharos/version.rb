@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Pharos
-  VERSION = "1.2.0-beta.2"
+  VERSION = "1.2.1"
 end
