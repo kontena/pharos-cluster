@@ -46,4 +46,33 @@ describe Pharos::Configuration::Host do
       expect(subject.docker?).to be_falsey
     end
   end
+
+  describe '#overlapping_routes' do
+    let(:routes) { [
+      Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0', options: 'onlink'),
+      Pharos::Configuration::Host::Route.new(prefix: '10.18.0.0/16', dev: 'eth0', proto: 'kernel', options: 'scope link  src 10.18.0.13'),
+      Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel', options: 'scope link  src 192.0.2.11'),
+      Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel', options: 'scope link  src 172.17.0.1 linkdown'),
+    ] }
+
+    subject do
+      subject = described_class.new(
+        address: '192.0.2.1',
+      )
+      subject.routes = routes
+      subject
+    end
+
+    it "finds an overlapping route for a 172.16.0.0/12" do
+      expect(subject.overlapping_routes('172.16.0.0/12').map{|route| route.prefix}).to eq ['172.17.0.0/16']
+    end
+
+    it "finds an overlapping route for a 10.18.128.0/18" do
+      expect(subject.overlapping_routes('10.18.128.0/18').map{|route| route.prefix}).to eq ['10.18.0.0/16']
+    end
+
+    it "does not find any overlapping routes for 172.16.0.0/24" do
+      expect(subject.overlapping_routes('172.16.0.0/24').map{|route| route.prefix}).to eq []
+    end
+  end
 end
