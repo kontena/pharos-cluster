@@ -25,7 +25,7 @@ module Pharos
           node.metadata.name,
           metadata: {
             labels: @host.labels
-          },
+          }
         )
       end
 
