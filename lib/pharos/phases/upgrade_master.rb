@@ -31,9 +31,10 @@ module Pharos
       end
 
       def upgrade
-        logger.info { "Upgrading control plane ..." }
-
         cfg = kubeadm.generate_config
+
+        logger.info { "Upgrading control plane ..." }
+        logger.debug { cfg.to_yaml }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
