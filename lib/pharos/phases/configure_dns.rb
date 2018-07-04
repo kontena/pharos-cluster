@@ -6,7 +6,8 @@ module Pharos
       title "Configure DNS"
 
       def call
-        patch_kubedns(
+        patch_deployment(
+          'coredns',
           replicas: @config.dns_replicas,
           max_surge: max_surge,
           max_unavailable: max_unavailable
@@ -45,15 +46,15 @@ module Pharos
 
       # @param replicas [Integer]
       # @param nodes [Integer]
-      def patch_kubedns(replicas:, max_surge:, max_unavailable:)
-        logger.info { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
+      def patch_deployment(name, replicas:, max_surge:, max_unavailable:)
+        logger.info { "Patching #{name} deployment with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
         resource = Pharos::Kube.session(@master.api_address).resource(
           apiVersion: 'extensions/v1beta1',
           kind: 'Deployment',
           metadata: {
             namespace: 'kube-system',
-            name: 'kube-dns'
+            name: name
           },
           spec: {
             replicas: replicas,
@@ -75,9 +76,7 @@ module Pharos
                             {
                               key: "k8s-app",
                               operator: "In",
-                              values: [
-                                "kube-dns"
-                              ]
+                              values: [ name ]
                             }
                           ]
                         },
