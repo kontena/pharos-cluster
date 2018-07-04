@@ -15,25 +15,26 @@ module Pharos
         raise Pharos::Error, "Cannot set labels, node not found" if node.nil?
 
         logger.info { "Configuring node labels and taints ... " }
-        patch_node(node)
-      end
-
-      # @return [Array{Hash}]
-      def taints
-        return [] unless @host.taints
-
-        @host.taints.map(&:to_h)
+        patch_labels(node) if @host.labels
+        patch_taints(node) if @host.taints
       end
 
       # @param node [Kubeclient::Resource]
-      def patch_node(node)
+      def patch_labels(node)
         kube.patch_node(
           node.metadata.name,
           metadata: {
-            labels: @host.labels || {}
+            labels: @host.labels
           },
+        )
+      end
+
+      # @param node [Kubeclient::Resource]
+      def patch_taints(node)
+        kube.patch_node(
+          node.metadata.name,
           spec: {
-            taints: taints
+            taints: @host.taints.map(&:to_h)
           }
         )
       end
