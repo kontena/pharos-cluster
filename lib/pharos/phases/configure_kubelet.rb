@@ -115,8 +115,8 @@ module Pharos
       # @return [Array<String>]
       def kubelet_extra_args
         args = []
-        unless @config.kubelet&.read_only_port
-          args << "--read-only-port=0"
+        if @config.kubelet&.read_only_port
+          args << "--read-only-port=10255"
         end
         args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
