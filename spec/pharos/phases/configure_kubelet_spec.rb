@@ -32,8 +32,7 @@ describe Pharos::Phases::ConfigureKubelet do
     it "returns a systemd unit" do
       expect(subject.build_systemd_dropin).to eq <<~EOM
         [Service]
-        Environment='KUBELET_EXTRA_ARGS=--read-only-port=0 --node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=quay.io/kontena/pause-amd64:3.1'
-        Environment='KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local'
+        Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=quay.io/kontena/pause-amd64:3.1'
         ExecStartPre=-/sbin/swapoff -a
       EOM
     end
@@ -42,7 +41,6 @@ describe Pharos::Phases::ConfigureKubelet do
   describe "#kubelet_extra_args" do
     it 'returns extra args array' do
       expect(subject.kubelet_extra_args).to include(
-        '--read-only-port=0',
         '--node-ip=192.168.42.1',
         '--hostname-override=',
         '--authentication-token-webhook=true'
@@ -64,9 +62,9 @@ describe Pharos::Phases::ConfigureKubelet do
         kubelet: { read_only_port: true}
       ) }
 
-      it 'does not disable read only port' do
-        expect(subject.kubelet_extra_args).not_to include(
-          '--read-only-port=0'
+      it 'enables read only port' do
+        expect(subject.kubelet_extra_args).to include(
+          '--read-only-port=10255'
         )
       end
     end
@@ -104,28 +102,6 @@ describe Pharos::Phases::ConfigureKubelet do
         )
       end
     end
-  end
-
-  describe '#kubelet_dns_args' do
-    it 'returns cluster service IP' do
-      expect(subject.kubelet_dns_args).to eq [
-        '--cluster-dns=10.96.0.10',
-        '--cluster-domain=cluster.local',
-      ]
-    end
-
-    context "with a different network.service_cidr" do
-      let(:config_network) { {
-          service_cidr: '172.255.0.0/16',
-      } }
-
-      it "uses the customized --cluster-dns" do
-        expect(subject.kubelet_dns_args).to eq [
-          '--cluster-dns=172.255.0.10',
-          '--cluster-domain=cluster.local',
-        ]
-      end
-    end
 
     context "with a systemd-resolved stub" do
       let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
@@ -134,11 +110,7 @@ describe Pharos::Phases::ConfigureKubelet do
       ) }
 
       it "uses --resolv-conf" do
-        expect(subject.kubelet_dns_args).to eq [
-          '--cluster-dns=10.96.0.10',
-          '--cluster-domain=cluster.local',
-          '--resolv-conf=/run/systemd/resolve/resolv.conf',
-        ]
+        expect(subject.kubelet_extra_args).to include '--resolv-conf=/run/systemd/resolve/resolv.conf'
       end
     end
 
@@ -149,7 +121,7 @@ describe Pharos::Phases::ConfigureKubelet do
       ) }
 
       it "fails" do
-        expect{subject.kubelet_dns_args}.to raise_error 'Host has /etc/resolv.conf configured with localhost as a resolver'
+        expect{subject.kubelet_extra_args}.to raise_error 'Host has /etc/resolv.conf configured with localhost as a resolver'
       end
     end
   end

@@ -20,7 +20,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_hosts_count) { 1 }
 
       it "is uses one replica" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 1, max_surge: 0, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 1, max_surge: 0, max_unavailable: 1)
 
         subject.call
       end
@@ -30,7 +30,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_hosts_count) { 2 }
 
       it "is uses two replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 2, max_surge: 0, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 2, max_surge: 0, max_unavailable: 1)
 
         subject.call
       end
@@ -40,7 +40,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_hosts_count) { 3 }
 
       it "is uses two replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 2, max_surge: 1, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 2, max_surge: 1, max_unavailable: 1)
 
         subject.call
       end
@@ -51,7 +51,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_dns_replicas) { 3 }
 
       it "is uses three replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 3, max_surge: 0, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 3, max_surge: 0, max_unavailable: 1)
 
         subject.call
       end
@@ -61,7 +61,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_hosts_count) { 4 }
 
       it "is uses two replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 2, max_surge: 1, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 2, max_surge: 1, max_unavailable: 1)
 
         subject.call
       end
@@ -72,7 +72,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_dns_replicas) { 3 }
 
       it "is uses three replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 3, max_surge: 1, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 3, max_surge: 1, max_unavailable: 1)
 
         subject.call
       end
@@ -82,7 +82,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_hosts_count) { 5 }
 
       it "is uses two replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 2, max_surge: 1, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 2, max_surge: 1, max_unavailable: 1)
 
         subject.call
       end
@@ -93,7 +93,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_dns_replicas) { 5 }
 
       it "is uses two replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 5, max_surge: 1, max_unavailable: 2)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 5, max_surge: 1, max_unavailable: 2)
 
         subject.call
       end
@@ -103,7 +103,7 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_hosts_count) { 15 }
 
       it "is uses three replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 3, max_surge: 1, max_unavailable: 1)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 3, max_surge: 1, max_unavailable: 1)
 
         subject.call
       end
@@ -113,14 +113,14 @@ describe Pharos::Phases::ConfigureDNS do
       let(:config_hosts_count) { 40 }
 
       it "is uses three replicas" do
-        expect(subject).to receive(:patch_kubedns).with(replicas: 5, max_surge: 2, max_unavailable: 2)
+        expect(subject).to receive(:patch_deployment).with('coredns', replicas: 5, max_surge: 2, max_unavailable: 2)
 
         subject.call
       end
     end
   end
 
-  describe '#patch_kubedns' do
+  describe '#patch_deployment' do
     let(:session) { double }
     let(:resource) { double }
     it "updates the resource" do
@@ -129,7 +129,7 @@ describe Pharos::Phases::ConfigureDNS do
         res = Kubeclient::Resource.new(hash)
         expect(res.apiVersion).to eq 'extensions/v1beta1'
         expect(res.kind).to eq 'Deployment'
-        expect(res.metadata.name).to eq 'kube-dns'
+        expect(res.metadata.name).to eq 'test'
         expect(res.metadata.namespace).to eq 'kube-system'
         expect(res.spec.replicas).to eq 1
         expect(res.spec.strategy.rollingUpdate.maxSurge).to eq 0
@@ -138,7 +138,7 @@ describe Pharos::Phases::ConfigureDNS do
       end.and_return(resource)
       expect(resource).to receive(:update)
 
-      subject.call
+      subject.patch_deployment('test', replicas: 1, max_surge: 0, max_unavailable: 1)
     end
   end
 end
