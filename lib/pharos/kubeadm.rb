@@ -21,9 +21,12 @@ module Pharos
       # @return [Hash]
       def generate_config
         config = {
-          'apiVersion' => 'kubeadm.k8s.io/v1alpha1',
+          'apiVersion' => 'kubeadm.k8s.io/v1alpha2',
           'kind' => 'MasterConfiguration',
-          'nodeName' => @host.hostname,
+
+          'nodeRegistration' => {
+            'name' => @host.hostname,
+          },
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'imageRepository' => @config.image_repository,
           'api' => {
@@ -35,24 +38,25 @@ module Pharos
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
           },
+          'apiServerExtraArgs' => {},
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true'
           },
-          'noTaintMaster' => !master_taint?
         }
 
-        if @host.container_runtime == 'cri-o'
-          config['criSocket'] = '/var/run/crio/crio.sock'
+        unless master_taint?
+          config['nodeRegistration']['taints'] = []
         end
 
-        config['apiServerExtraArgs'] = {
-          'apiserver-count' => @config.master_hosts.size.to_s
-        }
+        if @host.container_runtime == 'cri-o'
+          config['nodeRegistration']['criSocket'] = '/var/run/crio/crio.sock'
+        end
 
         if @config.cloud && @config.cloud.provider != 'external'
-          config['cloudProvider'] = @config.cloud.provider
           if @config.cloud.config
+            config['apiServerExtraArgs']['cloud-provider'] = @config.cloud.provider
             config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
+            config['controllerManagerExtraArgs']['cloud-provider'] = @config.cloud.provider
             config['controllerManagerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
           end
         end
@@ -121,23 +125,27 @@ module Pharos
           "https://#{h.peer_address}:2379"
         }
         config['etcd'] = {
-          'endpoints' => endpoints
+          'external' => {
+            'endpoints' => endpoints
+          }
         }
 
-        config['etcd']['certFile'] = '/etc/pharos/pki/etcd/client.pem'
-        config['etcd']['caFile'] = '/etc/pharos/pki/ca.pem'
-        config['etcd']['keyFile'] = '/etc/pharos/pki/etcd/client-key.pem'
+        config['etcd']['external']['certFile'] = '/etc/pharos/pki/etcd/client.pem'
+        config['etcd']['external']['caFile'] = '/etc/pharos/pki/ca.pem'
+        config['etcd']['external']['keyFile'] = '/etc/pharos/pki/etcd/client-key.pem'
       end
 
       # @param config [Hash]
       def configure_external_etcd(config)
         config['etcd'] = {
-          'endpoints' => @config.etcd.endpoints
+          'external' => {
+            'endpoints' => @config.etcd.endpoints
+          }
         }
 
-        config['etcd']['certFile'] = '/etc/pharos/etcd/certificate.pem' if @config.etcd.certificate
-        config['etcd']['caFile'] = '/etc/pharos/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
-        config['etcd']['keyFile'] = '/etc/pharos/etcd/certificate-key.pem' if @config.etcd.key
+        config['etcd']['external']['certFile'] = '/etc/pharos/etcd/certificate.pem' if @config.etcd.certificate
+        config['etcd']['external']['caFile'] = '/etc/pharos/etcd/ca-certificate.pem' if @config.etcd.ca_certificate
+        config['etcd']['external']['keyFile'] = '/etc/pharos/etcd/certificate-key.pem' if @config.etcd.key
       end
 
       # @param config [Hash]
@@ -189,17 +197,11 @@ module Pharos
       # @param config [Hash]
       def configure_kube_proxy(config)
         config['kubeProxy'] = {
-          'config' => {
-            'featureGates' => {}
-          }
+          'config' => { }
         }
 
         if @config.kube_proxy.mode
           config['kubeProxy']['config']['mode'] = @config.kube_proxy.mode
-        end
-
-        if @config.kube_proxy.mode == 'ipvs'
-          config['kubeProxy']['config']['featureGates']['SupportIPVSProxyMode'] = true
         end
 
         config
