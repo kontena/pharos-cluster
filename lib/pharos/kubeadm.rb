@@ -25,7 +25,7 @@ module Pharos
           'kind' => 'MasterConfiguration',
 
           'nodeRegistration' => {
-            'name' => @host.hostname,
+            'name' => @host.hostname
           },
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'imageRepository' => @config.image_repository,
@@ -41,7 +41,7 @@ module Pharos
           'apiServerExtraArgs' => {},
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true'
-          },
+          }
         }
 
         unless master_taint?
@@ -197,7 +197,7 @@ module Pharos
       # @param config [Hash]
       def configure_kube_proxy(config)
         config['kubeProxy'] = {
-          'config' => { }
+          'config' => {}
         }
 
         if @config.kube_proxy.mode

@@ -76,7 +76,7 @@ module Pharos
                             {
                               key: "k8s-app",
                               operator: "In",
-                              values: [ name ]
+                              values: [name]
                             }
                           ]
                         },
