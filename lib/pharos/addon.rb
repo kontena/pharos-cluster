@@ -24,7 +24,7 @@ module Pharos
   class Addon
     include Pharos::Logging
 
-    # return class as use for superclass in Dry::Validation.Params
+    # return class for use as superclass in Dry::Validation.Params
     Schema = Dry::Validation.Schema(build: false) do
       configure do
         def duration?(value)
