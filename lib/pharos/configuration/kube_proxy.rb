@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class KubeProxy < Dry::Struct
-      constructor_type :schema
-
+    class KubeProxy < Pharos::Configuration::Struct
       attribute :mode, Pharos::Types::String.default('iptables')
     end
   end

@@ -24,7 +24,8 @@ module Pharos
   class Addon
     include Pharos::Logging
 
-    class Schema < Dry::Validation::Schema
+    # return class as use for superclass in Dry::Validation.Params
+    Schema = Dry::Validation.Schema(build: false) do
       configure do
         def duration?(value)
           !Fugit::Duration.parse(value).nil?
@@ -49,9 +50,7 @@ module Pharos
         end
       end
 
-      define! do
-        required(:enabled).filled(:bool?)
-      end
+      required(:enabled).filled(:bool?)
     end
 
     class << self
@@ -84,7 +83,7 @@ module Pharos
       end
 
       def config_schema(&block)
-        @schema = Dry::Validation.Form(Schema, &block)
+        @schema = Dry::Validation.Params(Schema, &block)
       end
 
       def config(&block)
@@ -113,7 +112,7 @@ module Pharos
       end
 
       def validation
-        Dry::Validation.Form(Schema) { yield }
+        Dry::Validation.Params(Schema) { yield }
       end
 
       # @param config [Hash]

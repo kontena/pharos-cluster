@@ -5,10 +5,8 @@ require_relative 'cpu_arch'
 
 module Pharos
   module Configuration
-    class Host < Dry::Struct
-      constructor_type :schema
-
-      class ResolvConf < Dry::Struct
+    class Host < Pharos::Configuration::Struct
+      class ResolvConf < Pharos::Configuration::Struct
         attribute :nameserver_localhost, Pharos::Types::Strict::Bool
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
       end

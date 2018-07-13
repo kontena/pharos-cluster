@@ -4,9 +4,7 @@ require 'dry-struct'
 
 module Pharos
   module Addons
-    class Struct < Dry::Struct
-      constructor_type :schema
-
+    class Struct < Pharos::Configuration::Struct
       attribute :enabled, Pharos::Types::Strict::Bool
     end
   end

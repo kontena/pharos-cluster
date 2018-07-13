@@ -4,9 +4,7 @@ require_relative 'token_webhook'
 
 module Pharos
   module Configuration
-    class Authentication < Dry::Struct
-      constructor_type :schema
-
+    class Authentication < Pharos::Configuration::Struct
       attribute :token_webhook, Pharos::Configuration::TokenWebhook
     end
   end
