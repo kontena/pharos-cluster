@@ -12,8 +12,8 @@ module Pharos
       end
 
       attribute :address, Pharos::Types::Strict::String
-      attribute :private_address, Pharos::Types::Strict::String
-      attribute :private_interface, Pharos::Types::Strict::String
+      attribute :private_address, Pharos::Types::Strict::String.optional.default(nil)
+      attribute :private_interface, Pharos::Types::Strict::String.optional.default(nil)
       attribute :role, Pharos::Types::Strict::String
       attribute :labels, Pharos::Types::Strict::Hash
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
