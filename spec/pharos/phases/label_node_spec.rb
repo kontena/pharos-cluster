@@ -102,7 +102,7 @@ describe Pharos::Phases::LabelNode do
             labels: { },
           },
           spec: {
-            taints: [ { key: 'node-role.kubernetes.io/master', value: nil, effect: 'NoSchedule' } ],
+            taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ],
           }
         )
 
