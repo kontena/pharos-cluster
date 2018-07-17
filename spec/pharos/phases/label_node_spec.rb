@@ -79,9 +79,6 @@ describe Pharos::Phases::LabelNode do
           metadata: {
             labels: { :foo => 'bar' },
           },
-          spec: {
-            taints: [ ],
-          }
         )
 
         subject.call
@@ -98,9 +95,31 @@ describe Pharos::Phases::LabelNode do
 
       it 'patches node' do
         expect(kube).to receive(:patch_node).with('test',
+          spec: {
+            taints: [ { key: 'node-role.kubernetes.io/master', value: nil, effect: 'NoSchedule' } ],
+          }
+        )
+
+        subject.call
+      end
+    end
+
+    context 'with labels and taints' do
+      let(:host) { Pharos::Configuration::Host.new(
+        address: '192.0.2.2',
+        labels: {foo: 'bar'},
+        taints: [
+          Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule'),
+        ]
+      ) }
+
+      it 'patches node twice' do
+        expect(kube).to receive(:patch_node).with('test',
           metadata: {
-            labels: { },
+            labels: { :foo => 'bar' },
           },
+        )
+        expect(kube).to receive(:patch_node).with('test',
           spec: {
             taints: [ { key: 'node-role.kubernetes.io/master', value: nil, effect: 'NoSchedule' } ],
           }
