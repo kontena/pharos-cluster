@@ -7,7 +7,7 @@ module Pharos
     class UbuntuXenial < Ubuntu
       register_config 'ubuntu', '16.04'
 
-      DOCKER_VERSION = '1.13.1'
+      DOCKER_VERSION = '17.03.2'
       CFSSL_VERSION = '1.2'
 
       register_component(
@@ -36,7 +36,7 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1~16.04.2"
+            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu2~16.04.1"
           )
         elsif crio?
           exec_script(
