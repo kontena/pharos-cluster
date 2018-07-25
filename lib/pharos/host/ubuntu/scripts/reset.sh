@@ -17,7 +17,7 @@ if systemctl is-active --quiet crio ; then
     systemctl disable crio
 fi
 
-kubeadm reset
+kubeadm reset --force
 
 apt-get purge -y --allow-change-held-packages --purge kubeadm kubelet kubectl docker.io
 apt-get autoremove -y

@@ -17,7 +17,7 @@ if systemctl is-active --quiet crio ; then
     systemctl disable crio
 fi
 
-kubeadm reset
+kubeadm reset --force
 
 yum remove -y kubeadm kubelet kubectl docker
 
