@@ -56,6 +56,8 @@ module Pharos
           args << "--hostname-override=#{hostname}"
         end
 
+        args += configurer(nil).kubelet_args
+
         args
       end
 

@@ -5,6 +5,10 @@ describe Pharos::Phases::ConfigureKubelet do
       nameserver_localhost: false,
       systemd_resolved_stub: false,
   ) }
+  let(:host_osrelease) { Pharos::Configuration::OsRelease.new(
+    id: 'ubuntu',
+    version: '16.04',
+  ) }
   let(:host) { Pharos::Configuration::Host.new(
     address: 'test',
     private_address: '192.168.42.1',
@@ -26,6 +30,7 @@ describe Pharos::Phases::ConfigureKubelet do
     host.resolvconf = host_resolvconf
 
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))
+    allow(host).to receive(:os_release).and_return(host_osrelease)
   end
 
   describe '#build_systemd_dropin' do
@@ -122,6 +127,17 @@ describe Pharos::Phases::ConfigureKubelet do
 
       it "fails" do
         expect{subject.kubelet_extra_args}.to raise_error 'Host has /etc/resolv.conf configured with localhost as a resolver'
+      end
+    end
+
+    context "for a CentOS host" do
+      let(:host_osrelease) { Pharos::Configuration::OsRelease.new(
+        id: 'centos',
+        version: '7',
+      ) }
+
+      it "configures --cgroup-driver" do
+        expect(subject.kubelet_extra_args).to include '--cgroup-driver=systemd'
       end
     end
   end
