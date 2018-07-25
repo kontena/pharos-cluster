@@ -4,7 +4,7 @@
 
 set -ex
 
-if [ $(kubeadm version -o short) = "v${VERSION}" ]; then
+if [ -x /usr/local/bin/pharos-kubeadm-${VERSION} ]; then
     exit
 fi
 
@@ -14,5 +14,5 @@ curl -fsSL $BIN_URL -o /tmp/kubeadm.gz
 curl -fsSL "${BIN_URL}.asc" -o tmp/kubeadm.gz.asc
 gpg --verify /tmp/kubeadm.gz.asc /tmp/kubeadm.gz
 gunzip /tmp/kubeadm.gz
-install -o root -g root -m 0755 -t /usr/local/bin /tmp/kubeadm # XXX: overrides package version?
+install -o root -g root -m 0755 -T /tmp/kubeadm /usr/local/bin/pharos-kubeadm-${VERSION}
 rm /tmp/kubeadm /tmp/kubeadm.gz.asc

@@ -38,7 +38,7 @@ module Pharos
         # the kube master must be running, which is the case for upgrades
         host_configurer.upgrade_kubeadm(Pharos::KUBEADM_VERSION)
 
-        @ssh.exec!("sudo kubeadm upgrade node config --kubelet-version=v#{Pharos::KUBE_VERSION}")
+        @ssh.exec!("sudo /usr/local/bin/pharos-kubeadm-#{Pharos::KUBEADM_VERSION} upgrade node config --kubelet-version=v#{Pharos::KUBE_VERSION}")
       end
     end
   end
