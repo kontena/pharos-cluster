@@ -121,18 +121,17 @@ module Pharos
 
       # @param config [Pharos::Config]
       def configure_internal_etcd(config)
-        endpoints = @config.etcd_hosts.map { |h|
-          "https://#{h.peer_address}:2379"
-        }
+        endpoints =
         config['etcd'] = {
           'external' => {
-            'endpoints' => endpoints
+            'endpoints' => @config.etcd_hosts.map { |h|
+              "https://#{h.peer_address}:2379"
+            },
+            'certFile'  => '/etc/pharos/pki/etcd/client.pem',
+            'caFile'    => '/etc/pharos/pki/ca.pem',
+            'keyFile'   => '/etc/pharos/pki/etcd/client-key.pem',
           }
         }
-
-        config['etcd']['external']['certFile'] = '/etc/pharos/pki/etcd/client.pem'
-        config['etcd']['external']['caFile'] = '/etc/pharos/pki/ca.pem'
-        config['etcd']['external']['keyFile'] = '/etc/pharos/pki/etcd/client-key.pem'
       end
 
       # @param config [Hash]
