@@ -12,7 +12,7 @@ file_exists() {
 ## @param line
 ## @param file
 lineinfile() {
-    [[ $# -lt 3 ]] && return 1
+    [ "$#" -lt 3 ] && return 1
 
     match=$1
     line=$2
@@ -30,7 +30,7 @@ lineinfile() {
 ## @param match
 ## @param file
 linefromfile() {
-    [[ $# -lt 2 ]] && return 1
+    [ "$#" -lt 2 ] && return 1
 
     match=$1
     shift
