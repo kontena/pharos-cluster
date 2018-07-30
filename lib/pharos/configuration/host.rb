@@ -20,7 +20,7 @@ module Pharos
       attribute :labels, Pharos::Types::Strict::Hash
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
-      attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
+      attribute :ssh_key_path, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :http_proxy, Pharos::Types::Strict::String
 
