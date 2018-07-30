@@ -121,7 +121,6 @@ module Pharos
 
       # @param config [Pharos::Config]
       def configure_internal_etcd(config)
-        endpoints =
         config['etcd'] = {
           'external' => {
             'endpoints' => @config.etcd_hosts.map { |h|
@@ -129,7 +128,7 @@ module Pharos
             },
             'certFile'  => '/etc/pharos/pki/etcd/client.pem',
             'caFile'    => '/etc/pharos/pki/ca.pem',
-            'keyFile'   => '/etc/pharos/pki/etcd/client-key.pem',
+            'keyFile'   => '/etc/pharos/pki/etcd/client-key.pem'
           }
         }
       end
