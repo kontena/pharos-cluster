@@ -16,7 +16,7 @@ module Pharos
       )
 
       register_component(
-        name: 'cri-o', version: DOCKER_VERSION, license: 'Apache License 2.0',
+        name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0',
         enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'cri-o' } }
       )
 
