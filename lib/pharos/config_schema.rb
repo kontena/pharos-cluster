@@ -28,7 +28,7 @@ module Pharos
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Lint/NestedMethodDefinition
-      Dry::Validation.Form do
+      Dry::Validation.Params do
         configure do
           def self.messages
             super.merge(

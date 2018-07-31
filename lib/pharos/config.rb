@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'dry-struct'
 require_relative 'types'
 require_relative 'configuration/host'
 require_relative 'configuration/api'
@@ -13,10 +12,8 @@ require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
 
 module Pharos
-  class Config < Dry::Struct
+  class Config < Pharos::Configuration::Struct
     HOSTS_PER_DNS_REPLICA = 10
-
-    constructor_type :schema
 
     # @param raw_data [Hash]
     # @raise [Pharos::ConfigError]

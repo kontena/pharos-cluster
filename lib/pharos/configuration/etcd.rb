@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class Etcd < Dry::Struct
-      constructor_type :schema
-
+    class Etcd < Pharos::Configuration::Struct
       attribute :endpoints, Pharos::Types::Array.of(Pharos::Types::String)
       attribute :version, Pharos::Types::String
       attribute :certificate, Pharos::Types::String

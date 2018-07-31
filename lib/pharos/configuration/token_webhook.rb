@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class TokenWebhook < Dry::Struct
-      constructor_type :schema
-
+    class TokenWebhook < Pharos::Configuration::Struct
       attribute :config, Pharos::Types::Hash
       attribute :cache_ttl, Pharos::Types::String
     end
