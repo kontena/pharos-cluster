@@ -28,11 +28,6 @@ module Pharos
       end
       alias to_h config
 
-      def yaml_content
-        Pharos::YamlFile.new(StringIO.new(@content)).load unless @content.nil?
-      end
-      private :yaml_content
-
       # Convert to YAML
       # @return [String]
       def dump
@@ -123,6 +118,12 @@ module Pharos
         end
 
         instance
+      end
+
+      private
+
+      def yaml_content
+        Pharos::YamlFile.new(StringIO.new(@content)).load unless @content.nil?
       end
     end
   end
