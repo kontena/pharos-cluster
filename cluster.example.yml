@@ -60,3 +60,9 @@ addons:
     interval: 7d
   kured:
     enabled: true
+cluster:
+  name: pharos-cluster
+  kube_config:
+    path: ~/.kube/config
+    user: admin
+    context: admin@pharos-cluster

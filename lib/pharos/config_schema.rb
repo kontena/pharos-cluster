@@ -36,6 +36,14 @@ module Pharos
             )
           end
         end
+        optional(:cluster).schema do
+          optional(:name).filled(:str?)
+          optional(:kube_config).schema do
+            optional(:path).filled(:str?)
+            optional(:user).filled(:str?)
+            optional(:context).filled(:str?)
+          end
+        end
         required(:hosts).filled(min_size?: 1) do
           each do
             schema do

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pharos/kube/config'
+
 module Pharos
   module Phases
     class ConfigureClient < Pharos::Phase
@@ -20,9 +22,18 @@ module Pharos
         Dir.mkdir(config_dir, 0o700) unless Dir.exist?(config_dir)
 
         logger.info { "Fetching kubectl config ..." }
-        config_data = remote_config_file.read
-        File.chmod(0o600, config_file) if File.exist?(config_file)
-        File.write(config_file, config_data.gsub(%r{(server: https://)(.+)(:6443)}, "\\1#{@host.api_address}\\3"), perm: 0o600)
+        config_content = remote_config_file.read
+
+        kubeconfig = Pharos::Kube::Config.from_remote(config_content, @config.cluster, @host)
+
+        if File.exist?(config_file)
+          File.chmod(0o600, config_file)
+          existing = Pharos::Kube::Config.new(File.read(config_file))
+          kubeconfig = existing + kubeconfig
+          logger.debug "Merged existing configuration"
+        end
+
+        File.write(config_file, kubeconfig, perm: 0o600)
         logger.info { "Configuration saved to #{config_file}" }
       end
 
@@ -31,7 +42,7 @@ module Pharos
       end
 
       def config_file
-        File.join(config_dir, @host.api_address)
+        File.expand_path(@config.cluster&.kube_config&.path || File.join(config_dir, @host.api_address))
       end
 
       def config_dir
