@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class Audit < Dry::Struct
-      constructor_type :schema
-
+    class Audit < Pharos::Configuration::Struct
       attribute :server, Pharos::Types::String
     end
   end

@@ -96,7 +96,7 @@ describe Pharos::Phases::LabelNode do
       it 'patches node' do
         expect(kube).to receive(:patch_node).with('test',
           spec: {
-            taints: [ { key: 'node-role.kubernetes.io/master', value: nil, effect: 'NoSchedule' } ],
+            taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ],
           }
         )
 
@@ -121,7 +121,7 @@ describe Pharos::Phases::LabelNode do
         )
         expect(kube).to receive(:patch_node).with('test',
           spec: {
-            taints: [ { key: 'node-role.kubernetes.io/master', value: nil, effect: 'NoSchedule' } ],
+            taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ],
           }
         )
 

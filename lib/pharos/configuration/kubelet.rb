@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class Kubelet < Dry::Struct
-      constructor_type :schema
-
+    class Kubelet < Pharos::Configuration::Struct
       attribute :read_only_port, Pharos::Types::Bool.default(false)
     end
   end

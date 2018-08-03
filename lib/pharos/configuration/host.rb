@@ -5,22 +5,20 @@ require_relative 'cpu_arch'
 
 module Pharos
   module Configuration
-    class Host < Dry::Struct
-      constructor_type :schema
-
-      class ResolvConf < Dry::Struct
+    class Host < Pharos::Configuration::Struct
+      class ResolvConf < Pharos::Configuration::Struct
         attribute :nameserver_localhost, Pharos::Types::Strict::Bool
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
       end
 
       attribute :address, Pharos::Types::Strict::String
-      attribute :private_address, Pharos::Types::Strict::String
-      attribute :private_interface, Pharos::Types::Strict::String
+      attribute :private_address, Pharos::Types::Strict::String.optional.default(nil)
+      attribute :private_interface, Pharos::Types::Strict::String.optional.default(nil)
       attribute :role, Pharos::Types::Strict::String
       attribute :labels, Pharos::Types::Strict::Hash
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
-      attribute :ssh_key_path, Pharos::Types::Strict::String.default('~/.ssh/id_rsa')
+      attribute :ssh_key_path, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :http_proxy, Pharos::Types::Strict::String
 

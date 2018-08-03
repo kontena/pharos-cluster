@@ -17,6 +17,10 @@ cat <<EOF >/etc/docker/daemon.json
 }
 EOF
 
+debconf-set-selections <<EOF
+docker.io docker.io/restart boolean true
+EOF
+
 reload_daemon() {
     if systemctl is-active --quiet docker; then
         systemctl daemon-reload
