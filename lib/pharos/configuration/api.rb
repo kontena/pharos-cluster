@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class Api < Dry::Struct
-      constructor_type :schema
-
+    class Api < Pharos::Configuration::Struct
       attribute :endpoint, Pharos::Types::String
     end
   end

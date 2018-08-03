@@ -42,6 +42,8 @@ module Pharos
     autoload :JsonParser, 'pharos/terraform/json_parser'
   end
 
+  autoload :Configuration, 'pharos/configuration'
+
   module Configuration
     autoload :Host, 'pharos/configuration/host'
     autoload :Taint, 'pharos/configuration/taint'

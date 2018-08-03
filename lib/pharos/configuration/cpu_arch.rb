@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class CpuArch < Dry::Struct
-      constructor_type :schema
-
+    class CpuArch < Pharos::Configuration::Struct
       SUPPORTED_IDS = %w(
         amd64 x86_64
         arm64 aarch64

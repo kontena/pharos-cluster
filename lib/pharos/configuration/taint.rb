@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class Taint < Dry::Struct
-      constructor_type :schema
-
+    class Taint < Pharos::Configuration::Struct
       attribute :key, Pharos::Types::String
       attribute :value, Pharos::Types::String
       attribute :effect, Pharos::Types::String

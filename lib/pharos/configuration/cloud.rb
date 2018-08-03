@@ -2,9 +2,7 @@
 
 module Pharos
   module Configuration
-    class Cloud < Dry::Struct
-      constructor_type :schema
-
+    class Cloud < Pharos::Configuration::Struct
       attribute :provider, Pharos::Types::String
       attribute :config, Pharos::Types::String
     end
