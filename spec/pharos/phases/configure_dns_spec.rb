@@ -122,21 +122,22 @@ describe Pharos::Phases::ConfigureDNS do
 
   describe '#patch_deployment' do
     let(:session) { double }
+    let(:resource_client) { double }
     let(:resource) { double }
-    it "updates the resource" do
+    let(:cpu_arch) { double(:cpu_arch, name: 'amd64') }
+
+    it "patches the resource" do
+      allow(master).to receive(:cpu_arch).and_return(cpu_arch)
       expect(Pharos::Kube).to receive(:session).with(master.api_address).and_return(session)
-      expect(session).to receive(:resource) do |hash|
+      expect(session).to receive(:resource_client).and_return(resource_client)
+      expect(resource_client).to receive(:patch_deployment) do |name, hash, namespace|
         res = Kubeclient::Resource.new(hash)
-        expect(res.apiVersion).to eq 'extensions/v1beta1'
-        expect(res.kind).to eq 'Deployment'
-        expect(res.metadata.name).to eq 'test'
-        expect(res.metadata.namespace).to eq 'kube-system'
         expect(res.spec.replicas).to eq 1
         expect(res.spec.strategy.rollingUpdate.maxSurge).to eq 0
         expect(res.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
         expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution).to be_an Array
+        expect(res.spec.template.spec.containers[0].image).to include("coredns-#{master.cpu_arch.name}")
       end.and_return(resource)
-      expect(resource).to receive(:update)
 
       subject.patch_deployment('test', replicas: 1, max_surge: 0, max_unavailable: 1)
     end
