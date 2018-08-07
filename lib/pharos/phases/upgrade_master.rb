@@ -47,12 +47,13 @@ module Pharos
 
       # Hack to make coredns work without multi-arch enabled image repository
       #
+      # @param wait [Integer]
       # @return [Thread]
-      def create_dns_patch_thread
+      def create_dns_patch_thread(wait = 5)
         api_client = kube_session.resource_client('extensions/v1beta1')
         Thread.new {
           begin
-            sleep 5
+            sleep wait
             api_client.patch_deployment(
               'coredns',
               {
@@ -73,8 +74,8 @@ module Pharos
             )
             logger.debug { "CoreDNS patch succeeded!" }
           rescue KubeException => exc
-            logger.debug { "CoreDNS patch failed (will retry after 5 secs): #{exc.message}" }
-            sleep 5
+            logger.debug { "CoreDNS patch failed (will retry after #{wait} secs): #{exc.message}" }
+            sleep wait
             retry
           end
         }
