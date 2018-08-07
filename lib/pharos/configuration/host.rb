@@ -20,7 +20,7 @@ module Pharos
         def self.parse(line)
           fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
 
-          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }.select{|k, v| !!v}]
+          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }.reject{ |_k, v| v.nil? }]
 
           new(raw: line.strip, **captures)
         end
@@ -40,7 +40,7 @@ module Pharos
         # @return [Boolean]
         def overlaps?(cidr)
           # special-case the default route and ignore it
-          return nil if self.prefix == 'default'
+          return nil if prefix == 'default'
 
           prefix = IPAddr.new(self.prefix)
           cidr = IPAddr.new(cidr)

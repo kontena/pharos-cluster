@@ -44,7 +44,7 @@ module Pharos
       # @param routes [Array<Pharos::Configuration::Host::Routes>]
       # @return [Array<Pharos::Configuration::Host::Routes>]
       def filter_host_routes(routes)
-        case self.provider
+        case provider
         when 'weave'
           Weave.filter_host_routes(routes)
         when 'calico'
