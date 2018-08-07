@@ -73,7 +73,7 @@ module Pharos
               'kube-system'
             )
             logger.debug { "CoreDNS patch succeeded!" }
-          rescue KubeException => exc
+          rescue StandardError => exc
             logger.debug { "CoreDNS patch failed (will retry after #{wait} secs): #{exc.message}" }
             sleep wait
             retry
