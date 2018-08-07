@@ -96,8 +96,5 @@ module Pharos
       config['api'].merge!(tf_parser.api) if tf_parser.api
       config
     end
-
   end
 end
-
-
