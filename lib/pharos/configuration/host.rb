@@ -11,7 +11,7 @@ module Pharos
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
       end
 
-      class Route < Dry::Struct
+      class Route < Pharos::Configuration::Struct
         ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
 
         # @param line [String]
@@ -24,8 +24,6 @@ module Pharos
 
           new(raw: line.strip, **captures)
         end
-
-        constructor_type :schema
 
         attribute :raw, Pharos::Types::Strict::String
         attribute :type, Pharos::Types::Strict::String.optional
