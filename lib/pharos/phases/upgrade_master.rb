@@ -31,14 +31,59 @@ module Pharos
       end
 
       def upgrade
-        logger.info { "Upgrading control plane ..." }
-
         cfg = kubeadm.generate_config
 
+        logger.info { "Upgrading control plane ..." }
+        logger.debug { cfg.to_yaml }
+
+        dns_patch_thread = create_dns_patch_thread
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
-          @ssh.exec!("sudo kubeadm upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
+          @ssh.exec!("sudo /usr/local/bin/pharos-kubeadm-#{Pharos::KUBEADM_VERSION} upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
         end
+        dns_patch_thread.join
+
         logger.info { "Control plane upgrade succeeded!" }
+      end
+
+      # Hack to make coredns work without multi-arch enabled image repository
+      #
+      # @param wait [Integer]
+      # @return [Thread]
+      def create_dns_patch_thread(wait = 5)
+        api_client = kube_session.resource_client('extensions/v1beta1')
+        Thread.new {
+          begin
+            sleep wait
+            api_client.patch_deployment(
+              'coredns',
+              {
+                spec: {
+                  template: {
+                    spec: {
+                      containers: [
+                        {
+                          name: 'coredns',
+                          image: "#{@config.image_repository}/coredns-#{@host.cpu_arch.name}:#{Pharos::COREDNS_VERSION}"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              'kube-system'
+            )
+            logger.debug { "CoreDNS patch succeeded!" }
+          rescue StandardError => exc
+            logger.debug { "CoreDNS patch failed (will retry after #{wait} secs): #{exc.message}" }
+            sleep wait
+            retry
+          end
+        }
+      end
+
+      # @return [Pharos::Kube::Session]
+      def kube_session
+        Pharos::Kube.session(@host.api_address)
       end
     end
   end

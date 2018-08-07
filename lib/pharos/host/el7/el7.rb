@@ -37,6 +37,11 @@ module Pharos
         )
       end
 
+      # @return [Array<String>]
+      def kubelet_args
+        ['--cgroup-driver=systemd']
+      end
+
       def configure_container_runtime
         if docker?
           exec_script(
