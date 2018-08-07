@@ -40,9 +40,9 @@ module Pharos
         # @return [Boolean]
         def overlaps?(cidr)
           # special-case the default route and ignore it
-          return nil if @prefix == 'default'
+          return nil if self.prefix == 'default'
 
-          prefix = IPAddr.new(@prefix)
+          prefix = IPAddr.new(self.prefix)
           cidr = IPAddr.new(cidr)
 
           prefix.include?(cidr) || cidr.include?(prefix)
