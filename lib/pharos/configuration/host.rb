@@ -20,7 +20,7 @@ module Pharos
         def self.parse(line)
           fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
 
-          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }]
+          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }.select{|k, v| !!v}]
 
           new(raw: line.strip, **captures)
         end
