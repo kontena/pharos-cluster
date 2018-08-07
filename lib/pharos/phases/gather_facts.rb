@@ -57,13 +57,9 @@ module Pharos
 
       # @return [Pharos::Configuration::CpuArch]
       def cpu_arch
-        cpu = {}
-        @ssh.exec!('lscpu').split("\n").each do |line|
-          match = line.match(/^(.+):\s+(.+)$/)
-          cpu[match[1]] = match[2]
-        end
+        arch = @ssh.exec!('uname -m')
         Pharos::Configuration::CpuArch.new(
-          id: cpu['Architecture']
+          id: arch.strip
         )
       end
 
