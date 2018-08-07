@@ -11,7 +11,7 @@ module Pharos
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
       end
 
-      class Route < Dry::Struct
+      class Route < Pharos::Configuration::Struct
         ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
 
         # @param line [String]
@@ -20,12 +20,10 @@ module Pharos
         def self.parse(line)
           fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
 
-          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }]
+          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }.reject{ |_k, v| v.nil? }]
 
           new(raw: line.strip, **captures)
         end
-
-        constructor_type :schema
 
         attribute :raw, Pharos::Types::Strict::String
         attribute :type, Pharos::Types::Strict::String.optional
@@ -42,12 +40,12 @@ module Pharos
         # @return [Boolean]
         def overlaps?(cidr)
           # special-case the default route and ignore it
-          return nil if @prefix == 'default'
+          return nil if prefix == 'default'
 
-          prefix = IPAddr.new(@prefix)
+          route_prefix = IPAddr.new(prefix)
           cidr = IPAddr.new(cidr)
 
-          prefix.include?(cidr) || cidr.include?(prefix)
+          route_prefix.include?(cidr) || cidr.include?(route_prefix)
         end
       end
 

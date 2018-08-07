@@ -12,7 +12,7 @@ describe Pharos::Configuration::Host::Route do
       '172.17.0.0/16 dev docker0  proto kernel  scope link  src 172.17.0.1 linkdown' => {prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel', options: 'scope link  src 172.17.0.1 linkdown'},
     }.each do |line, attrs|
       it "parses: #{line}" do
-        expect(described_class.parse(line)).to eq described_class.new(raw: line, **attrs)
+        expect(described_class.parse(line).to_hash).to eq described_class.new(raw: line, **attrs).to_hash
       end
     end
   end
