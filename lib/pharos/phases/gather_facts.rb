@@ -27,6 +27,7 @@ module Pharos
         @host.checks = host_checks
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
         @host.resolvconf = read_resolvconf
+        @host.routes = read_routes
       end
 
       # @return [String]
@@ -135,6 +136,21 @@ module Pharos
           nameserver_localhost: check_resolvconf_nameserver_localhost,
           systemd_resolved_stub: check_resolvconf_systemd_resolved_stub
         )
+      end
+
+      # @return [Array<Pharos::Configuration::Host::Route>]
+      def read_routes
+        routes = []
+
+        @ssh.exec!("ip route").each_line do |line|
+          begin
+            routes << Pharos::Configuration::Host::Route.parse(line)
+          rescue RuntimeError => exc
+            logger.warn { exc }
+          end
+        end
+
+        routes
       end
     end
   end
