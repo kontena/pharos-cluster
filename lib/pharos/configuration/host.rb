@@ -42,10 +42,10 @@ module Pharos
           # special-case the default route and ignore it
           return nil if prefix == 'default'
 
-          prefix = IPAddr.new(self.prefix)
+          route_prefix = IPAddr.new(prefix)
           cidr = IPAddr.new(cidr)
 
-          prefix.include?(cidr) || cidr.include?(prefix)
+          route_prefix.include?(cidr) || cidr.include?(route_prefix)
         end
       end
 
