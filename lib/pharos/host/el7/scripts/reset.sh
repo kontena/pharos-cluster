@@ -39,7 +39,8 @@ sudo rm -rf /etc/kubernetes \
     /usr/local/lib/cri-o-runc \
     /usr/local/bin/skopeo \
     /usr/local/bin/runc \
-    /usr/local/bin/crictl
+    /usr/local/bin/crictl \
+    /usr/local/bin/pharos-kubeadm-*
 
 systemctl daemon-reload
 systemctl reset-failed
