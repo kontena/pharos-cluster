@@ -72,52 +72,46 @@ module Pharos
       end
       alias + merge
 
-      def self.from_remote(content, cluster_config, host)
-        instance = new(content)
-
-        unless instance.config['clusters'].size == 1
-          raise InvalidConfigError, "Remote configuration cluster count expected to be one"
+      def rename_cluster(new_name)
+        unless config['clusters'].size == 1
+          raise InvalidConfigError, "Configuration cluster count expected to be one"
         end
 
-        cluster = instance.config['clusters']&.first
+        cluster = config['clusters']&.first
+        cluster['name'] = new_name
 
-        cluster_name = cluster_config&.name || cluster['name']
+        return self unless config['contexts'].size == 1 && config['users'].size == 1
 
-        # Overwrite server address and cluster name
-        cluster['cluster']['server'] = "https://#{host.api_address}:6443"
-        cluster['name'] = cluster_name
+        # Rename cluster in context
+        context = config['contexts'].first
+        context['context']['cluster'] = new_name
 
-        unless instance.config['contexts'].size == 1
-          raise InvalidConfigError, "Remote configuration context count expected to be one"
+        self
+      end
+
+      def rename_context(new_name)
+        unless config['clusters'].size == 1
+          raise InvalidConfigError, "Configuration cluster count expected to be one"
         end
 
-        if cluster_config&.kube_config&.user
-          # Rename user as configured in cluster yaml
-          user_name = cluster_config&.kube_config&.user
-          instance.config['users'].first['name'] = user_name
-        else
-          user_name = instance.config['users'].first['name']
+        unless config['contexts'].size == 1
+          raise InvalidConfigError, "Configuration context count expected to be one"
         end
 
-        # Rename cluster and user in context
-        context = instance.config['contexts'].first
-        context['context']['cluster'] = cluster_name
-        context['context']['user'] = user_name
+        context = config['contexts'].first
 
-        config_context = cluster_config&.kube_config&.context
+        context['name'] = new_name
+        config['current-context'] = new_name
 
-        if config_context
-          # Rename context & current context to one specified in config
-          context['name'] = config_context
-          instance.config['current-context'] = config_context
-        else
-          # Rename context & current context to match cluster.yml cluster name and user name
-          context_name = "#{user_name}@#{cluster_name}"
-          instance.config['current-context'] = context_name
-          context['name'] = context_name
+        self
+      end
+
+      def update_server_address(new_address)
+        unless config['clusters'].size == 1
+          raise InvalidConfigError, "Configuration cluster count expected to be one"
         end
 
-        instance
+        config['clusters'].first['cluster']['server'].gsub!(%r{(server: https://)(.+)(:6443)}, "\\1#{new_address}\\3")
       end
 
       private
