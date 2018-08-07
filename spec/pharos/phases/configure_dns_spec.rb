@@ -136,6 +136,9 @@ describe Pharos::Phases::ConfigureDNS do
         expect(res.spec.strategy.rollingUpdate.maxSurge).to eq 0
         expect(res.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
         expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution).to be_an Array
+        expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions.map{|o| o.to_hash}).to match [
+          { key: 'k8s-app', operator: 'In', values: ['kube-dns'] },
+        ]
         expect(res.spec.template.spec.containers[0].image).to include("coredns-#{master.cpu_arch.name}")
       end.and_return(resource)
 

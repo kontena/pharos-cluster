@@ -72,7 +72,7 @@ module Pharos
                               {
                                 key: "k8s-app",
                                 operator: "In",
-                                values: [name]
+                                values: ['kube-dns']
                               }
                             ]
                           },
