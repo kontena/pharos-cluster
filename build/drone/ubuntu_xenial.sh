@@ -20,4 +20,4 @@ ls -1 pharos-cluster-linux-adm64 pharos-cluster-linux-amd64.sha256 | xargs -n1 -
     --repo pharos-cluster \
     --tag $DRONE_TAG \
     --name {} \
-    --file {} ::: pharos-cluster-linux-amd64 pharos-cluster-linux-amd64.shasum
+    --file {}

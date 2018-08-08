@@ -17,5 +17,5 @@ ls -1 pharos-cluster-darwin-adm64 pharos-cluster-darwin-amd64.sha256 | xargs -n1
     --user kontena \
     --repo pharos-cluster \
     --tag $TRAVIS_TAG \
-    --name "pharos-cluster-darwin-amd64" \
-    --file ./pharos-cluster
+    --name {} \
+    --file {}
