@@ -43,15 +43,13 @@ module Pharos
       begin
         yield phase
       rescue StandardError => exc
-        if retries < retry_times
-          logger.error { "[#{phase.host}] got error (#{exc.class.name}) #{exc.message}" } 
-          logger.error { "[#{phase.host}] retrying after #{2 ** retries} seconds ..." }
-          sleep 2 ** retries
-          retries += 1
-          retry
-        else
-          raise
-        end
+        raise if retries >= retry_times
+
+        logger.error { "[#{phase.host}] got error (#{exc.class.name}) #{exc.message}" }
+        logger.error { "[#{phase.host}] retrying after #{2**retries} seconds ..." }
+        sleep 2**retries
+        retries += 1
+        retry
       end
     end
 
