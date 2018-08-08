@@ -19,15 +19,10 @@ module Pharos
 
     # @param phases [Array<Pharos::Phases::Base>]
     # @return [Array<...>]
-    def run_parallel(phases)
+    def run_parallel(phases, &block)
       threads = phases.map { |phase|
         Thread.new do
-          begin
-            yield phase
-          rescue StandardError => exc
-            puts " [#{phase}] #{exc.class}: #{exc.message}"
-            raise
-          end
+          yield_phase_with_retry(phase, &block)
         end
       }
       threads.map(&:value)
@@ -35,9 +30,28 @@ module Pharos
 
     # @param phases [Array<Pharos::Phases::Base>]
     # @return [Array<...>]
-    def run_serial(phases)
+    def run_serial(phases, &block)
       phases.map do |phase|
+        yield_phase_with_retry(phase, &block)
+      end
+    end
+
+    # @param phase [Pharos::Phases::Base]
+    # @param retry_times [Integer]
+    def yield_phase_with_retry(phase, retry_times = 10)
+      retries = 0
+      begin
         yield phase
+      rescue StandardError => exc
+        if retries < retry_times
+          logger.error { "[#{phase.host}] got error (#{exc.class.name}) #{exc.message}" } 
+          logger.error { "[#{phase.host}] retrying after #{2 ** retries} seconds ..." }
+          sleep 2 ** retries
+          retries += 1
+          retry
+        else
+          raise
+        end
       end
     end
 

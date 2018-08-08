@@ -20,7 +20,7 @@ module Pharos
       Pharos::Phases.register_component(component)
     end
 
-    attr_reader :cluster_context
+    attr_reader :cluster_context, :host
 
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
