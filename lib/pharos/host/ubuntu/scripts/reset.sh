@@ -19,6 +19,7 @@ fi
 
 kubeadm reset --force
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get purge -y --allow-change-held-packages --purge kubeadm kubelet kubectl docker.io
 apt-get autoremove -y
 rm -rf /etc/kubernetes \
