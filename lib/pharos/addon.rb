@@ -180,39 +180,34 @@ module Pharos
       end
     end
 
-    # @return [Pharos::Kube::Session]
-    def kube_session
-      Pharos::Kube.session(master.api_address)
-    end
-
-    # @return [Kubeclient]
+    # @return [K8s::Client]
     def kube_client
-      kube_session.resource_client
+      Pharos::Kube.client(master.api_address)
     end
 
     # @param vars [Hash]
     # @return [Pharos::Kube::Stack]
-    def kube_stack(vars = {})
-      Pharos::Kube::Stack.new(
-        kube_session, name, File.join(self.class.addon_location, 'resources'),
-        vars.merge(
-          name: name,
-          version: self.class.version,
-          config: config,
-          arch: cpu_arch
-        )
+    def kube_stack(**vars)
+      Pharos::Kube.stack(
+        name,
+        File.join(self.class.addon_location, 'resources'),
+        name: name,
+        version: self.class.version,
+        config: config,
+        arch: cpu_arch,
+        **vars
       )
     end
 
     # @param vars [Hash]
-    # @return [Array<Kubeclient::Resource>]
-    def apply_resources(vars = {})
-      kube_stack(vars).apply
+    # @return [Array<K8s::Resource>]
+    def apply_resources(**vars)
+      kube_stack(vars).apply(kube_client)
     end
 
-    # @return [Array<Kubeclient::Resource>]
+    # @return [Array<K8s::Resource>]
     def delete_resources
-      kube_stack.prune('-')
+      Pharos::Kube::Stack.new(name).delete(kube_client)
     end
 
     def validate; end
