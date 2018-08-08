@@ -8,19 +8,28 @@ describe Pharos::Phases::UpgradeMaster do
       addons: {},
       etcd: {}
   ) }
-  let(:kube_session) { double(:kube_session) }
-  let(:resource_client) { double(:resource_client) }
   let(:cpu_arch) { double(:cpu_arch, name: 'amd64') }
+
+  before do
+    allow(master).to receive(:cpu_arch).and_return(cpu_arch)
+  end
 
   subject { described_class.new(master, config: config) }
 
   describe '#create_dns_patch_thread' do
+    let(:kube_client) { instance_double(K8s::Client) }
+    let(:kube_api_client) { instance_double(K8s::APIClient) }
+    let(:kube_resource_client) { instance_double(K8s::ResourceClient) }
+
+    before do
+      allow(subject).to receive(:kube_client).and_return(kube_client)
+      allow(kube_client).to receive(:api).with('extensions/v1beta1').and_return(kube_api_client)
+      allow(kube_api_client).to receive(:resource).with('deployments', namespace: 'kube-system').and_return(kube_resource_client)
+    end
+
     it 'patches coredns deployment' do
-      allow(master).to receive(:cpu_arch).and_return(cpu_arch)
-      allow(subject).to receive(:kube_session).and_return(kube_session)
-      allow(kube_session).to receive(:resource_client).and_return(resource_client)
-      expect(resource_client).to receive(:patch_deployment) do |name, patch, namespace|
-        res = Kubeclient::Resource.new(patch)
+      expect(kube_resource_client).to receive(:merge_patch) do |name, patch|
+        res = K8s::Resource.new(patch)
         expect(res.spec.template.spec.containers[0].image).to include("coredns-#{cpu_arch.name}")
       end
 

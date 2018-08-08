@@ -50,27 +50,24 @@ module Pharos
       # @param wait [Integer]
       # @return [Thread]
       def create_dns_patch_thread(wait = 5)
-        api_client = kube_session.resource_client('extensions/v1beta1')
+        deployments_client = kube_client.api('extensions/v1beta1').resource('deployments', namespace: 'kube-system')
         Thread.new {
           begin
             sleep wait
-            api_client.patch_deployment(
+            deployments_client.merge_patch(
               'coredns',
-              {
-                spec: {
-                  template: {
-                    spec: {
-                      containers: [
-                        {
-                          name: 'coredns',
-                          image: "#{@config.image_repository}/coredns-#{@host.cpu_arch.name}:#{Pharos::COREDNS_VERSION}"
-                        }
-                      ]
-                    }
+              spec: {
+                template: {
+                  spec: {
+                    containers: [
+                      {
+                        name: 'coredns',
+                        image: "#{@config.image_repository}/coredns-#{@host.cpu_arch.name}:#{Pharos::COREDNS_VERSION}"
+                      }
+                    ]
                   }
                 }
-              },
-              'kube-system'
+              }
             )
             logger.debug { "CoreDNS patch succeeded!" }
           rescue StandardError => exc
@@ -79,11 +76,6 @@ module Pharos
             retry
           end
         }
-      end
-
-      # @return [Pharos::Kube::Session]
-      def kube_session
-        Pharos::Kube.session(@host.api_address)
       end
     end
   end
