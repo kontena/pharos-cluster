@@ -1,4 +1,3 @@
-require "kubeclient"
 require "pharos/phases/upgrade_master"
 
 describe Pharos::Phases::UpgradeMaster do

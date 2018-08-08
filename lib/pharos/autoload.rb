@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-autoload :Kubeclient, 'kubeclient'
 autoload :Base64, 'base64'
 autoload :SecureRandom, 'securerandom'
 autoload :YAML, 'yaml'
