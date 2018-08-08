@@ -12,6 +12,11 @@ describe Pharos::Phases::ConfigureDNS do
       addons: {},
       etcd: {}
   ) }
+  let(:cpu_arch) { double(:cpu_arch, name: 'amd64') }
+
+  before do
+    allow(master).to receive(:cpu_arch).and_return(cpu_arch)
+  end
 
   subject { described_class.new(master, config: config, master: master) }
 
@@ -120,18 +125,33 @@ describe Pharos::Phases::ConfigureDNS do
     end
   end
 
-  describe '#patch_deployment' do
-    let(:session) { double }
-    let(:resource_client) { double }
-    let(:resource) { double }
-    let(:cpu_arch) { double(:cpu_arch, name: 'amd64') }
+  describe '#patch_kubedns' do
+    let(:kube_client) { instance_double(K8s::Client) }
+    let(:kube_api_client) { instance_double(K8s::APIClient) }
+    let(:kube_resource_client) { instance_double(K8s::ResourceClient) }
 
-    it "patches the resource" do
-      allow(master).to receive(:cpu_arch).and_return(cpu_arch)
-      expect(Pharos::Kube).to receive(:session).with(master.api_address).and_return(session)
-      expect(session).to receive(:resource_client).and_return(resource_client)
-      expect(resource_client).to receive(:patch_deployment) do |name, hash, namespace|
-        res = Kubeclient::Resource.new(hash)
+    let(:resource) { K8s::Resource.new(
+      apiVersion: 'extensions/v1beta1',
+      kind: 'Deployment',
+      metadata: {
+        name: 'kube-dns',
+        namespace: 'kube-system',
+      },
+      spec: {
+        replicas: 1,
+      }
+    ) }
+
+    before do
+      allow(subject).to receive(:kube_client).and_return(kube_client)
+      allow(kube_client).to receive(:api).with('extensions/v1beta1').and_return(kube_api_client)
+      allow(kube_api_client).to receive(:resource).with('deployments', namespace: 'kube-system').and_return(kube_resource_client)
+    end
+
+    it "updates the resource" do
+      expect(kube_resource_client).to receive(:merge_patch).with('kube-dns', Hash) do |_name, h|
+        res = K8s::Resource.new(h)
+
         expect(res.spec.replicas).to eq 1
         expect(res.spec.strategy.rollingUpdate.maxSurge).to eq 0
         expect(res.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
@@ -140,9 +160,11 @@ describe Pharos::Phases::ConfigureDNS do
           { key: 'k8s-app', operator: 'In', values: ['kube-dns'] },
         ]
         expect(res.spec.template.spec.containers[0].image).to include("coredns-#{master.cpu_arch.name}")
-      end.and_return(resource)
 
-      subject.patch_deployment('test', replicas: 1, max_surge: 0, max_unavailable: 1)
+        resource
+      end
+
+      subject.patch_deployment('kube-dns', replicas: 1, max_surge: 0, max_unavailable: 1)
     end
   end
 end
