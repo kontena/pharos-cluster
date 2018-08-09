@@ -9,7 +9,7 @@ module Pharos
       Kubeclient::HttpError,
       Net::SSH::Disconnect,
       Net::SSH::ConnectionTimeout
-    ]
+    ].freeze
 
     # @param dirs [Array<String>]
     def self.load_phases(*dirs)
