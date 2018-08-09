@@ -33,6 +33,9 @@ module Pharos
 
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
+
+      Pharos::Kube.init_logging!
+
       config = load_config
 
       # set workdir to the same dir where config was loaded from

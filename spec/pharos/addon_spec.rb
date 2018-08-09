@@ -56,7 +56,7 @@ describe Pharos::Addon do
   end
 
   describe ".install" do
-    let(:subject) do
+    subject do
       Pharos.addon 'test-addon-install' do
         version "0.2.2"
         license "MIT"
@@ -72,11 +72,17 @@ describe Pharos::Addon do
       end.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil)
     end
 
+    let(:kube_stack) { double(:kube_stack) }
+    let(:kube_client) { double(:kube_client) }
+
+    before do
+      allow(subject).to receive(:kube_stack).and_return(kube_stack)
+      allow(subject).to receive(:kube_client).and_return(kube_client)
+    end
+
     it 'runs install block on apply' do
       expect(subject.config).to receive(:justatest)
-      kube_stack = double(:kube_stack)
-      allow(subject).to receive(:kube_stack).and_return(kube_stack)
-      expect(kube_stack).to receive(:apply)
+      expect(kube_stack).to receive(:apply).with(kube_client)
       subject.apply
     end
   end
@@ -86,17 +92,18 @@ describe Pharos::Addon do
       stack = subject.kube_stack
       expect(stack).to be_instance_of(Pharos::Kube::Stack)
     end
-
-    it "allows to pass variables" do
-      stack = subject.kube_stack({ foo: 'bar' })
-      expect(stack.vars[:foo]).to eq('bar')
-    end
   end
 
   describe "#apply_resources" do
-    it "applies addon resources" do
-      kube_stack = double(:kube_stack)
+    let(:kube_stack) { double(:kube_stack) }
+    let(:kube_client) { double(:kube_client) }
+
+    before do
       allow(subject).to receive(:kube_stack).and_return(kube_stack)
+      allow(subject).to receive(:kube_client).and_return(kube_client)
+    end
+
+    it "applies addon resources" do
       expect(kube_stack).to receive(:apply)
       subject.apply_resources
     end
@@ -105,7 +112,7 @@ describe Pharos::Addon do
   describe '#kube_client' do
     it 'returns kube client' do
       client = double(:client)
-      allow(Pharos::Kube).to receive(:client).with(master.api_address, 'v1').and_return(client)
+      allow(Pharos::Kube).to receive(:client).with(master.api_address).and_return(client)
       expect(subject.kube_client).to eq(client)
     end
   end
