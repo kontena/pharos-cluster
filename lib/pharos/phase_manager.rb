@@ -4,6 +4,13 @@ module Pharos
   class PhaseManager
     include Pharos::Logging
 
+    RETRY_ERRORS = [
+      OpenSSL::SSL::SSLError,
+      Kubeclient::HttpError,
+      Net::SSH::Disconnect,
+      Net::SSH::ConnectionTimeout
+    ]
+
     # @param dirs [Array<String>]
     def self.load_phases(*dirs)
       dirs.each do |dir|
@@ -42,7 +49,7 @@ module Pharos
       retries = 0
       begin
         yield phase
-      rescue StandardError => exc
+      rescue *RETRY_ERRORS => exc
         raise if retries >= retry_times
 
         logger.error { "[#{phase.host}] got error (#{exc.class.name}) #{exc.message}" }
