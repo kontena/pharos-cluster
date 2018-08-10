@@ -6,6 +6,7 @@ module Pharos
 
     RETRY_ERRORS = [
       OpenSSL::SSL::SSLError,
+      Excon::Error,
       K8s::Error,
       Pharos::SSH::RemoteCommand::ExecError
     ].freeze
