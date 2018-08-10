@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
-require 'openssl'
-require 'excon'
-require 'k8s/error'
-require 'pharos/ssh/remote_command'
+require_relative 'kube'
 
 module Pharos
   class PhaseManager
