@@ -32,6 +32,10 @@ module Pharos
 
         new(name, resources)
       end
+
+      def initialize(name, resources = [])
+        super(name, resources, label: LABEL, checksum_annotation: CHECKSUM_ANNOTATION)
+      end
     end
 
     # @param host [String]
