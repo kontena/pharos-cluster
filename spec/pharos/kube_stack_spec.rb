@@ -43,7 +43,7 @@ describe Pharos::Kube::Stack do
       }
 
       before do
-        allow(client).to receive(:get_resources).and_return([nil])
+        allow(client).to receive(:get_resources).with([K8s::Resource]).and_return([nil])
         allow(client).to receive(:list_resources).with(labelSelector: { 'pharos.kontena.io/stack' => 'test' }).and_return([resource])
       end
 
