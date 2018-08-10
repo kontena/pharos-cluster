@@ -4,6 +4,8 @@ metadata:
   name: nginx-ingress-controller
   namespace: ingress-nginx
 spec:
+  updateStrategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       app: ingress-nginx
