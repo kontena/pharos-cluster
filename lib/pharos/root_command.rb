@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 require_relative 'up_command'
+require_relative 'reset_command'
 require_relative 'version_command'
 
 module Pharos
-  class RootCommand < Clamp::Command
+  class RootCommand < Pharos::Command
     banner "pharos-cluster - Kontena Pharos cluster manager"
 
     subcommand ["build", "up"], "Initialize/upgrade cluster", UpCommand
+    subcommand ["reset"], "Reset cluster", ResetCommand
     subcommand ["version"], "Show version information", VersionCommand
 
     def self.run

@@ -5,25 +5,23 @@ module Pharos
     class ConfigureMetrics < Pharos::Phase
       title "Configure metrics"
 
+      METRICS_SERVER_VERSION = '0.2.1'
+
       register_component(
-        name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
+        name: 'metrics-server', version: METRICS_SERVER_VERSION, license: 'Apache License 2.0'
       )
 
       def call
-        configure_heapster
+        configure_metrics_server
       end
 
-      def configure_heapster
-        logger.info { "Provisioning client certificate for heapster ..." }
-        cert_manager = Pharos::Kube::CertManager.new(@master, 'heapster-client-cert', namespace: 'kube-system')
-        cert, _key = cert_manager.ensure_client_certificate(user: 'heapster')
-
-        logger.info { "Configuring heapster ..." }
-        Pharos::Kube.apply_stack(
-          @master.api_address, 'heapster',
-          version: '1.5.1',
-          arch: @host.cpu_arch,
-          client_cert: cert.to_pem
+      def configure_metrics_server
+        logger.info { "Configuring metrics server ..." }
+        apply_stack(
+          'metrics-server',
+          version: METRICS_SERVER_VERSION,
+          image_repository: @config.image_repository,
+          arch: @host.cpu_arch
         )
       end
     end

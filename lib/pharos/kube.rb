@@ -1,46 +1,57 @@
 # frozen_string_literal: true
 
-require 'kubeclient'
+require 'k8s-client'
 
 module Pharos
   module Kube
-    autoload :CertManager, 'pharos/kube/cert_manager'
-    autoload :Client, 'pharos/kube/client'
-    autoload :Resource, 'pharos/kube/resource'
-    autoload :Stack, 'pharos/kube/stack'
-    autoload :Session, 'pharos/kube/session'
-
-    RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
-
-    # @param host [String]
-    # @return [Kubeclient::Client]
-    def self.client(host, version = 'v1')
-      @kube_client ||= {}
-      unless @kube_client[version]
-        config = host_config(host)
-        path_prefix = version == 'v1' ? 'api' : 'apis'
-        api_version, api_group = version.split('/').reverse
-        @kube_client[version] = Pharos::Kube::Client.new(
-          (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
-          api_version,
-          ssl_options: config.context.ssl_options,
-          auth_options: config.context.auth_options
-        )
+    def self.init_logging!
+      # rubocop:disable Style/GuardClause
+      if ENV['DEBUG']
+        K8s::Logging.debug!
+        K8s::Transport.verbose!
       end
-      @kube_client[version]
+      # rubocop:enable Style/GuardClause
+    end
+
+    class Stack < K8s::Stack
+      # custom labels
+      LABEL = 'pharos.kontena.io/stack'
+      CHECKSUM_ANNOTATION = 'pharos.kontena.io/stack-checksum'
+
+      # Load stack with resources from path containing erb-templated YAML files
+      #
+      # @param path [String]
+      # @param name [String]
+      # @param vars [Hash]
+      def self.load(name, path, **vars)
+        path = Pathname.new(path).freeze
+        files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
+        resources = files.map do |file|
+          K8s::Resource.new(Pharos::YamlFile.new(file).load(name: name, **vars))
+        end
+
+        new(name, resources)
+      end
     end
 
     # @param host [String]
-    # @return [Pharos::Kube::Session]
-    def self.session(host)
-      @sessions ||= {}
-      @sessions[host] ||= Session.new(host)
+    # @return [K8s::Client]
+    def self.client(host)
+      @kube_client ||= {}
+      @kube_client[host] ||= K8s::Client.config(host_config(host))
+    end
+
+    # @param name [String]
+    # @param path [String]
+    # @param vars [Hash]
+    def self.stack(name, path, **vars)
+      Pharos::Kube::Stack.load(name, path, **vars)
     end
 
     # @param host [String]
-    # @return [Kubeclient::Config]
+    # @return [K8s::Config]
     def self.host_config(host)
-      Kubeclient::Config.read(host_config_path(host))
+      K8s::Config.load_file(host_config_path(host))
     end
 
     # @param host [String]
@@ -53,15 +64,6 @@ module Pharos
     # @return [Boolean]
     def self.config_exists?(host)
       File.exist?(host_config_path(host))
-    end
-
-    # Shortcuts / compatibility:
-
-    # @param host [String]
-    # @param name [String]
-    # @param vars [Hash]
-    def self.apply_stack(host, name, vars = {})
-      session(host).stack(name, File.join(RESOURCE_PATH, name), vars).apply
     end
   end
 end

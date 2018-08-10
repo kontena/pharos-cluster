@@ -5,14 +5,14 @@ require 'dry-struct'
 module Pharos
   module Phases
     class Component < Dry::Struct
-      constructor_type :schema
-
       attribute :name, Pharos::Types::String
       attribute :version, Pharos::Types::String
       attribute :license, Pharos::Types::String
-      attribute :enabled, Pharos::Types::Instance(Proc)
+      attribute :os_release, Pharos::Configuration::OsRelease.optional.default(nil) # nil for generic components
+      attribute :enabled, Pharos::Types::Instance(Proc).optional.default(nil)
 
       def enabled?(config)
+        return false if !os_release.nil? && config.hosts.none? { |h| h.os_release.id == os_release.id && h.os_release.version == os_release.version }
         return true if enabled.nil?
 
         enabled.call(config)

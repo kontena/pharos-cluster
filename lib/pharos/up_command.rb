@@ -22,7 +22,7 @@ module Pharos
 
     # @return [Pharos::YamlFile]
     def default_config_yaml
-      if !$stdin.tty? && !$stdin.eof?
+      if !tty? && !stdin_eof?
         Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
       else
         cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
@@ -33,6 +33,9 @@ module Pharos
 
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
+
+      Pharos::Kube.init_logging!
+
       config = load_config
 
       # set workdir to the same dir where config was loaded from
@@ -72,8 +75,14 @@ module Pharos
       tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
       config['hosts'] ||= []
       config['api'] ||= {}
+      config['addons'] ||= {}
       config['hosts'] += tf_parser.hosts
       config['api'].merge!(tf_parser.api) if tf_parser.api
+      config['addons'].each do |name, conf|
+        if addon_config = tf_parser.addons[name]
+          conf.merge!(addon_config)
+        end
+      end
       config
     end
 
@@ -88,6 +97,7 @@ module Pharos
       manager.validate
 
       show_component_versions(config)
+      show_addon_versions(manager)
       prompt_continue(config)
 
       puts pastel.green("==> Starting to craft cluster ...")
@@ -110,7 +120,19 @@ module Pharos
     def show_component_versions(config)
       puts pastel.green("==> Using following software versions:")
       Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
-        puts "    #{c.name}: #{c.version}"
+        if c.os_release
+          " (#{c.os_release.id} #{c.os_release.version})"
+        else
+          target = ""
+        end
+        puts "    #{c.name}: #{c.version}#{target}"
+      end
+    end
+
+    def show_addon_versions(manager)
+      puts pastel.green("==> Using following addons:")
+      manager.addon_manager.with_enabled_addons do |addon|
+        puts "    #{addon.addon_name}: #{addon.version}"
       end
     end
 
@@ -122,9 +144,9 @@ module Pharos
         puts rouge.format(lexer.lex(config.to_yaml))
         puts ""
       else
-        puts yaml
+        puts config.to_yaml
       end
-      if $stdin.tty? && !yes?
+      if tty? && !yes?
         exit 1 unless prompt.yes?('Continue?')
       end
     rescue TTY::Reader::InputInterrupt

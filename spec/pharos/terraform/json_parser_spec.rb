@@ -21,4 +21,19 @@ describe Pharos::Terraform::JsonParser do
       }.to raise_error(described_class::ParserError)
     end
   end
+
+  describe '#addons' do
+    let(:subject) { described_class.new(fixture('terraform/with_addons.json')) }
+
+    it 'parses valid terraform json file' do
+      addons = subject.addons
+      expect(addons.keys.size).to eq(1)
+      expect(addons['addon1']).to eq({ "foo" => "bar", "bar" => "baz" })
+    end
+
+    it 'returns empty hash if no addons are defined' do
+      subject = described_class.new(fixture('terraform/tf.json'))
+      expect(subject.addons).to eq({})
+    end
+  end
 end

@@ -36,13 +36,22 @@ module Pharos
     # load phases/addons
     def load
       Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
-      Pharos::AddonManager.load_addons(__dir__ + '/addons/')
+      addon_dirs = [
+        File.join(__dir__, '..', '..', 'addons'),
+        File.join(Dir.pwd, 'addons')
+      ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+      Pharos::AddonManager.load_addons(*addon_dirs)
+      Pharos::HostConfigManager.load_configs(@config)
+    end
+
+    def gather_facts
+      apply_phase(Phases::GatherFacts, config.hosts, ssh: true, parallel: true)
     end
 
     def validate
       addon_manager.validate
+      gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ValidateHostname, config.hosts, ssh: false, parallel: false)
     end
 
     # @return [Array<Pharos::Configuration::Host>]
@@ -63,7 +72,7 @@ module Pharos
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
 
-      unless @config.etcd&.hosts
+      unless @config.etcd&.endpoints
         # we need to use sorted etcd hosts because phases expects that first one has
         # ca etc config files
         etcd_hosts = sorted_etcd_hosts
@@ -74,10 +83,14 @@ module Pharos
       end
 
       apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::SetupMaster, master_hosts, ssh: true, parallel: true)
+      apply_phase(Phases::UpgradeMaster, master_hosts, ssh: true, master: master_hosts.first, parallel: false) # XXX: uses master kubeconfig before ConfigureClient runs
+
       apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: master_hosts.first)
-      apply_phase(Phases::ConfigureKubelet, config.worker_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureKubelet, config.hosts, ssh: true, parallel: true)
+
+      apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
+      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false)
 
       # master is now configured and can be used
       apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
@@ -90,6 +103,10 @@ module Pharos
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
 
       apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+    end
+
+    def apply_reset
+      apply_phase(Phases::ResetHost, config.hosts, ssh: true, parallel: true)
     end
 
     # @param phase_class [Pharos::Phase]

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'dry-struct'
 require_relative 'types'
 require_relative 'configuration/host'
 require_relative 'configuration/api'
@@ -13,10 +12,8 @@ require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
 
 module Pharos
-  class Config < Dry::Struct
+  class Config < Pharos::Configuration::Struct
     HOSTS_PER_DNS_REPLICA = 10
-
-    constructor_type :schema
 
     # @param raw_data [Hash]
     # @raise [Pharos::ConfigError]
@@ -42,19 +39,17 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :image_repository, Pharos::Types::String.default('quay.io/kontena')
+    attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
 
     attr_accessor :data
 
     # @return [Integer]
     def dns_replicas
-      if network.dns_replicas
-        network.dns_replicas
-      elsif hosts.length == 1
-        1
-      else
-        1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
-      end
+      return network.dns_replicas if network.dns_replicas
+      return 1 if hosts.length == 1
+      1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
     end
 
     # @return [Array<Pharos::Configuration::Node>]

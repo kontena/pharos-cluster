@@ -1,6 +1,7 @@
 require 'pharos/phases/validate_host'
 
 describe Pharos::Phases::ValidateHost do
+  let(:network_config) { {} }
   let(:config) { Pharos::Config.new(
       hosts: [
         Pharos::Configuration::Host.new(
@@ -8,49 +9,11 @@ describe Pharos::Phases::ValidateHost do
           role: 'master'
         ),
       ],
+      network: network_config,
   ) }
+  let(:host) { config.hosts[0] }
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(config.hosts[0], config: config, ssh: ssh) }
-
-  describe '#private_interface_address' do
-    let(:iface) { 'eth0' }
-    before do
-      allow(ssh).to receive(:exec!).with(/ip -o addr show/).and_return(ip_addr)
-    end
-
-    context "for an interface configured with a private IP" do
-      let(:ip_addr) { <<~EOM
-        2: eth1    inet 192.168.0.10/24 brd 192.168.0.255 scope global eth0\       valid_lft forever preferred_lft forever
-      EOM
-      }
-
-      it "returns the private IP" do
-        expect(subject.private_interface_address('eth1')).to eq '192.168.0.10'
-      end
-    end
-
-    context "for an interface that is not configured" do
-      let(:ip_addr) { <<~EOM
-      EOM
-      }
-
-      it "returns nil" do
-        expect(subject.private_interface_address('eth1')).to eq nil
-      end
-    end
-
-    context "with a public and private IP on the same interface" do
-      let(:ip_addr) { <<~EOM
-        2: eth0    inet 192.0.2.1/24 brd 192.0.2.255 scope global eth0\       valid_lft forever preferred_lft forever
-        2: eth0    inet 10.18.0.5/16 brd 10.18.255.255 scope global eth0\       valid_lft forever preferred_lft forever
-      EOM
-      }
-
-      it "returns the private IP" do
-        expect(subject.private_interface_address('eth0')).to eq '10.18.0.5'
-      end
-    end
-  end
+  subject { described_class.new(host, config: config, ssh: ssh) }
 
   describe '#check_role' do
     let(:role) { 'worker' }
@@ -145,6 +108,142 @@ describe Pharos::Phases::ValidateHost do
         it 'does not raise' do
           expect{ subject.check_role }.to_not raise_error
         end
+      end
+    end
+  end
+
+  describe '#validate_unique_hostnames' do
+    let(:config) { Pharos::Config.new(
+      hosts: [
+        Pharos::Configuration::Host.new(
+          address: '192.0.2.1',
+        ),
+        Pharos::Configuration::Host.new(
+          address: '192.0.2.2',
+        ),
+        Pharos::Configuration::Host.new(
+          address: '192.0.2.3',
+        )
+      ]
+    ) }
+
+    context 'no duplicate hostnames' do
+      it 'does not raise if no duplicates' do
+        config.hosts[0].hostname = "host-0"
+        config.hosts[1].hostname = "host-1"
+        config.hosts[2].hostname = "host-2"
+
+        subject.validate_unique_hostnames
+      end
+    end
+
+    context 'duplicate hostnames' do
+      it 'raises if duplicates' do
+        config.hosts[0].hostname = "foo"
+        config.hosts[1].hostname = "foo"
+        config.hosts[2].hostname = "foo"
+
+        expect{ subject.validate_unique_hostnames }.to raise_error(Pharos::InvalidHostError, "Duplicate hostname foo for hosts 192.0.2.2,192.0.2.3")
+      end
+    end
+  end
+
+  describe '#validate_routes' do
+    before do
+      host.routes = routes
+    end
+
+    context 'for an unconfigured host' do
+      let(:routes) { [
+        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+      ] }
+
+      context 'with non-overlapping calico routes' do
+        let(:network_config) { {
+          provider: 'calico',
+          service_cidr: '10.96.0.0/12',
+          pod_network_cidr: '10.32.0.0/12',
+        }}
+
+        it 'validates' do
+          expect{subject.validate_routes}.to_not raise_error
+        end
+      end
+
+      context 'with overlapping calico pod network routes' do
+        let(:network_config) { {
+          provider: 'calico',
+          service_cidr: '10.96.0.0/12',
+          pod_network_cidr: '172.16.0.0/12',
+        }}
+
+        it 'fails validation' do
+          expect{subject.validate_routes}.to raise_error(RuntimeError, /Overlapping host routes for .network.pod_network_cidr/)
+        end
+      end
+
+      context 'with overlapping calico service routes' do
+        let(:network_config) { {
+          provider: 'calico',
+          service_cidr: '172.16.0.0/12',
+          pod_network_cidr: '10.32.0.0/12',
+        }}
+
+        it 'fails validation' do
+          expect{subject.validate_routes}.to raise_error(RuntimeError, /Overlapping host routes for .network.service_cidr/)
+        end
+      end
+
+      context 'with overlapping weave pod network routes' do
+        let(:network_config) { {
+          provider: 'weave',
+          service_cidr: '10.96.0.0/12',
+          pod_network_cidr: '172.16.0.0/12',
+        }}
+
+        it 'fails validation' do
+          expect{subject.validate_routes}.to raise_error(RuntimeError, /Overlapping host routes for .network.pod_network_cidr/)
+        end
+      end
+    end
+
+    context 'for an configured calico host' do
+      let(:network_config) { {
+        provider: 'calico',
+        service_cidr: '10.96.0.0/12',
+        pod_network_cidr: '10.32.0.0/12',
+      }}
+      let(:routes) { [
+        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Host::Route.new(type: 'blackhole', prefix: '10.32.0.0/24', proto: 'bird'),
+        Pharos::Configuration::Host::Route.new(prefix: '10.32.0.39', dev: 'cali5f1ddd73716', options: 'scope link'),
+        Pharos::Configuration::Host::Route.new(prefix: '10.32.1.0/24', via: '192.0.2.10', dev: 'tunl0', proto: 'bird', options: 'onlink'),
+      ] }
+
+      it 'validates' do
+        expect{subject.validate_routes}.to_not raise_error
+      end
+    end
+
+    context 'for a configured weave host' do
+      let(:network_config) { {
+        provider: 'weave',
+        service_cidr: '10.96.0.0/12',
+        pod_network_cidr: '10.32.0.0/12',
+      }}
+      let(:routes) { [
+        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Host::Route.new(prefix: '10.32.0.0/12', dev: 'weave', proto: 'kernel'),
+      ] }
+
+      it 'validates' do
+        expect{subject.validate_routes}.to_not raise_error
       end
     end
   end

@@ -5,17 +5,9 @@ module Pharos
     class ConfigureCfssl < Pharos::Phase
       title "Configure cfssl"
 
-      register_component(
-        name: 'cfssl', version: '1.2', license: 'MIT',
-        enabled: proc { |c| !c.etcd&.endpoints }
-      )
-
       def call
         logger.info { 'Installing cfssl ...' }
-        exec_script(
-          'configure-cfssl.sh',
-          ARCH: @host.cpu_arch.name
-        )
+        @host.configurer(@ssh).configure_cfssl
       end
     end
   end
