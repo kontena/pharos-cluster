@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+require 'openssl'
+require 'excon'
+require 'k8s/error'
+require 'pharos/ssh/remote_command'
+
 module Pharos
   class PhaseManager
     include Pharos::Logging
