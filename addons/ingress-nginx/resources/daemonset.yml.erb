@@ -23,10 +23,10 @@ spec:
       <%- end -%>
       serviceAccountName: nginx-ingress-serviceaccount
       hostNetwork: true
-      initContainers:	
-      - command:	
-        - sh	
-        - -c	
+      initContainers:
+      - command:
+        - sh
+        - -c
         - sysctl -w net.core.somaxconn=32768; sysctl -w net.ipv4.ip_local_port_range="1024 65535"
       containers:
         - name: nginx-ingress-controller
