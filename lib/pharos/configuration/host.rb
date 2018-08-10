@@ -63,7 +63,13 @@ module Pharos
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
       def to_s
-        address
+        short_hostname || address
+      end
+
+      def short_hostname
+        return nil unless hostname
+
+        hostname.split('.').first
       end
 
       def api_address

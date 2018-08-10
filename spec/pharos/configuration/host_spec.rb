@@ -10,6 +10,34 @@ describe Pharos::Configuration::Host do
     )
   end
 
+  describe '#short_hostname' do
+    let(:hostname) { nil }
+
+    before do
+      subject.hostname = hostname if hostname
+    end
+
+    it 'returns nil if no hostname is set' do
+      expect(subject.short_hostname).to eq nil
+    end
+
+    context 'with a short hostname' do
+      let(:hostname) { 'test' }
+
+      it 'returns the hostname as-is' do
+        expect(subject.short_hostname).to eq 'test'
+      end
+    end
+
+    context 'with an fqdn hostname' do
+      let(:hostname) { 'test.example.com' }
+
+      it 'returns the short hostname' do
+        expect(subject.short_hostname).to eq 'test'
+      end
+    end
+  end
+
   describe '#configurer' do
     it 'returns nil on non-supported os release' do
       allow(subject).to receive(:os_release).and_return(double(:os_release, id: 'foo', version: 'bar'))
