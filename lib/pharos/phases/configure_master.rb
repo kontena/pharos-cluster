@@ -7,6 +7,8 @@ module Pharos
 
       KUBE_DIR = '/etc/kubernetes'
       SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub front-proxy-ca.key front-proxy-ca.crt).freeze
+      APISERVER_CERT = '/etc/kubernetes/pki/apiserver.crt'
+      APISERVER_KEY = '/etc/kubernetes/pki/apiserver.key'
 
       def kubeadm
         Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
@@ -53,6 +55,8 @@ module Pharos
       end
 
       def reconfigure
+        replace_cert if replace_cert?
+
         cfg = kubeadm.generate_config
 
         logger.info { "Configuring control plane ..." }
@@ -84,6 +88,72 @@ module Pharos
           certs[file] = @ssh.file(path).read
         end
         certs
+      end
+
+      # @param path [String]
+      # @return [OpenSSL::X509::Certificate, nil] nil if not exist
+      def read_cert(path)
+        file = @ssh.file(path)
+
+        return nil unless file.exist?
+
+        OpenSSL::X509::Certificate.new file.read
+      end
+
+      # @param cert [OpenSSL::X509::Certificate]
+      # @return [Array<String>]
+      def read_cert_sans(cert)
+        sans = nil
+
+        cert.extensions.each do |ext|
+          sans = ext.value if ext.oid == 'subjectAltName'
+        end
+
+        return [] unless sans
+
+        sans.split(',').map{|san|
+          prefix, name = san.strip.split(':', 2)
+
+          case prefix
+          when 'DNS'
+            name
+          when 'IP Address'
+            name
+          else
+            logger.warn { "Unknown SAN in cert: #{san}"}
+            nil
+          end
+        }.compact
+      end
+
+      # @return [Boolean]
+      def replace_cert?
+        cert = read_cert(APISERVER_CERT)
+
+        if !cert
+          logger.debug { "apiserver cert does not yet exist, kubeadm will create it" }
+          return false
+        end
+
+        sans = read_cert_sans(cert)
+
+        missing_sans = kubeadm.build_extra_sans - sans
+        extra_sans = sans - kubeadm.build_extra_sans
+
+        if missing_sans.empty?
+          logger.debug { "apiserver cert is up to update: #{sans}" }
+          return false
+        else
+          logger.debug { "apisever cert is missing SANs: #{missing_sans} (extra: #{extra_sans})" }
+          return true
+        end
+      end
+
+      def replace_cert
+        logger.info { "Replacing apisever cert" }
+
+        @ssh.file(APISERVER_CERT).rm
+        @ssh.file(APISERVER_KEY).rm
       end
     end
   end
