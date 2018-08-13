@@ -111,7 +111,7 @@ module Pharos
 
         return [] unless sans
 
-        sans.split(',').map{|san|
+        sans.split(',').map{ |san|
           prefix, name = san.strip.split(':', 2)
 
           case prefix
@@ -120,7 +120,7 @@ module Pharos
           when 'IP Address'
             name
           else
-            logger.warn { "Unknown SAN in cert: #{san}"}
+            logger.warn { "Unknown SAN in cert: #{san}" }
             nil
           end
         }.compact
