@@ -27,3 +27,5 @@ pipeline:
     region: eu-west-1
     source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}"
     target: /
+    when:
+      event: tag
