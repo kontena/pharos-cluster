@@ -20,7 +20,6 @@ module Pharos
     option ['-n', '--name'], 'NAME', 'Overwrite cluster name', attribute_name: :new_name
     option ['-C', '--context'], 'CONTEXT', 'Overwrite context name', attribute_name: :new_context
 
-    option ['-i', '--input'], '[FILE]', 'Use local file as input instead of remote'
     option ['-m', '--merge'], '[FILE]', 'Merge with existing configuration file', multivalued: true
 
     REMOTE_FILE = "/etc/kubernetes/admin.conf"
@@ -29,7 +28,7 @@ module Pharos
       config = Pharos::Kube::Config.new(config_file_content)
       config.rename_cluster(new_name) if new_name
       config.rename_context(new_context) if new_context
-      config.update_server_address(master_host.api_address) if input.nil?
+      config.update_server_address(master_host.api_address)
       merge_list.each do |merge|
         merge_config = Pharos::Kube::Config.new(File.read(merge))
         config << merge_config
@@ -47,7 +46,7 @@ module Pharos
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: %<path>s' % { path: config_yaml }
         end
-      elsif input.nil?
+      else
         cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
         signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
         Pharos::YamlFile.new(cluster_config)
@@ -55,17 +54,9 @@ module Pharos
     end
 
     def config_file_content
-      if input
-        signal_usage_error "Can't use --config together with --input" if config_yaml
-        unless File.exist?(input)
-          signal_usage_error 'File does not exist: %<path>s' % { path: input }
-        end
-        File.read(input)
-      else
-        file = ssh.file(REMOTE_FILE)
-        signal_usage_error "Remote file #{REMOTE_FILE} not found" unless file.exist?
-        file.read
-      end
+      file = ssh.file(REMOTE_FILE)
+      signal_usage_error "Remote file #{REMOTE_FILE} not found" unless file.exist?
+      file.read
     end
 
     def ssh
