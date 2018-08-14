@@ -11,6 +11,44 @@ module Pharos
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
       end
 
+      class Route < Pharos::Configuration::Struct
+        ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
+
+        # @param line [String]
+        # @return [Pharos::Configuration::Host::Route]
+        # @raise [RuntimeError] invalid route
+        def self.parse(line)
+          fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
+
+          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }.reject{ |_k, v| v.nil? }]
+
+          new(raw: line.strip, **captures)
+        end
+
+        attribute :raw, Pharos::Types::Strict::String
+        attribute :type, Pharos::Types::Strict::String.optional
+        attribute :prefix, Pharos::Types::Strict::String
+        attribute :via, Pharos::Types::Strict::String.optional
+        attribute :dev, Pharos::Types::Strict::String.optional
+        attribute :proto, Pharos::Types::Strict::String.optional
+        attribute :options, Pharos::Types::Strict::String.optional
+
+        def to_s
+          @raw
+        end
+
+        # @return [Boolean]
+        def overlaps?(cidr)
+          # special-case the default route and ignore it
+          return nil if prefix == 'default'
+
+          route_prefix = IPAddr.new(prefix)
+          cidr = IPAddr.new(cidr)
+
+          route_prefix.include?(cidr) || cidr.include?(route_prefix)
+        end
+      end
+
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String.optional.default(nil)
       attribute :private_interface, Pharos::Types::Strict::String.optional.default(nil)
@@ -22,10 +60,16 @@ module Pharos
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :http_proxy, Pharos::Types::Strict::String
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
       def to_s
-        address
+        short_hostname || address
+      end
+
+      def short_hostname
+        return nil unless hostname
+
+        hostname.split('.').first
       end
 
       def api_address
@@ -53,6 +97,8 @@ module Pharos
           args << "--node-ip=#{peer_address}" if cloud_provider.nil?
           args << "--hostname-override=#{hostname}"
         end
+
+        args += configurer(nil).kubelet_args
 
         args
       end
@@ -93,6 +139,12 @@ module Pharos
 
       def worker?
         role == 'worker'
+      end
+
+      # @param cidr [String]
+      # @return [Array<Pharos::Configuration::Host::Route>]
+      def overlapping_routes(cidr)
+        routes.select{ |route| route.overlaps? cidr }
       end
 
       # @param ssh [Pharos::SSH::Client]

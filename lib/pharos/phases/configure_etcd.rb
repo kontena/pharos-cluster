@@ -14,7 +14,7 @@ module Pharos
       def call
         sync_ca
 
-        logger.info(@host.address) { 'Configuring etcd certs ...' }
+        logger.info { 'Configuring etcd certs ...' }
         exec_script(
           'configure-etcd-certs.sh',
           PEER_IP: @host.peer_address,
@@ -22,7 +22,7 @@ module Pharos
           ARCH: @host.cpu_arch.name
         )
 
-        logger.info(@host.address) { 'Configuring etcd ...' }
+        logger.info { 'Configuring etcd ...' }
         exec_script(
           'configure-etcd.sh',
           PEER_IP: @host.peer_address,
@@ -58,7 +58,7 @@ module Pharos
       # @param peer [Pharos::Configuration::Host]
       # @return [String]
       def peer_name(peer)
-        peer.hostname.split('.')[0]
+        peer.short_hostname
       end
 
       def sync_ca

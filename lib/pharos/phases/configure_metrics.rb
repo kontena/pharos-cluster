@@ -17,8 +17,8 @@ module Pharos
 
       def configure_metrics_server
         logger.info { "Configuring metrics server ..." }
-        Pharos::Kube.apply_stack(
-          @master.api_address, 'metrics-server',
+        apply_stack(
+          'metrics-server',
           version: METRICS_SERVER_VERSION,
           image_repository: @config.image_repository,
           arch: @host.cpu_arch

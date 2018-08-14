@@ -35,6 +35,7 @@ module Pharos
         cfg = kubeadm.generate_config
 
         logger.info { "Initializing control plane ..." }
+        logger.debug { cfg.to_yaml }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
@@ -55,6 +56,7 @@ module Pharos
         cfg = kubeadm.generate_config
 
         logger.info { "Configuring control plane ..." }
+        logger.debug { cfg.to_yaml }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(

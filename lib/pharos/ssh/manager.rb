@@ -12,6 +12,7 @@ module Pharos
         return @clients[host] if @clients[host]
         opts = {}
         opts[:keys] = [host.ssh_key_path] if host.ssh_key_path
+        opts[:send_env] = [] # override default to not send LC_* envs
         @clients[host] = Pharos::SSH::Client.new(host.address, host.user, opts).tap(&:connect)
       end
 

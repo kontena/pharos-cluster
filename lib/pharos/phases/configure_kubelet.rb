@@ -89,36 +89,26 @@ module Pharos
       def build_systemd_dropin
         options = []
         options << "Environment='KUBELET_EXTRA_ARGS=#{kubelet_extra_args.join(' ')}'"
-        options << "Environment='KUBELET_DNS_ARGS=#{kubelet_dns_args.join(' ')}'"
         options << "ExecStartPre=-/sbin/swapoff -a"
 
         "[Service]\n#{options.join("\n")}\n"
       end
 
       # @return [Array<String>]
-      def kubelet_dns_args
-        args = [
-          "--cluster-dns=#{@config.network.dns_service_ip}",
-          "--cluster-domain=cluster.local"
-        ]
+      def kubelet_extra_args
+        args = []
+        if @config.kubelet&.read_only_port
+          args << "--read-only-port=10255"
+        end
+        args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
         if @host.resolvconf.systemd_resolved_stub
           # use usptream resolvers instead of systemd stub resolver at localhost for `dnsPolicy: Default` pods
+          # XXX: kubeadm also handles this?
           args << '--resolv-conf=/run/systemd/resolve/resolv.conf'
         elsif @host.resolvconf.nameserver_localhost
           fail "Host has /etc/resolv.conf configured with localhost as a resolver"
         end
-
-        args
-      end
-
-      # @return [Array<String>]
-      def kubelet_extra_args
-        args = []
-        unless @config.kubelet&.read_only_port
-          args << "--read-only-port=0"
-        end
-        args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
         args << "--authentication-token-webhook=true"
         args << "--pod-infra-container-image=#{@config.image_repository}/pause-#{@host.cpu_arch.name}:3.1"

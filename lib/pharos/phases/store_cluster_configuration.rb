@@ -7,14 +7,14 @@ module Pharos
 
       def call
         logger.info { "Storing cluster configuration to configmap ..." }
-        resource.apply
+        ensure_resource(resource)
       end
 
       private
 
       def resource
         data = JSON.parse(@config.data.to_json) # hack to get rid of symbols
-        Pharos::Kube.session(@master).resource(
+        K8s::Resource.new(
           apiVersion: 'v1',
           kind: 'ConfigMap',
           metadata: {
@@ -28,6 +28,12 @@ module Pharos
             'pharos-addons.yml' => addons.to_yaml
           }
         )
+      end
+
+      def ensure_resource(resource)
+        kube_client.update_resource(resource)
+      rescue K8s::Error::NotFound
+        kube_client.create_resource(resource)
       end
 
       def components

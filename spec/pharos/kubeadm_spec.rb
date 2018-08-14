@@ -68,9 +68,9 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
     it 'comes with internal etcd config' do
       config = subject.generate_config
-      expect(config.dig('etcd')).not_to be_nil
-      expect(config.dig('etcd', 'endpoints')).not_to be_nil
-      expect(config.dig('etcd', 'version')).to be_nil
+      expect(config.dig('etcd', 'external')).not_to be_nil
+      expect(config.dig('etcd', 'external', 'endpoints')).not_to be_nil
+      expect(config.dig('etcd', 'external', 'version')).to be_nil
     end
 
     it 'comes with secrets encryption config' do
@@ -94,7 +94,7 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
       it 'comes with proper etcd endpoint config' do
         config = subject.generate_config
-        expect(config.dig('etcd', 'endpoints')).to eq(['ep1', 'ep2'])
+        expect(config.dig('etcd', 'external', 'endpoints')).to eq(['ep1', 'ep2'])
       end
     end
 
@@ -114,9 +114,9 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
       it 'comes with proper etcd certificate config' do
         config = subject.generate_config
-        expect(config.dig('etcd', 'caFile')).to eq('/etc/pharos/etcd/ca-certificate.pem')
-        expect(config.dig('etcd', 'certFile')).to eq('/etc/pharos/etcd/certificate.pem')
-        expect(config.dig('etcd', 'keyFile')).to eq('/etc/pharos/etcd/certificate-key.pem')
+        expect(config.dig('etcd', 'external', 'caFile')).to eq('/etc/pharos/etcd/ca-certificate.pem')
+        expect(config.dig('etcd', 'external', 'certFile')).to eq('/etc/pharos/etcd/certificate.pem')
+        expect(config.dig('etcd', 'external', 'keyFile')).to eq('/etc/pharos/etcd/certificate-key.pem')
       end
 
       it 'mounts pharos dir from host' do
@@ -144,7 +144,7 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
       it 'comes with proper cloud provider' do
         config = subject.generate_config
-        expect(config['cloudProvider']).to eq('aws')
+        expect(config['apiServerExtraArgs']['cloud-provider']).to eq('aws')
       end
 
       it 'comes with proper cloud config' do
@@ -204,21 +204,7 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
       it 'comes with proper etcd endpoint config' do
         config = subject.generate_config
-        expect(config.dig('criSocket')).to eq('/var/run/crio/crio.sock')
-      end
-    end
-
-    context 'with multiple masters' do
-      let(:config) { Pharos::Config.new(
-        hosts: (1..3).map { |i| Pharos::Configuration::Host.new(role: 'master') },
-        network: {},
-        addons: {},
-        etcd: {}
-      ) }
-
-      it 'comes with proper apiserver-count' do
-        config = subject.generate_config
-        expect(config.dig('apiServerExtraArgs', 'apiserver-count')).to eq("3")
+        expect(config.dig('nodeRegistration', 'criSocket')).to eq('/var/run/crio/crio.sock')
       end
     end
 
@@ -235,9 +221,6 @@ describe Pharos::Kubeadm::ConfigGenerator do
         config = subject.generate_config
         expect(config.dig('kubeProxy', 'config')).to eq(
           'mode' => 'ipvs',
-          'featureGates' => {
-            'SupportIPVSProxyMode' => true,
-          },
         )
       end
     end
@@ -255,14 +238,13 @@ describe Pharos::Kubeadm::ConfigGenerator do
         config = subject.generate_config
         expect(config.dig('kubeProxy', 'config')).to eq(
           'mode' => 'iptables',
-          'featureGates' => {},
         )
       end
     end
 
-    describe 'noTaintMaster' do
+    describe 'nodeRegistration.taints' do
       it 'taints the master by default' do
-        expect(subject.generate_config['noTaintMaster']).to eq false
+        expect(subject.generate_config['nodeRegistration']['taints']).to be nil
       end
 
       context 'with empty host taints' do
@@ -274,8 +256,7 @@ describe Pharos::Kubeadm::ConfigGenerator do
         ) }
 
         it 'does not taint the master' do
-          expect(subject.generate_config['noTaintMaster']).to eq true
-
+          expect(subject.generate_config['nodeRegistration']['taints']).to eq []
         end
       end
 
@@ -290,8 +271,8 @@ describe Pharos::Kubeadm::ConfigGenerator do
           ],
         ) }
 
-        it 'does not taint the master' do
-          expect(subject.generate_config['noTaintMaster']).to eq false
+        it 'does taint the master' do
+          expect(subject.generate_config['nodeRegistration']['taints']).to be nil
         end
       end
     end

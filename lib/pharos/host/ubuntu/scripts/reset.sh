@@ -17,8 +17,9 @@ if systemctl is-active --quiet crio ; then
     systemctl disable crio
 fi
 
-kubeadm reset
+kubeadm reset --force
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get purge -y --allow-change-held-packages --purge kubeadm kubelet kubectl docker.io
 apt-get autoremove -y
 rm -rf /etc/kubernetes \
@@ -39,7 +40,8 @@ rm -rf /etc/kubernetes \
     /usr/local/lib/cri-o-runc \
     /usr/local/bin/skopeo \
     /usr/local/bin/runc \
-    /usr/local/bin/crictl
+    /usr/local/bin/crictl \
+    /usr/local/bin/pharos-kubeadm-*
 
 systemctl daemon-reload
 systemctl reset-failed

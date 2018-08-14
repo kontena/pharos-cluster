@@ -9,7 +9,7 @@ Pharos.addon 'kubernetes-dashboard' do
 
     logger.info { "~~> kubernetes-dashboard can be accessed via kubectl proxy. Check proxy URL with: kubectl cluster-info" }
 
-    service_account = kube_client.get_service_account('dashboard-admin', 'kube-system')
+    service_account = kube_client.api('v1').resource('serviceaccounts', namespace: 'kube-system').get('dashboard-admin')
     token_secret = service_account.secrets[0]
     if token_secret
       logger.info { "~~> kubernetes-dashboard admin token can be fetched using: kubectl describe secret #{token_secret.name} -n kube-system" }

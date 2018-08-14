@@ -28,6 +28,11 @@ module Pharos
         abstract_method!
       end
 
+      # @return [Array<String>]
+      def kubelet_args
+        []
+      end
+
       # @param args [Hash]
       def ensure_kubelet(args) # rubocop:disable Lint/UnusedMethodArgument
         abstract_method!
