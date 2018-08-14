@@ -16,11 +16,13 @@ if [[ $DRONE_TAG =~ .+-.+ ]]; then
         --tag $DRONE_TAG \
         --name $DRONE_TAG \
         --description "Pre-release, only for testing" \
+        --draft \
         --pre-release
 else
     /usr/local/bin/github-release release \
         --user kontena \
         --repo pharos-cluster \
+        --draft \
         --tag $DRONE_TAG \
         --name $DRONE_TAG
 fi
