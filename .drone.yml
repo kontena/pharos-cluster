@@ -20,3 +20,10 @@ pipeline:
       - ./build/drone/ubuntu_xenial.sh
     when:
       event: tag
+  release_binary:
+    image: plugins/s3
+    secret: [ access_key, secret_key ]
+    bucket: pharos-cluster-binaries
+    region: eu-west-1
+    source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}"
+    target: /
