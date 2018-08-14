@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'types'
-require_relative 'configuration/cluster'
 require_relative 'configuration/host'
 require_relative 'configuration/api'
 require_relative 'configuration/network'
@@ -11,7 +10,6 @@ require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
-require_relative 'configuration/kube_config'
 
 module Pharos
   class Config < Pharos::Configuration::Struct
@@ -32,7 +30,6 @@ module Pharos
       config
     end
 
-    attribute :cluster, Pharos::Configuration::Cluster
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
     attribute :network, Pharos::Configuration::Network
     attribute :kube_proxy, Pharos::Configuration::KubeProxy
