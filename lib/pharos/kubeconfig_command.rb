@@ -43,7 +43,7 @@ module Pharos
 
     # @return [Pharos::Config]
     def master_host
-      @master_host ||= load_config(quiet: true).master_host
+      @master_host ||= load_config.master_host
     end
   end
 end

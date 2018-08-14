@@ -36,6 +36,7 @@ module Pharos
 
       Pharos::Kube.init_logging!
 
+      puts pastel.green("==> Reading instructions ...")
       config = load_config
 
       # set workdir to the same dir where config was loaded from
@@ -53,8 +54,7 @@ module Pharos
     end
 
     # @return [Pharos::Config]
-    def load_config(quiet: false)
-      puts pastel.green("==> Reading instructions ...") unless quiet
+    def load_config
       config_hash = config_yaml.load(ENV.to_h)
 
       load_terraform(tf_json, config_hash) if tf_json
