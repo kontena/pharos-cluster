@@ -52,7 +52,7 @@ module Pharos
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
-            CRIO_STREAM_ADDRESS: host.peer_address,
+            CRIO_STREAM_ADDRESS: '127.0.0.1',
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: cluster_config.image_repository
           )
