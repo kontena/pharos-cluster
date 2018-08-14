@@ -10,7 +10,7 @@ module Pharos
     banner "pharos-cluster - Kontena Pharos cluster manager"
 
     subcommand ["build", "up"], "Initialize/upgrade cluster", UpCommand
-    subcommand "kubeconfig", "Download kubernetes configuration files", KubeconfigCommand
+    subcommand "kubeconfig", "Output kubernetes configuration file", KubeconfigCommand
     subcommand "reset", "Reset cluster", ResetCommand
     subcommand "version", "Show version information", VersionCommand
 
