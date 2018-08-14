@@ -20,17 +20,6 @@ module Pharos
 
     option ['-y', '--yes'], :flag, 'Answer automatically yes to prompts'
 
-    # @return [Pharos::YamlFile]
-    def default_config_yaml
-      if !tty? && !stdin_eof?
-        Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
-      else
-        cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
-        signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
-        Pharos::YamlFile.new(cluster_config)
-      end
-    end
-
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
 
@@ -53,8 +42,8 @@ module Pharos
     end
 
     # @return [Pharos::Config]
-    def load_config
-      puts pastel.green("==> Reading instructions ...")
+    def load_config(quiet: false)
+      puts pastel.green("==> Reading instructions ...") unless quiet
       config_hash = config_yaml.load(ENV.to_h)
 
       load_terraform(tf_json, config_hash) if tf_json
