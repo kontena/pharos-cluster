@@ -2,6 +2,7 @@
 
 require 'pharos/up_command'
 require 'pharos/ssh/client'
+require 'pharos/ssh/manager'
 require 'pharos/yaml_file'
 require 'pharos/terraform/json_parser'
 require 'pharos/kube/config'
@@ -35,10 +36,7 @@ module Pharos
     end
 
     def ssh
-      return @ssh if @ssh
-      opts = {}
-      opts[:keys] = [master_host.ssh_key_path] if master_host.ssh_key_path
-      @ssh = Pharos::SSH::Client.new(master_host.address, master_host.user, opts).tap(&:connect)
+      @ssh ||= Pharos::SSH::Manager.client_for(master_host)
     end
 
     # @return [Pharos::Config]
