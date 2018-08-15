@@ -111,7 +111,7 @@ module Pharos
           raise InvalidConfigError, "Configuration cluster count expected to be one"
         end
 
-        config['clusters'].first['cluster']['server'].gsub!(%r{(server: https://)(.+)(:6443)}, "\\1#{new_address}\\3")
+        config['clusters'].first['cluster']['server'].gsub!(%r{(https://)(.+)(:6443)}, "\\1#{new_address}\\3")
       end
 
       private
