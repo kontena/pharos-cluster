@@ -22,7 +22,7 @@ pipeline:
       event: tag
   release_binary:
     image: plugins/s3
-    secret: [ aws_access_key_id, aws_secret_access_key ]
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
     bucket: pharos-cluster-binaries
     region: eu-west-1
     source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}"

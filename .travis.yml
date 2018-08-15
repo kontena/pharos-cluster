@@ -24,3 +24,5 @@ jobs:
         region: "eu-west-1"
         local-dir: upload
         skip_cleanup: true
+        on:
+          all_branches: true
