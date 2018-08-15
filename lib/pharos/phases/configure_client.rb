@@ -5,13 +5,24 @@ module Pharos
     class ConfigureClient < Pharos::Phase
       title "Configure kube client"
 
+      REMOTE_FILE = "/etc/kubernetes/admin.conf"
+
       def call
+        fetch_kubeconfig
         client_prefetch
         config_map = previous_config_map
         return unless config_map
 
         cluster_context['previous-config-map'] = config_map
         cluster_context['previous-config'] = build_config(config_map)
+      end
+
+      def fetch_kubeconfig
+        logger.info { "Fetching kubectl config ..." }
+        config = Pharos::Kube::Config.new(@ssh.file(REMOTE_FILE).read)
+        config.update_server_address(@host.api_address)
+        logger.debug "New config: #{config}"
+        cluster_context['kubeconfig'] = config.to_h
       end
 
       # prefetch client resources to warm up caches
