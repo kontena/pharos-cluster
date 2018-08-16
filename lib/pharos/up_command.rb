@@ -2,7 +2,7 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
+    option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
       begin
         Pharos::YamlFile.new(File.realpath(config_file))
       rescue Errno::ENOENT
@@ -10,7 +10,7 @@ module Pharos
       end
     end
 
-    option '--tf-json', 'PATH', 'Path to terraform output json' do |config_path|
+    option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
@@ -18,7 +18,7 @@ module Pharos
       end
     end
 
-    option ['-y', '--yes'], :flag, 'Answer automatically yes to prompts'
+    option ['-y', '--yes'], :flag, 'answer automatically yes to prompts'
 
     # @return [Pharos::YamlFile]
     def default_config_yaml

@@ -8,9 +8,9 @@ module Pharos
   class RootCommand < Pharos::Command
     banner "pharos-cluster - Kontena Pharos cluster manager"
 
-    subcommand ["build", "up"], "Initialize/upgrade cluster", UpCommand
-    subcommand ["reset"], "Reset cluster", ResetCommand
-    subcommand ["version"], "Show version information", VersionCommand
+    subcommand ["build", "up"], "initialize/upgrade cluster", UpCommand
+    subcommand ["reset"], "reset cluster", ResetCommand
+    subcommand ["version"], "show version information", VersionCommand
 
     def self.run
       super
