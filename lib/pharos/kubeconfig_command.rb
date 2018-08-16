@@ -9,9 +9,9 @@ require 'pharos/kube/config'
 
 module Pharos
   class KubeconfigCommand < UpCommand
-    option ['-n', '--name'], 'NAME', 'Overwrite cluster name', attribute_name: :new_name
-    option ['-C', '--context'], 'CONTEXT', 'Overwrite context name', attribute_name: :new_context
-    option ['-m', '--merge'], '[FILE]', 'Merge with existing configuration file', multivalued: true
+    option ['-n', '--name'], 'NAME', 'overwrite cluster name', attribute_name: :new_name
+    option ['-C', '--context'], 'CONTEXT', 'overwrite context name', attribute_name: :new_context
+    option ['-m', '--merge'], '[FILE]', 'merge with existing configuration file', multivalued: true
 
     REMOTE_FILE = "/etc/kubernetes/admin.conf"
 
