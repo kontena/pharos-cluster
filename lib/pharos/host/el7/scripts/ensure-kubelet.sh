@@ -5,6 +5,11 @@
 
 set -e
 
+# we don't want to accidentally upgrade kubelet
+if systemctl is-active --quiet kubelet; then
+    exit 0
+fi
+
 mkdir -p /etc/systemd/system/kubelet.service.d
     cat <<EOF >/etc/systemd/system/kubelet.service.d/05-pharos-kubelet.conf
 [Service]
