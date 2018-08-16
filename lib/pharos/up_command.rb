@@ -36,6 +36,7 @@ module Pharos
 
       Pharos::Kube.init_logging!
 
+      puts pastel.green("==> Reading instructions ...")
       config = load_config
 
       # set workdir to the same dir where config was loaded from
@@ -54,7 +55,6 @@ module Pharos
 
     # @return [Pharos::Config]
     def load_config
-      puts pastel.green("==> Reading instructions ...")
       config_hash = config_yaml.load(ENV.to_h)
 
       load_terraform(tf_json, config_hash) if tf_json
@@ -110,8 +110,9 @@ module Pharos
 
       craft_time = Time.now - start_time
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
-      puts "    You can connect to the cluster with kubectl using:"
-      puts "    export KUBECONFIG=~/.pharos/#{manager.sorted_master_hosts.first.api_address}"
+      puts "    To configure kubectl for connecting to the cluster, use:"
+      puts "      #{$PROGRAM_NAME} kubeconfig > $HOME/.pharos/config"
+      puts "      export KUBECONFIG=$KUBECONFIG:$HOME/.pharos/config"
 
       manager.disconnect
     end

@@ -4,6 +4,7 @@ module Pharos
   class ResetCommand < UpCommand
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
+      puts pastel.green("==> Reading instructions ...")
       config = load_config
 
       # set workdir to the same dir where config was loaded from
