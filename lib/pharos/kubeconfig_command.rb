@@ -36,7 +36,7 @@ module Pharos
     end
 
     def ssh
-      @ssh ||= Pharos::SSH::Manager.client_for(master_host)
+      @ssh ||= Pharos::SSH::Manager.new.client_for(master_host)
     end
 
     # @return [Pharos::Config]
