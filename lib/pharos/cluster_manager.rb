@@ -71,6 +71,7 @@ module Pharos
 
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints
         # we need to use sorted etcd hosts because phases expects that first one has
