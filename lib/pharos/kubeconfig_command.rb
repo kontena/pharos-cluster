@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-require 'pharos/up_command'
-require 'pharos/ssh/client'
-require 'pharos/ssh/manager'
-require 'pharos/yaml_file'
-require 'pharos/terraform/json_parser'
-require 'pharos/kube/config'
-
 module Pharos
   class KubeconfigCommand < UpCommand
     option ['-n', '--name'], 'NAME', 'overwrite cluster name', attribute_name: :new_name
