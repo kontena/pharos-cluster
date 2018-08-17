@@ -31,7 +31,6 @@ module Pharos
       rescue K8s::Error::NotFound
         nil
       end
-
     end
   end
 end
