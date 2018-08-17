@@ -8,16 +8,24 @@ module Pharos
       REMOTE_FILE = "/etc/kubernetes/admin.conf"
 
       def call
-        fetch_kubeconfig
+        cluster_context['kubeconfig'] = fetch_kubeconfig
+
         client_prefetch
       end
 
+      # @return [String]
+      def read_kubeconfig
+        @ssh.file(REMOTE_FILE).read
+      end
+
+      # @return [Hash]
       def fetch_kubeconfig
         logger.info { "Fetching kubectl config ..." }
-        config = Pharos::Kube::Config.new(@ssh.file(REMOTE_FILE).read)
+        config = Pharos::Kube::Config.new(read_kubeconfig)
         config.update_server_address(@host.api_address)
-        logger.debug "New config: #{config}"
-        cluster_context['kubeconfig'] = config.to_h
+
+        logger.debug { "New config: #{config}" }
+        config.to_h
       end
 
       # prefetch client resources to warm up caches
