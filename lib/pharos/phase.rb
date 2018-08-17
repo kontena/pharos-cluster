@@ -80,7 +80,7 @@ module Pharos
     def kube_client
       fail "Phase #{self.class.name} does not have kube @master" unless @master
 
-      @kube_client ||= Pharos::Kube.client(@master.api_address)
+      @kube_client ||= Pharos::Kube.client(@master.api_address, cluster_context['kubeconfig'])
     end
 
     # @param host [String]

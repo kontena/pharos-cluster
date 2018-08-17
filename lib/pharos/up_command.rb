@@ -54,7 +54,8 @@ module Pharos
 
     # @return [Pharos::Config]
     def load_config
-      puts pastel.green("==> Reading instructions ...")
+      puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
+
       config_hash = config_yaml.load(ENV.to_h)
 
       load_terraform(tf_json, config_hash) if tf_json
@@ -70,7 +71,7 @@ module Pharos
     # @param config [Hash]
     # @return [Hash]
     def load_terraform(file, config)
-      puts pastel.green("==> Importing configuration from Terraform ...")
+      puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
 
       tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
       config['hosts'] ||= []
@@ -110,8 +111,9 @@ module Pharos
 
       craft_time = Time.now - start_time
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
-      puts "    You can connect to the cluster with kubectl using:"
-      puts "    export KUBECONFIG=~/.pharos/#{manager.sorted_master_hosts.first.api_address}"
+      puts "    To configure kubectl for connecting to the cluster, use:"
+      puts "      #{$PROGRAM_NAME} kubeconfig > $HOME/.pharos/config"
+      puts "      export KUBECONFIG=$KUBECONFIG:$HOME/.pharos/config"
 
       manager.disconnect
     end

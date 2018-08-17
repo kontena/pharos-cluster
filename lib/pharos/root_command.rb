@@ -3,12 +3,14 @@
 require_relative 'up_command'
 require_relative 'reset_command'
 require_relative 'version_command'
+require_relative 'kubeconfig_command'
 
 module Pharos
   class RootCommand < Pharos::Command
     banner "pharos-cluster - Kontena Pharos cluster manager"
 
     subcommand ["build", "up"], "initialize/upgrade cluster", UpCommand
+    subcommand "kubeconfig", "fetch admin kubeconfig file", KubeconfigCommand
     subcommand ["reset"], "reset cluster", ResetCommand
     subcommand ["version"], "show version information", VersionCommand
 
