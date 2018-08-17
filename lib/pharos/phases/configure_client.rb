@@ -15,15 +15,15 @@ module Pharos
       end
 
       def call
-        return if @optional && !have_kubeconfig?
+        return if @optional && !kubeconfig?
 
-        cluster_context['kubeconfig'] = fetch_kubeconfig
+        cluster_context['kubeconfig'] = kubeconfig
 
         client_prefetch unless @optional
       end
 
       # @return [String]
-      def have_kubeconfig?
+      def kubeconfig?
         @ssh.file(REMOTE_FILE).exist?
       end
 
@@ -33,7 +33,7 @@ module Pharos
       end
 
       # @return [Hash]
-      def fetch_kubeconfig
+      def kubeconfig
         logger.info { "Fetching kubectl config ..." }
         config = Pharos::Kube::Config.new(read_kubeconfig)
         config.update_server_address(@host.api_address)
