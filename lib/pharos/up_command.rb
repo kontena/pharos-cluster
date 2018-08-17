@@ -36,7 +36,6 @@ module Pharos
 
       Pharos::Kube.init_logging!
 
-      puts pastel.green("==> Reading instructions ...")
       config = load_config
 
       # set workdir to the same dir where config was loaded from
@@ -55,6 +54,8 @@ module Pharos
 
     # @return [Pharos::Config]
     def load_config
+      puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
+
       config_hash = config_yaml.load(ENV.to_h)
 
       load_terraform(tf_json, config_hash) if tf_json
@@ -70,7 +71,7 @@ module Pharos
     # @param config [Hash]
     # @return [Hash]
     def load_terraform(file, config)
-      puts pastel.green("==> Importing configuration from Terraform ...")
+      puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
 
       tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
       config['hosts'] ||= []
