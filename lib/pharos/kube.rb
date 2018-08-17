@@ -40,7 +40,7 @@ module Pharos
     end
 
     # @param host [String]
-    # @param config [Hash] optionally pass in kubeconfig as hash
+    # @param config [Hash]
     # @return [K8s::Client]
     def self.client(host, config)
       @kube_client ||= {}
