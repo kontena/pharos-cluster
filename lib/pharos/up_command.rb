@@ -112,7 +112,7 @@ module Pharos
       craft_time = Time.now - start_time
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{$PROGRAM_NAME} kubeconfig > ./kubeconfig"
+      puts "      #{$PROGRAM_NAME} kubeconfig > kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
 
       manager.disconnect
