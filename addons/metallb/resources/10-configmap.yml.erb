@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    <% config.address_pools.each do |pool| %>
+    - name: <%= pool.dig(:name) %>
+      protocol: <%= pool.dig(:protocol) %>
+      addresses:
+      <% pool[:addresses].each do |address| %>
+      - <%= address %>
+      <% end %>
+    <% end %>
+    peers:
+    <% config.peers.each do |peer| %>
+    - peer-address: <%= peer[:peer_address] %>
+      peer-asn: <%= peer[:peer_asn] %>
+      my-asn: <%= peer[:my_asn] %>
+      <% if peer[:node_selectors]&.empty? %>
+      node_selectors:
+        <%= peer[:node_selectors].to_yaml %>
+      <% end %>
+    <% end %>
