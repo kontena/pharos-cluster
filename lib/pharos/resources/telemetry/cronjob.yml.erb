@@ -17,3 +17,9 @@ spec:
             image: <%= image_repository %>/pharos-telemetry-<%= arch.name %>:latest
             args: 
             - --run-once
+            env:
+            - name: CUSTOMER_TOKEN
+              valueFrom:
+              secretKeyRef:
+                name: telemetry-token
+                key: token
