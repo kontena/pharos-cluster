@@ -46,7 +46,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v<%= version %>
+          image: <%= image_repository %>/calico-node:v<%= version %>
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -82,10 +82,10 @@ spec:
                   key: ipv4_pool_cidr
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
-              value: "Always"
+              value: "<%= ipip_mode %>"
             # Enable IP-in-IP within Felix.
             - name: FELIX_IPINIPENABLED
-              value: "true"
+              value: "<%= ipip_enabled ? 'true' : 'false' %>"
             # Typha support: controlled by the ConfigMap.
             - name: FELIX_TYPHAK8SSERVICENAME
               value: "none"
@@ -94,9 +94,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            # Auto-detect the BGP IP address.
+            # Auto-detect the BGP IP address
             - name: IP
               value: "autodetect"
+            - name: IP_AUTODETECTION_METHOD
+              value: "can-reach=<%= master_ip %>"
             - name: FELIX_HEALTHENABLED
               value: "true"
           securityContext:
@@ -129,7 +131,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v<%= version %>
+          image: <%= image_repository %>/calico-cni:v<%= version %>
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.

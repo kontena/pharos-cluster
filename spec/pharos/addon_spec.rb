@@ -2,17 +2,16 @@ require "pharos/addon"
 
 describe Pharos::Addon do
   let(:test_addon) do
-    Class.new(described_class) do
-      name "test-addon"
+    Pharos.addon 'test-addon' do
       version "0.2.2"
       license "MIT"
 
-      struct {
+      config {
         attribute :foo, Pharos::Types::String
         attribute :bar, Pharos::Types::String.default('baz')
       }
 
-      schema {
+      config_schema {
         required(:foo).filled(:str?)
         optional(:bar).filled(:str?)
       }
@@ -20,14 +19,14 @@ describe Pharos::Addon do
   end
 
   let(:cpu_arch) { double(:cpu_arch) }
-  let(:master) { double(:host, address: '1.1.1.1') }
+  let(:kube_client) { instance_double(K8s::Client) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch) }
+  subject { test_addon.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: nil) }
 
-  describe ".name" do
+  describe ".addon_name" do
     it "returns configured name" do
-      expect(test_addon.name).to eq("test-addon")
+      expect(test_addon.addon_name).to eq("test-addon")
     end
   end
 
@@ -56,15 +55,53 @@ describe Pharos::Addon do
     end
   end
 
-  describe "#apply_stack" do
-    it "applies stack with correct parameters" do
-      expect(Pharos::Kube).to receive(:apply_stack).with(
-        master.address, subject.class.name, {
-          name: subject.class.name, version: subject.class.version,
-          config: anything, arch: anything
+  describe ".install" do
+    subject do
+      Pharos.addon 'test-addon-install' do
+        version "0.2.2"
+        license "MIT"
+
+        config {
+          attribute :justatest, Pharos::Types::String
         }
-      )
-      subject.apply_stack
+
+        install {
+          config.justatest
+          apply_resources
+        }
+      end.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: nil)
+    end
+
+    let(:kube_stack) { double(:kube_stack) }
+
+    before do
+      allow(subject).to receive(:kube_stack).and_return(kube_stack)
+    end
+
+    it 'runs install block on apply' do
+      expect(subject.config).to receive(:justatest)
+      expect(kube_stack).to receive(:apply).with(kube_client)
+      subject.apply
+    end
+  end
+
+  describe "#kube_stack" do
+    it "returns kube stack" do
+      stack = subject.kube_stack
+      expect(stack).to be_instance_of(Pharos::Kube::Stack)
+    end
+  end
+
+  describe "#apply_resources" do
+    let(:kube_stack) { double(:kube_stack) }
+
+    before do
+      allow(subject).to receive(:kube_stack).and_return(kube_stack)
+    end
+
+    it "applies addon resources" do
+      expect(kube_stack).to receive(:apply)
+      subject.apply_resources
     end
   end
 end

@@ -52,3 +52,6 @@ Style/BeginBlock:
 Naming/UncommunicativeMethodParamName:
   AllowedNames:
     - cn
+
+Metrics/BlockLength:
+  Enabled: false

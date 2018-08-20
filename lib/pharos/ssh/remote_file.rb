@@ -20,7 +20,7 @@ module Pharos
 
       # Removes the remote file
       def unlink
-        @client.exec!("rm #{escaped_path}")
+        @client.exec!("sudo rm #{escaped_path}")
       end
       alias rm unlink
 
@@ -80,6 +80,15 @@ module Pharos
       # @param target [String]
       def link(target)
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
+      end
+
+      # @return [String, nil]
+      def readlink
+        target = @client.exec!("readlink #{escaped_path} || echo").strip
+
+        return nil if target.empty?
+
+        target
       end
 
       # Yields each line in the remote file

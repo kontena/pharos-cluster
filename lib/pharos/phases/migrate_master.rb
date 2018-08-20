@@ -6,19 +6,20 @@ module Pharos
       title "Migrate master"
 
       def call
-        migrate_0_5_to_0_6 if migrate_0_5_to_0_6?
+        if migrate_1_1_to_1_2?
+          migrate_1_1_to_1_2
+        else
+          logger.info { 'Nothing to migrate.' }
+        end
       end
 
-      def migrate_0_5_to_0_6?
-        @ssh.file('/etc/kubernetes/manifests/etcd.yaml').exist?
+      def migrate_1_1_to_1_2?
+        @ssh.file('/etc/systemd/system/kubelet.service.d/5-pharos.conf').exist?
       end
 
-      def migrate_0_5_to_0_6
-        logger.info { 'Migrating from 0.5 to 0.6 ...' }
-        exec_script(
-          'migrations/migrate_master_05_to_06.sh',
-          PEER_IP: @host.peer_address
-        )
+      def migrate_1_1_to_1_2
+        logger.info { 'Migrating from 1.1 to 1.2 ...' }
+        @ssh.file('/etc/systemd/system/kubelet.service.d/5-pharos.conf').unlink
       end
     end
   end

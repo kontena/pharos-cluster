@@ -7,43 +7,58 @@ module Pharos
       CA_PATH = '/etc/pharos/pki'
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| !c.etcd&.endpoints }
       )
 
       def call
         sync_ca
 
-        logger.info(@host.address) { 'Configuring etcd certs ...' }
-        peer_index = @config.etcd_hosts.find_index { |h| h == @host }
+        logger.info { 'Configuring etcd certs ...' }
         exec_script(
           'configure-etcd-certs.sh',
-          PEER_IP: @host.private_address || @host.address,
-          PEER_NAME: "etcd#{peer_index + 1}",
+          PEER_IP: @host.peer_address,
+          PEER_NAME: peer_name(@host),
           ARCH: @host.cpu_arch.name
         )
 
-        logger.info(@host.address) { 'Configuring etcd ...' }
+        logger.info { 'Configuring etcd ...' }
         exec_script(
           'configure-etcd.sh',
-          PEER_IP: @host.private_address || @host.address,
+          PEER_IP: @host.peer_address,
           INITIAL_CLUSTER: initial_cluster.join(','),
+          IMAGE_REPO: @config.image_repository,
           ETCD_VERSION: Pharos::ETCD_VERSION,
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
-          PEER_NAME: "etcd#{peer_index + 1}",
+          PEER_NAME: peer_name(@host),
+          INITIAL_CLUSTER_STATE: initial_cluster_state,
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" ")
+        )
+
+        host_configurer.ensure_kubelet(
+          ARCH: @host.cpu_arch.name,
+          KUBE_VERSION: Pharos::KUBE_VERSION,
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
+          IMAGE_REPO: @config.image_repository
+        )
+        exec_script(
+          'wait-etcd.sh',
+          PEER_IP: @host.peer_address
         )
       end
 
       # @return [Array<String>]
       def initial_cluster
-        i = 0
         @config.etcd_hosts.map { |h|
-          i += 1
-          "etcd#{i}=https://#{h.peer_address}:2380"
+          "#{peer_name(h)}=https://#{h.peer_address}:2380"
         }
+      end
+
+      # @param peer [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_name(peer)
+        peer.short_hostname
       end
 
       def sync_ca
@@ -56,6 +71,11 @@ module Pharos
           path = File.join(CA_PATH, file)
           @ssh.file(path).write(crt)
         end
+      end
+
+      # @return [String,NilClass]
+      def initial_cluster_state
+        cluster_context['etcd-initial-cluster-state']
       end
     end
   end

@@ -9,13 +9,15 @@ module Pharos
 
       # @param host [Pharos::Configuration::Host]
       def client_for(host)
-        @clients[host] ||= Pharos::SSH::Client.new(host.address, host.user, keys: [host.ssh_key_path]).tap(&:connect)
+        return @clients[host] if @clients[host]
+        opts = {}
+        opts[:keys] = [host.ssh_key_path] if host.ssh_key_path
+        opts[:send_env] = [] # override default to not send LC_* envs
+        @clients[host] = Pharos::SSH::Client.new(host.address, host.user, opts).tap(&:connect)
       end
 
       def disconnect_all
-        @clients.each do |_host, client|
-          client.disconnect
-        end
+        @clients.each_value(&:disconnect)
       end
     end
   end

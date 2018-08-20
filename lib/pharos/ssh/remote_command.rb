@@ -75,6 +75,7 @@ module Pharos
         result = Result.new
 
         response = @client.session.open_channel do |channel|
+          channel.env('LC_ALL', 'C.UTF-8')
           channel.exec basherize(@cmd) do |_, success|
             raise Error, "Failed to exec #{cmd}" unless success
 
