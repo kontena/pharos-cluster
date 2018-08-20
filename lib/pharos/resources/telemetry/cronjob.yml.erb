@@ -1,0 +1,19 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: pharos-telemetry
+  namespace: kube-system
+spec:
+  schedule: "@hourly"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: pharos-telemetry
+          restartPolicy: Never
+          containers:
+          - name: agent
+            image: <%= image_repository %>/pharos-telemetry-<%= arch.name %>:latest
+            args: 
+            - --run-once

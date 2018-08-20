@@ -10,6 +10,7 @@ require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
+require_relative 'configuration/telemetry'
 
 module Pharos
   class Config < Pharos::Configuration::Struct
@@ -39,6 +40,7 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :telemetry, Pharos::Configuration::Telemetry
     attribute :image_repository, Pharos::Types::String.default('quay.io/kontena')
     attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})

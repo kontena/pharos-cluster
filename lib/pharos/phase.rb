@@ -83,18 +83,22 @@ module Pharos
       @kube_client ||= Pharos::Kube.client(@master.api_address, cluster_context['kubeconfig'])
     end
 
-    # @param host [String]
     # @param name [String]
     # @param vars [Hash]
     def kube_stack(name, **vars)
       Pharos::Kube.stack(name, File.join(RESOURCE_PATH, name), name: name, **vars)
     end
 
-    # @param host [String]
     # @param name [String]
     # @param vars [Hash]
     def apply_stack(name, **vars)
       kube_stack(name, **vars).apply(kube_client)
+    end
+
+    # @param name [String]
+    # @return [Array<K8s::Resource>]
+    def delete_stack(name)
+      Pharos::Kube::Stack.new(name).delete(kube_client)
     end
   end
 end

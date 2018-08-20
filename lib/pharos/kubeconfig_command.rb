@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-require 'pharos/up_command'
-require 'pharos/ssh/client'
-require 'pharos/ssh/manager'
-require 'pharos/yaml_file'
-require 'pharos/terraform/json_parser'
-require 'pharos/kube/config'
-
 module Pharos
   class KubeconfigCommand < UpCommand
     option ['-n', '--name'], 'NAME', 'overwrite cluster name', attribute_name: :new_name
@@ -36,7 +29,7 @@ module Pharos
     end
 
     def ssh
-      @ssh ||= Pharos::SSH::Manager.client_for(master_host)
+      @ssh ||= Pharos::SSH::Manager.new.client_for(master_host)
     end
 
     # @return [Pharos::Config]

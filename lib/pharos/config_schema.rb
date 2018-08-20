@@ -12,6 +12,7 @@ module Pharos
       'authentication' => {},
       'kube_proxy' => {},
       'kubelet' => {},
+      'telemetry' => {},
       'addon_paths' => []
     }.freeze
 
@@ -112,6 +113,9 @@ module Pharos
         optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
+        end
+        optional(:telemetry).schema do
+          optional(:enabled).filled(:bool?)
         end
         optional(:image_repository).filled(:str?)
 

@@ -2,7 +2,7 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    option ['-c', '--config'], 'PATH', 'Path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
+    option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
       begin
         Pharos::YamlFile.new(File.realpath(config_file))
       rescue Errno::ENOENT
@@ -10,7 +10,7 @@ module Pharos
       end
     end
 
-    option '--tf-json', 'PATH', 'Path to terraform output json' do |config_path|
+    option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
       begin
         File.realpath(config_path)
       rescue Errno::ENOENT
@@ -18,7 +18,7 @@ module Pharos
       end
     end
 
-    option ['-y', '--yes'], :flag, 'Answer automatically yes to prompts'
+    option ['-y', '--yes'], :flag, 'answer automatically yes to prompts'
 
     # @return [Pharos::YamlFile]
     def default_config_yaml
@@ -36,7 +36,6 @@ module Pharos
 
       Pharos::Kube.init_logging!
 
-      puts pastel.green("==> Reading instructions ...")
       config = load_config
 
       # set workdir to the same dir where config was loaded from
@@ -55,6 +54,8 @@ module Pharos
 
     # @return [Pharos::Config]
     def load_config
+      puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
+
       config_hash = config_yaml.load(ENV.to_h)
 
       load_terraform(tf_json, config_hash) if tf_json
@@ -70,7 +71,7 @@ module Pharos
     # @param config [Hash]
     # @return [Hash]
     def load_terraform(file, config)
-      puts pastel.green("==> Importing configuration from Terraform ...")
+      puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
 
       tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
       config['hosts'] ||= []
@@ -109,10 +110,12 @@ module Pharos
       manager.save_config
 
       craft_time = Time.now - start_time
+      defined_opts = ARGV[1..-1].join(" ")
+      defined_opts += " " unless defined_opts.empty?
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig > $HOME/.pharos/config"
-      puts "      export KUBECONFIG=$KUBECONFIG:$HOME/.pharos/config"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
+      puts "      export KUBECONFIG=./kubeconfig"
 
       manager.disconnect
     end
