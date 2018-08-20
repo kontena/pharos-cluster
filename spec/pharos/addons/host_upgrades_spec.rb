@@ -6,11 +6,11 @@ describe Pharos::Addons::HostUpgrades do
     hosts: [ {role: 'master', address: '192.0.2.1'} ],
   ) }
   let(:config) { { } }
+  let(:kube_client) { instance_double(K8s::Client) }
   let(:cpu_arch) { double(:cpu_arch ) }
-  let(:master) { double(:host, address: '192.0.2.1') }
 
   subject do
-    described_class.new({enabled: true}.merge(config), enabled: true, master: master, cpu_arch: cpu_arch, cluster_config: cluster_config)
+    described_class.new({enabled: true}.merge(config), enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config)
   end
 
   describe "#validate" do

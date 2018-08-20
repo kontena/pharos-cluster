@@ -19,10 +19,10 @@ describe Pharos::Addon do
   end
 
   let(:cpu_arch) { double(:cpu_arch) }
-  let(:master) { double(:host, api_address: '1.1.1.1') }
+  let(:kube_client) { instance_double(K8s::Client) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil) }
+  subject { test_addon.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: nil) }
 
   describe ".addon_name" do
     it "returns configured name" do
@@ -69,15 +69,13 @@ describe Pharos::Addon do
           config.justatest
           apply_resources
         }
-      end.new(config, master: master, cpu_arch: cpu_arch, cluster_config: nil)
+      end.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: nil)
     end
 
     let(:kube_stack) { double(:kube_stack) }
-    let(:kube_client) { double(:kube_client) }
 
     before do
       allow(subject).to receive(:kube_stack).and_return(kube_stack)
-      allow(subject).to receive(:kube_client).and_return(kube_client)
     end
 
     it 'runs install block on apply' do
@@ -96,24 +94,14 @@ describe Pharos::Addon do
 
   describe "#apply_resources" do
     let(:kube_stack) { double(:kube_stack) }
-    let(:kube_client) { double(:kube_client) }
 
     before do
       allow(subject).to receive(:kube_stack).and_return(kube_stack)
-      allow(subject).to receive(:kube_client).and_return(kube_client)
     end
 
     it "applies addon resources" do
       expect(kube_stack).to receive(:apply)
       subject.apply_resources
-    end
-  end
-
-  describe '#kube_client' do
-    it 'returns kube client' do
-      client = double(:client)
-      allow(Pharos::Kube).to receive(:client).with(master.api_address).and_return(client)
-      expect(subject.kube_client).to eq(client)
     end
   end
 end

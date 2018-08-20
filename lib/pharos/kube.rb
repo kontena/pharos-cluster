@@ -40,13 +40,11 @@ module Pharos
     end
 
     # @param host [String]
-    # @param config [Hash] optionally pass in kubeconfig as hash
+    # @param config [Hash]
     # @return [K8s::Client]
-    def self.client(host, config = nil)
+    def self.client(host, config)
       @kube_client ||= {}
-      @kube_client[host] ||= K8s::Client.config(
-        config.is_a?(Hash) ? K8s::Config.new(config) : host_config(host)
-      )
+      @kube_client[host] ||= K8s::Client.config(K8s::Config.new(config))
     end
 
     # @param name [String]
@@ -54,24 +52,6 @@ module Pharos
     # @param vars [Hash]
     def self.stack(name, path, **vars)
       Pharos::Kube::Stack.load(name, path, **vars)
-    end
-
-    # @param host [String]
-    # @return [K8s::Config]
-    def self.host_config(host)
-      K8s::Config.load_file(host_config_path(host))
-    end
-
-    # @param host [String]
-    # @return [String]
-    def self.host_config_path(host)
-      File.join(Dir.home, ".pharos/#{host}")
-    end
-
-    # @param host [String]
-    # @return [Boolean]
-    def self.config_exists?(host)
-      File.exist?(host_config_path(host))
     end
   end
 end
