@@ -14,7 +14,7 @@ module Pharos
             'telemetry',
             image_repository: @config.image_repository,
             arch: @host.cpu_arch,
-            customer_token: customer_token
+            customer_token: Base64.strict_encode64(customer_token)
           )
         else
           logger.info { "Disabling telemetry service ..." }
