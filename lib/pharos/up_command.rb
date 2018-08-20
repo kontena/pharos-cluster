@@ -114,7 +114,7 @@ module Pharos
       defined_opts += " " unless defined_opts.empty?
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{$PROGRAM_NAME} kubeconfig #{defined_opts}> kubeconfig"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
 
       manager.disconnect
