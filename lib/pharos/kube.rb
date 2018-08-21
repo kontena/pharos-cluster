@@ -36,11 +36,10 @@ module Pharos
     end
 
     # @param host [String]
-    # @param config [Hash]
+    # @param config [K8s::Config]
     # @return [K8s::Client]
     def self.client(host, config)
-      @kube_client ||= {}
-      @kube_client[host] ||= K8s::Client.config(K8s::Config.new(config))
+      K8s::Client.config(config, server: "https://#{host}:6443")
     end
 
     # @param name [String]

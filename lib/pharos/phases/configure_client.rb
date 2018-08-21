@@ -27,19 +27,18 @@ module Pharos
         @ssh.file(REMOTE_FILE).exist?
       end
 
-      # @return [String]
+      # @return [K8s::Config]
       def read_kubeconfig
         @ssh.file(REMOTE_FILE).read
       end
 
-      # @return [Hash]
+      # @return [K8s::Config]
       def kubeconfig
         logger.info { "Fetching kubectl config ..." }
-        config = Pharos::Kube::Config.new(read_kubeconfig)
-        config.update_server_address(@host.api_address)
+        config = YAML.load(read_kubeconfig)
 
         logger.debug { "New config: #{config}" }
-        config.to_h
+        K8s::Config.new(config)
       end
 
       # prefetch client resources to warm up caches
