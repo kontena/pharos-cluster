@@ -49,6 +49,8 @@ addons:
     configmap:
       # see all supported options: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/configmap.md
       load-balance: least_conn
+      # optional pull secret name for private registry: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+    pull_secret_name: foo_bar
   cert-manager:
     enabled: true
     issuer:

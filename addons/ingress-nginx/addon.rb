@@ -15,6 +15,7 @@ Pharos.addon 'ingress-nginx' do
     optional(:node_selector).filled(:hash?)
     optional(:default_backend).schema {
       optional(:image).filled(:str?)
+      optional(:pull_secret_name).filled(:str?)
     }
   }
 
@@ -48,4 +49,5 @@ Pharos.addon 'ingress-nginx' do
     return 2 if r < 2
     r
   end
+
 end

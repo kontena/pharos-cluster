@@ -50,3 +50,7 @@ spec:
           requests:
             cpu: 10m
             memory: 20Mi
+      <% if config.default_backend[:pull_secret_name] %>
+      imagePullSecrets:
+        - name: <%= config.default_backend[:pull_secret_name] %>
+      <% end %>
