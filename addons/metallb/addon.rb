@@ -24,12 +24,20 @@ Pharos.addon 'metal-lb' do
       each do
         schema do
           required(:peer_address).filled(:str?)
-          required(:peer_asn).filled(:str?)
-          required(:my_asn).filled(:str?)
+          required(:peer_asn).filled(:int?)
+          required(:my_asn).filled(:int?)
           optional(:node_selectors).each(:hash?)
         end
       end
     end
+  }
+
+  install {
+    # Load the base stack
+    stack = kube_stack({})
+    puts stack.inspect
+    stack.resources << K8s::Resource.new(build_config)
+    stack.apply(kube_client)
   }
 
   def validate
@@ -37,5 +45,36 @@ Pharos.addon 'metal-lb' do
     # Validate BGP peers exist if BGP used
     return unless config.address_pools.count { |pool| pool.dig(:protocol) == 'bgp' }.positive?
     raise Pharos::InvalidAddonError, "Peers have to be configured for BGP protocol" if config.peers.nil? || config.peers.empty?
+  end
+
+  def build_config
+    {
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        namespace: 'metallb-system',
+        name: 'config'
+      },
+      data: {
+        config: {
+          # This part is using string keys to get the output yaml correct as it's used as plain string
+          'address-pools' => config.address_pools.map { |pool|
+            {
+              'name' => pool[:name],
+              'protocol' => pool[:protocol],
+              'addresses' => pool[:addresses]
+            }
+          },
+          'peers' => config.peers.map { |peer|
+            {
+              'peer-address' => peer[:peer_address],
+              'peer-asn' => peer[:peer_asn],
+              'my-asn' => peer[:my_asn],
+              'node-selectors' => peer[:node_selectors]
+            }
+          }
+        }.to_yaml.gsub(/^---\n/, '')
+      }
+    }
   end
 end
