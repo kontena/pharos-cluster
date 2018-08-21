@@ -19,7 +19,7 @@ data:
     - peer-address: <%= peer[:peer_address] %>
       peer-asn: <%= peer[:peer_asn] %>
       my-asn: <%= peer[:my_asn] %>
-      <% if peer[:node_selectors]&.empty? %>
+      <% if !peer[:node_selectors]&.empty? %>
       node_selectors:
         <%= peer[:node_selectors].to_yaml %>
       <% end %>
