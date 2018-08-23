@@ -10,7 +10,16 @@ module Pharos
   # @param name [String]
   # @return [Pharos::Addon]
   def self.addon(name, &block)
-    klass = Class.new(Pharos::Addon, &block).tap do |addon|
+    klass = Class.new(Pharos::Addon)
+
+    pre_consts = Object.constants
+    klass.class_eval(&block)
+    post_consts = Object.constants
+    new_consts = (post_consts - pre_consts)
+
+    fail "Addon #{name} cannot define any constants: #{new_consts.join(' ')}" unless new_consts.empty?
+
+    klass.tap do |addon|
       addon.addon_location = File.dirname(block.source_location.first)
       addon.addon_name = name
     end
