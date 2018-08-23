@@ -4,20 +4,14 @@ Pharos.addon 'openebs' do
   version '0.5.3'
   license 'Apache License 2.0'
 
-  DEFAULT_CLASS_OPTS = {
-    default_class: false,
-    capacity: '5G'
-  }.freeze
-
-  DEFAULT_STORAGE_PATH = '/var/openebs'
-
-  DEFAULT_POOL_OPTS = {
-    path: DEFAULT_STORAGE_PATH
-  }.freeze
-
   config {
-    attribute :default_storage_class, Pharos::Types::Hash.default(DEFAULT_CLASS_OPTS)
-    attribute :default_storage_pool, Pharos::Types::Hash.default(DEFAULT_POOL_OPTS)
+    attribute :default_storage_class, Pharos::Types::Hash.default(
+      default_class: false,
+      capacity: '5G'
+    )
+    attribute :default_storage_pool, Pharos::Types::Hash.default(
+      path: '/var/openebs',
+    )
   }
 
   config_schema {
