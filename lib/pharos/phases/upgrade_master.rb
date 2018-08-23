@@ -36,13 +36,17 @@ module Pharos
         logger.info { "Upgrading control plane ..." }
         logger.debug { cfg.to_yaml }
 
-        dns_patch_thread = create_dns_patch_thread
+        dns_patch_thread = create_dns_patch_thread if dns_patch_needed?
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           @ssh.exec!("sudo /usr/local/bin/pharos-kubeadm-#{Pharos::KUBEADM_VERSION} upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
         end
-        dns_patch_thread.join
+        dns_patch_thread.join if dns_patch_needed?
 
         logger.info { "Control plane upgrade succeeded!" }
+      end
+
+      def dns_patch_needed?
+        @host.cpu_arch.name != 'amd64'
       end
 
       # Hack to make coredns work without multi-arch enabled image repository

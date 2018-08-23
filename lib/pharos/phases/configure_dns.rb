@@ -54,46 +54,49 @@ module Pharos
       def patch_deployment(name, replicas:, max_surge:, max_unavailable:)
         logger.info { "Patching #{name} deployment with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
-        kube_resource_client.merge_patch(
-          name,
-          spec: {
-            replicas: replicas,
-            strategy: {
-              type: "RollingUpdate",
-              rollingUpdate: {
-                maxSurge: max_surge, # must be zero for a two-node cluster
-                maxUnavailable: max_unavailable, # must be at least one, even for a single-node cluster
-              }
-            },
-            template: {
-              spec: {
-                affinity: {
-                  podAntiAffinity: {
-                    requiredDuringSchedulingIgnoredDuringExecution: [
-                      {
-                        labelSelector: {
-                          matchExpressions: [
-                            {
-                              key: "k8s-app",
-                              operator: "In",
-                              values: ['kube-dns']
-                            }
-                          ]
-                        },
-                        topologyKey: "kubernetes.io/hostname"
-                      }
-                    ]
-                  }
-                },
-                containers: [
-                  {
-                    name: 'coredns',
-                    image: "#{@config.image_repository}/coredns-#{@host.cpu_arch.name}:#{Pharos::COREDNS_VERSION}"
-                  }
-                ]
+        spec = {
+          replicas: replicas,
+          strategy: {
+            type: "RollingUpdate",
+            rollingUpdate: {
+              maxSurge: max_surge, # must be zero for a two-node cluster
+              maxUnavailable: max_unavailable, # must be at least one, even for a single-node cluster
+            }
+          },
+          template: {
+            spec: {
+              affinity: {
+                podAntiAffinity: {
+                  requiredDuringSchedulingIgnoredDuringExecution: [
+                    {
+                      labelSelector: {
+                        matchExpressions: [
+                          {
+                            key: "k8s-app",
+                            operator: "In",
+                            values: ['kube-dns']
+                          }
+                        ]
+                      },
+                      topologyKey: "kubernetes.io/hostname"
+                    }
+                  ]
+                }
               }
             }
           }
+        }
+        if @host.cpu_arch.name != 'amd64'
+          spec[:template][:spec][:containers] = [
+            {
+              name: 'coredns',
+              image: "#{@config.image_repository}/coredns-#{@host.cpu_arch.name}:#{Pharos::COREDNS_VERSION}"
+            }
+          ]
+        end
+        kube_resource_client.merge_patch(
+          name,
+          spec: spec
         )
       end
     end
