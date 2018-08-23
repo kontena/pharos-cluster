@@ -14,7 +14,7 @@ module Pharos
     # @return [Pharos::Addon]
     def self.inherited(klass)
       super
-      klass.addon_location(File.dirname(caller.first[/(.+?)\:\d/, 1]))
+      klass.addon_location(File.dirname(caller(1..1).first[/(.+?)\:\d/, 1]))
       klass.addon_name(klass.name[/.*::(.*)/, 1].gsub(/([a-z\d])([A-Z])/, "\1-\2").downcase) if klass.name
 
       Pharos::AddonManager.addons << klass
@@ -55,7 +55,7 @@ module Pharos
         if dir
           @addon_location = dir
         else
-          @addon_location = __dir__
+          @addon_location
         end
       end
 
