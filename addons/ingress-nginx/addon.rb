@@ -27,16 +27,13 @@ Pharos.addon 'ingress-nginx' do
     )
   }
 
-  DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'
-  DEFAULT_BACKEND_IMAGE = 'docker.io/kontena/pharos-default-backend:0.0.2'
-
   def image_name
     return config.default_backend[:image] if config.default_backend&.dig(:image)
 
-    if cpu_arch.name == 'arm64'
-      DEFAULT_BACKEND_ARM64_IMAGE
+    if cpu_arch.name == 'amd64'
+      'docker.io/kontena/pharos-default-backend:0.0.2'
     else
-      DEFAULT_BACKEND_IMAGE
+      "docker.io/kontena/pharos-default-backend-#{cpu_arch.name}:0.0.2"
     end
   end
 

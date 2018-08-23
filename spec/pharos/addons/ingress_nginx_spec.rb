@@ -44,7 +44,7 @@ describe Pharos::Addons::IngressNginx do
       let(:cpu_arch) { double(:cpu_arch, name: 'arm64' ) }
 
       it "returns default for arm64" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_ARM64_IMAGE)
+        expect(subject.image_name).to match %r(/pharos-default-backend-arm64:)
       end
     end
 
@@ -52,7 +52,7 @@ describe Pharos::Addons::IngressNginx do
       let(:cpu_arch) { double(:cpu_arch, name: 'amd64' ) }
 
       it "returns default" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_IMAGE)
+        expect(subject.image_name).to match %r(/pharos-default-backend:)
       end
     end
   end
