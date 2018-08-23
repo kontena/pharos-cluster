@@ -10,7 +10,7 @@ Pharos.addon 'openebs' do
       capacity: '5G'
     )
     attribute :default_storage_pool, Pharos::Types::Hash.default(
-      path: '/var/openebs',
+      path: '/var/openebs'
     )
   }
 
