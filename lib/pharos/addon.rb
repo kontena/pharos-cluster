@@ -7,22 +7,18 @@ require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
-  # @param name [String]
-  # @return [Pharos::Addon]
-  def self.addon(name, &block)
-    klass = Class.new(Pharos::Addon, &block).tap do |addon|
-      addon.addon_location = File.dirname(block.source_location.first)
-      addon.addon_name = name
-    end
-
-    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
-    Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
-    Pharos::AddonManager.addons << klass
-    klass
-  end
-
   class Addon
     include Pharos::Logging
+
+    # @param name [String]
+    # @return [Pharos::Addon]
+    def self.inherited(klass)
+      super
+      klass.addon_location(File.dirname(caller.first[/(.+?)\:\d/, 1]))
+      klass.addon_name(klass.name[/.*::(.*)/, 1].gsub(/([a-z\d])([A-Z])/, "\1-\2").downcase) if klass.name
+
+      Pharos::AddonManager.addons << klass
+    end
 
     # return class for use as superclass in Dry::Validation.Params
     Schema = Dry::Validation.Schema(build: false) do
@@ -54,12 +50,21 @@ module Pharos
     end
 
     class << self
-      attr_accessor :addon_name
-      attr_writer :addon_location
-
       # @return [String]
-      def addon_location
-        @addon_location || __dir__
+      def addon_location(dir = nil)
+        if dir
+          @addon_location = dir
+        else
+          @addon_location = __dir__
+        end
+      end
+
+      def addon_name(name = nil)
+        if name
+          @addon_name = name
+        else
+          @addon_name
+        end
       end
 
       def version(version = nil)

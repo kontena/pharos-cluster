@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-Pharos.addon 'kured' do
+class Pharos::Addons::Kured < Pharos::Addon
+  addon_name 'kured'
   version 'master-b27aaa1'
   license 'Apache License 2.0'
 

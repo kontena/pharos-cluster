@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-Pharos.addon 'openebs' do
+class Pharos::Addons::OpenEBS < Pharos::Addon
+  addon_name 'openebs'
   version '0.5.3'
   license 'Apache License 2.0'
 

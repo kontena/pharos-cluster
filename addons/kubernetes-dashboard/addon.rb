@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-Pharos.addon 'kubernetes-dashboard' do
+class Pharos::Addons::KubernetesDashboard < Pharos::Addon
+  addon_name 'kubernetes-dashboard'
   version '1.8.3'
   license 'Apache License 2.0'
 
