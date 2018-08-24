@@ -35,7 +35,7 @@ module Pharos
       # @return [K8s::Config]
       def kubeconfig
         logger.info { "Fetching kubectl config ..." }
-        config = YAML.load(read_kubeconfig)
+        config = YAML.safe_load(read_kubeconfig)
 
         logger.debug { "New config: #{config}" }
         K8s::Config.new(config)
