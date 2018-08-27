@@ -4,8 +4,8 @@ module Pharos
   class Command < Clamp::Command
     option '--[no-]color', :flag, "colorize output", default: $stdout.tty?
 
-    option ['-v', '--version'], :flag, "print pharos-cluster version" do
-      puts "pharos-cluster #{Pharos::VERSION}"
+    option ['-v', '--version'], :flag, "print #{File.basename($PROGRAM_NAME)} version" do
+      puts "#{File.basename($PROGRAM_NAME)} #{Pharos::VERSION}"
       exit 0
     end
 
