@@ -10,8 +10,10 @@ chmod +x /usr/local/bin/rubyc
 gem install bundler
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-linux-amd64-${version}"
+../../minify.sh && cd build/out
 rubyc -o $package pharos-cluster
 ./$package version
+cd ../..
 
 # ship to github
 curl -sL https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2 | tar -xjO > /usr/local/bin/github-release
@@ -21,4 +23,4 @@ chmod +x /usr/local/bin/github-release
     --repo pharos-cluster \
     --tag $DRONE_TAG \
     --name $package \
-    --file ./$package
+    --file build/out/$package
