@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ue
+set -uxe
 
 # build binary
 apt-get update -y
@@ -10,7 +10,7 @@ chmod +x /usr/local/bin/rubyc
 gem install bundler
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-linux-amd64-${version}"
-../../minify.sh && cd build/out
+build/minify.sh && cd build/out
 rubyc -o $package pharos-cluster
 ./$package version
 cd ../..
