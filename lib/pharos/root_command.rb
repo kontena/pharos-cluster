@@ -7,7 +7,7 @@ require_relative 'kubeconfig_command'
 
 module Pharos
   class RootCommand < Pharos::Command
-    banner "pharos-cluster - Kontena Pharos cluster manager"
+    banner "#{File.basename($PROGRAM_NAME)} - Kontena Pharos cluster manager"
 
     subcommand ["build", "up"], "initialize/upgrade cluster", UpCommand
     subcommand "kubeconfig", "fetch admin kubeconfig file", KubeconfigCommand
