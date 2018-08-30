@@ -39,10 +39,11 @@ module Pharos
         host_configurer.upgrade_kubeadm(Pharos::KUBEADM_VERSION)
 
         @ssh.exec!("sudo /usr/local/bin/pharos-kubeadm-#{Pharos::KUBEADM_VERSION} upgrade node config --kubelet-version=v#{Pharos::KUBE_VERSION}")
+
         kubeadm_flags = @ssh.file("/var/lib/kubelet/kubeadm-flags.env")
-        unless kubeadm_flags.exist?
-          kubeadm_flags.write('KUBELET_KUBEADM_ARGS=--cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni')
-        end
+        return if kubeadm_flags.exist?
+
+        kubeadm_flags.write('KUBELET_KUBEADM_ARGS=--cni-bin-dir=/opt/cni/bin --cni-conf-dir=/etc/cni/net.d --network-plugin=cni')
       end
     end
   end
