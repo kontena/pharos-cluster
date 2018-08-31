@@ -5,7 +5,7 @@ module Pharos
     usage "[OPTIONS] -- [COMMANDS] ..."
     parameter "[COMMAND] ...", "Run command on host"
 
-    banner "Opens an SSH session to a host in the Kontena Pharos cluster."
+    banner "Opens SSH sessions to hosts in the Kontena Pharos cluster."
 
     option ['-r', '--role'], 'ROLE', 'select a server by role'
     option ['-l', '--label'], 'LABEL=VALUE', 'select a server by label, can be specified multiple times', multivalued: true do |pair|
