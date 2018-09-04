@@ -66,9 +66,12 @@ module Pharos
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
         script = File.read(path || name)
-        cmd = %w(sudo)
-        env.each { |key, value| cmd << "#{key}=#{value.shellescape}" }
-        cmd.concat %w(sh -x)
+        cmd = %w(sudo env -i)
+        unless env.empty?
+          cmd << '-'
+          env.each { |key, value| cmd << "#{key}=#{value}" }
+        end
+        cmd.concat %w(bash --norc --noprofile -x -s --)
         exec!(cmd, stdin: script, source: name, **options)
       end
 
