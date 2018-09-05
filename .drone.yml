@@ -1,9 +1,15 @@
 pipeline:
-  test:
+  test-ruby:
     image: ruby:2.4
     commands:
       - bundle install --path bundler
-      - bundle exec rspec spec/ && bundle exec rubocop --fail-level A -S --format c --parallel
+      - bundle exec rubocop --fail-level A -S --format c --parallel
+      - bundle exec rspec spec/
+  test-shellcheck:
+    image: koalaman/shellcheck-alpine:latest
+    commands:
+      - apk update && apk add bash
+      - bash -c 'shopt -s globstar; shellcheck **/*.sh'
   create_gh_release:
     image: ubuntu:xenial
     secrets: [ github_token ]
