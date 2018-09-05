@@ -7,6 +7,12 @@ module Pharos
   module SSH
     Error = Class.new(StandardError)
 
+    EXPORT_ENVS = %w(
+      HTTP_PROXY
+      HTTPS_PROXY
+      PATH
+    ).freeze
+
     class Client
       attr_reader :session
 
@@ -66,12 +72,11 @@ module Pharos
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
         script = File.read(path || name)
-        cmd = %w(sudo env -i)
-        unless env.empty?
-          cmd << '-'
-          env.each { |key, value| cmd << "#{key}=#{value}" }
-        end
-        cmd.concat %w(bash --norc --noprofile -x -s --)
+        cmd = %w(sudo env -i -)
+
+        cmd.concat(EXPORT_ENVS.map { |export| "#{export}=$#{export}" })
+        cmd.concat(env.map { |key, value| "#{key}=#{value}" })
+        cmd.concat(%w(bash --norc --noprofile -x -s))
         exec!(cmd, stdin: script, source: name, **options)
       end
 
