@@ -2,6 +2,7 @@
 
 set -e
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
 reload_daemon() {
@@ -11,7 +12,7 @@ reload_daemon() {
     fi
 }
 
-export DEBIAN_FRONTEND=noninteractive 
+export DEBIAN_FRONTEND=noninteractive
 if dpkg -s cri-o-1.10 ; then
     systemctl stop crio
     systemctl disable crio
@@ -22,7 +23,7 @@ fi
 apt-get install -y conntrack libgpgme11 libseccomp2 libassuan0
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
-cat <<"EOF" >${tmpfile}
+cat <<"EOF" >"${tmpfile}"
 [Unit]
 Description=Open Container Initiative Daemon
 Documentation=https://github.com/kubernetes-incubator/cri-o
@@ -48,10 +49,10 @@ Restart=on-abnormal
 WantedBy=multi-user.target
 EOF
 
-if diff $tmpfile /etc/systemd/system/crio.service > /dev/null ; then
-    rm $tmpfile
+if diff "$tmpfile" /etc/systemd/system/crio.service > /dev/null ; then
+    rm -f "$tmpfile"
 else
-    mv $tmpfile /etc/systemd/system/crio.service
+    mv "$tmpfile" /etc/systemd/system/crio.service
 fi
 
 mkdir -p /etc/systemd/system/crio.service.d
@@ -71,12 +72,12 @@ fi
 
 if [ ! "$(cat /etc/crio/.version)" = "$CRIO_VERSION" ]; then
     DL_URL="https://dl.bintray.com/kontena/pharos-bin/cri-o/cri-o-v${CRIO_VERSION}-linux-amd64.tar.gz"
-    curl -sSL $DL_URL -o /tmp/cri-o.tar.gz
+    curl -sSL "$DL_URL" -o /tmp/cri-o.tar.gz
     curl -sSL "${DL_URL}.asc" -o /tmp/cri-o.tar.gz.asc
     gpg --verify /tmp/cri-o.tar.gz.asc /tmp/cri-o.tar.gz
     tar -C / -xzf /tmp/cri-o.tar.gz
     rm /tmp/cri-o.tar.gz /tmp/cri-o.tar.gz.asc
-    echo $CRIO_VERSION > /etc/crio/.version 
+    echo "$CRIO_VERSION" > /etc/crio/.version
 fi
 
 rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
@@ -92,7 +93,7 @@ if ! systemctl is-active --quiet crio; then
     systemctl daemon-reload
     systemctl enable crio
     systemctl start crio
-else 
+else
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
         reload_daemon
     fi

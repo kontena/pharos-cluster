@@ -8,6 +8,6 @@ fi
 
 cd /tmp
 export DEBIAN_FRONTEND=noninteractive
-apt-get download kubeadm=${VERSION}-00
-dpkg -i --ignore-depends=kubelet kubeadm_${VERSION}*.deb
-rm -f kubeadm_${VERSION}*.deb
+apt-get download "kubeadm=${VERSION}-00"
+dpkg -i --ignore-depends=kubelet kubeadm_"${VERSION}"-00_*.deb
+rm -f kubeadm_"${VERSION}"-00_*.deb

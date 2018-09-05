@@ -2,6 +2,7 @@
 
 set -e
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
 env_file="/etc/environment"
