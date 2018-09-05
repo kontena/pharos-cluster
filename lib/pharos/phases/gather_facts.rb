@@ -137,8 +137,7 @@ module Pharos
       # @return [Array<Pharos::Configuration::Host::Route>]
       def read_routes
         routes = []
-
-        @ssh.exec!("ip route").each_line do |line|
+        @ssh.exec!("sudo ip route").each_line do |line|
           begin
             routes << Pharos::Configuration::Host::Route.parse(line)
           rescue RuntimeError => exc
