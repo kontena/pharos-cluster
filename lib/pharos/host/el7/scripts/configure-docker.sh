@@ -32,7 +32,7 @@ else
     fi
 fi
 
-yum install -y docker-${DOCKER_VERSION}
+yum install -y "docker-${DOCKER_VERSION}"
 
 if ! systemctl is-active --quiet docker; then
     systemctl enable docker

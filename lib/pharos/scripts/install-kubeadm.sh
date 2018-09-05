@@ -2,9 +2,7 @@
 
 set -ex
 
-if [ $(kubeadm version -o short) = "v${VERSION}" ]; then
-    exit
-fi
+[ "$(kubeadm version -o short)" = "v${VERSION}" ] && exit
 
 cd /tmp
 export DEBIAN_FRONTEND=noninteractive

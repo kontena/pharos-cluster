@@ -15,7 +15,7 @@ reload_daemon() {
 }
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
-cat <<"EOF" >${tmpfile}
+cat <<"EOF" >"${tmpfile}"
 [Unit]
 Description=Open Container Initiative Daemon
 Documentation=https://github.com/kubernetes-incubator/cri-o
