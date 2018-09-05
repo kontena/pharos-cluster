@@ -8,6 +8,7 @@ module Pharos
     Error = Class.new(StandardError)
 
     EXPORT_ENVS = {
+      http_proxy: '$http_proxy',
       HTTP_PROXY: '$HTTP_PROXY',
       HTTPS_PROXY: '$HTTPS_PROXY',
       PATH: '$PATH'
