@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate 
+    type: Recreate
   selector:
     matchLabels:
       app: nfs-provisioner
@@ -18,7 +18,7 @@ spec:
       serviceAccount: nfs-provisioner
       containers:
         - name: nfs-provisioner
-          image: quay.io/kubernetes_incubator/nfs-provisioner:v<%= version %>-k8s1.10
+          image: quay.io/kubernetes_incubator/nfs-provisioner:v<%= version %>-k8s1.11
           ports:
             - name: nfs
               containerPort: 2049

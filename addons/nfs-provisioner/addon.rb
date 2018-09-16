@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'nfs-provisioner' do
-  version '1.1.0'
+  version '2.1.0'
   license 'Apache License 2.0'
 
   config {
