@@ -34,6 +34,6 @@ Pharos.addon 'rook-ceph' do
   }
 
   def stringify_hash(hash)
-    JSON.load(JSON.dump(hash))
+    JSON.parse(JSON.dump(hash))
   end
 end
