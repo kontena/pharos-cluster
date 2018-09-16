@@ -1,0 +1,14 @@
+# Allow the pods in this namespace to work with configmaps
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: rook-ceph-cluster
+  namespace: rook-ceph
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rook-ceph-cluster
+subjects:
+- kind: ServiceAccount
+  name: rook-ceph-cluster
+  namespace: rook-ceph

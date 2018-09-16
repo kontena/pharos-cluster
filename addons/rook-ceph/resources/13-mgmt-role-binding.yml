@@ -1,0 +1,14 @@
+# Allow the operator to create resources in this cluster's namespace
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: rook-ceph-cluster-mgmt
+  namespace: rook-ceph
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rook-ceph-cluster-mgmt
+subjects:
+- kind: ServiceAccount
+  name: rook-ceph-system
+  namespace: rook-ceph-system

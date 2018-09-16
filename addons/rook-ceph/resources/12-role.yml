@@ -1,0 +1,9 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: rook-ceph-cluster
+  namespace: rook-ceph
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: [ "get", "list", "watch", "create", "update", "delete" ]
