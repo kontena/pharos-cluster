@@ -12,6 +12,5 @@ Pharos.addon 'rook-ceph' do
     optional(:dashboard).schema do
       required(:enabled).filled(:bool?)
     end
-
   }
 end
