@@ -32,9 +32,7 @@ describe Pharos::Kube::Stack do
             labels: {
               'pharos.kontena.io/stack': 'test',
             },
-            annotations: {
-              'pharos.kontena.io/stack-checksum': subject.checksum,
-            }
+            annotations: {}
           },
           data: {
             'foo' => 'bar',
@@ -44,11 +42,11 @@ describe Pharos::Kube::Stack do
 
       before do
         allow(client).to receive(:get_resources).with([K8s::Resource]).and_return([nil])
-        allow(client).to receive(:list_resources).with(labelSelector: { 'pharos.kontena.io/stack' => 'test' }).and_return([resource])
+        allow(client).to receive(:list_resources).with(labelSelector: { 'pharos.kontena.io/stack' => 'test' }, skip_forbidden: true).and_return([resource])
       end
 
       it "creates the resource with the correct label" do
-        expect(client).to receive(:create_resource).with(resource).and_return(resource)
+        expect(client).to receive(:create_resource).and_return(resource)
 
         subject.apply(client)
       end
