@@ -26,7 +26,7 @@ module Pharos
       else
         logger.debug { 'Already at the latest version' }
       end
-    rescue => ex
+    rescue StandardError => ex
       logger.debug { "Upgrade check encountered an error: #{ex} : #{ex.message}" }
     end
   end
