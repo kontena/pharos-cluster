@@ -1,23 +1,25 @@
 # frozen_string_literal: true
 
 Pharos.addon 'openebs' do
-  version '0.5.3'
+  version '0.6.0'
   license 'Apache License 2.0'
 
-  DEFAULT_CLASS_OPTS = {
+  default_class_opts = {
     default_class: false,
     capacity: '5G'
   }.freeze
 
-  DEFAULT_STORAGE_PATH = '/var/openebs'
+  default_storage_path = '/var/openebs'
 
-  DEFAULT_POOL_OPTS = {
-    path: DEFAULT_STORAGE_PATH
+  default_pool_opts = {
+    path: default_storage_path
   }.freeze
 
   config {
-    attribute :default_storage_class, Pharos::Types::Hash.default(DEFAULT_CLASS_OPTS)
-    attribute :default_storage_pool, Pharos::Types::Hash.default(DEFAULT_POOL_OPTS)
+    attribute :default_storage_class, Pharos::Types::Hash.default(default_class_opts)
+    attribute :default_storage_pool, Pharos::Types::Hash.default(default_pool_opts)
+    attribute :default_replica_node_selector, Pharos::Types::String
+    attribute :default_controller_node_selector, Pharos::Types::String
   }
 
   config_schema {
@@ -30,6 +32,9 @@ Pharos.addon 'openebs' do
     optional(:default_storage_pool).schema do
       optional(:path).filled(:str?)
     end
+
+    optional(:default_replica_node_selector).filled(:str?)
+    optional(:default_controller_node_selector).filled(:str?)
   }
 
   install {
@@ -37,7 +42,9 @@ Pharos.addon 'openebs' do
       default_replicas: config.default_storage_class[:replicas] || default_replica_count,
       default_capacity: config.default_storage_class[:capacity] || '5G',
       is_default_class: config.default_storage_class[:default_class] == true,
-      default_storage_pool_path: config.default_storage_pool[:path]
+      default_storage_pool_path: config.default_storage_pool[:path],
+      default_replica_node_selector: config.default_replica_node_selector,
+      default_controller_node_selector: config.default_controller_node_selector
     )
   }
 
