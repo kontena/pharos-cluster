@@ -1,3 +1,5 @@
+require "pharos/addon"
+require "pharos/kube"
 require "./addons/openebs/addon"
 
 describe Pharos::Addons::Openebs do
@@ -65,7 +67,14 @@ describe Pharos::Addons::Openebs do
       }
 
       it 'applies stack with defaults' do
-        expect(subject).to receive(:apply_resources).with(default_replicas: 1, default_capacity: '5G', is_default_class: false, default_storage_pool_path: '/var/openebs')
+        expect(subject).to receive(:apply_resources).with(
+          default_replicas: 1,
+          default_capacity: '5G',
+          is_default_class: false,
+          default_storage_pool_path: '/var/openebs',
+          default_controller_node_selector: nil,
+          default_replica_node_selector: nil
+        )
 
         subject.apply_install
       end
@@ -86,7 +95,14 @@ describe Pharos::Addons::Openebs do
       }
 
       it 'applies stack with given values' do
-        expect(subject).to receive(:apply_resources).with(default_replicas: 5, default_capacity: '12G', is_default_class: true, default_storage_pool_path: '/foo/bar')
+        expect(subject).to receive(:apply_resources).with(
+          default_replicas: 5,
+          default_capacity: '12G',
+          is_default_class: true,
+          default_storage_pool_path: '/foo/bar',
+          default_controller_node_selector: nil,
+          default_replica_node_selector: nil
+        )
 
         subject.apply_install
       end
@@ -106,7 +122,14 @@ describe Pharos::Addons::Openebs do
       }
 
       it 'applies stack with default values' do
-        expect(subject).to receive(:apply_resources).with(default_replicas: 5, default_capacity: '5G', is_default_class: true, default_storage_pool_path: '/foo/bar')
+        expect(subject).to receive(:apply_resources).with(
+          default_replicas: 5,
+          default_capacity: '5G',
+          is_default_class: true,
+          default_storage_pool_path: '/foo/bar',
+          default_controller_node_selector: nil,
+          default_replica_node_selector: nil
+        )
 
         subject.apply_install
       end
