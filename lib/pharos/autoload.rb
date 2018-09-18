@@ -7,6 +7,7 @@ autoload :RestClient, 'rest-client'
 autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
+autoload :Excon, 'excon'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
@@ -28,6 +29,7 @@ module Pharos
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :HostConfigManager, 'pharos/host_config_manager'
+  autoload :UpgradeChecker, 'pharos/upgrade_checker'
 
   module SSH
     autoload :Client, 'pharos/ssh/client'
