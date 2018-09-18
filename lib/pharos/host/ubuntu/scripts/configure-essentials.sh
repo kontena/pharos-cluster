@@ -6,7 +6,7 @@ set -e
 
 env_file="/etc/environment"
 
-if [ "${SET_HTTP_PROXY}" = "true" ]; then
+if [ ! -z "${HTTP_PROXY}" ]; then
     lineinfile "^http_proxy=" "http_proxy=${HTTP_PROXY}" $env_file
     lineinfile "^HTTP_PROXY=" "HTTP_PROXY=${HTTP_PROXY}" $env_file
     lineinfile "^HTTPS_PROXY=" "HTTPS_PROXY=${HTTP_PROXY}" $env_file
