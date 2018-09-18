@@ -6,6 +6,7 @@ module Pharos
       title "Migrate master"
 
       def call
+        logger.info { 'Nothing to migrate.' }
       end
     end
   end
