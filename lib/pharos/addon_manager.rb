@@ -53,7 +53,8 @@ module Pharos
       with_enabled_addons do |addon_class, config|
         outcome = addon_class.validate(config)
         unless outcome.success?
-          raise InvalidConfig, outcome.errors
+          error_msg = "#{addon_class.addon_name} => " + outcome.errors.map { |key, value| "#{key} #{value.join(',')}" }.flatten.join(', ')
+          raise InvalidConfig, error_msg
         end
       end
     end
