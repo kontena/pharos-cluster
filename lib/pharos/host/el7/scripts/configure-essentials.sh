@@ -54,7 +54,7 @@ else
 fi
 
 if [ ! -z "${NO_PROXY}" ]; then
-    lineinfile "^NO_PROXY=" "NO_PROXY=${NO_PROXY}" "$env_file"
+    lineinfile "^NO_PROXY=" "NO_PROXY=\"${NO_PROXY}\"" "$env_file"
 else
     linefromfile "^NO_PROXY=" "$env_file"
 fi
