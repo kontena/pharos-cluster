@@ -16,6 +16,12 @@ else
     linefromfile "^HTTPS_PROXY=" $env_file
 fi
 
+if [ ! -z "${NO_PROXY}" ]; then
+    lineinfile "^NO_PROXY=" "NO_PROXY=\"${NO_PROXY}\"" "$env_file"
+else
+    linefromfile "^NO_PROXY=" "$env_file"
+fi
+
 if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -y

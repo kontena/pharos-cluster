@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pathname'
+
 module Pharos
   class ClusterManager
     include Pharos::Logging
@@ -40,6 +42,9 @@ module Pharos
         File.join(__dir__, '..', '..', 'addons'),
         File.join(Dir.pwd, 'addons')
       ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+      addon_dirs.keep_if { |dir| File.exist?(dir) }
+      addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
+
       Pharos::AddonManager.load_addons(*addon_dirs)
       Pharos::HostConfigManager.load_configs(@config)
     end
