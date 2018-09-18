@@ -34,12 +34,16 @@ module Pharos
         version = Excon.get(
           VERSION_URL,
           headers: { 'User-Agent' => "pharos/#{Pharos::VERSION}" },
-          query: @channel == :pre ? { pre: true } : {}
+          query: channel_query
         ).body
 
         raise "Invalid version response format: #{version}" unless version.match?(/^\d+\.\d+\.\d+(\-\S+)?$/)
 
         @latest_version = Gem::Version.new(version)
+      end
+
+      def channel_query
+        ENV['PHAROS_CHANNEL'] == 'pre' ? { pre: true } : {}
       end
     end
   end
