@@ -44,4 +44,3 @@ module Pharos
     end
   end
 end
-
