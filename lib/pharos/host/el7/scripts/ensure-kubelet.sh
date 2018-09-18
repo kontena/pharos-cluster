@@ -24,8 +24,3 @@ if ! systemctl is-active --quiet kubelet; then
     systemctl enable kubelet
     systemctl start kubelet
 fi
-
-if needs-restarting -s | grep -q kubelet.service ; then
-    systemctl daemon-reload
-    systemctl restart kubelet
-fi
