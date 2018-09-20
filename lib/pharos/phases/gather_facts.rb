@@ -102,17 +102,15 @@ module Pharos
         @ssh.file('/etc/resolv.conf').lines.map { |l| l[/^nameserver ([\h:.]+)/, 1] }.compact
       end
 
-      LOCALNETS = [IPAddr.new('127.0.0.0/8').freeze, IPAddr.new('::1').freeze].freeze
-
       # Host /etc/resolv.conf is configured to use a nameserver at localhost in the host network namespace
       # @return [Boolean]
-      def check_resolvconf_nameserver_localhost
-        resolvconf_nameservers.any? { |ip| LOCALNETS.any? { |net| net.include?(ip) } }
+      def resolvconf_nameserver_localhost?
+        resolvconf_nameservers.any? { |ip| IPAddr.new(ip).loopback? }
       end
 
       # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
       # @return [Boolean]
-      def check_resolvconf_systemd_resolved_stub
+      def resolvconf_systemd_resolved_stub?
         symlink = @ssh.file('/etc/resolv.conf').readlink
         !!symlink && symlink.end_with?('/run/systemd/resolve/stub-resolv.conf')
       end
@@ -120,8 +118,8 @@ module Pharos
       # @return [Pharos::Configuration::Host::ResolvConf]
       def read_resolvconf
         Pharos::Configuration::Host::ResolvConf.new(
-          nameserver_localhost: check_resolvconf_nameserver_localhost,
-          systemd_resolved_stub: check_resolvconf_systemd_resolved_stub
+          nameserver_localhost: resolvconf_nameserver_localhost?,
+          systemd_resolved_stub: resolvconf_systemd_resolved_stub?
         )
       end
 
