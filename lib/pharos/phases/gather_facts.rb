@@ -102,7 +102,25 @@ module Pharos
         @ssh.file('/etc/resolv.conf').lines.map { |l| l[/^nameserver ([\h:.]+)/, 1] }.compact
       end
 
-      # Host /etc/resolv.conf is configured to use a nameserver at localhost in the host network namespace
+      module IPAddrLoopbackBackport
+        refine IPAddr do
+          # Backported from Ruby 2.5
+          # Returns true if the ipaddr is a loopback address.
+          def loopback?
+            case @family
+            when Socket::AF_INET
+              @addr & 0xff000000 == 0x7f000000
+            when Socket::AF_INET6
+              @addr == 1
+            else
+              false
+            end
+          end
+        end
+      end
+
+      using IpAddrLoopbackBackport if RUBY_VERSION < '2.5.0'
+
       # @return [Boolean]
       def resolvconf_nameserver_localhost?
         resolvconf_nameservers.any? { |ip| IPAddr.new(ip).loopback? }
