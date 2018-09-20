@@ -119,7 +119,7 @@ module Pharos
         end
       end
 
-      using IpAddrLoopbackBackport if RUBY_VERSION < '2.5.0'
+      using IPAddrLoopbackBackport if RUBY_VERSION < '2.5.0'
 
       # @return [Boolean]
       def resolvconf_nameserver_localhost?
