@@ -5,8 +5,7 @@ module Pharos
     class MigrateMaster < Pharos::Phase
       title "Migrate master"
 
-      def call
-      end
+      def call; end
     end
   end
 end

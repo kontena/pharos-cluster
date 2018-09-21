@@ -5,8 +5,7 @@ module Pharos
     class MigrateWorker < Pharos::Phase
       title "Migrate worker"
 
-      def call
-      end
+      def call; end
     end
   end
 end

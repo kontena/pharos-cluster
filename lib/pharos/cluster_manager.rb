@@ -38,7 +38,7 @@ module Pharos
     # load phases/addons
     def load
       Pharos::PhaseManager.load_phases(
-        File.join(__dir__,  'phases'),
+        File.join(__dir__, 'phases'),
         File.join(__dir__, '..', '..', 'non-oss', 'phases')
       )
       addon_dirs = [
