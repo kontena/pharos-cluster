@@ -78,6 +78,7 @@ module Pharos
       # ca etc config files
       master_hosts = sorted_master_hosts
 
+      apply_phase(Phases::ValidateVersion, [master_hosts.first], master: master_hosts.first, ssh: true, parallel: false)
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)
