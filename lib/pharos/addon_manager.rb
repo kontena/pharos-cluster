@@ -30,6 +30,16 @@ module Pharos
     def initialize(config, cluster_context)
       @config = config
       @cluster_context = cluster_context
+      enable_default_addons
+    end
+
+    def enable_default_addons
+      addon_classes.each do |addon|
+        if addon.enabled?
+          configs[addon.addon_name] ||= {}
+          configs[addon.addon_name]['enabled'] = true
+        end
+      end
     end
 
     def configs
