@@ -12,5 +12,5 @@ chmod +x /usr/local/bin/rubyc
 gem install bundler
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-oss-linux-amd64-${version}"
-rubyc -o $package pharos-cluster
+rubyc -o $package -d /__enclose_io_memfs__ pharos-cluster
 ./$package version
