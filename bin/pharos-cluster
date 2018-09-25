@@ -9,4 +9,5 @@ $LOAD_PATH.unshift lib_path unless $LOAD_PATH.include?(lib_path)
 STDOUT.sync = true
 
 require 'pharos_cluster'
+Signal.trap("SIGPIPE", "SYSTEM_DEFAULT")
 Pharos::RootCommand.run

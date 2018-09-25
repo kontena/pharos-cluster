@@ -30,6 +30,16 @@ module Pharos
     def initialize(config, cluster_context)
       @config = config
       @cluster_context = cluster_context
+      enable_default_addons
+    end
+
+    def enable_default_addons
+      addon_classes.each do |addon|
+        if addon.enabled?
+          configs[addon.addon_name] ||= {}
+          configs[addon.addon_name]['enabled'] = true
+        end
+      end
     end
 
     def configs
@@ -53,7 +63,8 @@ module Pharos
       with_enabled_addons do |addon_class, config|
         outcome = addon_class.validate(config)
         unless outcome.success?
-          raise InvalidConfig, outcome.errors
+          error_msg = "#{addon_class.addon_name} => " + outcome.errors.map { |key, value| "#{key} #{value.join(',')}" }.flatten.join(', ')
+          raise InvalidConfig, error_msg
         end
       end
     end

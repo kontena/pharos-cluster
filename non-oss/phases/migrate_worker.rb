@@ -5,7 +5,9 @@ module Pharos
     class MigrateWorker < Pharos::Phase
       title "Migrate worker"
 
-      def call; end
+      def call
+        logger.info { 'Nothing to migrate.' }
+      end
     end
   end
 end

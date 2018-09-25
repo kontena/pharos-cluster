@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pathname'
+
 module Pharos
   class ClusterManager
     include Pharos::Logging
@@ -35,11 +37,18 @@ module Pharos
 
     # load phases/addons
     def load
-      Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
+      Pharos::PhaseManager.load_phases(
+        File.join(__dir__, 'phases'),
+        File.join(__dir__, '..', '..', 'non-oss', 'phases')
+      )
       addon_dirs = [
         File.join(__dir__, '..', '..', 'addons'),
-        File.join(Dir.pwd, 'addons')
+        File.join(Dir.pwd, 'addons'),
+        File.join(__dir__, '..', '..', 'non-oss', 'addons')
       ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+      addon_dirs.keep_if { |dir| File.exist?(dir) }
+      addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
+
       Pharos::AddonManager.load_addons(*addon_dirs)
       Pharos::HostConfigManager.load_configs(@config)
     end
@@ -69,6 +78,7 @@ module Pharos
       # ca etc config files
       master_hosts = sorted_master_hosts
 
+      apply_phase(Phases::ValidateVersion, [master_hosts.first], master: master_hosts.first, ssh: true, parallel: false)
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)

@@ -94,6 +94,14 @@ module Pharos
         !@config.nil?
       end
 
+      def enable!
+        @enabled = true
+      end
+
+      def enabled?
+        !!@enabled
+      end
+
       def custom_type(&block)
         Class.new(Pharos::Addons::Struct, &block)
       end
