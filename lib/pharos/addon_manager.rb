@@ -2,6 +2,7 @@
 
 require_relative 'addon'
 require_relative 'logging'
+require_relative 'kube'
 
 module Pharos
   class AddonManager
