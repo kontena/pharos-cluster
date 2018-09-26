@@ -61,6 +61,8 @@ module Pharos
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
+      master = sorted_master_hosts.first
+      apply_phase(Phases::ValidateVersion, [master], master: master, ssh: true, parallel: false)
     end
 
     # @return [Array<Pharos::Configuration::Host>]
@@ -75,10 +77,9 @@ module Pharos
 
     def apply_phases
       # we need to use sorted masters because phases expects that first one has
-      # ca etc config files
       master_hosts = sorted_master_hosts
 
-      apply_phase(Phases::ValidateVersion, [master_hosts.first], master: master_hosts.first, ssh: true, parallel: false)
+      # ca etc config files
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
       apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)
