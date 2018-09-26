@@ -2,13 +2,13 @@
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: rook-ceph-cluster
-  namespace: rook-ceph
+  name: kontena-storage-cluster
+  namespace: kontena-storage
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: rook-ceph-cluster
+  name: kontena-storage-cluster
 subjects:
 - kind: ServiceAccount
-  name: rook-ceph-cluster
-  namespace: rook-ceph
+  name: kontena-storage-cluster
+  namespace: kontena-storage

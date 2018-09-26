@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rook-ceph-tools
-  namespace: rook-ceph
+  name: kontena-storage-tools
+  namespace: kontena-storage
   labels:
-    app: rook-ceph-tools
+    app: kontena-storage-tools
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rook-ceph-tools
+      app: kontena-storage-tools
   template:
     metadata:
       labels:
-        app: rook-ceph-tools
+        app: kontena-storage-tools
     spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:

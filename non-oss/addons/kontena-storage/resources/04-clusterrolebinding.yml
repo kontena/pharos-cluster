@@ -4,12 +4,12 @@ metadata:
   labels:
     operator: rook
     storage-backend: ceph
-  name: rook-ceph-cluster-mgmt
+  name: kontena-storage-cluster-mgmt
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: rook-ceph-cluster-mgmt
+  name: kontena-storage-cluster-mgmt
 subjects:
 - kind: ServiceAccount
-  name: rook-ceph-system
-  namespace: rook-ceph-system
+  name: kontena-storage-system
+  namespace: kontena-storage-system

@@ -1,8 +1,9 @@
-# The cluster role for managing all the cluster-specific resources in a namespace
+# The role for the operator to manage resources in the system namespace
 apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: rook-ceph-cluster-mgmt
+  name: kontena-storage-system
+  namespace: kontena-storage-system
   labels:
     operator: rook
     storage-backend: ceph
@@ -10,9 +11,7 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - secrets
   - pods
-  - services
   - configmaps
   verbs:
   - get
@@ -25,9 +24,7 @@ rules:
 - apiGroups:
   - extensions
   resources:
-  - deployments
   - daemonsets
-  - replicasets
   verbs:
   - get
   - list

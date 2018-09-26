@@ -2,8 +2,8 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: rook-ceph-operator
-  namespace: rook-ceph-system
+  name: kontena-storage-operator
+  namespace: kontena-storage-system
   labels:
     operator: rook
     storage-backend: ceph
@@ -12,9 +12,9 @@ spec:
   template:
     metadata:
       labels:
-        app: rook-ceph-operator
+        app: kontena-storage-operator
     spec:
-      serviceAccountName: rook-ceph-system
+      serviceAccountName: kontena-storage-system
       containers:
       - name: rook-ceph-operator
         image: rook/ceph:v<%= version %>
@@ -25,9 +25,6 @@ spec:
         - mountPath: /etc/ceph
           name: default-config-dir
         env:
-        # To disable RBAC, uncomment the following:
-        # - name: RBAC_ENABLED
-        #  value: "false"
         # Rook Agent toleration. Will tolerate all taints with all keys.
         # Choose between NoSchedule, PreferNoSchedule and NoExecute:
         # - name: AGENT_TOLERATION

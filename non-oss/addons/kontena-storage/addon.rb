@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-Pharos.addon 'rook-ceph' do
-  version '0.8.1'
-  license 'Apache License 2.0'
+Pharos.addon 'kontena-storage' do
+  version '0.8.0'
+  license 'Kontena License'
 
   config_schema {
     required(:dataDirHostPath).filled(:str?)
@@ -19,8 +19,8 @@ Pharos.addon 'rook-ceph' do
       apiVersion: 'ceph.rook.io/v1beta1',
       kind: 'Cluster',
       metadata: {
-        name: 'rook-ceph',
-        namespace: 'rook-ceph'
+        name: 'kontena-storage',
+        namespace: 'kontena-storage'
       },
       spec: {
         dataDirHostPath: config.dataDirHostPath,
