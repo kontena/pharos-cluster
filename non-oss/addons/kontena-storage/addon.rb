@@ -91,7 +91,13 @@ Pharos.addon 'kontena-storage' do
   }
 
   install {
-    cluster = K8s::Resource.new(
+    cluster = build_cluster_resource
+    apply_resources(cluster: stringify_hash(cluster.to_h))
+  }
+
+  # @return [K8s::Resource]
+  def build_cluster_resource
+    K8s::Resource.new(
       apiVersion: 'ceph.rook.io/v1beta1',
       kind: 'Cluster',
       metadata: {
@@ -112,8 +118,7 @@ Pharos.addon 'kontena-storage' do
         dashboard: config.dashboard || { enabled: false }
       }
     )
-    apply_resources(cluster: stringify_hash(cluster.to_h))
-  }
+  end
 
   def stringify_hash(hash)
     JSON.parse(JSON.dump(hash))
