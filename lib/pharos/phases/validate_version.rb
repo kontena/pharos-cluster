@@ -58,7 +58,7 @@ module Pharos
       private
 
       def pharos_version
-        @pharos_version ||= Gem::Version.new(pharos_version)
+        @pharos_version ||= Gem::Version.new(Pharos::VERSION)
       end
 
       # Returns a requirement like "~>", "1.3.0"  which will match >= 1.3.0 && < 1.4.0
