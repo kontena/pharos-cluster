@@ -5,4 +5,4 @@ metadata:
   namespace: kontena-storage
 spec:
   replicated:
-    size: 3
+    size: <%= config&.pool&.replicated&.size || '3' %>
