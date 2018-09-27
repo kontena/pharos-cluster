@@ -9,7 +9,7 @@ PATH
       dry-validation (= 0.12.1)
       ed25519 (= 1.2.4)
       fugit (~> 1.1.2)
-      k8s-client (~> 0.3.2)
+      k8s-client (~> 0.3.3)
       net-ssh (= 5.0.1)
       pastel
       rouge (~> 3.1)
