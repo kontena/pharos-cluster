@@ -25,12 +25,10 @@ module Pharos
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
-    # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, ssh: nil, master: nil, cluster_context: nil)
+    def initialize(host, config: nil, ssh: nil, cluster_context: nil)
       @host = host
       @config = config
       @ssh = ssh
-      @master = master
       @cluster_context = cluster_context
     end
 
@@ -78,10 +76,10 @@ module Pharos
 
     # @return [K8s::Client]
     def kube_client
-      fail "Phase #{self.class.name} does not have kube @master" unless @master
+      fail "Phase #{self.class.name} does not have master cluster_context" unless cluster_context['master']
       fail "Phase #{self.class.name} does not have kubeconfig cluster_context" unless cluster_context['kubeconfig']
 
-      @kube_client ||= Pharos::Kube.client(@master.api_address, cluster_context['kubeconfig'])
+      @kube_client ||= Pharos::Kube.client(cluster_context['master'].api_address, cluster_context['kubeconfig'])
     end
 
     # @param name [String]
