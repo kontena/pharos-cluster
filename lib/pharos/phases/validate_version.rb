@@ -21,15 +21,9 @@ module Pharos
 
       # @param cluster_version [String]
       def validate_version(cluster_version)
-        cluster_major, cluster_minor, cluster_patch = cluster_version.split('.')
-        major, minor, patch = Pharos::VERSION.split('.')
-        unless cluster_major == major && cluster_minor == minor
-          raise "Upgrade path not supported"
-        end
-
-        if cluster_patch.to_i <= patch.to_i
-          raise "Downgrade not supported"
-        end
+        cluster_version = Gem::Version.new(cluster_version)
+        raise "Downgrade not supported" if cluster_version > pharos_version
+        raise "Upgrade path not supported" unless requirement.satisfied_by?(cluster_version)
 
         logger.info { "Valid cluster version detected: #{cluster_version}" }
       end
@@ -59,6 +53,17 @@ module Pharos
         kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config')
       rescue K8s::Error::NotFound
         nil
+      end
+
+      private
+
+      def pharos_version
+        @pharos_version ||= Gem::Version.new(Pharos::VERSION)
+      end
+
+      # Returns a requirement like "~>", "1.3.0"  which will match >= 1.3.0 && < 1.4.0
+      def requirement
+        Gem::Requirement.new('~>' + pharos_version.segments.first(2).join('.') + '.0')
       end
     end
   end
