@@ -54,7 +54,7 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
+      parallel_apply_phase(Phases::GatherFacts, config.hosts)
     end
 
     def validate
@@ -90,39 +90,39 @@ module Pharos
         # we need to use sorted etcd hosts because phases expects that first one has
         # ca etc config files
         etcd_hosts = sorted_etcd_hosts
-        apply_phase(Phases::ConfigureCfssl, etcd_hosts, parallel: true)
-        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], parallel: false)
-        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], parallel: false)
-        apply_phase(Phases::ConfigureEtcd, etcd_hosts, parallel: true)
+        parallel_apply_phase(Phases::ConfigureCfssl, etcd_hosts)
+        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first])
+        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first])
+        parallel_apply_phase(Phases::ConfigureEtcd, etcd_hosts)
       end
 
-      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, parallel: false)
-      apply_phase(Phases::SetupMaster, master_hosts, parallel: true)
-      apply_phase(Phases::UpgradeMaster, master_hosts, parallel: false) # requires optional early ConfigureClient
+      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts)
+      parallel_apply_phase(Phases::SetupMaster, master_hosts)
+      apply_phase(Phases::UpgradeMaster, master_hosts) # requires optional early ConfigureClient
 
-      apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true, master: master_hosts.first)
-      apply_phase(Phases::ConfigureKubelet, config.hosts, parallel: true)
+      parallel_apply_phase(Phases::MigrateWorker, config.worker_hosts, master: master_hosts.first)
+      parallel_apply_phase(Phases::ConfigureKubelet, config.hosts)
 
-      apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false)
+      parallel_apply_phase(Phases::ConfigureMaster, master_hosts)
+      parallel_apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first)
 
       # master is now configured and can be used
-      apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
+      parallel_apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
+      parallel_apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
 
-      apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
-      apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first]) # using `kubeadm token`, not the kube API
+      parallel_apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
+      parallel_apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
+      parallel_apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
+      parallel_apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
+      parallel_apply_phase(Phases::ConfigureBootstrap, [master_hosts.first]) # using `kubeadm token`, not the kube API
 
-      apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
+      parallel_apply_phase(Phases::JoinNode, config.worker_hosts)
 
-      apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
     def apply_reset
-      apply_phase(Phases::ResetHost, config.hosts, parallel: true)
+      parallel_apply_phase(Phases::ResetHost, config.hosts)
     end
 
     # @param phase_class [Pharos::Phase]
@@ -133,6 +133,16 @@ module Pharos
       puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
       phase_manager.apply(phase_class, hosts, **options)
+    end
+
+    # @param phase_class [Pharos::Phase]
+    # @param hosts [Array<Pharos::Configuration::Host>]
+    def parallel_apply_phase(phase_class, hosts, **options)
+      return if hosts.empty?
+
+      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+
+      phase_manager.apply_parallel(phase_class, hosts, **options)
     end
 
     def apply_addons

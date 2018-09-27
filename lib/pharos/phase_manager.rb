@@ -63,17 +63,6 @@ module Pharos
       end
     end
 
-    # @param phases [Array<Pharos::Phases::Base>]
-    # @param parallel [Boolean]
-    # @return [Array<...>]
-    def run(phases, parallel: true, &block)
-      if parallel
-        run_parallel(phases, &block)
-      else
-        run_serial(phases, &block)
-      end
-    end
-
     # @return [Pharos::Phase]
     def prepare_phase(phase_class, host, **options)
       options = @options.merge(options)
@@ -83,14 +72,22 @@ module Pharos
       phase_class.new(host, **options)
     end
 
-    def apply(phase_class, hosts, parallel: false, **options)
-      phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
+    def prepare_phases(phase_class, hosts, **options)
+      hosts.map { |host| prepare_phase(phase_class, host, **options) }
+    end
 
-      run(phases, parallel: parallel) do |phase|
+    def apply(phase_class, hosts, **options)
+      run_serial(prepare_phases(phase_class, hosts, **options)) do |phase|
         start = Time.now
-
         phase.call
+        logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
+      end
+    end
 
+    def apply_parallel(phase_class, hosts, **options)
+      run_parallel(prepare_phases(phase_class, hosts, **options)) do |phase|
+        start = Time.now
+        phase.call
         logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
       end
     end
