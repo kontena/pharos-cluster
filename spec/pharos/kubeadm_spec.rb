@@ -131,6 +131,28 @@ describe Pharos::Kubeadm::ConfigGenerator do
       end
     end
 
+    context 'with cloud provider' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        cloud: {
+          provider: 'aws'
+        }
+      ) }
+
+      it 'comes with proper cloud provider' do
+        config = subject.generate_config
+        expect(config['apiServerExtraArgs']['cloud-provider']).to eq('aws')
+      end
+
+      it 'comes with proper cloud config' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'cloud-config')).to be_nil
+        expect(config.dig('controllerManagerExtraArgs', 'cloud-config')).to be_nil
+      end
+    end
+
     context 'with cloud configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },

@@ -53,10 +53,10 @@ module Pharos
         end
 
         if @config.cloud && @config.cloud.provider != 'external'
+          config['apiServerExtraArgs']['cloud-provider'] = @config.cloud.provider
+          config['controllerManagerExtraArgs']['cloud-provider'] = @config.cloud.provider
           if @config.cloud.config
-            config['apiServerExtraArgs']['cloud-provider'] = @config.cloud.provider
             config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
-            config['controllerManagerExtraArgs']['cloud-provider'] = @config.cloud.provider
             config['controllerManagerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
           end
         end

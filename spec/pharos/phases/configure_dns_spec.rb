@@ -1,3 +1,4 @@
+require "pharos/kube"
 require "pharos/phases/configure_dns"
 
 describe Pharos::Phases::ConfigureDNS do
@@ -159,6 +160,18 @@ describe Pharos::Phases::ConfigureDNS do
         expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions.map{|o| o.to_hash}).to match [
           { key: 'k8s-app', operator: 'In', values: ['kube-dns'] },
         ]
+        expect(res.spec.template.spec.containers).to be_nil
+
+        resource
+      end
+
+      subject.patch_deployment('kube-dns', replicas: 1, max_surge: 0, max_unavailable: 1)
+    end
+
+    it "patches coredns image on arm64" do
+      allow(cpu_arch).to receive(:name).and_return('arm64')
+      expect(kube_resource_client).to receive(:merge_patch).with('kube-dns', Hash) do |_name, h|
+        res = K8s::Resource.new(h)
         expect(res.spec.template.spec.containers[0].image).to include("coredns-#{master.cpu_arch.name}")
 
         resource

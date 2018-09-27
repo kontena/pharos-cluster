@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'cert-manager' do
-  version '0.2.3'
+  version '0.2.5'
   license 'Apache License 2.0'
 
   issuer = custom_type {

@@ -26,7 +26,7 @@ module Pharos
       # @param vars [Hash]
       def self.load(name, path, **vars)
         path = Pathname.new(path).freeze
-        files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
+        files = Pathname.glob(path.join('*.{yml,yaml,yml.erb,yaml.erb}')).sort_by(&:to_s)
         resources = files.map do |file|
           K8s::Resource.new(Pharos::YamlFile.new(file).load(name: name, **vars))
         end
