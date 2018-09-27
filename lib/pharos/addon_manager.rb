@@ -2,6 +2,7 @@
 
 require_relative 'addon'
 require_relative 'logging'
+require_relative 'kube'
 
 module Pharos
   class AddonManager
@@ -9,6 +10,12 @@ module Pharos
 
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
+
+    RETRY_ERRORS = [
+      OpenSSL::SSL::SSLError,
+      Excon::Error,
+      K8s::Error
+    ].freeze
 
     # @return [Array<Class<Pharos::Addon>>]
     def self.addons
@@ -72,16 +79,34 @@ module Pharos
       }
     end
 
-    def each
+    def each(&block)
       with_enabled_addons do |addon_class, config_hash|
         config = addon_class.validate(config_hash)
         addon = addon_class.new(config, enabled: true, **options)
         addon.validate
-        yield addon
+        yield_addon_with_retry(addon, &block)
       end
 
       with_disabled_addons do |addon_class|
-        yield addon_class.new(nil, enabled: false, **options)
+        yield_addon_with_retry(addon_class.new(nil, enabled: false, **options), &block)
+      end
+    end
+
+    # @param addon [Pharos::Addon]
+    # @param retry_times [Integer]
+    def yield_addon_with_retry(addon, retry_times = 10)
+      retries = 0
+      begin
+        yield addon
+      rescue *RETRY_ERRORS => exc
+        raise if retries >= retry_times
+
+        logger.error { "got error (#{exc.class.name}): #{exc.message.strip}" }
+        logger.debug { exc.backtrace.join("\n") }
+        logger.error { "retrying after #{2**retries} seconds ..." }
+        sleep 2**retries
+        retries += 1
+        retry
       end
     end
 
