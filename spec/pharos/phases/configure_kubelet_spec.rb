@@ -24,7 +24,7 @@ describe Pharos::Phases::ConfigureKubelet do
   ) }
 
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(host, config: config, ssh: ssh) }
+  subject { described_class.new(host, config: config, ssh: ssh, cluster_context: { 'master' => host }) }
 
   before(:each) do
     host.resolvconf = host_resolvconf

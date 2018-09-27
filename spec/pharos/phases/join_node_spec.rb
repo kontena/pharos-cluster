@@ -16,7 +16,8 @@ describe Pharos::Phases::JoinNode do
   let(:ssh) { double(:ssh) }
   let(:cluster_context) {
     {
-      'join-command' => join_cmd
+      'join-command' => join_cmd,
+      'master' => master
     }
   }
   let(:subject) { described_class.new(host, ssh: ssh, cluster_context: cluster_context) }

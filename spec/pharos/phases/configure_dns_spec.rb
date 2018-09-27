@@ -19,7 +19,7 @@ describe Pharos::Phases::ConfigureDNS do
     allow(master).to receive(:cpu_arch).and_return(cpu_arch)
   end
 
-  subject { described_class.new(master, config: config, master: master) }
+  subject { described_class.new(master, config: config) }
 
   describe '#call' do
     context "with one host" do
