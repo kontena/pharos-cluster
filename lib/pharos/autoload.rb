@@ -29,6 +29,10 @@ module Pharos
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :HostConfigManager, 'pharos/host_config_manager'
 
+  module CoreExt
+    autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
+  end
+
   module SSH
     autoload :Client, 'pharos/ssh/client'
     autoload :Manager, 'pharos/ssh/manager'
