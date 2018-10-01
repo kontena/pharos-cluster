@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureMetrics < Pharos::Phase
       title "Configure metrics"
+      on :master
 
       METRICS_SERVER_VERSION = '0.2.1'
 

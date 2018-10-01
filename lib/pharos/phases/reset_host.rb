@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ResetHost < Pharos::Phase
       title "Reset hosts"
+      on :all_hosts
 
       def call
         logger.info { "Removing all traces of Kontena Pharos ..." }

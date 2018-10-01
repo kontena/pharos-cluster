@@ -54,85 +54,78 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::GatherFacts, config.hosts)
+      @context['all_hosts'] = config.hosts
+      apply_phase(Phases::GatherFacts)
     end
 
     def validate
       addon_manager.validate
       gather_facts
-      apply_phase(Phases::ValidateHost, config.hosts)
-      master = sorted_master_hosts.first
-      @context['master'] = master
-      apply_phase(Phases::ValidateVersion, [master])
+      update_context_hosts
+      apply_phase(Phases::ValidateHost)
+      apply_phase(Phases::ValidateVersion)
     end
 
-    # @return [Array<Pharos::Configuration::Host>]
-    def sorted_master_hosts
-      config.master_hosts.sort_by(&:master_sort_score)
-    end
-
-    # @return [Array<Pharos::Configuration::Host>]
-    def sorted_etcd_hosts
-      config.etcd_hosts.sort_by(&:etcd_sort_score)
+    def update_context_hosts
+      @context['master_hosts'] = config.master_hosts.sort_by(&:master_sort_score)
+      @context['master'] = @context['master_hosts'].first
+      @context['etcd_hosts'] = config.etcd_hosts.sort_by(&:etcd_sort_score)
+      @context['etcd_master'] = @context['etcd_hosts'].first
+      @context['worker_hosts'] = config.worker_hosts
     end
 
     def apply_phases
-      # we need to use sorted masters because phases expects that first one has
-      # ca etc config files
-      master_hosts = sorted_master_hosts
-      @context['master'] = master_hosts.first
-
-      apply_phase(Phases::MigrateMaster, master_hosts)
-      apply_phase(Phases::ConfigureHost, config.hosts)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first])
+      apply_phase(Phases::MigrateMaster)
+      apply_phase(Phases::ConfigureHost)
+      apply_phase(Phases::ConfigureClient)
 
       unless @config.etcd&.endpoints
         # we need to use sorted etcd hosts because phases expects that first one has
         # ca etc config files
-        etcd_hosts = sorted_etcd_hosts
-        apply_phase(Phases::ConfigureCfssl, etcd_hosts)
-        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first])
-        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first])
-        apply_phase(Phases::ConfigureEtcd, etcd_hosts)
+        apply_phase(Phases::ConfigureCfssl)
+        apply_phase(Phases::ConfigureEtcdCa)
+        apply_phase(Phases::ConfigureEtcdChanges)
+        apply_phase(Phases::ConfigureEtcd)
       end
 
-      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts)
-      apply_phase(Phases::SetupMaster, master_hosts)
-      apply_phase(Phases::UpgradeMaster, master_hosts) # requires optional early ConfigureClient
+      apply_phase(Phases::ConfigureSecretsEncryption)
+      apply_phase(Phases::SetupMaster)
+      apply_phase(Phases::UpgradeMaster)
 
-      apply_phase(Phases::MigrateWorker, config.worker_hosts)
-      apply_phase(Phases::ConfigureKubelet, config.hosts)
+      apply_phase(Phases::MigrateWorker)
+      apply_phase(Phases::ConfigureKubelet)
 
-      apply_phase(Phases::ConfigureMaster, master_hosts)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first])
+      apply_phase(Phases::ConfigureMaster)
+      apply_phase(Phases::ConfigureClient)
 
       # master is now configured and can be used
-      apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first])
-      apply_phase(Phases::ConfigureDNS, [master_hosts.first])
+      apply_phase(Phases::LoadClusterConfiguration)
+      apply_phase(Phases::ConfigureDNS)
 
-      apply_phase(Phases::ConfigureWeave, [master_hosts.first]) if config.network.provider == 'weave'
-      apply_phase(Phases::ConfigureCalico, [master_hosts.first]) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureMetrics, [master_hosts.first])
-      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first])
-      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first]) # using `kubeadm token`, not the kube API
+      apply_phase(Phases::ConfigureWeave) if config.network.provider == 'weave'
+      apply_phase(Phases::ConfigureCalico) if config.network.provider == 'calico'
+      apply_phase(Phases::ConfigureMetrics)
+      apply_phase(Phases::ConfigureTelemetry)
+      apply_phase(Phases::ConfigureBootstrap) # using `kubeadm token`, not the kube API
 
-      apply_phase(Phases::JoinNode, config.worker_hosts)
+      apply_phase(Phases::JoinNode)
 
-      apply_phase(Phases::LabelNode, config.hosts) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode) # NOTE: uses the @master kube API for each node, not threadsafe
     end
 
     def apply_reset
-      apply_phase(Phases::ResetHost, config.hosts)
+      apply_phase(Phases::ResetHost)
     end
 
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
-    def apply_phase(phase_class, hosts, **options)
+    def apply_phase(phase_class)
+      hosts = Array(@context[phase_class.on.to_s])
       return if hosts.empty?
 
       puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
-      phase_manager.apply(phase_class, hosts, **options)
+      phase_manager.apply(phase_class, hosts)
     end
 
     def apply_addons
@@ -144,8 +137,7 @@ module Pharos
     end
 
     def save_config
-      master_host = sorted_master_hosts.first
-      apply_phase(Phases::StoreClusterConfiguration, [master_host])
+      apply_phase(Phases::StoreClusterConfiguration)
     end
 
     def disconnect

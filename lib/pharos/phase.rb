@@ -20,6 +20,10 @@ module Pharos
       parallel
     end
 
+    def self.on(host_roles = :all_hosts)
+      @host_roles ||= host_roles
+    end
+
     def to_s
       "#{self.class.title} @ #{@host}"
     end

@@ -5,6 +5,7 @@ module Pharos
     class ConfigureClient < Pharos::Phase
       title "Configure kube client"
       parallel false
+      on :master
 
       REMOTE_FILE = "/etc/kubernetes/admin.conf"
 

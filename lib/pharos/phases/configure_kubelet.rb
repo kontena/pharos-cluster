@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureKubelet < Pharos::Phase
       title "Configure kubelet"
+      on :all_hosts
 
       register_component(
         name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'

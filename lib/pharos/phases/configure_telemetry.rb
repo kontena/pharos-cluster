@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureTelemetry < Pharos::Phase
       title "Configure telemetry"
+      on :master
 
       TOKEN_FILE = File.join(Dir.home, '.chpharosrc').freeze
 

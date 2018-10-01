@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureBootstrap < Pharos::Phase
       title "Configure bootstrap tokens"
+      on :master
 
       def call
         if new_hosts?

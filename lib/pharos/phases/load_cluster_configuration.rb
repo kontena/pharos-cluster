@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class LoadClusterConfiguration < Pharos::Phase
       title "Load cluster configuration"
+      on :master
 
       def call
         config_map = previous_config_map

@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureHost < Pharos::Phase
       title "Configure hosts"
+      on :all_hosts
 
       def call
         logger.info { "Configuring script helpers ..." }

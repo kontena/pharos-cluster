@@ -8,6 +8,7 @@ module Pharos
       using Pharos::CoreExt::IPAddrLoopback if RUBY_VERSION < '2.5.0'
 
       title "Gather host facts"
+      on :all_hosts
 
       def call
         logger.info { "Checking sudo access ..." }

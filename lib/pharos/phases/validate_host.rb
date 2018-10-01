@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ValidateHost < Pharos::Phase
       title "Validate hosts"
+      on :all_hosts
 
       def call
         logger.info { "Validating current role matches ..." }

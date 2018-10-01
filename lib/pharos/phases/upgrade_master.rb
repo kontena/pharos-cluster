@@ -5,6 +5,7 @@ module Pharos
     class UpgradeMaster < Pharos::Phase
       title "Upgrade master"
       parallel false
+      on :master_hosts
 
       def kubeadm
         Pharos::Kubeadm::ConfigGenerator.new(@config, @host)

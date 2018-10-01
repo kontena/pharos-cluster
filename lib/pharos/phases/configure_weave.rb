@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureWeave < Pharos::Phase
       title "Configure Weave network"
+      on :master
 
       WEAVE_VERSION = '2.4.1'
 

@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureDNS < Pharos::Phase
       title "Configure DNS"
+      on :master
 
       def call
         patch_deployment(

@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ConfigureCalico < Pharos::Phase
       title "Configure Calico network"
+      on :master
 
       CALICO_VERSION = '3.1.3'
 

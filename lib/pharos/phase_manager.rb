@@ -76,26 +76,26 @@ module Pharos
       hosts.map { |host| prepare_phase(phase_class, host, **options) }
     end
 
-    def apply(phase_class, hosts, **options)
+    def apply(phase_class, hosts)
       if phase_class.parallel?
         logger.debug { "Applying phase #{phase_class} in parallel mode" }
-        apply_parallel(phase_class, hosts, **options)
+        apply_parallel(phase_class, hosts)
       else
         logger.debug { "Applying phase #{phase_class} in sequential mode" }
-        apply_serial(phase_class, hosts, **options)
+        apply_serial(phase_class, hosts)
       end
     end
 
-    def apply_serial(phase_class, hosts, **options)
-      run_serial(prepare_phases(phase_class, hosts, **options)) do |phase|
+    def apply_serial(phase_class, hosts)
+      run_serial(prepare_phases(phase_class, hosts)) do |phase|
         start = Time.now
         phase.call
         logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
       end
     end
 
-    def apply_parallel(phase_class, hosts, **options)
-      run_parallel(prepare_phases(phase_class, hosts, **options)) do |phase|
+    def apply_parallel(phase_class, hosts)
+      run_parallel(prepare_phases(phase_class, hosts)) do |phase|
         start = Time.now
         phase.call
         logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }

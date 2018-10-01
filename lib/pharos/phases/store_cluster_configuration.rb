@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class StoreClusterConfiguration < Pharos::Phase
       title "Store cluster configuration"
+      on :master
 
       def call
         logger.info { "Storing cluster configuration to configmap ..." }
