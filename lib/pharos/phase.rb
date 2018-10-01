@@ -37,11 +37,12 @@ module Pharos
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
-    def initialize(host, config: nil, ssh: nil, cluster_context: nil)
+    def initialize(host, phase_manager:)
       @host = host
-      @config = config
-      @ssh = ssh
-      @cluster_context = cluster_context
+      @phase_manager = phase_manager
+      @config = phase_manager.cluster_manager.config
+      @ssh = phase_manager.cluster_manager.ssh_manager.client_for(host)
+      @cluster_context = phase_manager.cluster_manager.context
     end
 
     def logger

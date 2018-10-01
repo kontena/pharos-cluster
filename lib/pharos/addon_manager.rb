@@ -34,9 +34,10 @@ module Pharos
 
     # @param config [Pharos::Configuration]
     # @param cluster_context [Hash]
-    def initialize(config, cluster_context)
-      @config = config
-      @cluster_context = cluster_context
+    def initialize(cluster_manager:)
+      @cluster_manager = cluster_manager
+      @config = cluster_manager.config
+      @cluster_context = cluster_manager.context
       enable_default_addons
     end
 

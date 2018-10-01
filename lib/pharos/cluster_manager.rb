@@ -6,33 +6,17 @@ module Pharos
   class ClusterManager
     include Pharos::Logging
 
-    attr_reader :config
+    attr_reader :config, :ssh_manager, :addon_manager, :phase_manager, :context, :pastel
 
     # @param config [Pharos::Config]
     # @param pastel [Pastel]
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
-      @context = {}
-    end
-
-    # @return [Pharos::SSH::Manager]
-    def ssh_manager
-      @ssh_manager ||= Pharos::SSH::Manager.new
-    end
-
-    # @return [Pharos::AddonManager]
-    def phase_manager
-      @phase_manager = Pharos::PhaseManager.new(
-        ssh_manager: ssh_manager,
-        config: @config,
-        cluster_context: @context
-      )
-    end
-
-    # @return [Pharos::AddonManager]
-    def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new(@config, @context)
+      @context = { 'all_hosts' => @config.hosts }
+      @ssh_manager = Pharos::SSH::Manager.new
+      @phase_manager = Pharos::PhaseManager.new(cluster_manager: self)
+      @addon_manager = Pharos::AddonManager.new(cluster_manager: self)
     end
 
     # load phases/addons
@@ -45,16 +29,15 @@ module Pharos
         File.join(__dir__, '..', '..', 'addons'),
         File.join(Dir.pwd, 'addons'),
         File.join(__dir__, '..', '..', 'non-oss', 'addons')
-      ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+      ] + config.addon_paths.map { |d| File.join(Dir.pwd, d) }
       addon_dirs.keep_if { |dir| File.exist?(dir) }
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
 
       Pharos::AddonManager.load_addons(*addon_dirs)
-      Pharos::HostConfigManager.load_configs(@config)
+      Pharos::HostConfigManager.load_configs(config)
     end
 
     def gather_facts
-      @context['all_hosts'] = config.hosts
       apply_phase(Phases::GatherFacts)
     end
 
@@ -67,11 +50,11 @@ module Pharos
     end
 
     def update_context_hosts
-      @context['master_hosts'] = config.master_hosts.sort_by(&:master_sort_score)
-      @context['master'] = @context['master_hosts'].first
-      @context['etcd_hosts'] = config.etcd_hosts.sort_by(&:etcd_sort_score)
-      @context['etcd_master'] = @context['etcd_hosts'].first
-      @context['worker_hosts'] = config.worker_hosts
+      context['master_hosts'] = config.master_hosts.sort_by(&:master_sort_score)
+      context['master'] = @context['master_hosts'].first
+      context['etcd_hosts'] = config.etcd_hosts.sort_by(&:etcd_sort_score)
+      context['etcd_master'] = @context['etcd_hosts'].first
+      context['worker_hosts'] = config.worker_hosts
     end
 
     def apply_phases
@@ -120,12 +103,7 @@ module Pharos
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class)
-      hosts = Array(@context[phase_class.on.to_s])
-      return if hosts.empty?
-
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
-
-      phase_manager.apply(phase_class, hosts)
+      phase_manager.apply(phase_class)
     end
 
     def apply_addons

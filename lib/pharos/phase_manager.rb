@@ -20,9 +20,11 @@ module Pharos
       end
     end
 
+    attr_reader :cluster_manager
+
     # @param dirs [Array<String>]
-    def initialize(ssh_manager:, **options)
-      @ssh_manager = ssh_manager
+    def initialize(cluster_manager:, **options)
+      @cluster_manager = cluster_manager
       @options = options
     end
 
@@ -64,38 +66,51 @@ module Pharos
     end
 
     # @return [Pharos::Phase]
-    def prepare_phase(phase_class, host, **options)
-      options = @options.merge(options)
-
-      options[:ssh] = @ssh_manager.client_for(host)
-
+    def prepare_phase(phase_class, host)
+      options = @options
+      options[:phase_manager] = self
       phase_class.new(host, **options)
     end
 
-    def prepare_phases(phase_class, hosts, **options)
-      hosts.map { |host| prepare_phase(phase_class, host, **options) }
+    def phase_hosts(phase_class)
+      Array(@cluster_manager.context[phase_class.on.to_s])
     end
 
-    def apply(phase_class, hosts)
+    def prepare_phases(phase_class, hosts)
+      hosts.map { |host| prepare_phase(phase_class, host) }
+    end
+
+    def apply(phase_class)
+      hosts = phase_hosts(phase_class)
+
+      if hosts.empty?
+        logger.debug { "No eligible hosts for phase #{phase_class}" }
+        return
+      end
+
+      logger.info @cluster_manager.pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+
+      phases = prepare_phases(phase_class, hosts)
+
       if phase_class.parallel?
         logger.debug { "Applying phase #{phase_class} in parallel mode" }
-        apply_parallel(phase_class, hosts)
+        apply_parallel(phases)
       else
         logger.debug { "Applying phase #{phase_class} in sequential mode" }
-        apply_serial(phase_class, hosts)
+        apply_serial(phases)
       end
     end
 
-    def apply_serial(phase_class, hosts)
-      run_serial(prepare_phases(phase_class, hosts)) do |phase|
+    def apply_serial(phases)
+      run_serial(phases) do |phase|
         start = Time.now
         phase.call
         logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
       end
     end
 
-    def apply_parallel(phase_class, hosts)
-      run_parallel(prepare_phases(phase_class, hosts)) do |phase|
+    def apply_parallel(phases)
+      run_parallel(phases) do |phase|
         start = Time.now
         phase.call
         logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
