@@ -12,6 +12,14 @@ module Pharos
       @title || name
     end
 
+    def self.parallel(bool = true)
+      @parallel ||= bool
+    end
+
+    def self.parallel?
+      parallel
+    end
+
     def to_s
       "#{self.class.title} @ #{@host}"
     end

@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class ValidateVersion < Pharos::Phase
       title "Validate cluster version"
+      parallel false
 
       REMOTE_KUBECONFIG = "/etc/kubernetes/admin.conf"
 

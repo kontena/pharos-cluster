@@ -6,6 +6,7 @@ module Pharos
   module Phases
     class ConfigureEtcdChanges < Pharos::Phase
       title 'Configure etcd member changes'
+      parallel false
 
       def call
         store_initial_cluster_state

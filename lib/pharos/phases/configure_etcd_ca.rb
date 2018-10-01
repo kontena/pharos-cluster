@@ -4,6 +4,8 @@ module Pharos
   module Phases
     class ConfigureEtcdCa < Pharos::Phase
       title "Configure etcd certificate authority"
+      parallel false
+
       CA_PATH = '/etc/pharos/pki'
       CA_FILES = %w(ca.pem ca-key.pem).freeze
 

@@ -77,6 +77,16 @@ module Pharos
     end
 
     def apply(phase_class, hosts, **options)
+      if phase_class.parallel?
+        logger.debug { "Applying phase #{phase_class} in parallel mode" }
+        apply_parallel(phase_class, hosts, **options)
+      else
+        logger.debug { "Applying phase #{phase_class} in sequential mode" }
+        apply_serial(phase_class, hosts, **options)
+      end
+    end
+
+    def apply_serial(phase_class, hosts, **options)
       run_serial(prepare_phases(phase_class, hosts, **options)) do |phase|
         start = Time.now
         phase.call

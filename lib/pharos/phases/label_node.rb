@@ -4,6 +4,7 @@ module Pharos
   module Phases
     class LabelNode < Pharos::Phase
       title "Label nodes"
+      parallel false
 
       def call
         unless @host.labels || @host.taints
