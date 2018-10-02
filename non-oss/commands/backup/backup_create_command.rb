@@ -26,7 +26,9 @@ module Pharos
           name: name,
           namespace: 'kontena-backup',
           labels: {},
-          annotations: {}
+          annotations: {
+            'pharos.kontena.io/version': Pharos::VERSION
+          }
         },
         spec: {
           includedNamespaces: included_namespaces,
@@ -35,8 +37,6 @@ module Pharos
           includeClusterResources: include_cluster_resources?
         }
       }
-      # Set separately to make rubocop happy...
-      backup[:metadata][:annotations][:'pharos.kontena.io/version'] = Pharos::VERSION
 
       backup[:spec][:ttl] = ttl if ttl # Ark chokes on ttl being nil...
       backup[:spec][:labelSelector] = build_label_selector unless label_selector_list&.empty?
