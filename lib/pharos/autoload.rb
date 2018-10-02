@@ -24,7 +24,6 @@ module Pharos
   autoload :AddonManager, 'pharos/addon_manager'
   autoload :Phase, 'pharos/phase'
   autoload :Phases, 'pharos/phases'
-  autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
 

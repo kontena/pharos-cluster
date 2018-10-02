@@ -17,24 +17,21 @@ module Pharos
     end
 
     # @return [Pharos::AddonManager]
-    def phase_manager
-      @phase_manager = Pharos::PhaseManager.new(
-        config: @config,
-        cluster_context: @context
-      )
-    end
-
-    # @return [Pharos::AddonManager]
     def addon_manager
       @addon_manager ||= Pharos::AddonManager.new(@config, @context)
     end
 
     # load phases/addons
     def load
-      Pharos::PhaseManager.load_phases(
+      phase_dirs = [
         File.join(__dir__, 'phases'),
         File.join(__dir__, '..', '..', 'non-oss', 'phases')
-      )
+      ]
+
+      phase_dirs.each do |phase_dir|
+        Dir.glob(File.join(phase_dir, '*.rb')).each { |f| require(f) }
+      end
+
       addon_dirs = [
         File.join(__dir__, '..', '..', 'addons'),
         File.join(Dir.pwd, 'addons'),
@@ -122,12 +119,31 @@ module Pharos
 
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
-    def apply_phase(phase_class, hosts, **options)
+    def apply_phase(phase_class, hosts, parallel: false, **options)
       return if hosts.empty?
 
       puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
-      phase_manager.apply(phase_class, hosts, **options)
+      phases = hosts.map { |host| phase_class.new(host, config: @config, cluster_context: @context, **options) }
+
+      start = Time.now
+      send(parallel ? :apply_phases_parallel : :apply_phases_serial, phases)
+      logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
+    end
+
+    def apply_phases_parallel(phases)
+      threads = phases.map { |phase|
+        Thread.new do
+          phase.run
+        end
+      }
+      threads.map(&:value)
+    end
+
+    def apply_phases_serial(phases)
+      phases.map do |phase|
+        phase.run
+      end
     end
 
     def apply_addons

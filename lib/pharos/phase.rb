@@ -6,6 +6,13 @@ module Pharos
   class Phase
     RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
 
+    RETRY_ERRORS = [
+      OpenSSL::SSL::SSLError,
+      Excon::Error,
+      K8s::Error,
+      Pharos::SSH::RemoteCommand::ExecError
+    ].freeze
+
     # @return [String]
     def self.title(title = nil)
       @title = title if title
@@ -29,7 +36,7 @@ module Pharos
     def initialize(host, config: nil, ssh: nil, master: nil, cluster_context: nil)
       @host = host
       @config = config
-      @ssh = ssh
+      @ssh = @host.ssh
       @master = master
       @cluster_context = cluster_context
     end
@@ -100,6 +107,20 @@ module Pharos
     # @return [Array<K8s::Resource>]
     def delete_stack(name)
       Pharos::Kube::Stack.new(name).delete(kube_client)
+    end
+
+    def run(retry_times = 10)
+      retries ||= 0
+      call
+    rescue *RETRY_ERRORS => exc
+      raise if retries >= retry_times
+
+      logger.error { "[#{phase.host}] got error (#{exc.class.name}): #{exc.message.strip}" }
+      logger.debug { exc.backtrace.join("\n") }
+      logger.error { "[#{phase.host}] retrying after #{2**retries} seconds ..." }
+      sleep 2**retries
+      retries += 1
+      retry
     end
   end
 end
