@@ -44,7 +44,8 @@ module Pharos
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
 
       Pharos::AddonManager.load_addons(*addon_dirs)
-      Pharos::HostConfigManager.load_configs(@config)
+
+      Dir.glob(File.join(__dir__, 'host', '**', '*.rb')).each { |f| require(f) }
     end
 
     def gather_facts

@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
+require 'set'
+
 module Pharos
   module Host
     class Configurer
-      attr_reader :host, :ssh
+      attr_reader :host, :ssh, :config
 
       SCRIPT_LIBRARY = File.join(__dir__, '..', 'scripts', 'pharos.sh').freeze
 
-      def initialize(host, ssh)
+      def initialize(host, config = nil)
         @host = host
-        @ssh = ssh
+        @config = config
+        @ssh = host.ssh
       end
 
       def install_essentials
@@ -59,7 +62,7 @@ module Pharos
       # @param path [Array]
       # @return [String]
       def script_path(*path)
-        File.join(__dir__, self.class.os_name, 'scripts', *path)
+        File.join(__dir__, host.os_release.id, 'scripts', *path)
       end
 
       # @return [String]
@@ -91,42 +94,42 @@ module Pharos
         @host.docker?
       end
 
-      # @return [Pharos::Config,NilClass]
-      def cluster_config
-        self.class.cluster_config
+      def self.configurers
+        @configurers ||= Set.new
       end
 
-      class << self
-        attr_reader :os_name, :os_version
-        attr_accessor :cluster_config
+      def self.for_os_release(os_release, os_version = nil)
+        unless os_release.is_a?(Pharos::Configuration::OsRelease)
+          os_release = Pharos::Configuration::OsRelease.new(id: os_release, version: os_version)
+        end
 
-        # @param component [Hash]
-        def register_component(component)
-          component[:os_release] = Pharos::Configuration::OsRelease.new(id: os_name, version: os_version)
+        configurers.find { |c| c.supported?(os_release) }
+      end
+
+      def self.supported_os_releases
+        @supported_os_releases ||= []
+      end
+
+      # @param os [String]
+      # @param version [String]
+      def self.register_config(os, version)
+        supported_os_releases << Pharos::Configuration::OsRelease.new(id: os, version: version)
+        Pharos::Host::Configurer.configurers << self
+      end
+
+      def self.supported?(os_release, version = nil)
+        unless os_release.kind_of?(Pharos::Configuration::OsRelease)
+          os_release = Pharos::Configuration::OsRelease.new(id: os_release, version: version)
+        end
+
+        supported_os_releases.include?(os_release)
+      end
+
+      # @param component [Hash]
+      def self.register_component(component)
+        supported_os_releases.each do |os_release|
+          component[:os_release] = os_release
           Pharos::Phases.register_component(component)
-        end
-
-        def register_config(name, version)
-          @os_name = name
-          @os_version = version
-          configs << self
-          self
-        end
-
-        # @param [Pharos::Configuration::OsRelease]
-        # @return [Boolean]
-        def supported_os?(os_release)
-          os_name == os_release.id && os_version == os_release.version
-        end
-
-        # @param [Pharos::Configuration::OsRelease]
-        # @return [Class<Configurer>, NilClass]
-        def config_for_os_release(os_release)
-          configs.find { |config| config.supported_os?(os_release) }
-        end
-
-        def configs
-          @@configs ||= [] # rubocop:disable Style/ClassVars
         end
       end
 

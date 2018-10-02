@@ -73,7 +73,7 @@ module Pharos
 
     # @return [Pharos::Host::Configurer]
     def host_configurer
-      @host.configurer(@ssh)
+      Pharos::Host::Configurer.for_os_release(@host.os_release)&.new(@host, @config)
     end
 
     # @return [K8s::Client]

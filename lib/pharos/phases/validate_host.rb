@@ -19,10 +19,9 @@ module Pharos
       end
 
       def check_distro_version
-        @host.configurer(@ssh) # load configurer
-        return if Pharos::Host::Configurer.configs.any? { |config| config.supported_os?(@host.os_release) }
-
-        raise Pharos::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
+        if host_configurer.nil?
+          raise Pharos::InvalidHostError, "Distro not supported: #{@host.os_release.name} #{@host.os_release.inspect}"
+        end
       end
 
       def check_cpu_arch

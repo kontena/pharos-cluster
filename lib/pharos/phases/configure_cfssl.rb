@@ -7,7 +7,7 @@ module Pharos
 
       def call
         logger.info { 'Installing cfssl ...' }
-        @host.configurer(@ssh).configure_cfssl
+        host_configurer.configure_cfssl
       end
     end
   end
