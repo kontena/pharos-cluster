@@ -62,6 +62,14 @@ module Pharos
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
+      def ssh
+        return @ssh if @ssh
+
+        opts = { send_env: [] }
+        opts[:keys] = [ssh_key_path] if ssh_key_path
+        @ssh = Pharos::SSH::Client.new(address, user, opts).tap(&:connect)
+      end
+
       def to_s
         short_hostname || address
       end

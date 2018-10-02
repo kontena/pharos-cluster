@@ -16,15 +16,9 @@ module Pharos
       @context = {}
     end
 
-    # @return [Pharos::SSH::Manager]
-    def ssh_manager
-      @ssh_manager ||= Pharos::SSH::Manager.new
-    end
-
     # @return [Pharos::AddonManager]
     def phase_manager
       @phase_manager = Pharos::PhaseManager.new(
-        ssh_manager: ssh_manager,
         config: @config,
         cluster_context: @context
       )
@@ -149,7 +143,7 @@ module Pharos
     end
 
     def disconnect
-      ssh_manager.disconnect_all
+      config.hosts.map { |host| host.ssh.disconnect }
     end
   end
 end
