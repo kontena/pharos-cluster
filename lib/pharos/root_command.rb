@@ -20,5 +20,12 @@ module Pharos
       warn exc.message
       warn exc.backtrace.join("\n")
     end
+
+    # @param [String] command
+    # @param [String] description
+    # @param [Class] klass
+    def self.register(command, description, command_class)
+      subcommand(command, description, command_class)
+    end
   end
 end

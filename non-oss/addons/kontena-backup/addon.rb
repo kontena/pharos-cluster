@@ -1,4 +1,4 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
 
 Pharos.addon 'kontena-backup' do
   version '0.9.6'
@@ -23,7 +23,7 @@ Pharos.addon 'kontena-backup' do
     raise Pharos::InvalidAddonError, "cannot read given cloud credentials file" unless File.readable?(config.cloud_credentials)
 
     provider_count = count_providers
-    raise Pharos::InvalidAddonError, "at least one provider needs to be configured" if provider_count == 0
+    raise Pharos::InvalidAddonError, "at least one provider needs to be configured" if provider_count.zero?
     raise Pharos::InvalidAddonError, "only one provider can be configured" if provider_count > 1
   end
 
@@ -47,7 +47,7 @@ Pharos.addon 'kontena-backup' do
       ark_config = gcp_config
     end
 
-    apply_resources(ark_config: stringify_hash(ark_config.to_h))
+    apply_resources(ark_config: ark_config.to_h.stringify_keys)
   }
 
   def aws_config
@@ -86,8 +86,8 @@ Pharos.addon 'kontena-backup' do
         name: "gcp",
         objectStorage: {
           bucket: config.gcp.bucket,
-          resticLocation: "#{config.gcp.bucket}-restic",
-        },
+          resticLocation: "#{config.gcp.bucket}-restic"
+        }
       }
     }
 
