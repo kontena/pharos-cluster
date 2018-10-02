@@ -36,4 +36,18 @@ describe Pharos::Kube::Stack do
       ]
     end
   end
+
+  context "stack with empty resources" do
+    let(:client) { instance_double(K8s::Client) }
+
+    subject do
+      described_class.load('test', fixtures_path('stacks/empty'))
+    end
+
+    it "ignores empty resources during stack loading" do
+      expect(subject.resources.size).to eq(1)
+      expect(subject.resources.first.kind).not_to be_nil
+      expect(subject.resources.first.apiVersion).not_to be_nil
+    end
+  end
 end
