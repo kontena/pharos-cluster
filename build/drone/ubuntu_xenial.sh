@@ -10,8 +10,8 @@ chmod +x /usr/local/bin/rubyc
 gem install bundler
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-linux-amd64-${version}"
-mkdir /__enclose_io_memfs__
-rubyc -o $package -d /__enclose_io_memfs__ pharos-cluster
+mkdir /root/.pharos/build
+rubyc -o $package -d /root/.pharos/build pharos-cluster
 ./$package version
 
 # ship to github
