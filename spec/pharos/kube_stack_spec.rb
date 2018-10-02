@@ -21,37 +21,19 @@ describe Pharos::Kube::Stack do
       ]
     end
 
-    context "when not yet installed" do
-      let(:resource) {
-        K8s::Resource.new(
-          apiVersion: 'v1',
-          kind: 'ConfigMap',
-          metadata: {
+    it "labels resources with the correct label and annotation" do
+      expect(described_class::LABEL).to eq 'pharos.kontena.io/stack'
+
+      expect(subject.resources.map{|r| subject.prepare_resource(r).to_hash}).to match [
+        hash_including(
+          metadata: hash_including(
             namespace: 'default',
             name: 'test',
-            labels: {
-              'pharos.kontena.io/stack': 'test',
-            },
-            annotations: {
-              'pharos.kontena.io/stack-checksum': subject.checksum,
-            }
-          },
-          data: {
-            'foo' => 'bar',
-          }
-        )
-      }
-
-      before do
-        allow(client).to receive(:get_resources).with([K8s::Resource]).and_return([nil])
-        allow(client).to receive(:list_resources).with(labelSelector: { 'pharos.kontena.io/stack' => 'test' }).and_return([resource])
-      end
-
-      it "creates the resource with the correct label" do
-        expect(client).to receive(:create_resource).with(resource).and_return(resource)
-
-        subject.apply(client)
-      end
+            labels: { :'pharos.kontena.io/stack' => 'test' },
+            annotations: { :'pharos.kontena.io/stack-checksum' => subject.checksum },
+          ),
+        ),
+      ]
     end
   end
 end

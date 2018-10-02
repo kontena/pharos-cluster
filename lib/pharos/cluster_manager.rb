@@ -100,17 +100,19 @@ module Pharos
 
       # master is now configured and can be used
       apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
+      # configure essential services
       apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
-
       apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
+
       apply_phase(Phases::ConfigureBootstrap, [master_hosts.first], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
-
       apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+
+      # configure services that need workers
+      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
+      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
     end
 
     def apply_reset

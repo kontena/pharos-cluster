@@ -91,12 +91,16 @@ module Pharos
         target
       end
 
+      # Returns an array of lines in the remote file
+      # @return [Array<String>]
+      def lines
+        read.lines
+      end
+
       # Yields each line in the remote file
       # @yield [String]
-      def each_line
-        read.split(/[\r\n]/).each do |row|
-          yield row
-        end
+      def each_line(&block)
+        read.each_line(&block)
       end
 
       private

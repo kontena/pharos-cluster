@@ -33,18 +33,13 @@ module Pharos
 
         new(name, resources)
       end
-
-      def initialize(name, resources = [])
-        super(name, resources, label: LABEL, checksum_annotation: CHECKSUM_ANNOTATION)
-      end
     end
 
     # @param host [String]
     # @param config [Hash]
     # @return [K8s::Client]
     def self.client(host, config)
-      @kube_client ||= {}
-      @kube_client[host] ||= K8s::Client.config(K8s::Config.new(config))
+      K8s::Client.config(K8s::Config.new(config), server: "https://#{host}:6443")
     end
 
     # @param name [String]
