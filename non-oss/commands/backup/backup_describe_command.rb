@@ -7,6 +7,7 @@ require 'tty-table'
 module Pharos
   class BackupDescribeCommand < Pharos::Command
     include ClientHelper
+    using Pharos::CoreExt::DeepTransformKeys
 
     banner "Describe a backup details"
 
@@ -14,7 +15,7 @@ module Pharos
 
     def execute
       backup = client.api('ark.heptio.com/v1').resource('backups', namespace: 'kontena-backup').get(name)
-      puts ::YAML.dump(backup.to_hash.stringify_keys)
+      puts ::YAML.dump(backup.to_hash.deep_stringify_keys)
     rescue StandardError => exc
       raise unless ENV['DEBUG'].to_s.empty?
       warn "#{exc.class.name} : #{exc.message}"

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-backup' do
+  using Pharos::CoreExt::DeepTransformKeys
+
   version '0.9.6'
   license '???'
 
@@ -47,7 +49,7 @@ Pharos.addon 'kontena-backup' do
       ark_config = gcp_config
     end
 
-    apply_resources(ark_config: ark_config.to_h.stringify_keys)
+    apply_resources(ark_config: ark_config.deep_stringify_keys)
   }
 
   def aws_config
@@ -71,7 +73,7 @@ Pharos.addon 'kontena-backup' do
     ark_config[:backupStorageProvider][:config][:s3ForcePathStyle] = config.aws.s3_force_path_style if config.aws.s3_force_path_style
     ark_config[:backupStorageProvider][:config][:s3Url] = config.aws.s3_url if config.aws.s3_url
 
-    K8s::Resource.new(ark_config)
+    ark_config
   end
 
   def gcp_config
@@ -91,11 +93,6 @@ Pharos.addon 'kontena-backup' do
       }
     }
 
-    K8s::Resource.new(ark_config)
-  end
-
-  # FIXME Put in some common place, maybe monkeypatch Hash???
-  def stringify_hash(hash)
-    JSON.parse(JSON.dump(hash))
+    ark_config
   end
 end

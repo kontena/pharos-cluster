@@ -33,8 +33,6 @@ module Pharos
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
     autoload :StringCasing, 'pharos/core-ext/string_casing'
-    autoload :HashStringify, 'pharos/core-ext/hash_stringify'
-    Pharos::CoreExt::HashStringify # Force loading
   end
 
   module SSH
