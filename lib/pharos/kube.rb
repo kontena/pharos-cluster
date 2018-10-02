@@ -29,6 +29,9 @@ module Pharos
         files = Pathname.glob(path.join('*.{yml,yaml,yml.erb,yaml.erb}')).sort_by(&:to_s)
         resources = files.map do |file|
           K8s::Resource.new(Pharos::YamlFile.new(file).load(name: name, **vars))
+        end.select do |r|
+          # Take in only resources that are valid kube resources
+          r.kind && r.apiVersion
         end
 
         new(name, resources)
