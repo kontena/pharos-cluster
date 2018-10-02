@@ -3,6 +3,8 @@
 module Pharos
   module Phases
     class StoreClusterConfiguration < Pharos::Phase
+      using Pharos::CoreExt::DeepTransformKeys
+
       title "Store cluster configuration"
 
       def call
@@ -13,7 +15,7 @@ module Pharos
       private
 
       def resource
-        data = JSON.parse(@config.data.to_json) # hack to get rid of symbols
+        data = @config.data.to_h.deep_transform_keys(&:to_s)
         K8s::Resource.new(
           apiVersion: 'v1',
           kind: 'ConfigMap',
@@ -37,11 +39,11 @@ module Pharos
       end
 
       def components
-        JSON.parse(Pharos::Phases.components_for_config(@config).sort_by(&:name).map(&:to_h).to_json)
+        Pharos::Phases.components_for_config(@config).sort_by(&:name).map { |c| c.to_h.deep_stringify_keys }
       end
 
       def addons
-        JSON.parse(Pharos::AddonManager.addons.map(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.to_json)
+        Pharos::AddonManager.addons.map(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.map(&:deep_stringify_keys)
       end
     end
   end

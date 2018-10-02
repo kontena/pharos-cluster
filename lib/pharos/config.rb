@@ -16,6 +16,8 @@ module Pharos
   class Config < Pharos::Configuration::Struct
     HOSTS_PER_DNS_REPLICA = 10
 
+    using Pharos::CoreExt::DeepTransformKeys
+
     # @param raw_data [Hash]
     # @raise [Pharos::ConfigError]
     # @return [Pharos::Config]
@@ -83,7 +85,7 @@ module Pharos
 
     # @return [String]
     def to_yaml
-      JSON.parse(to_h.to_json).to_yaml
+      YAML.dump(to_h.deep_stringify_keys)
     end
   end
 end
