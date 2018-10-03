@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "clamp"
-require "awrence"
 require_relative "pharos/autoload"
 require_relative "pharos/version"
 require_relative "pharos/command"

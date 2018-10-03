@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-storage' do
+  using Pharos::CoreExt::DeepTransformKeys
   version Pharos::VERSION
   license 'Kontena License'
 
@@ -116,10 +117,10 @@ Pharos.addon 'kontena-storage' do
           useAllNodes: config.storage&.use_all_nodes || true,
           useAllDevices: false,
           deviceFilter: config.storage&.device_filter,
-          nodes: config.storage&.nodes&.map { |n| n.to_h.to_camelback_keys }
+          nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
         },
-        placement: (config.placement || {}).to_h.to_camelback_keys,
-        resources: (config.resources || {}).to_h.to_camelback_keys,
+        placement: (config.placement || {}).to_h.deep_transform_keys(&:camelback),
+        resources: (config.resources || {}).to_h.deep_transform_keys(&:camelback),
         dashboard: config.dashboard || { enabled: false }
       }
     )
