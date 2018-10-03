@@ -96,7 +96,7 @@ Pharos.addon 'kontena-storage' do
   install {
     cluster = build_cluster_resource
     apply_resources(
-      cluster: stringify_hash(cluster.to_h),
+      cluster: cluster.to_h.deep_transform_keys(&:to_s),
       rook_version: rook_version
     )
   }
@@ -124,9 +124,5 @@ Pharos.addon 'kontena-storage' do
         dashboard: config.dashboard || { enabled: false }
       }
     )
-  end
-
-  def stringify_hash(hash)
-    JSON.parse(JSON.dump(hash))
   end
 end
