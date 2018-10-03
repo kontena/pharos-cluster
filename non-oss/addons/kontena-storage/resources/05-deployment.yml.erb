@@ -17,7 +17,7 @@ spec:
       serviceAccountName: kontena-storage-system
       containers:
       - name: rook-ceph-operator
-        image: rook/ceph:v<%= version %>
+        image: rook/ceph:v<%= rook_version %>
         args: ["ceph", "operator"]
         volumeMounts:
         - mountPath: /var/lib/rook

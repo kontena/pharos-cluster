@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-storage' do
-  version '0.8.0'
+  version Pharos::VERSION
   license 'Kontena License'
+
+  rook_version = '0.8.3'
 
   config_schema {
     required(:data_dir).filled(:str?)
@@ -92,7 +94,10 @@ Pharos.addon 'kontena-storage' do
 
   install {
     cluster = build_cluster_resource
-    apply_resources(cluster: stringify_hash(cluster.to_h))
+    apply_resources(
+      cluster: stringify_hash(cluster.to_h),
+      rook_version: rook_version
+    )
   }
 
   # @return [K8s::Resource]
