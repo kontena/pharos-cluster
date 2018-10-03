@@ -23,7 +23,7 @@ module Pharos
           raise Pharos::InvalidHostError, "Distro not supported: #{@host.os_release.name} #{@host.os_release.inspect}"
         end
 
-        logger.debug { "Host distro: %<id>s (like %<like>s) %<name>s %<version>s" % @host.os_release.to_h }
+        logger.debug { "Host distro: #{@host.os_release.to_h.inspect}" }
       end
 
       def check_cpu_arch

@@ -1,1 +1,4 @@
 --require spec_helper
+--order rand
+--profile
+--backtrace

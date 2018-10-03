@@ -10,6 +10,10 @@ describe Pharos::Configuration::Host do
     )
   end
 
+  before do
+    allow(subject).to receive(:ssh).and_return(instance_double(Pharos::SSH::Client))
+  end
+
   describe '#short_hostname' do
     let(:hostname) { nil }
 
@@ -40,14 +44,13 @@ describe Pharos::Configuration::Host do
 
   describe '#configurer' do
     it 'returns nil on non-supported os release' do
-      allow(subject).to receive(:os_release).and_return(double(:os_release, id: 'foo', version: 'bar'))
-      expect(subject.configurer(double(:ssh))).to be_nil
+      allow(subject).to receive(:os_release).and_return(Pharos::Configuration::OsRelease.new(id: 'foo', version: 'bar'))
+      expect(subject.configurer).to be_nil
     end
 
     it 'returns os release when supported' do
-      Pharos::HostConfigManager.load_configs(double(:cluster_config))
-      allow(subject).to receive(:os_release).and_return(double(:os_release, id: 'ubuntu', version: '16.04'))
-      expect(subject.configurer(double(:ssh))).to be_instance_of(Pharos::Host::UbuntuXenial)
+      allow(subject).to receive(:os_release).and_return(Pharos::Configuration::OsRelease.new(id: 'ubuntu', version: '16.04'))
+      expect(subject.configurer).to be_instance_of(Pharos::Host::UbuntuXenial)
     end
   end
 

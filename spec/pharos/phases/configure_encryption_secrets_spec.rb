@@ -2,10 +2,9 @@ require "pharos/phases/configure_secrets_encryption"
 
 describe Pharos::Phases::ConfigureSecretsEncryption do
   let(:master) { Pharos::Configuration::Host.new(address: 'test', private_address: 'private', role: 'master') }
-  let(:config_hosts_count) { 1 }
-
+  let(:host) { Pharos::Configuration::Host.new(role: 'worker') }
   let(:config) { Pharos::Config.new(
-      hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new(role: 'worker') },
+      hosts: [host],
       network: {
         service_cidr: '1.2.3.4/16',
         pod_network_cidr: '10.0.0.0/16'
@@ -15,7 +14,13 @@ describe Pharos::Phases::ConfigureSecretsEncryption do
   ) }
 
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(master, config: config, ssh: ssh) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(ssh)
+    allow(master).to receive(:ssh).and_return(ssh)
+  end
+
+  subject { described_class.new(master, config: config) }
 
     describe '#read_config_keys' do
       let(:file) { instance_double(Pharos::SSH::RemoteFile) }

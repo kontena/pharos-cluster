@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require 'logger'
+require 'openssl'
+require 'excon'
+require 'k8s/error'
+require_relative 'ssh/remote_command'
 
 module Pharos
   class Phase
@@ -31,7 +35,6 @@ module Pharos
 
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
-    # @param ssh [Pharos::SSH::Client]
     # @param master [Pharos::Configuration::Host]
     def initialize(host, config: nil, master: nil, cluster_context: nil)
       @host = host
@@ -115,9 +118,9 @@ module Pharos
     rescue *RETRY_ERRORS => exc
       raise if retries >= retry_times
 
-      logger.error { "[#{phase.host}] got error (#{exc.class.name}): #{exc.message.strip}" }
+      logger.error { "[#{host}] got error (#{exc.class.name}): #{exc.message.strip}" }
       logger.debug { exc.backtrace.join("\n") }
-      logger.error { "[#{phase.host}] retrying after #{2**retries} seconds ..." }
+      logger.error { "[#{host}] retrying after #{2**retries} seconds ..." }
       sleep 2**retries
       retries += 1
       retry

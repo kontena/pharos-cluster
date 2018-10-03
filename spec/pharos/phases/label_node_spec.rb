@@ -11,6 +11,8 @@ describe Pharos::Phases::LabelNode do
 
   before(:each) do
     allow(subject).to receive(:kube_client).and_return(kube_client)
+    allow(host).to receive(:ssh).and_return(instance_double(Pharos::SSH::Client))
+    allow(master).to receive(:ssh).and_return(instance_double(Pharos::SSH::Client))
     allow(kube_client).to receive(:api).with('v1').and_return(kube_api_v1)
     allow(kube_api_v1).to receive(:resource).with('nodes').and_return(kube_nodes)
   end

@@ -11,31 +11,23 @@ describe Pharos::Host::Configurer do
 
   describe '.register_config' do
     it 'sets os_name and os_version' do
-      expect(test_config_class.os_name).to eq('test')
-      expect(test_config_class.os_version).to eq('1.1.0')
+      expect(test_config_class.supported_os_releases.first.id).to eq('test')
+      expect(test_config_class.supported_os_releases.first.version).to eq('1.1.0')
     end
 
     it 'registers config class' do
-      test_config_class # load
-      expect(described_class.configs.last).to eq(test_config_class)
+      expect(Pharos::Host::Configurer.configurers).to include(test_config_class)
     end
   end
 
   describe '.supported_os?' do
     it 'returns true if supported' do
-      expect(
-        test_config_class.supported_os?(
-          double(:os_release, id: test_config_class.os_name, version: test_config_class.os_version)
-        )
-      ).to be_truthy
+      expect(test_config_class.supported?(Pharos::Configuration::OsRelease.new(id: 'test', version: '1.1.0'))).to be_truthy
+      expect(test_config_class.supported?('test', '1.1.0')).to be_truthy
     end
 
     it 'returns false if not supported' do
-      expect(
-        test_config_class.supported_os?(
-          double(:os_release, id: test_config_class.os_name, version: '1.2.0')
-        )
-      ).to be_falsey
+      expect(test_config_class.supported?('test', '1.2.0')).to be_falsey
     end
   end
 end

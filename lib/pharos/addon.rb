@@ -7,20 +7,6 @@ require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
-  # @param name [String]
-  # @return [Pharos::Addon]
-  def self.addon(name, &block)
-    klass = Class.new(Pharos::Addon, &block).tap do |addon|
-      addon.addon_location = File.dirname(block.source_location.first)
-      addon.addon_name = name
-    end
-
-    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
-    Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
-    Pharos::AddonManager.addons << klass
-    klass
-  end
-
   class Addon
     include Pharos::Logging
 

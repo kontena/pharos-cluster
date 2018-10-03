@@ -67,7 +67,7 @@ module Pharos
 
         opts = { send_env: [] }
         opts[:keys] = [ssh_key_path] if ssh_key_path
-        @ssh = Pharos::SSH::Client.new(address, user, opts).tap(&:connect)
+        @ssh = Pharos::SSH::Client.new(address, user, opts)
       end
 
       def to_s

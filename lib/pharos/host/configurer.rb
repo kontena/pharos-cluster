@@ -141,3 +141,5 @@ module Pharos
     end
   end
 end
+
+Dir.glob(File.join(__dir__, '**', '*.rb')).each { |f| require(f) }

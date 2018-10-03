@@ -69,6 +69,7 @@ module Pharos
       end
 
       def run
+        @client.require_session!
         debug_cmd(@cmd, source: @source) if debug?
 
         result = Result.new

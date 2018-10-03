@@ -2,18 +2,26 @@ require 'pharos/phases/validate_host'
 
 describe Pharos::Phases::ValidateHost do
   let(:network_config) { {} }
-  let(:config) { Pharos::Config.new(
-      hosts: [
-        Pharos::Configuration::Host.new(
-          address: '192.0.2.1',
-          role: 'master'
-        ),
-      ],
-      network: network_config,
-  ) }
-  let(:host) { config.hosts[0] }
+  let(:host) {
+    Pharos::Configuration::Host.new(
+      address: '192.0.2.1',
+      role: 'master'
+    )
+  }
+
+  let(:config) {
+    Pharos::Config.new(
+      hosts: [host],
+      network: network_config
+    )
+  }
+
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(host, config: config, ssh: ssh) }
+  subject { described_class.new(host, config: config) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(ssh)
+  end
 
   describe '#check_role' do
     let(:role) { 'worker' }
@@ -29,7 +37,7 @@ describe Pharos::Phases::ValidateHost do
     before do
       host.checks = checks
     end
-    subject { described_class.new(host, config: config, ssh: ssh) }
+    subject { described_class.new(host, config: config) }
 
     context 'for a worker node' do
       let(:role) { 'worker' }
@@ -113,36 +121,27 @@ describe Pharos::Phases::ValidateHost do
   end
 
   describe '#validate_unique_hostnames' do
-    let(:config) { Pharos::Config.new(
-      hosts: [
-        Pharos::Configuration::Host.new(
-          address: '192.0.2.1',
-        ),
-        Pharos::Configuration::Host.new(
-          address: '192.0.2.2',
-        ),
-        Pharos::Configuration::Host.new(
-          address: '192.0.2.3',
-        )
-      ]
-    ) }
+    let(:host2) { Pharos::Configuration::Host.new(address: '192.0.2.2') }
+    let(:host3) { Pharos::Configuration::Host.new(address: '192.0.2.3') }
+
+    let(:config) { Pharos::Config.new(hosts: [host, host2, host3]) }
 
     context 'no duplicate hostnames' do
-      it 'does not raise if no duplicates' do
-        config.hosts[0].hostname = "host-0"
-        config.hosts[1].hostname = "host-1"
-        config.hosts[2].hostname = "host-2"
+      before do
+        config.hosts.each_with_index { |h, i| h.hostname = "host-#{i}" }
+      end
 
-        subject.validate_unique_hostnames
+      it 'does not raise if no duplicates' do
+        expect { subject.validate_unique_hostnames }.not_to raise_error
       end
     end
 
     context 'duplicate hostnames' do
-      it 'raises if duplicates' do
-        config.hosts[0].hostname = "foo"
-        config.hosts[1].hostname = "foo"
-        config.hosts[2].hostname = "foo"
+      before do
+        config.hosts.each { |h| h.hostname = "foo" }
+      end
 
+      it 'raises if duplicates' do
         expect{ subject.validate_unique_hostnames }.to raise_error(Pharos::InvalidHostError, "Duplicate hostname foo for hosts 192.0.2.2,192.0.2.3")
       end
     end

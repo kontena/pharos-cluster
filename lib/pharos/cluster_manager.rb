@@ -41,8 +41,6 @@ module Pharos
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
 
       Pharos::AddonManager.load_addons(*addon_dirs)
-
-      Dir.glob(File.join(__dir__, 'host', '**', '*.rb')).each { |f| require(f) }
     end
 
     def gather_facts
@@ -128,7 +126,7 @@ module Pharos
 
       start = Time.now
       send(parallel ? :apply_phases_parallel : :apply_phases_serial, phases)
-      logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
+      logger.debug { "Completed #{phase_class.title} in #{'%.3fs' % [Time.now - start]}" }
     end
 
     def apply_phases_parallel(phases)

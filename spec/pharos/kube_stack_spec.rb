@@ -22,15 +22,13 @@ describe Pharos::Kube::Stack do
     end
 
     it "labels resources with the correct label and annotation" do
-      expect(described_class::LABEL).to eq 'pharos.kontena.io/stack'
-
       expect(subject.resources.map{|r| subject.prepare_resource(r).to_hash}).to match [
         hash_including(
           metadata: hash_including(
             namespace: 'default',
             name: 'test',
             labels: { :'pharos.kontena.io/stack' => 'test' },
-            annotations: { :'pharos.kontena.io/stack-checksum' => subject.checksum },
+            annotations: hash_including(:'pharos.kontena.io/stack-checksum' => /^\h+$/),
           ),
         ),
       ]

@@ -42,6 +42,7 @@ module Pharos
       # @return [Pharos::SSH::Tempfile]
       # @yield [Pharos::SSH::Tempfile]
       def tempfile(prefix: "pharos", content: nil, &block)
+        require_session!
         Tempfile.new(self, prefix: prefix, content: content, &block)
       end
 
@@ -79,17 +80,16 @@ module Pharos
       end
 
       def file(path)
-        Pharos::SSH::RemoteFile.new(self, path)
+        require_session!
+        RemoteFile.new(self, path)
       end
 
       def disconnect
         @session.close if @session && !@session.closed?
       end
 
-      private
-
       def require_session!
-        raise Error, "Connection not established" unless @session
+        connect unless @session
       end
     end
   end

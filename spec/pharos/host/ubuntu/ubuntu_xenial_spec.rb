@@ -8,8 +8,12 @@ describe Pharos::Host::UbuntuXenial do
     host
   end
   let(:ssh) { double(:ssh) }
-  let(:cluster_config) { double(:cluster_config, image_repository: 'quay.io/kontena') }
-  let(:subject) { described_class.new(host, ssh) }
+  let(:cluster_config) { double(image_repository: 'quay.io/kontena') }
+  let(:subject) { described_class.new(host, cluster_config) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(ssh)
+  end
 
   describe '#configure_container_runtime' do
     context 'docker' do
@@ -22,7 +26,6 @@ describe Pharos::Host::UbuntuXenial do
 
     context 'cri-o' do
       it 'configures cri-o' do
-        allow(subject).to receive(:cluster_config).and_return(cluster_config)
         allow(subject).to receive(:docker?).and_return(false)
         allow(subject).to receive(:crio?).and_return(true)
         expect(subject).to receive(:exec_script).with('configure-cri-o.sh', anything)

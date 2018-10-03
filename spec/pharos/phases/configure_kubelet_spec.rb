@@ -24,14 +24,15 @@ describe Pharos::Phases::ConfigureKubelet do
   ) }
 
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(host, config: config, ssh: ssh) }
 
   before(:each) do
     host.resolvconf = host_resolvconf
-
+    allow(host).to receive(:ssh).and_return(ssh)
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))
     allow(host).to receive(:os_release).and_return(host_osrelease)
   end
+
+  subject { described_class.new(host, config: config) }
 
   describe '#build_systemd_dropin' do
     it "returns a systemd unit" do
