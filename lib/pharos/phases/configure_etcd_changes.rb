@@ -39,6 +39,7 @@ module Pharos
         if new_members.size > 1
           fail "Cannot add multiple etcd peers at once"
         end
+
         new_members.each do |h|
           logger.info { "Adding new etcd peer https://#{h.peer_address}:2380 ..." }
           etcd.add_member(h)
@@ -57,6 +58,7 @@ module Pharos
         if remove_members.size / member_list.size.to_f >= 0.5
           fail "Cannot remove majority of etcd peers"
         end
+
         remove_members.each do |m|
           logger.info { "Removing old etcd peer #{m['peerURLs'].join(', ')} ..." }
           etcd.remove_member(m['id'])

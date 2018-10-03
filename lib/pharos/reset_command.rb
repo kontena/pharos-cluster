@@ -17,6 +17,7 @@ module Pharos
       exit 11
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
+
       warn "#{ex.class.name} : #{ex.message}"
       exit 1
     end

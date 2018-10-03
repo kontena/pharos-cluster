@@ -48,6 +48,7 @@ module Pharos
       exit 11
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
+
       warn "#{ex.class.name} : #{ex.message}"
       exit 1
     end
@@ -162,8 +163,10 @@ module Pharos
     def humanize_duration(secs)
       [[60, :second], [60, :minute], [24, :hour], [1000, :day]].map{ |count, name|
         next unless secs.positive?
+
         secs, n = secs.divmod(count).map(&:to_i)
         next if n.zero?
+
         "#{n} #{name}#{'s' unless n == 1}"
       }.compact.reverse.join(' ')
     end

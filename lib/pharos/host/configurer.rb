@@ -112,13 +112,13 @@ module Pharos
 
       # @param os [String]
       # @param version [String]
-      def self.register_config(os, version)
-        supported_os_releases << Pharos::Configuration::OsRelease.new(id: os, version: version)
+      def self.register_config(os_name, version)
+        supported_os_releases << Pharos::Configuration::OsRelease.new(id: os_name, version: version)
         Pharos::Host::Configurer.configurers << self
       end
 
       def self.supported?(os_release, version = nil)
-        unless os_release.kind_of?(Pharos::Configuration::OsRelease)
+        unless os_release.is_a?(Pharos::Configuration::OsRelease)
           os_release = Pharos::Configuration::OsRelease.new(id: os_release, version: version)
         end
 

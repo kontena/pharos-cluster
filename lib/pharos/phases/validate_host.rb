@@ -22,10 +22,13 @@ module Pharos
         if host_configurer.nil?
           raise Pharos::InvalidHostError, "Distro not supported: #{@host.os_release.name} #{@host.os_release.inspect}"
         end
+
+        logger.debug { "Host distro: %<id>s (like %<like>s) %<name>s %<version>s" % @host.os_release.to_h }
       end
 
       def check_cpu_arch
         return if @host.cpu_arch.supported?
+
         raise Pharos::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
 

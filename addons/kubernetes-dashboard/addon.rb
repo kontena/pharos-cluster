@@ -13,10 +13,12 @@ Pharos.addon 'kubernetes-dashboard' do
     begin
       service_account = kube_client.api('v1').resource('serviceaccounts', namespace: 'kube-system').get('dashboard-admin')
       raise "secret not available" if service_account.secrets.nil? || service_account.secrets.empty?
+
       token_secret = service_account.secrets[0]
       logger.info { "~~> kubernetes-dashboard admin token can be fetched using: kubectl describe secret #{token_secret.name} -n kube-system" }
     rescue RuntimeError => ex
       raise unless ex.message == "secret not available"
+
       retry_times += 1
       if retry_times > 10
         logger.error { "~~> kubernetes-dashboard admin token cannot be found" }

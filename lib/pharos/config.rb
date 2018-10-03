@@ -51,6 +51,7 @@ module Pharos
     def dns_replicas
       return network.dns_replicas if network.dns_replicas
       return 1 if hosts.length == 1
+
       1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
     end
 

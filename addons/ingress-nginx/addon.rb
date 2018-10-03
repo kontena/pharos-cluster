@@ -46,6 +46,7 @@ Pharos.addon 'ingress-nginx' do
     r = (@cluster_config.worker_hosts.size / 10.to_f).ceil
 
     return 2 if r < 2
+
     r
   end
 end
