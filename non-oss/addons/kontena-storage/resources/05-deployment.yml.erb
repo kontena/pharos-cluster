@@ -24,6 +24,9 @@ spec:
           name: rook-config
         - mountPath: /etc/ceph
           name: default-config-dir
+        resources:
+          requests:
+            memory: 24Mi
         env:
         # Rook Agent toleration. Will tolerate all taints with all keys.
         # Choose between NoSchedule, PreferNoSchedule and NoExecute:
