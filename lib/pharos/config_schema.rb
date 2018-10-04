@@ -118,6 +118,14 @@ module Pharos
           optional(:enabled).filled(:bool?)
         end
         optional(:image_repository).filled(:str?)
+        optional(:admission_plugins).filled do
+          each do
+            schema do
+              required(:name).filled(:str?)
+              optional(:enabled).filled(:bool?)
+            end
+          end
+        end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]

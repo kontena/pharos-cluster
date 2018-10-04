@@ -11,6 +11,7 @@ require_relative 'configuration/audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
 require_relative 'configuration/telemetry'
+require_relative 'configuration/admission_plugin'
 
 module Pharos
   class Config < Pharos::Configuration::Struct
@@ -46,6 +47,7 @@ module Pharos
     attribute :image_repository, Pharos::Types::String.default('quay.io/kontena')
     attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
+    attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
 
     attr_accessor :data
 

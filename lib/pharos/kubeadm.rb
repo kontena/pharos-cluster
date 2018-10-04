@@ -91,6 +91,8 @@ module Pharos
 
         configure_kube_proxy(config) if @config.kube_proxy
 
+        configure_admission_plugins(config) if @config.admission_plugins
+
         # Set secrets config location and mount it to api server
         config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
         config['apiServerExtraVolumes'] << {
@@ -252,6 +254,14 @@ module Pharos
         end
 
         config
+      end
+
+      def configure_admission_plugins(config)
+        enabled_plugins = @config.admission_plugins.select {|ap| ap.enabled }.map{|ap| ap.name }
+        disabled_plugins = @config.admission_plugins.select {|ap| !ap.enabled }.map{|ap| ap.name }
+
+        config['apiServerExtraArgs']['enable-admission-plugins'] = enabled_plugins.join(',') unless enabled_plugins.empty?
+        config['apiServerExtraArgs']['disable-admission-plugins'] = disabled_plugins.join(',') unless disabled_plugins.empty?
       end
     end
   end
