@@ -1,0 +1,88 @@
+# The deployment for the rook operator
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: kontena-storage-operator
+  namespace: kontena-storage-system
+  labels:
+    operator: rook
+    storage-backend: ceph
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kontena-storage-operator
+    spec:
+      serviceAccountName: kontena-storage-system
+      containers:
+      - name: rook-ceph-operator
+        image: rook/ceph:v<%= rook_version %>
+        args: ["ceph", "operator"]
+        volumeMounts:
+        - mountPath: /var/lib/rook
+          name: rook-config
+        - mountPath: /etc/ceph
+          name: default-config-dir
+        resources:
+          requests:
+            memory: 24Mi
+        env:
+        # Rook Agent toleration. Will tolerate all taints with all keys.
+        # Choose between NoSchedule, PreferNoSchedule and NoExecute:
+        # - name: AGENT_TOLERATION
+        #  value: "NoSchedule"
+        # (Optional) Rook Agent toleration key. Set this to the key of the taint you want to tolerate
+        # - name: AGENT_TOLERATION_KEY
+        #  value: "<KeyOfTheTaintToTolerate>"
+        # Set the path where the Rook agent can find the flex volumes
+        - name: FLEXVOLUME_DIR_PATH
+          value: "/usr/libexec/kubernetes/kubelet-plugins/volume/exec"
+        # Rook Discover toleration. Will tolerate all taints with all keys.
+        # Choose between NoSchedule, PreferNoSchedule and NoExecute:
+        # - name: DISCOVER_TOLERATION
+        #  value: "NoSchedule"
+        # (Optional) Rook Discover toleration key. Set this to the key of the taint you want to tolerate
+        # - name: DISCOVER_TOLERATION_KEY
+        #  value: "<KeyOfTheTaintToTolerate>"
+        # Allow rook to create multiple file systems. Note: This is considered
+        # an experimental feature in Ceph as described at
+        # http://docs.ceph.com/docs/master/cephfs/experimental-features/#multiple-filesystems-within-a-ceph-cluster
+        # which might cause mons to crash as seen in https://github.com/rook/rook/issues/1027
+        - name: ROOK_ALLOW_MULTIPLE_FILESYSTEMS
+          value: "false"
+        # The logging level for the operator: INFO | DEBUG
+        - name: ROOK_LOG_LEVEL
+          value: "INFO"
+        # The interval to check if every mon is in the quorum.
+        - name: ROOK_MON_HEALTHCHECK_INTERVAL
+          value: "45s"
+        # The duration to wait before trying to failover or remove/replace the
+        # current mon with a new mon (useful for compensating flapping network).
+        - name: ROOK_MON_OUT_TIMEOUT
+          value: "300s"
+        # Whether to start pods as privileged that mount a host path, which includes the Ceph mon and osd pods.
+        # This is necessary to workaround the anyuid issues when running on OpenShift.
+        # For more details see https://github.com/rook/rook/issues/1314#issuecomment-355799641
+        - name: ROOK_HOSTPATH_REQUIRES_PRIVILEGED
+          value: "false"
+        # The name of the node to pass with the downward API
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        # The pod name to pass with the downward API
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        # The pod namespace to pass with the downward API
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      volumes:
+      - name: rook-config
+        emptyDir: {}
+      - name: default-config-dir
+        emptyDir: {}
