@@ -19,7 +19,6 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.0)
-    awrence (1.0.0)
     bcrypt_pbkdf (1.0.0)
     clamp (1.2.1)
     concurrent-ruby (1.0.5)
