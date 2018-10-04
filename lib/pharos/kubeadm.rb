@@ -257,8 +257,8 @@ module Pharos
       end
 
       def configure_admission_plugins(config)
-        enabled_plugins = @config.admission_plugins.select {|ap| ap.enabled }.map{|ap| ap.name }
-        disabled_plugins = @config.admission_plugins.select {|ap| !ap.enabled }.map{|ap| ap.name }
+        enabled_plugins = @config.admission_plugins.select(&:enabled).map(&:name)
+        disabled_plugins = @config.admission_plugins.reject(&:enabled).map(&:name)
 
         config['apiServerExtraArgs']['enable-admission-plugins'] = enabled_plugins.join(',') unless enabled_plugins.empty?
         config['apiServerExtraArgs']['disable-admission-plugins'] = disabled_plugins.join(',') unless disabled_plugins.empty?
