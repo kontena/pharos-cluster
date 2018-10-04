@@ -1,0 +1,32 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: openebs-snapshot-operator
+  namespace: storage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: openebs-snapshot-operator
+    spec:
+      serviceAccountName: openebs-maya-operator
+      containers:
+        - name: snapshot-controller
+          image: docker.io/openebs/snapshot-controller:<%= version %>
+          imagePullPolicy: Always
+          env:
+          - name: OPENEBS_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        - name: snapshot-provisioner
+          image: docker.io/openebs/snapshot-provisioner:<%= version %>
+          imagePullPolicy: Always
+          env:
+          - name: OPENEBS_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace

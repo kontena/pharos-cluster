@@ -20,6 +20,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: OPENEBS_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         - name: OPENEBS_MONITOR_URL
           value: "http://127.0.0.1:32515/dashboard/db/openebs-volume-stats?orgId=1"
         - name: OPENEBS_MONITOR_VOLKEY

@@ -26,3 +26,11 @@ spec:
           value: "docker.io/openebs/m-exporter:<%= version %>"
         - name: OPENEBS_IO_JIVA_REPLICA_COUNT
           value: "<%= default_replicas %>"
+        <% if default_controller_node_selector %>
+        - name: DEFAULT_CONTROLLER_NODE_SELECTOR
+          value: "<%= default_controller_node_selector %>"
+        <% end %>
+        <% if default_replica_node_selector %>
+        - name: DEFAULT_REPLICA_NODE_SELECTOR
+          value: "<%= default_replica_node_selector %>"
+        <% end %>
