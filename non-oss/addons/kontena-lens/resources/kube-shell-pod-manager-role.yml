@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: kube-shell-pod-manager
+  namespace: kube-shell
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+    verbs:
+      - '*'

@@ -5,8 +5,8 @@ Pharos.addon 'kontena-lens' do
   license 'Kontena License'
 
   config_schema {
-    required(:name).filled(:str?)
-    required(:host).filled(:str?)
-    required(:email).filled(:str?)
+    optional(:name).filled(:str?)
+    optional(:host).filled(:str?)
+    optional(:email).filled(:str?)
   }
 end

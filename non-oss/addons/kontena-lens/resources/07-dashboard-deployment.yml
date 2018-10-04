@@ -27,6 +27,8 @@ spec:
               value: http://localhost:9998
             - name: REDIS_CLIENT_HOST
               value: redis
+            - name: USER_MANAGEMENT_ENABLED
+              value: "true"
           resources:
             requests:
               memory: "256Mi"

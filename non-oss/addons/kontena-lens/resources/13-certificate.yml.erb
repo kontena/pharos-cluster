@@ -1,3 +1,4 @@
+<% if config.host %>
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -16,3 +17,4 @@ spec:
         ingressClass: nginx
       domains:
       - <%= config.host %>
+<% end %>
