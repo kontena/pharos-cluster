@@ -3,6 +3,7 @@ inherit_from: .rubocop.relaxed.yml
 AllCops:
   Exclude:
     - spec/**/*
+    - non-oss/spec/**/*
     - Gemfile
     - "*.gemspec"
     - bundler/**/*

@@ -42,11 +42,17 @@ module Pharos
         ['--cgroup-driver=systemd']
       end
 
+      # @return [String] repository name to use with --enable-repo yum option
+      def docker_repo_name
+        abstract_method!
+      end
+
       def configure_container_runtime
         if docker?
           exec_script(
             'configure-docker.sh',
-            DOCKER_VERSION: DOCKER_VERSION
+            DOCKER_VERSION: DOCKER_VERSION,
+            DOCKER_REPO_NAME: docker_repo_name
           )
         elsif crio?
           exec_script(

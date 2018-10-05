@@ -5,7 +5,7 @@ module Pharos
     class ConfigureWeave < Pharos::Phase
       title "Configure Weave network"
 
-      WEAVE_VERSION = '2.4.0'
+      WEAVE_VERSION = '2.4.1'
 
       register_component(
         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
