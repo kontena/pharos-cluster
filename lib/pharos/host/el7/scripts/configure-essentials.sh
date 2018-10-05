@@ -43,7 +43,7 @@ if ! grep -q "/usr/local/bin" $env_file ; then
     echo "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" >> $env_file
 fi
 
-if [ ! -z "${HTTP_PROXY}" ]; then
+if [ "${SET_HTTP_PROXY}" = "true" ]; then
     lineinfile "^http_proxy=" "http_proxy=${HTTP_PROXY}" $env_file
     lineinfile "^HTTP_PROXY=" "HTTP_PROXY=${HTTP_PROXY}" $env_file
     lineinfile "^HTTPS_PROXY=" "HTTPS_PROXY=${HTTP_PROXY}" $env_file
@@ -51,12 +51,6 @@ else
     linefromfile "^http_proxy=" $env_file
     linefromfile "^HTTP_PROXY=" $env_file
     linefromfile "^HTTPS_PROXY=" $env_file
-fi
-
-if [ ! -z "${NO_PROXY}" ]; then
-    lineinfile "^NO_PROXY=" "NO_PROXY=\"${NO_PROXY}\"" "$env_file"
-else
-    linefromfile "^NO_PROXY=" "$env_file"
 fi
 
 if [ ! "$(getenforce)" = "Disabled" ]; then

@@ -16,7 +16,7 @@ module Pharos
         exec_script(
           'configure-essentials.sh',
           HTTP_PROXY: host.http_proxy.to_s,
-          NO_PROXY: host.http.no_proxy.to_s
+          SET_HTTP_PROXY: host.http_proxy.nil? ? 'false' : 'true'
         )
       end
 
