@@ -13,11 +13,7 @@ module Pharos
       end
 
       def install_essentials
-        exec_script(
-          'configure-essentials.sh',
-          HTTP_PROXY: host.http_proxy.to_s,
-          SET_HTTP_PROXY: host.http_proxy.nil? ? 'false' : 'true'
-        )
+        exec_script('configure-essentials.sh')
       end
 
       def configure_repos

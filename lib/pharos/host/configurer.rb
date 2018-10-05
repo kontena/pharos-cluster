@@ -96,6 +96,36 @@ module Pharos
         self.class.cluster_config
       end
 
+      # @return [Pharos::SSH::File]
+      def env_file
+        @ssh.file('/etc/environment')
+      end
+
+      def update_env_file
+        return if @host.environment.nil? || @host.environment.empty?
+
+        host_env_file = env_file
+        if host_env_file.exist?
+          original_data = host_env_file.read.lines.map do |line|
+            line.strip!
+            next if line.start_with?('#')
+            key, val = line.split('=', 2)
+            val = nil if val.to_s.empty?
+            [key, val]
+          end.to_h
+        else
+          original_data = {}
+        end
+
+        new_content = original_data.merge(@host.environment).compact.map do |key, val|
+          next if val.nil?;
+          "#{key}=#{val}"
+        end.join("\n") + "\n"
+
+        host_env_file.write(new_content)
+        @ssh.disconnect; @ssh.connect # reconnect to reread env
+      end
+
       class << self
         attr_reader :os_name, :os_version
         attr_accessor :cluster_config
