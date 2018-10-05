@@ -105,6 +105,7 @@ module Pharos
         return if @host.environment.nil? || @host.environment.empty?
 
         host_env_file = env_file
+        original_data = {}
         if host_env_file.exist?
           original_data = host_env_file.read.lines.map do |line|
             line.strip!
@@ -113,8 +114,6 @@ module Pharos
             val = nil if val.to_s.empty?
             [key, val]
           end.to_h
-        else
-          original_data = {}
         end
 
         new_content = original_data.merge(@host.environment).compact.map do |key, val|
