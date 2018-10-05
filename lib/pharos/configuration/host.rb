@@ -81,6 +81,12 @@ module Pharos
         private_address || private_interface_address || address
       end
 
+      def labels
+        return @attributes[:labels] unless worker?
+
+        @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
+      end
+
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 
