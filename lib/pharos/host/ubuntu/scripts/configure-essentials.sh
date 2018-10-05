@@ -6,7 +6,7 @@ set -e
 
 env_file="/etc/environment"
 
-if [ "${SET_HTTP_PROXY}" = "true" ]; then
+if [ ! -z "${HTTP_PROXY}" ]; then
     lineinfile "^http_proxy=" "http_proxy=${HTTP_PROXY}" $env_file
     lineinfile "^HTTP_PROXY=" "HTTP_PROXY=${HTTP_PROXY}" $env_file
     lineinfile "^HTTPS_PROXY=" "HTTPS_PROXY=${HTTP_PROXY}" $env_file
@@ -14,6 +14,12 @@ else
     linefromfile "^http_proxy=" $env_file
     linefromfile "^HTTP_PROXY=" $env_file
     linefromfile "^HTTPS_PROXY=" $env_file
+fi
+
+if [ ! -z "${NO_PROXY}" ]; then
+    lineinfile "^NO_PROXY=" "NO_PROXY=\"${NO_PROXY}\"" "$env_file"
+else
+    linefromfile "^NO_PROXY=" "$env_file"
 fi
 
 if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
