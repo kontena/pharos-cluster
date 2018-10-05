@@ -112,7 +112,7 @@ module Pharos
       # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
       # @return [Boolean]
       def resolvconf_systemd_resolved_stub?
-        @ssh.file('/etc/resolv.conf').readlink && resolvconf_nameservers.include?('127.0.0.53')
+        !!@ssh.file('/etc/resolv.conf').readlink && resolvconf_nameservers.include?('127.0.0.53')
       end
 
       # @return [Pharos::Configuration::Host::ResolvConf]
