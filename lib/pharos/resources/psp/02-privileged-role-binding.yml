@@ -14,7 +14,7 @@ subjects:
   name: system:nodes
 # For the cluster-admin role
 - apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: Group
   name: cluster-admin
 # For all service accounts in the kube-system namespace
 - apiGroup: rbac.authorization.k8s.io
