@@ -1,0 +1,14 @@
+# Allow the operator to create resources in this cluster's namespace
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kontena-storage-cluster-mgmt
+  namespace: kontena-storage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kontena-storage-cluster-mgmt
+subjects:
+- kind: ServiceAccount
+  name: kontena-storage-system
+  namespace: kontena-storage-system

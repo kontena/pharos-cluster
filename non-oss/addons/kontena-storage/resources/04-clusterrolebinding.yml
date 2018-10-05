@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    operator: rook
+    storage-backend: ceph
+  name: kontena-storage-cluster-mgmt
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kontena-storage-cluster-mgmt
+subjects:
+- kind: ServiceAccount
+  name: kontena-storage-system
+  namespace: kontena-storage-system
