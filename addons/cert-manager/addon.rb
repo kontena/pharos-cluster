@@ -40,20 +40,33 @@ Pharos.addon 'cert-manager' do
   install {
     apply_resources
 
-    migrate_le_acme_v2
+    migrate_le_acme_issuers
+    migrate_le_acme_cluster_issuers
   }
 
-  def migrate_le_acme_v2
-    kube_client.api('certmanager.k8s.io/v1alpha1').resource('issuers', namespace: nil).list.each do |issuer|
-      next unless issuer.spec.acme.server == 'https://acme-v01.api.letsencrypt.org/directory'
+  PATCH_SPEC = {
+    acme: {
+      server: 'https://acme-v02.api.letsencrypt.org/directory'
+    }
+  }.freeze
 
-      spec = {
-        acme: {
-          server: 'https://acme-v02.api.letsencrypt.org/directory'
-        }
-      }
+  LE_ACME_V1_ENDPOINT = 'https://acme-v01.api.letsencrypt.org/directory'
+
+  def migrate_le_acme_issuers
+    kube_client.api('certmanager.k8s.io/v1alpha1').resource('issuers', namespace: nil).list.each do |issuer|
+      next unless issuer.spec.acme.server == LE_ACME_V1_ENDPOINT
+
       rc = kube_client.client_for_resource(issuer, namespace: issuer.metadata.namespace)
-      rc.merge_patch(issuer.metadata.name, { spec: spec }, namespace: issuer.metadata.namespace, strategic_merge: false)
+      rc.merge_patch(issuer.metadata.name, { spec: PATCH_SPEC }, namespace: issuer.metadata.namespace, strategic_merge: false)
+    end
+  end
+
+  def migrate_le_acme_cluster_issuers
+    kube_client.api('certmanager.k8s.io/v1alpha1').resource('clusterissuers', namespace: nil).list.each do |issuer|
+      next unless issuer.spec.acme.server == LE_ACME_V1_ENDPOINT
+
+      rc = kube_client.client_for_resource(issuer)
+      rc.merge_patch(issuer.metadata.name, { spec: PATCH_SPEC }, strategic_merge: false)
     end
   end
 end
