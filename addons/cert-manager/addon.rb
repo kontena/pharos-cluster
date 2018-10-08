@@ -43,7 +43,6 @@ Pharos.addon 'cert-manager' do
     migrate_le_acme_v2
   }
 
-
   def migrate_le_acme_v2
     kube_client.api('certmanager.k8s.io/v1alpha1').resource('issuers', namespace: nil).list.each do |issuer|
       next unless issuer.spec.acme.server == 'https://acme-v01.api.letsencrypt.org/directory'
