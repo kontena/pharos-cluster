@@ -24,12 +24,12 @@ Pharos.addon 'cert-manager' do
     # Register custom error for LE Acme v1 endpoint validation
     configure do
       def self.messages
-        super.merge(en: { errors: { le_acme_v1: "Acme v1 is not supported by CertManager as of version 0.3.0, please change to Acme v2 endpoint!" }})
+        super.merge(en: { errors: { le_acme_v1: "Acme v1 is not supported by CertManager as of version 0.3.0, please change to Acme v2 endpoint!" } })
       end
     end
 
-    validate(le_acme_v1: :issuer) do |issuer|
-      if issuer[:name] == 'letsencrypt' && issuer[:server].include?('acme-v01.api.letsencrypt.org')
+    validate(le_acme_v1: :issuer) do |i|
+      if i[:name] == 'letsencrypt' && i[:server].include?('acme-v01.api.letsencrypt.org')
         false
       else
         true
@@ -38,7 +38,6 @@ Pharos.addon 'cert-manager' do
   }
 
   install {
-
     apply_resources
 
     migrate_acme_v2
@@ -54,8 +53,7 @@ Pharos.addon 'cert-manager' do
         }
       }
       rc = kube_client.client_for_resource(issuer, namespace: issuer.metadata.namespace)
-      rc.merge_patch(issuer.metadata.name, {spec: spec}, namespace: issuer.metadata.namespace, strategic_merge: false)
+      rc.merge_patch(issuer.metadata.name, { spec: spec }, namespace: issuer.metadata.namespace, strategic_merge: false)
     end
   end
-
 end
