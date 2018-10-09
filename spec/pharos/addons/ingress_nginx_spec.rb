@@ -32,27 +32,11 @@ describe Pharos::Addons::IngressNginx do
 
   describe "#image_name" do
     context "with a configured image" do
-      let(:config) { {default_backend: {image: 'some_image'}} }
+      let(:config) { {default_backend: {'image' => 'some_image'}} }
 
       it "returns configured name" do
         expect(cpu_arch).not_to receive(:name)
-        expect(subject.image_name).to eq("some_image")
-      end
-    end
-
-    context "for cpu_arch=arm64" do
-      let(:cpu_arch) { double(:cpu_arch, name: 'arm64' ) }
-
-      it "returns default for arm64" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_ARM64_IMAGE)
-      end
-    end
-
-    context "for cpu_arch=amd64" do
-      let(:cpu_arch) { double(:cpu_arch, name: 'amd64' ) }
-
-      it "returns default" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_IMAGE)
+        expect(subject.config.default_backend['image']).to eq("some_image")
       end
     end
   end
