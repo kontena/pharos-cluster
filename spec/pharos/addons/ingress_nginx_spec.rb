@@ -1,3 +1,4 @@
+require 'pharos/addon'
 require "./addons/ingress-nginx/addon"
 
 describe Pharos::Addons::IngressNginx do
@@ -44,7 +45,7 @@ describe Pharos::Addons::IngressNginx do
       let(:cpu_arch) { double(:cpu_arch, name: 'arm64' ) }
 
       it "returns default for arm64" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_ARM64_IMAGE)
+        expect(subject.image_name).to eq('docker.io/kontena/pharos-default-backend-arm64:0.0.3')
       end
     end
 
@@ -52,21 +53,29 @@ describe Pharos::Addons::IngressNginx do
       let(:cpu_arch) { double(:cpu_arch, name: 'amd64' ) }
 
       it "returns default" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_IMAGE)
+        expect(subject.image_name).to eq('docker.io/kontena/pharos-default-backend-amd64:0.0.3')
       end
     end
   end
 
   describe '#default_backend_replicas' do
+    it 'returns 1 replica for no workers' do
+      allow(subject).to receive(:worker_node_count).and_return(0)
+      expect(subject.default_backend_replicas).to eq(1)
+    end
 
-    it 'returns min 2 replicas' do
+    it 'returns 1 replica for single worker' do
+      allow(subject).to receive(:worker_node_count).and_return(1)
+      expect(subject.default_backend_replicas).to eq(1)
+    end
+
+    it 'returns 2 replicas for 3 workers' do
+      allow(subject).to receive(:worker_node_count).and_return(3)
       expect(subject.default_backend_replicas).to eq(2)
     end
 
     it 'returns 7 replicas with 70 workers' do
-      69.times do
-        cluster_config.hosts << Pharos::Configuration::Host.new(role: 'worker')
-      end
+      allow(subject).to receive(:worker_node_count).and_return(70)
       expect(subject.default_backend_replicas).to eq(7)
     end
   end
