@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "pharos/command"
-require "pharos/root_command"
-require "k8s-client"
 require_relative 'client_helper'
 
 module Pharos
