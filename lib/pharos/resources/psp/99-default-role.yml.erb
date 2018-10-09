@@ -7,7 +7,7 @@ rules:
 - apiGroups:
   - policy
   resourceNames:
-  - 99-pharos-default
+  - <%= default_psp %>
   resources:
   - podsecuritypolicies
   verbs:

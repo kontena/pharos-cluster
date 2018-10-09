@@ -8,7 +8,8 @@ module Pharos
       def call
         logger.info { "Configuring default pod security policies ..." }
         apply_stack(
-          'psp'
+          'psp',
+          default_psp: config.pod_security_policy.default
         )
       end
     end

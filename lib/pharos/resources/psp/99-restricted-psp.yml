@@ -6,7 +6,7 @@ metadata:
     apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
     seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
-  name: 99-pharos-default
+  name: 99-pharos-restricted
 spec:
   allowedCapabilities: []  # default set of capabilities are implicitly allowed
   allowPrivilegeEscalation: false
