@@ -107,18 +107,19 @@ module Pharos
         host_env_file = env_file
         original_data = {}
         if host_env_file.exist?
-          original_data = host_env_file.read.lines.map do |line|
+          host_env_file.read.lines.each do |line|
             line.strip!
             next if line.start_with?('#')
             key, val = line.split('=', 2)
             val = nil if val.to_s.empty?
-            [key, val]
-          end.to_h
+            original_data[key] = val
+          end
         end
 
-        new_content = original_data.merge(@host.environment) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
+        new_content = @host.environment.merge(original_data) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
           "#{key}=#{val}"
-        end.join("\n") + "\n"
+        end.join("\n")
+        new_content << "\n" unless new_content.end_with?("\n")
 
         host_env_file.write(new_content)
         @ssh.disconnect; @ssh.connect # reconnect to reread env
