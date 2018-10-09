@@ -49,7 +49,10 @@ Pharos.addon 'kontena-backup' do
       ark_config = gcp_config
     end
 
-    apply_resources(ark_config: ark_config.deep_stringify_keys)
+    apply_resources(
+      ark_config: ark_config.deep_stringify_keys,
+      ark_version: '0.9.6'
+    )
   }
 
   def aws_config

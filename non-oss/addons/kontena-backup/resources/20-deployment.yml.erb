@@ -33,7 +33,7 @@ spec:
       serviceAccountName: ark
       containers:
         - name: ark
-          image: gcr.io/heptio-images/ark:v<%= version %>
+          image: gcr.io/heptio-images/ark:v<%= ark_version %>
           command:
             - /ark
           args:
