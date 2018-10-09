@@ -14,7 +14,7 @@ spec:
       containers:
       - name: openebs-provisioner
         imagePullPolicy: IfNotPresent
-        image: docker.io/openebs/openebs-k8s-provisioner:<%= version %>
+        image: <%= image_repository %>/openebs-k8s-provisioner:<%= version %>
         env:
         - name: NODE_NAME
           valueFrom:
