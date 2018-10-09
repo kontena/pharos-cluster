@@ -12,8 +12,7 @@ module Pharos
     option "--include-namespace", "INCLUDE_NS", "namespace(s) to include in the backup", multivalued: true, attribute_name: :included_namespaces
     option "--exclude-namespace", "EXCLUDE_NS", "namespace(s) to exclude from the backup", multivalued: true, attribute_name: :excluded_namespaces
     option "--label-selector", "LABEL_SELECTOR", "Select backed up object by labels. Format: label=value", multivalued: true
-    # TODO Should we add some default ttl, like 720h (1 month)???
-    option "--ttl", "TTL", "Backup time-to-live. E.g. 24h"
+    option "--ttl", "TTL", "Backup time-to-live. E.g. 24h", default: '720h'
     option "--[no-]include-cluster-resources", :flag, "Include cluster-wide resources into backup", default: true
 
     parameter "NAME", "Name of the backup"
