@@ -7,9 +7,9 @@ Pharos.addon 'ingress-nginx' do
   config {
     attribute :configmap, Pharos::Types::Hash
     attribute :node_selector, Pharos::Types::Hash
-    attribute :default_backend, Pharos::Types::Hash.default({
+    attribute :default_backend, Pharos::Types::Hash.default(
       'image' => 'registry.pharos.sh/kontenapharos/pharos-default-backend:0.0.3'
-    })
+    )
   }
 
   config_schema {
