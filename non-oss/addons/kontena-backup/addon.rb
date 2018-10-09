@@ -3,8 +3,8 @@
 Pharos.addon 'kontena-backup' do
   using Pharos::CoreExt::DeepTransformKeys
 
-  version '0.9.6'
-  license '???'
+  version '0.1.0'
+  license 'Kontena License'
 
   config_schema {
     required(:cloud_credentials).filled(:str?)
