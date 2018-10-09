@@ -13,7 +13,7 @@ module Pharos
       'kube_proxy' => {},
       'kubelet' => {},
       'telemetry' => {},
-      'pod_security_policy' => {}
+      'pod_security_policy' => {},
       'addon_paths' => []
     }.freeze
 
