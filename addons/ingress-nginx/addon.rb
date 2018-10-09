@@ -22,23 +22,9 @@ Pharos.addon 'ingress-nginx' do
     apply_resources(
       configmap: config.configmap || {},
       node_selector: config.node_selector || {},
-      image: image_name,
       default_backend_replicas: default_backend_replicas
     )
   }
-
-  DEFAULT_BACKEND_ARM64_IMAGE = 'docker.io/kontena/pharos-default-backend-arm64:0.0.2'
-  DEFAULT_BACKEND_IMAGE = 'docker.io/kontena/pharos-default-backend:0.0.2'
-
-  def image_name
-    return config.default_backend[:image] if config.default_backend&.dig(:image)
-
-    if cpu_arch.name == 'arm64'
-      DEFAULT_BACKEND_ARM64_IMAGE
-    else
-      DEFAULT_BACKEND_IMAGE
-    end
-  end
 
   # ~One replica per 10 workers, min 2
   # @return [Integer]
