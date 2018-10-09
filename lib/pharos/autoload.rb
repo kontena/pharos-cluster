@@ -7,10 +7,12 @@ autoload :RestClient, 'rest-client'
 autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
+autoload :K8s, 'k8s-client'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
   autoload :Reader, 'tty-reader'
+  autoload :Table, 'tty-table'
 end
 
 module Pharos
