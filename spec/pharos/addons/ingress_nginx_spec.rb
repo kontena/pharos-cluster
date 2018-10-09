@@ -60,22 +60,22 @@ describe Pharos::Addons::IngressNginx do
 
   describe '#default_backend_replicas' do
     it 'returns 1 replica for no workers' do
-      allow(subject).to receive(:node_count).and_return(0)
+      allow(subject).to receive(:worker_node_count).and_return(0)
       expect(subject.default_backend_replicas).to eq(1)
     end
 
     it 'returns 1 replica for single worker' do
-      allow(subject).to receive(:node_count).and_return(1)
+      allow(subject).to receive(:worker_node_count).and_return(1)
       expect(subject.default_backend_replicas).to eq(1)
     end
 
     it 'returns 2 replicas for 3 workers' do
-      allow(subject).to receive(:node_count).and_return(3)
+      allow(subject).to receive(:worker_node_count).and_return(3)
       expect(subject.default_backend_replicas).to eq(2)
     end
 
     it 'returns 7 replicas with 70 workers' do
-      allow(subject).to receive(:node_count).and_return(70)
+      allow(subject).to receive(:worker_node_count).and_return(70)
       expect(subject.default_backend_replicas).to eq(7)
     end
   end
