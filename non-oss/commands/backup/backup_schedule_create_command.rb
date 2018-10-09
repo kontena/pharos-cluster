@@ -19,8 +19,7 @@ module Pharos
     parameter "NAME", "Name of the backup"
 
     def execute
-
-      schedule_resource = K8s::Resource.new({
+      schedule_resource = K8s::Resource.new(
         apiVersion: 'ark.heptio.com/v1',
         kind: 'Schedule',
         metadata: {
@@ -40,8 +39,7 @@ module Pharos
             includeClusterResources: include_cluster_resources?
           }
         }
-      })
-
+      )
 
       backup[:spec][:template][:ttl] = ttl if ttl # Ark chokes on ttl being nil...
       backup[:spec][:template][:labelSelector] = build_label_selector unless label_selector_list&.empty?
