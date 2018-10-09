@@ -116,7 +116,7 @@ module Pharos
           end.to_h
         end
 
-        new_content = original_data.merge(@host.environment) { |_new_val, old_val| old_val }.compact.map do |key, val|
+        new_content = original_data.merge(@host.environment) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
           "#{key}=#{val}"
         end.join("\n") + "\n"
 
