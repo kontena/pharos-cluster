@@ -7,3 +7,11 @@ rules:
 - apiGroups: [""]
   resources: ["configmaps"]
   verbs: [ "get", "list", "watch", "create", "update", "delete" ]
+- apiGroups:
+  - policy
+  resourceNames:
+  - 00-pharos-privileged
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use

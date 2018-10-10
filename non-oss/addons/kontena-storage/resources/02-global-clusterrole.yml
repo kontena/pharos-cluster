@@ -65,3 +65,11 @@ rules:
   - "*"
   verbs:
   - "*"
+- apiGroups:
+  - policy
+  resourceNames:
+  - 00-pharos-privileged
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
