@@ -101,7 +101,7 @@ module Pharos
 
       # @return [Array<String>]
       def resolvconf_nameservers
-        @ssh.file('/etc/resolv.conf').lines.map { |l| l[/^nameserver ([\h:.]+)/, 1] }.compact
+        @resolvconf_nameservers ||= @ssh.file('/etc/resolv.conf').lines.map { |l| l[/^nameserver ([\h:.]+)/, 1] }.compact
       end
 
       # @return [Boolean]
@@ -112,8 +112,7 @@ module Pharos
       # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
       # @return [Boolean]
       def resolvconf_systemd_resolved_stub?
-        symlink = @ssh.file('/etc/resolv.conf').readlink
-        !!symlink && symlink.end_with?('/run/systemd/resolve/stub-resolv.conf')
+        !!@ssh.file('/etc/resolv.conf').readlink && resolvconf_nameservers.include?('127.0.0.53')
       end
 
       # @return [Pharos::Configuration::Host::ResolvConf]

@@ -86,14 +86,6 @@ module Pharos
             }
           }
         }
-        if @host.cpu_arch.name != 'amd64'
-          spec[:template][:spec][:containers] = [
-            {
-              name: 'coredns',
-              image: "#{@config.image_repository}/coredns-#{@host.cpu_arch.name}:#{Pharos::COREDNS_VERSION}"
-            }
-          ]
-        end
         kube_resource_client.merge_patch(
           name,
           spec: spec
