@@ -13,6 +13,7 @@ module Pharos
       'kube_proxy' => {},
       'kubelet' => {},
       'telemetry' => {},
+      'pod_security_policy' => {},
       'addon_paths' => []
     }.freeze
 
@@ -118,6 +119,9 @@ module Pharos
           optional(:enabled).filled(:bool?)
         end
         optional(:image_repository).filled(:str?)
+        optional(:pod_security_policy).schema do
+          optional(:default_policy).filled(:str?)
+        end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]

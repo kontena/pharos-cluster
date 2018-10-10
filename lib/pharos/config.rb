@@ -10,6 +10,7 @@ require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
+require_relative 'configuration/pod_security_policy'
 require_relative 'configuration/telemetry'
 
 module Pharos
@@ -43,6 +44,7 @@ module Pharos
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
     attribute :telemetry, Pharos::Configuration::Telemetry
+    attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
     attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
     attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
