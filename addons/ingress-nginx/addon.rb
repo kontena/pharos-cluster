@@ -29,12 +29,19 @@ Pharos.addon 'ingress-nginx' do
     )
   }
 
-  # ~One replica per 10 workers, min 2
+  # ~One replica per 10 workers, but not more than nodes
   # @return [Integer]
   def default_backend_replicas
-    r = (@cluster_config.worker_hosts.size / 10.to_f).ceil
+    r = (worker_node_count / 10.to_f).ceil
 
-    return 2 if r < 2
+    return 1 if worker_node_count <= 1 # covers also single node cluster case where master is un-tainted
+    return 2 if r < 2 && worker_node_count > 1 # Always min 2 replicas if 2 or more nodes
+
     r
+  end
+
+  # Counts the worker nodes
+  def worker_node_count
+    @worker_node_count ||= kube_client.api('v1').resource('nodes').list(labelSelector: 'node-role.kubernetes.io/master!=').size
   end
 end

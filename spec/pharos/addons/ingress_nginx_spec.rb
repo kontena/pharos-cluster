@@ -42,15 +42,23 @@ describe Pharos::Addons::IngressNginx do
   end
 
   describe '#default_backend_replicas' do
+    it 'returns 1 replica for no workers' do
+      allow(subject).to receive(:worker_node_count).and_return(0)
+      expect(subject.default_backend_replicas).to eq(1)
+    end
 
-    it 'returns min 2 replicas' do
+    it 'returns 1 replica for single worker' do
+      allow(subject).to receive(:worker_node_count).and_return(1)
+      expect(subject.default_backend_replicas).to eq(1)
+    end
+
+    it 'returns 2 replicas for 3 workers' do
+      allow(subject).to receive(:worker_node_count).and_return(3)
       expect(subject.default_backend_replicas).to eq(2)
     end
 
     it 'returns 7 replicas with 70 workers' do
-      69.times do
-        cluster_config.hosts << Pharos::Configuration::Host.new(role: 'worker')
-      end
+      allow(subject).to receive(:worker_node_count).and_return(70)
       expect(subject.default_backend_replicas).to eq(7)
     end
   end
