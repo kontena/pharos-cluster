@@ -23,7 +23,6 @@ module Pharos
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha2',
           'kind' => 'MasterConfiguration',
-
           'nodeRegistration' => {
             'name' => @host.hostname
           },
@@ -38,7 +37,9 @@ module Pharos
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
           },
-          'apiServerExtraArgs' => {},
+          'apiServerExtraArgs' => {
+            'enable-admission-plugins' => 'PodSecurityPolicy,NodeRestriction'
+          },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true'
           }

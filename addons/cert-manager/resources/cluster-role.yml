@@ -7,7 +7,7 @@ rules:
   resources: ["certificates", "issuers", "clusterissuers"]
   verbs: ["*"]
 - apiGroups: [""]
-  resources: ["secrets", "events", "endpoints", "services", "pods"]
+  resources: ["secrets", "events", "endpoints", "services", "pods", "configmaps"]
   verbs: ["*"]
 - apiGroups: ["extensions"]
   resources: ["ingresses"]

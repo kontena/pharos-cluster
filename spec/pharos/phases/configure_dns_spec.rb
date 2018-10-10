@@ -167,17 +167,5 @@ describe Pharos::Phases::ConfigureDNS do
 
       subject.patch_deployment('kube-dns', replicas: 1, max_surge: 0, max_unavailable: 1)
     end
-
-    it "patches coredns image on arm64" do
-      allow(cpu_arch).to receive(:name).and_return('arm64')
-      expect(kube_resource_client).to receive(:merge_patch).with('kube-dns', Hash) do |_name, h|
-        res = K8s::Resource.new(h)
-        expect(res.spec.template.spec.containers[0].image).to include("coredns-#{master.cpu_arch.name}")
-
-        resource
-      end
-
-      subject.patch_deployment('kube-dns', replicas: 1, max_surge: 0, max_unavailable: 1)
-    end
   end
 end
