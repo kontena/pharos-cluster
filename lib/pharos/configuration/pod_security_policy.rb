@@ -3,7 +3,7 @@
 module Pharos
   module Configuration
     class PodSecurityPolicy < Pharos::Configuration::Struct
-      attribute :default_policy, Pharos::Types::Strict::String.default('pharos:podsecuritypolicy:privileged')
+      attribute :default_policy, Pharos::Types::Strict::String.default('00-pharos-privileged')
     end
   end
 end

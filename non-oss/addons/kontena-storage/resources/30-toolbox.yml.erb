@@ -16,6 +16,7 @@ spec:
         app: kontena-storage-tools
     spec:
       dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: kontena-storage-cluster
       containers:
       - name: rook-ceph-tools
         image: docker.io/rook/ceph-toolbox:v<%= rook_version %>
