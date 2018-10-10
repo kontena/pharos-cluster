@@ -2,7 +2,7 @@
 
 set -ue
 
-rm -rf non-oss/*
+git rm -r non-oss/
 
 # build binary
 apt-get update -y
