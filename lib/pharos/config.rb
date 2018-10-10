@@ -43,7 +43,7 @@ module Pharos
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
     attribute :telemetry, Pharos::Configuration::Telemetry
-    attribute :image_repository, Pharos::Types::String.default('quay.io/kontena')
+    attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
     attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
 

@@ -20,7 +20,7 @@ spec:
           value: kube-system
         - name: TILLER_HISTORY_MAX
           value: "10"
-        image: gcr.io/kubernetes-helm/tiller:v<%= version %>
+        image: <%= image_repository %>/tiller:v<%= version %>
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

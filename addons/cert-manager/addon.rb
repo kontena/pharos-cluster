@@ -7,7 +7,7 @@ Pharos.addon 'cert-manager' do
   issuer = custom_type {
     attribute :name, Pharos::Types::String
     attribute :server, Pharos::Types::String.optional
-    attribute :email, Pharos::Types::String.default('https://acme-v01.api.letsencrypt.org/directory')
+    attribute :email, Pharos::Types::String
   }
 
   config {
