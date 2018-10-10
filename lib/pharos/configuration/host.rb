@@ -58,7 +58,7 @@ module Pharos
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
-      attribute :http_proxy, Pharos::Types::Strict::String
+      attribute :environment, Pharos::Types::Strict::Hash
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
