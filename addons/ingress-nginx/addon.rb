@@ -24,6 +24,7 @@ Pharos.addon 'ingress-nginx' do
     apply_resources(
       configmap: config.configmap || {},
       node_selector: config.node_selector || {},
+      default_backend_image: config.default_backend['image'],
       default_backend_replicas: default_backend_replicas
     )
   }

@@ -33,7 +33,7 @@ spec:
         # Any image is permissable as long as:
         # 1. It serves a 404 page at /
         # 2. It serves 200 on a /healthz endpoint
-        image: <%= image_repository %>/pharos-default-backend:0.0.3
+        image: <%= default_backend_image %>
         livenessProbe:
           httpGet:
             path: /healthz
