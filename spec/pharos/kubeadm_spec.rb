@@ -278,7 +278,7 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
         it 'configures enabled plugins to api server' do
           extra_args = subject.generate_config['apiServerExtraArgs']
-          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,AlwaysPullImages')
+          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages')
           expect(extra_args['disable-admission-plugins']).to eq('Priority')
         end
       end
@@ -289,9 +289,12 @@ describe Pharos::Kubeadm::ConfigGenerator do
           network: {}
         ) }
 
-        it 'configures enabled plugins to api server' do
+        it 'configures default plugins to api server' do
           extra_args = subject.generate_config['apiServerExtraArgs']
-          expect(extra_args.has_key?('enable-admission-plugins')).to be_falsey
+          expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
+          plugins = extra_args['enable-admission-plugins'].split(',')
+          expect(plugins).to include('PodSecurityPolicy')
+          expect(plugins).to include('NodeRestriction')
           expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
         end
       end
@@ -303,9 +306,12 @@ describe Pharos::Kubeadm::ConfigGenerator do
           admission_plugins: []
         ) }
 
-        it 'configures enabled plugins to api server' do
+        it 'configures default plugins to api server' do
           extra_args = subject.generate_config['apiServerExtraArgs']
-          expect(extra_args.has_key?('enable-admission-plugins')).to be_falsey
+          expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
+          plugins = extra_args['enable-admission-plugins'].split(',')
+          expect(plugins).to include('PodSecurityPolicy')
+          expect(plugins).to include('NodeRestriction')
           expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
         end
       end
@@ -322,7 +328,7 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
         it 'configures enabled plugins to api server' do
           extra_args = subject.generate_config['apiServerExtraArgs']
-          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,AlwaysPullImages')
+          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages')
           expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
         end
       end
@@ -337,10 +343,11 @@ describe Pharos::Kubeadm::ConfigGenerator do
           ]
         ) }
 
-        it 'configures enabled plugins to api server' do
+        it 'configures correct plugins to api server' do
           extra_args = subject.generate_config['apiServerExtraArgs']
           expect(extra_args['disable-admission-plugins']).to eq('PodSecurityPolicy,AlwaysPullImages')
-          expect(extra_args.has_key?('enable-admission-plugins')).to be_falsey
+          expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
+          expect(extra_args['enable-admission-plugins']).to eq('NodeRestriction')
         end
       end
     end

@@ -37,9 +37,7 @@ module Pharos
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
           },
-          'apiServerExtraArgs' => {
-            'enable-admission-plugins' => 'PodSecurityPolicy,NodeRestriction'
-          },
+          'apiServerExtraArgs' => {},
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true'
           }
@@ -92,7 +90,7 @@ module Pharos
 
         configure_kube_proxy(config) if @config.kube_proxy
 
-        configure_admission_plugins(config) if @config.admission_plugins
+        configure_admission_plugins(config)
 
         # Set secrets config location and mount it to api server
         config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
@@ -257,12 +255,14 @@ module Pharos
         config
       end
 
-      def configure_admission_plugins(config)
-        enabled_plugins = @config.admission_plugins.select(&:enabled).map(&:name)
-        disabled_plugins = @config.admission_plugins.reject(&:enabled).map(&:name)
+      DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction).freeze
 
-        config['apiServerExtraArgs']['enable-admission-plugins'] = enabled_plugins.join(',') unless enabled_plugins.empty?
-        config['apiServerExtraArgs']['disable-admission-plugins'] = disabled_plugins.join(',') unless disabled_plugins.empty?
+      def configure_admission_plugins(config)
+        disabled_plugins = @config.admission_plugins&.reject(&:enabled)&.map(&:name) || []
+        enabled_plugins = DEFAULT_ADMISSION_PLUGINS.reject{ |p| disabled_plugins.include?(p) } + (@config.admission_plugins&.select(&:enabled)&.map(&:name) || [])
+
+        config['apiServerExtraArgs']['enable-admission-plugins'] = enabled_plugins.uniq.join(',') unless enabled_plugins.empty?
+        config['apiServerExtraArgs']['disable-admission-plugins'] = disabled_plugins.uniq.join(',') unless disabled_plugins.empty?
       end
     end
   end
