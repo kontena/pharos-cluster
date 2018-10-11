@@ -39,9 +39,12 @@ module Pharos
     def initialize(host, config: nil, master: nil, cluster_context: nil)
       @host = host
       @config = config
-      @ssh = @host.ssh
       @master = master
       @cluster_context = cluster_context
+    end
+
+    def ssh
+      @ssh ||= host.ssh
     end
 
     def logger
@@ -67,7 +70,7 @@ module Pharos
     # @param script [String] name of file under ../scripts/
     # @param vars [Hash]
     def exec_script(script, vars = {})
-      @ssh.exec_script!(
+      ssh.exec_script!(
         script,
         env: vars,
         path: script_path(script)

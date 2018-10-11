@@ -5,14 +5,17 @@ require 'set'
 module Pharos
   module Host
     class Configurer
-      attr_reader :host, :ssh, :config
+      attr_reader :host, :config
 
       SCRIPT_LIBRARY = File.join(__dir__, '..', 'scripts', 'pharos.sh').freeze
 
       def initialize(host, config = nil)
         @host = host
         @config = config
-        @ssh = host.ssh
+      end
+
+      def ssh
+        @ssh ||= host.ssh
       end
 
       def install_essentials
@@ -71,15 +74,15 @@ module Pharos
       end
 
       def configure_script_library
-        @ssh.exec("sudo mkdir -p #{script_library_install_path}")
-        @ssh.file("#{script_library_install_path}/util.sh").write(
+        ssh.exec("sudo mkdir -p #{script_library_install_path}")
+        ssh.file("#{script_library_install_path}/util.sh").write(
           File.read(SCRIPT_LIBRARY)
         )
       end
 
       # @param script [String] name of file under ../scripts/
       def exec_script(script, vars = {})
-        @ssh.exec_script!(
+        ssh.exec_script!(
           script,
           env: vars,
           path: script_path(script)
@@ -108,7 +111,7 @@ module Pharos
 
       # @return [Pharos::SSH::File]
       def env_file
-        @ssh.file('/etc/environment')
+        ssh.file('/etc/environment')
       end
 
       def update_env_file
@@ -132,7 +135,7 @@ module Pharos
         new_content << "\n" unless new_content.end_with?("\n")
 
         host_env_file.write(new_content)
-        @ssh.disconnect; @ssh.connect # reconnect to reread env
+        ssh.disconnect; ssh.connect # reconnect to reread env
       end
 
       def self.supported_os_releases

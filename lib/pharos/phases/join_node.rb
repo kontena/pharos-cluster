@@ -7,7 +7,7 @@ module Pharos
       PROXY_ADDRESS = '127.0.0.1:6443'
 
       def already_joined?
-        @ssh.file("/etc/kubernetes/kubelet.conf").exist?
+        ssh.file("/etc/kubernetes/kubelet.conf").exist?
       end
 
       def call
@@ -24,7 +24,7 @@ module Pharos
         join_command << "--node-name #{@host.hostname}"
         join_command << "--ignore-preflight-errors DirAvailable--etc-kubernetes-manifests"
 
-        @ssh.exec!('sudo ' + join_command.join(' '))
+        ssh.exec!('sudo ' + join_command.join(' '))
       end
     end
   end
