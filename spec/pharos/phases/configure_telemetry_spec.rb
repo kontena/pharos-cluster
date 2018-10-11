@@ -9,7 +9,7 @@ describe Pharos::Phases::ConfigureTelemetry do
     allow(host).to receive(:ssh).and_return(ssh)
   end
 
-  describe '#customer_token' do
+  describe '#customer_token', fakefs: true do
     it 'returns empty string if not found' do
       FakeFS do
         expect(subject.customer_token).to eq('')
