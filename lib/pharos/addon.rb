@@ -133,7 +133,7 @@ module Pharos
       end
     end
 
-    attr_reader :config, :cpu_arch, :cluster_config, :kube_client, :post_install_message
+    attr_reader :config, :cpu_arch, :cluster_config, :kube_client
 
     # @param config [Hash,Dry::Validation::Result]
     # @param enabled [Boolean]
@@ -188,8 +188,12 @@ module Pharos
       end
     end
 
-    def notify(msg)
-      @post_install_message = msg
+    def post_install_message(msg = nil)
+      if msg
+        @post_install_message = msg
+      else
+        @post_install_message
+      end
     end
 
     # @param vars [Hash]
