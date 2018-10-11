@@ -125,6 +125,10 @@ module Pharos
         container_runtime == 'docker'
       end
 
+      def custom_docker?
+        container_runtime == 'custom_docker'
+      end
+
       # @return [Integer]
       def master_sort_score
         if checks['api_healthy']

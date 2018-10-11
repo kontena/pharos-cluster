@@ -109,6 +109,15 @@ module Pharos
         configurers.find { |c| c.supported?(os_release) }
       end
 
+      def custom_docker?
+        @host.custom_docker?
+      end
+
+      # @return [Pharos::Config,NilClass]
+      def cluster_config
+        self.class.cluster_config
+      end
+
       # @return [Pharos::SSH::File]
       def env_file
         ssh.file('/etc/environment')
