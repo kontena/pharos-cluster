@@ -118,7 +118,7 @@ module Pharos
       puts "      export KUBECONFIG=./kubeconfig"
       manager.post_install_messages.each do |component, message|
         puts "    Post-install message from #{component}:"
-        message.split('\n').each do |line|
+        message.split("\n").each do |line|
           puts "      #{line}"
         end
       end
