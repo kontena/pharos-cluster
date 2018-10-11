@@ -1,8 +1,9 @@
 require "./addons/ingress-nginx/addon"
 
 describe Pharos::Addons::IngressNginx do
+  let(:host) { Pharos::Configuration::Host.new(role: 'worker') }
   let(:cluster_config) { Pharos::Config.new(
-    hosts: [Pharos::Configuration::Host.new(role: 'worker')],
+    hosts: [host],
     network: {},
     addons: {},
     etcd: {}
@@ -10,6 +11,10 @@ describe Pharos::Addons::IngressNginx do
   let(:config) { { foo: 'bar'} }
   let(:kube_client) { instance_double(K8s::Client) }
   let(:cpu_arch) { double(:cpu_arch ) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(instance_double(Pharos::SSH::Client))
+  end
 
   subject do
     described_class.new(config, enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config)
@@ -37,22 +42,6 @@ describe Pharos::Addons::IngressNginx do
       it "returns configured name" do
         expect(cpu_arch).not_to receive(:name)
         expect(subject.config.default_backend['image']).to eq("some_image")
-      end
-    end
-
-    context "for cpu_arch=arm64" do
-      let(:cpu_arch) { double(:cpu_arch, name: 'arm64' ) }
-
-      it "returns default for arm64" do
-        expect(subject.image_name).to match /-arm64/
-      end
-    end
-
-    context "for cpu_arch=amd64" do
-      let(:cpu_arch) { double(:cpu_arch, name: 'amd64' ) }
-
-      it "returns default" do
-        expect(subject.image_name).not_to match /-arm64/
       end
     end
   end

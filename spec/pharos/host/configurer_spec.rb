@@ -5,9 +5,13 @@ describe Pharos::Host::Configurer do
     end
   end
 
-  let(:host) { double(:host) }
-  let(:ssh) { double(:ssh) }
+  let(:host) { instance_double(Pharos::Configuration::Host) }
+  let(:ssh) { instance_double(Pharos::SSH::Client) }
   let(:subject) { described_class.new(host, ssh) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(ssh)
+  end
 
   describe '#register_config' do
     it 'sets os_name and os_version' do
@@ -32,8 +36,6 @@ describe Pharos::Host::Configurer do
   end
 
   describe '#update_env_file' do
-    let(:host) { instance_double(Pharos::Configuration::Host) }
-    let(:ssh) { instance_double(Pharos::SSH::Client) }
     let(:file) { instance_double(Pharos::SSH::RemoteFile) }
     let(:host_env_content) { "PATH=/bin:/usr/local/bin\n" }
 
