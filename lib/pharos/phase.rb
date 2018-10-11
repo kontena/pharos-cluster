@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 require 'logger'
-require 'openssl'
-require 'excon'
-require 'k8s/error'
-require_relative 'ssh/remote_command'
 
 module Pharos
   class Phase

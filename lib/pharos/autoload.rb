@@ -11,6 +11,10 @@ autoload :OpenSSL, 'openssl'
 autoload :Excon, 'excon'
 autoload :K8s, 'k8s/client'
 
+module K8s
+  autoload :Error, 'k8s/error'
+end
+
 module TTY
   autoload :Prompt, 'tty-prompt'
   autoload :Reader, 'tty-reader'
