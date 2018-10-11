@@ -41,7 +41,7 @@ module Pharos
     end
 
     def ssh
-      @ssh ||= host.ssh
+      host.ssh
     end
 
     def logger
