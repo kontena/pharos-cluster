@@ -38,6 +38,10 @@ module Pharos
             DOCKER_PACKAGE: 'docker.io',
             DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu2~16.04.1"
           )
+        elsif custom_docker?
+          exec_script(
+            'configure-docker.sh'
+          )
         elsif crio?
           exec_script(
             'configure-cri-o.sh',

@@ -55,7 +55,7 @@ module Pharos
               end
               optional(:user).filled
               optional(:ssh_key_path).filled
-              optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
+              optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
             end
           end
