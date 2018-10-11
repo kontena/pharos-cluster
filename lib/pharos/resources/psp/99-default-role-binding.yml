@@ -8,6 +8,11 @@ roleRef:
   kind: ClusterRole
   name: pharos:podsecuritypolicy:default
 subjects:
+# For authenticated users
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
   name: system:authenticated
+# For all service accounts
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts
