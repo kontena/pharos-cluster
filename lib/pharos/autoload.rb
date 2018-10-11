@@ -7,6 +7,7 @@ autoload :RestClient, 'rest-client'
 autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
+autoload :Excon, 'excon'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
