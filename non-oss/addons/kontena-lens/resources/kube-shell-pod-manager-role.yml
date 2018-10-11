@@ -8,5 +8,7 @@ rules:
       - ''
     resources:
       - pods
+      - pods/exec
+      - persistentvolumeclaims
     verbs:
       - '*'
