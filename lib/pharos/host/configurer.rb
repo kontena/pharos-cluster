@@ -9,6 +9,8 @@ module Pharos
 
       SCRIPT_LIBRARY = File.join(__dir__, '..', 'scripts', 'pharos.sh').freeze
 
+      # @param host [Pharos::Configuration::Host]
+      # @param config [Pharos::Config]
       def initialize(host, config = nil)
         @host = host
         @config = config
@@ -97,10 +99,13 @@ module Pharos
         @host.docker?
       end
 
+      # @return [Set]
       def self.configurers
         @configurers ||= Set.new
       end
 
+      # @param os_release [String,Pharos::Configuration::OsRelease] os release such as "ubuntu" or an instance of Pharos::Configuration::OsRelease
+      # @param os_version [String,NilClass] os_version, such as "16.04", needed when os_release is not an instance of Pharos::Configuration::OsRelease
       def self.for_os_release(os_release, os_version = nil)
         unless os_release.is_a?(Pharos::Configuration::OsRelease)
           os_release = Pharos::Configuration::OsRelease.new(id: os_release, version: os_version)
@@ -123,6 +128,7 @@ module Pharos
         ssh.file('/etc/environment')
       end
 
+      # Updates the environment file with values from existing environment file and host environment-configuration
       def update_env_file
         return if @host.environment.nil? || @host.environment.empty?
 
@@ -147,17 +153,21 @@ module Pharos
         ssh.disconnect; ssh.connect # reconnect to reread env
       end
 
+      # @return [Array]
       def self.supported_os_releases
         @supported_os_releases ||= []
       end
 
-      # @param os [String]
+      # Registers the configurer and its os/version to Pharos::Host::Configurer.configurers
+      # @param os_name [String]
       # @param version [String]
       def self.register_config(os_name, version)
         supported_os_releases << Pharos::Configuration::OsRelease.new(id: os_name, version: version)
         Pharos::Host::Configurer.configurers << self
       end
 
+      # @param os_release [String,Pharos::Configuration::OsRelease]
+      # @param version [String,NilClass] needed when the os_release is not an instance of Pharos::Configuration::OsRelease
       def self.supported?(os_release, version = nil)
         unless os_release.is_a?(Pharos::Configuration::OsRelease)
           os_release = Pharos::Configuration::OsRelease.new(id: os_release, version: version)
@@ -166,6 +176,7 @@ module Pharos
         supported_os_releases.include?(os_release)
       end
 
+      # Registers a component to Pharos::Phases.components
       # @param component [Hash]
       def self.register_component(component)
         supported_os_releases.each do |os_release|

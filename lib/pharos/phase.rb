@@ -32,6 +32,7 @@ module Pharos
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param master [Pharos::Configuration::Host]
+    # @param cluster_context [Hash]
     def initialize(host, config: nil, master: nil, cluster_context: nil)
       @host = host
       @config = config
@@ -111,6 +112,7 @@ module Pharos
       Pharos::Kube::Stack.new(name).delete(kube_client)
     end
 
+    # @param retry_times [Integer]
     def run(retry_times = 10)
       retries ||= 0
       call
