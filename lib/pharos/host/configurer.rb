@@ -106,6 +106,35 @@ module Pharos
         configurers.find { |c| c.supported?(os_release) }
       end
 
+      # @return [Pharos::SSH::File]
+      def env_file
+        @ssh.file('/etc/environment')
+      end
+
+      def update_env_file
+        return if @host.environment.nil? || @host.environment.empty?
+
+        host_env_file = env_file
+        original_data = {}
+        if host_env_file.exist?
+          host_env_file.read.lines.each do |line|
+            line.strip!
+            next if line.start_with?('#')
+            key, val = line.split('=', 2)
+            val = nil if val.to_s.empty?
+            original_data[key] = val
+          end
+        end
+
+        new_content = @host.environment.merge(original_data) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
+          "#{key}=#{val}"
+        end.join("\n")
+        new_content << "\n" unless new_content.end_with?("\n")
+
+        host_env_file.write(new_content)
+        @ssh.disconnect; @ssh.connect # reconnect to reread env
+      end
+
       def self.supported_os_releases
         @supported_os_releases ||= []
       end

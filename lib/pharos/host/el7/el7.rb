@@ -13,11 +13,7 @@ module Pharos
       end
 
       def install_essentials
-        exec_script(
-          'configure-essentials.sh',
-          HTTP_PROXY: host.http_proxy.to_s,
-          SET_HTTP_PROXY: host.http_proxy.nil? ? 'false' : 'true'
-        )
+        exec_script('configure-essentials.sh')
       end
 
       def configure_repos
@@ -42,11 +38,17 @@ module Pharos
         ['--cgroup-driver=systemd']
       end
 
+      # @return [String] repository name to use with --enable-repo yum option
+      def docker_repo_name
+        abstract_method!
+      end
+
       def configure_container_runtime
         if docker?
           exec_script(
             'configure-docker.sh',
-            DOCKER_VERSION: DOCKER_VERSION
+            DOCKER_VERSION: DOCKER_VERSION,
+            DOCKER_REPO_NAME: docker_repo_name
           )
         elsif crio?
           exec_script(

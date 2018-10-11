@@ -184,6 +184,7 @@ module Pharos
         version: self.class.version,
         config: config,
         arch: cpu_arch,
+        image_repository: cluster_config.image_repository,
         **vars
       )
     end

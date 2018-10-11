@@ -17,6 +17,9 @@ hosts:
     container_runtime: cri-o
     labels:
       disk: ssd
+    environment:
+      http_proxy: proxy.example.com
+      NO_PROXY: 10.*
 network:
   dns_replicas: 3
   service_cidr: 10.96.0.0/12

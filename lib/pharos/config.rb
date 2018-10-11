@@ -10,11 +10,14 @@ require_relative 'configuration/cloud'
 require_relative 'configuration/audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
+require_relative 'configuration/pod_security_policy'
 require_relative 'configuration/telemetry'
 
 module Pharos
   class Config < Pharos::Configuration::Struct
     HOSTS_PER_DNS_REPLICA = 10
+
+    using Pharos::CoreExt::DeepTransformKeys
 
     # @param raw_data [Hash]
     # @raise [Pharos::ConfigError]
@@ -41,7 +44,8 @@ module Pharos
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
     attribute :telemetry, Pharos::Configuration::Telemetry
-    attribute :image_repository, Pharos::Types::String.default('quay.io/kontena')
+    attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
+    attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
     attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
 
@@ -84,7 +88,7 @@ module Pharos
 
     # @return [String]
     def to_yaml
-      JSON.parse(to_h.to_json).to_yaml
+      YAML.dump(to_h.deep_stringify_keys)
     end
   end
 end

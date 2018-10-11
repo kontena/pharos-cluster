@@ -14,6 +14,56 @@ describe Pharos::Configuration::Host do
     allow(subject).to receive(:ssh).and_return(instance_double(Pharos::SSH::Client))
   end
 
+  describe '#labels' do
+    context 'for master' do
+      it 'returns empty labels by default' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          role: 'master',
+          user: 'root'
+        )
+        expect(subject.labels).to eq(nil)
+      end
+
+      it 'returns given labels' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          role: 'master',
+          user: 'root',
+          labels: {
+            foo: 'bar',
+            baz: 'baf'
+          }
+        )
+        expect(subject.labels).to eq({foo: 'bar', baz: 'baf'})
+      end
+    end
+
+    context 'for worker' do
+      it 'returns given labels' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          role: 'worker',
+          user: 'root',
+          labels: {
+            foo: 'bar',
+            baz: 'baf'
+          }
+        )
+        expect(subject.labels).to eq({foo: 'bar', baz: 'baf'})
+      end
+
+      it 'returns default worker label' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          role: 'worker',
+          user: 'root'
+        )
+        expect(subject.labels).to eq({ 'node-role.kubernetes.io/worker': "" })
+      end
+    end
+  end
+
   describe '#short_hostname' do
     let(:hostname) { nil }
 
