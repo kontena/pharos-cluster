@@ -13,7 +13,9 @@ module Pharos
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
-      @context = {}
+      @context = {
+        'post_install_messages' => {}
+      }
     end
 
     # @return [Pharos::SSH::Manager]
@@ -142,6 +144,10 @@ module Pharos
 
         addon.apply
       end
+    end
+
+    def post_install_messages
+      @context['post_install_messages']
     end
 
     def save_config

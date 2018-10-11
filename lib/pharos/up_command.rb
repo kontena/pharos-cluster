@@ -116,7 +116,12 @@ module Pharos
       puts "    To configure kubectl for connecting to the cluster, use:"
       puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
-
+      manager.post_install_messages.each do |addon, message|
+        puts "    Post-install message from #{addon}:"
+        message.split('\n').each do |line|
+          puts "      #{line}"
+        end
+      end
       manager.disconnect
     end
 

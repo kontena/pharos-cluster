@@ -133,7 +133,7 @@ module Pharos
       end
     end
 
-    attr_reader :config, :cpu_arch, :cluster_config, :kube_client
+    attr_reader :config, :cpu_arch, :cluster_config, :kube_client, :post_install_message
 
     # @param config [Hash,Dry::Validation::Result]
     # @param enabled [Boolean]
@@ -186,6 +186,10 @@ module Pharos
       else
         delete_resources
       end
+    end
+
+    def notify(msg)
+      @post_install_message = msg
     end
 
     # @param vars [Hash]

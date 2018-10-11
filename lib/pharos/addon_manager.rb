@@ -95,6 +95,8 @@ module Pharos
         addon = addon_class.new(config, enabled: true, **options)
         addon.validate
         yield_addon_with_retry(addon, &block)
+        post_install_message = addon.post_install_message
+        @cluster_context['post_install_messages'][addon.name] = post_install_message if post_install_message
       end
 
       with_disabled_addons do |addon_class|
