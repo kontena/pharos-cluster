@@ -50,6 +50,10 @@ module Pharos
             DOCKER_VERSION: DOCKER_VERSION,
             DOCKER_REPO_NAME: docker_repo_name
           )
+        elsif custom_docker?
+          exec_script(
+            'configure-docker.sh'
+          )
         elsif crio?
           exec_script(
             'configure-cri-o.sh',
