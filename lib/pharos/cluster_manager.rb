@@ -48,6 +48,7 @@ module Pharos
     end
 
     def validate
+      apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)

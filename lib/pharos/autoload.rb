@@ -9,11 +9,7 @@ autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
 autoload :OpenSSL, 'openssl'
 autoload :Excon, 'excon'
-autoload :K8s, 'k8s/client'
-
-module K8s
-  autoload :Error, 'k8s/error'
-end
+autoload :K8s, 'k8s-client'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
