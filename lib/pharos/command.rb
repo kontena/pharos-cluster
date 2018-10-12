@@ -32,5 +32,19 @@ module Pharos
     def stdin_eof?
       $stdin.eof?
     end
+
+    def subcommand_missing(subcommand)
+      require 'mkmf'
+      plugin_subcommand = find_executable "pharos-#{subcommand}" # TODO: this quick-which-hack outputs to terminal and leaves behind a mkmf.log
+      signal_usage_error "Unknown subcommand: #{subcommand}" unless plugin_subcommand
+      ruby_path = RbConfig::CONFIG['bindir']
+      ENV.update(
+        'PHAROS_RUBY_PATH' => ruby_path,
+        'PHAROS_BIN_PATH' => File.expand_path(File.dirname(File.expand_path($PROGRAM_NAME))),
+        'PHAROS_BIN' => File.expand_path($PROGRAM_NAME),
+        'PHAROS_VERSION' => Pharos::VERSION
+      )
+      exec(plugin_subcommand, *ARGV[1..-1])
+    end
   end
 end
