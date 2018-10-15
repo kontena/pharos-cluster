@@ -5,9 +5,7 @@ module Pharos
     class Debian < Configurer
       def install_essentials
         exec_script(
-          'configure-essentials.sh',
-          HTTP_PROXY: host.http_proxy.to_s,
-          SET_HTTP_PROXY: host.http_proxy.nil? ? 'false' : 'true'
+          'configure-essentials.sh'
         )
       end
 
