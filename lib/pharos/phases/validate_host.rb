@@ -8,6 +8,8 @@ module Pharos
       def call
         logger.info { "Validating current role matches ..." }
         check_role
+        logger.info { "Validating sudo access ..." }
+        check_sudo
         logger.info { "Validating distro and version ..." }
         check_distro_version
         logger.info { "Validating host configuration ..." }
@@ -28,6 +30,12 @@ module Pharos
       def check_cpu_arch
         return if @host.cpu_arch.supported?
         raise Pharos::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
+      end
+
+      def check_sudo
+        @ssh.exec!('sudo true')
+      rescue Pharos::SSH::RemoteCommand::ExecError => exc
+        raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
 
       def check_role
