@@ -104,4 +104,11 @@ describe Pharos::Addon do
       subject.apply_resources
     end
   end
+
+  describe "#post_install_message" do
+    it "sets post install message if message given" do
+      subject.post_install_message('installed')
+      expect(subject.post_install_message).to eq('installed')
+    end
+  end
 end
