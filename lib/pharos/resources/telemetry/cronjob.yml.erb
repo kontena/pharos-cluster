@@ -17,6 +17,10 @@ spec:
             image: <%= image_repository %>/pharos-telemetry:<%= version %>
             args:
             - --run-once
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
             env:
             - name: CUSTOMER_TOKEN
               valueFrom:

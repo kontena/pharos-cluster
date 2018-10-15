@@ -88,6 +88,7 @@ spec:
       securityContext:
         seLinuxOptions: {}
       serviceAccountName: weave-net
+      priorityClassName: system-cluster-critical
       tolerations:
         - effect: NoSchedule
           operator: Exists
