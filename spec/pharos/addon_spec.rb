@@ -2,7 +2,8 @@ require "pharos/addon"
 
 describe Pharos::Addon do
   let(:test_addon) do
-    Pharos.addon 'test-addon' do
+    Class.new(Pharos::Addon) do
+      addon_name 'test-addon'
       version "0.2.2"
       license "MIT"
 
@@ -57,7 +58,8 @@ describe Pharos::Addon do
 
   describe ".install" do
     subject do
-      Pharos.addon 'test-addon-install' do
+      Class.new(Pharos::Addon) do
+        addon_name 'test-addon-install'
         version "0.2.2"
         license "MIT"
 
