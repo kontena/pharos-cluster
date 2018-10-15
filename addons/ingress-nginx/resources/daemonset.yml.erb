@@ -30,14 +30,14 @@ spec:
         - sh
         - -c
         - sysctl -w net.core.somaxconn=32768; sysctl -w net.ipv4.ip_local_port_range="1024 65535"
-        image: "docker.io/<%= arch.name == 'amd64' ? 'alpine' : 'arm64v8/alpine' %>:3.6"
+        image: "<%= image_repository %>/alpine:3.6"
         imagePullPolicy: IfNotPresent
         name: sysctl
         securityContext:
           privileged: true
       containers:
         - name: nginx-ingress-controller
-          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller-<%= arch.name %>:<%= version %>
+          image: <%= image_repository %>/nginx-ingress-controller:<%= version %>
           args:
             - /nginx-ingress-controller
             - --default-backend-service=$(POD_NAMESPACE)/default-http-backend

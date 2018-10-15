@@ -1,12 +1,24 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-lens' do
-  version '0.1.0-dev'
+  version '1.0.0'
   license 'Kontena License'
 
   config_schema {
-    required(:name).filled(:str?)
-    required(:host).filled(:str?)
-    required(:email).filled(:str?)
+    optional(:host).filled(:str?)
+    optional(:email).filled(:str?)
+  }
+
+  def worker_node_ip
+    worker_node = cluster_config.worker_hosts.first
+    worker_node&.address
+  end
+
+  install {
+    host = config.host || "lens.#{worker_node_ip}.nip.io"
+    apply_resources(
+      host: host
+    )
+    post_install_message("Kontena Lens is running at: https://#{host}")
   }
 end

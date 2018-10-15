@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kube-system-psp
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pharos:podsecuritypolicy:privileged
+subjects:
+# For the kubeadm kube-system nodes
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:nodes
+# For the cluster-admin role
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: cluster-admin
+# For all service accounts in the kube-system namespace
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts:kube-system
