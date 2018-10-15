@@ -19,7 +19,7 @@ spec:
       serviceAccountName: lens-operator
       replicas: 2
       containers:
-        - image: quay.io/kontena/lens-idp:2018.10.4-1
+        - image: quay.io/kontena/lens-idp:1.0.0
           name: user-management
           imagePullPolicy: Always
           env:

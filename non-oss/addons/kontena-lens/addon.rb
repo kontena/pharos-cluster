@@ -11,7 +11,7 @@ Pharos.addon 'kontena-lens' do
 
   def worker_node_ip
     worker_node = cluster_config.worker_hosts.first
-    worker_node.address if worker_node
+    worker_node&.address
   end
 
   install {
@@ -19,5 +19,6 @@ Pharos.addon 'kontena-lens' do
     apply_resources(
       host: host
     )
+    post_install_message("Kontena Lens is running at: https://#{host}")
   }
 end
