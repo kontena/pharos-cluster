@@ -24,6 +24,10 @@ module Pharos
         name: 'cfssl', version: CFSSL_VERSION, license: 'MIT',
         enabled: proc { |c| !c.etcd&.endpoints }
       )
+
+      def docker_repo_name
+        'extras'
+      end
     end
   end
 end

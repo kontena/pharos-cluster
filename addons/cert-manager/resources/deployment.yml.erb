@@ -13,15 +13,16 @@ spec:
       serviceAccountName: cert-manager
       containers:
         - name: cert-manager
-          image: "quay.io/jetstack/cert-manager-controller:v<%= version %>"
+          image: "<%= image_repository %>/cert-manager-controller:v<%= version %>"
           imagePullPolicy: IfNotPresent
-          resources:
-            requests:
-              cpu: 10m
-              memory: 32Mi
-        - name: ingress-shim
-          image: "quay.io/jetstack/cert-manager-ingress-shim:v<%= version %>"
-          imagePullPolicy: IfNotPresent
+          args:
+          - --cluster-resource-namespace=$(POD_NAMESPACE)
+          - --leader-election-namespace=$(POD_NAMESPACE)
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
           resources:
             requests:
               cpu: 10m
