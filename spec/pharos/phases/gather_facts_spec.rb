@@ -53,22 +53,18 @@ describe Pharos::Phases::GatherFacts do
   end
 
   describe '#get_resolvconf' do
-    let(:file) { instance_double(Pharos::SSH::RemoteFile) }
+    let(:file) { instance_double Pharos::SSH::RemoteFile }
+    let(:file_content) { "" }
     let(:file_readlink) { nil }
 
     before do
       allow(ssh).to receive(:file).with('/etc/resolv.conf').and_return(file)
-
-      mock = allow(file).to receive(:each_line)
-      file_lines.each do |line|
-        mock = mock.and_yield(line)
-      end
-
+      allow(file).to receive(:lines).and_return(file_content.lines)
       allow(file).to receive(:readlink).and_return(file_readlink)
     end
 
     context 'for a normal resolv.conf' do
-      let(:file_lines) { ['nameserver 8.8.8.8'] }
+      let(:file_content) { "# nameserver config\nnameserver 8.8.8.8\n" }
 
       it 'returns ok' do
         expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
@@ -79,7 +75,18 @@ describe Pharos::Phases::GatherFacts do
     end
 
     context 'for a normal resolv.conf with localhost' do
-      let(:file_lines) { ['nameserver 127.0.0.53'] }
+      let(:file_content) { "nameserver 127.0.0.53" }
+
+      it 'returns nameserver_localhost' do
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+          nameserver_localhost: true,
+          systemd_resolved_stub: false,
+        )
+      end
+    end
+
+    context 'for a normal resolv.conf with ipv6 localhost' do
+      let(:file_content) { "nameserver ::1" }
 
       it 'returns nameserver_localhost' do
         expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
@@ -90,7 +97,7 @@ describe Pharos::Phases::GatherFacts do
     end
 
     context 'for a systemd-resolved resolv.conf stub' do
-      let(:file_lines) { ['nameserver 127.0.0.53'] }
+      let(:file_content) { "nameserver 127.0.0.53" }
       let(:file_readlink) { '../run/systemd/resolve/stub-resolv.conf' }
 
       it 'returns systemd_resolved_stub' do
@@ -102,7 +109,7 @@ describe Pharos::Phases::GatherFacts do
     end
 
     context 'for a non-resolved resolv.conf symlink' do
-      let(:file_lines) { ['nameserver 8.8.8.8'] }
+      let(:file_content) { "nameserver 8.8.8.8" }
       let(:file_readlink) { '/run/resolvconf/resolv.conf' }
 
       it 'returns ok' do
@@ -122,7 +129,7 @@ describe Pharos::Phases::GatherFacts do
     ] }
 
     before do
-      allow(ssh).to receive(:exec!).with('ip route').and_return(routes.join "\n" + "\n")
+      allow(ssh).to receive(:exec!).with('sudo ip route').and_return(routes.join "\n" + "\n")
     end
 
     it "returns valid routes" do

@@ -14,12 +14,12 @@ spec:
           restartPolicy: Never
           containers:
           - name: agent
-            image: <%= image_repository %>/pharos-telemetry-<%= arch.name %>:latest
-            args: 
+            image: <%= image_repository %>/pharos-telemetry:<%= version %>
+            args:
             - --run-once
             env:
             - name: CUSTOMER_TOKEN
               valueFrom:
-              secretKeyRef:
-                name: telemetry-token
-                key: token
+                secretKeyRef:
+                   name: telemetry-token
+                   key: token

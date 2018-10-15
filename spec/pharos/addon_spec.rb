@@ -23,7 +23,7 @@ describe Pharos::Addon do
   let(:kube_client) { instance_double(K8s::Client) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: nil) }
+  subject { test_addon.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: double(image_repository: 'foo')) }
 
   describe ".addon_name" do
     it "returns configured name" do
@@ -104,6 +104,13 @@ describe Pharos::Addon do
     it "applies addon resources" do
       expect(kube_stack).to receive(:apply)
       subject.apply_resources
+    end
+  end
+
+  describe "#post_install_message" do
+    it "sets post install message if message given" do
+      subject.post_install_message('installed')
+      expect(subject.post_install_message).to eq('installed')
     end
   end
 end

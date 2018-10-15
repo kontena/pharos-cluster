@@ -16,6 +16,6 @@ ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_R
 EOF
 
 export DEBIAN_FRONTEND=noninteractive
-apt-mark unhold kubelet
+apt-mark unhold kubelet || echo "Nothing to unhold"
 apt-get install -y kubelet=${KUBE_VERSION}-00
 apt-mark hold kubelet

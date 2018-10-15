@@ -131,6 +131,28 @@ describe Pharos::Kubeadm::ConfigGenerator do
       end
     end
 
+    context 'with cloud provider' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        cloud: {
+          provider: 'aws'
+        }
+      ) }
+
+      it 'comes with proper cloud provider' do
+        config = subject.generate_config
+        expect(config['apiServerExtraArgs']['cloud-provider']).to eq('aws')
+      end
+
+      it 'comes with proper cloud config' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'cloud-config')).to be_nil
+        expect(config.dig('controllerManagerExtraArgs', 'cloud-config')).to be_nil
+      end
+    end
+
     context 'with cloud configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
@@ -239,6 +261,94 @@ describe Pharos::Kubeadm::ConfigGenerator do
         expect(config.dig('kubeProxy', 'config')).to eq(
           'mode' => 'iptables',
         )
+      end
+    end
+
+    context 'with admission plugins' do
+      context 'with proper config' do
+        let(:config) { Pharos::Config.new(
+          hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+          network: {},
+          admission_plugins: [
+            {name: 'PodSecurityPolicy'}, # enabled defaults to true
+            {name: 'Priority', enabled: false},
+            {name: 'AlwaysPullImages', enabled: true}
+          ]
+        ) }
+
+        it 'configures enabled plugins to api server' do
+          extra_args = subject.generate_config['apiServerExtraArgs']
+          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages')
+          expect(extra_args['disable-admission-plugins']).to eq('Priority')
+        end
+      end
+
+      context 'without config' do
+        let(:config) { Pharos::Config.new(
+          hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+          network: {}
+        ) }
+
+        it 'configures default plugins to api server' do
+          extra_args = subject.generate_config['apiServerExtraArgs']
+          expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
+          plugins = extra_args['enable-admission-plugins'].split(',')
+          expect(plugins).to include('PodSecurityPolicy')
+          expect(plugins).to include('NodeRestriction')
+          expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
+        end
+      end
+
+      context 'with empty config' do
+        let(:config) { Pharos::Config.new(
+          hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+          network: {},
+          admission_plugins: []
+        ) }
+
+        it 'configures default plugins to api server' do
+          extra_args = subject.generate_config['apiServerExtraArgs']
+          expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
+          plugins = extra_args['enable-admission-plugins'].split(',')
+          expect(plugins).to include('PodSecurityPolicy')
+          expect(plugins).to include('NodeRestriction')
+          expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
+        end
+      end
+
+      context 'with only enabled plugins' do
+        let(:config) { Pharos::Config.new(
+          hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+          network: {},
+          admission_plugins: [
+            {name: 'PodSecurityPolicy'},
+            {name: 'AlwaysPullImages', enabled: true}
+          ]
+        ) }
+
+        it 'configures enabled plugins to api server' do
+          extra_args = subject.generate_config['apiServerExtraArgs']
+          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages')
+          expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
+        end
+      end
+
+      context 'with only disabled plugins' do
+        let(:config) { Pharos::Config.new(
+          hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+          network: {},
+          admission_plugins: [
+            {name: 'PodSecurityPolicy', enabled: false},
+            {name: 'AlwaysPullImages', enabled: false}
+          ]
+        ) }
+
+        it 'configures correct plugins to api server' do
+          extra_args = subject.generate_config['apiServerExtraArgs']
+          expect(extra_args['disable-admission-plugins']).to eq('PodSecurityPolicy,AlwaysPullImages')
+          expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
+          expect(extra_args['enable-admission-plugins']).to eq('NodeRestriction')
+        end
       end
     end
 

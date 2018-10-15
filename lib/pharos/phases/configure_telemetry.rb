@@ -12,6 +12,7 @@ module Pharos
           logger.info { "Configuring telemetry service ..." }
           apply_stack(
             'telemetry',
+            version: Pharos::TELEMETRY_VERSION,
             image_repository: @config.image_repository,
             arch: @host.cpu_arch,
             customer_token: Base64.strict_encode64(customer_token)

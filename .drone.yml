@@ -3,7 +3,9 @@ pipeline:
     image: ruby:2.4
     commands:
       - bundle install --path bundler
-      - bundle exec rspec spec/ && bundle exec rubocop --fail-level A -S --format c --parallel
+      - bundle exec rspec spec/
+      - bundle exec rspec non-oss/spec/
+      - bundle exec rubocop --fail-level A -S --format c --parallel
   create_gh_release:
     image: ubuntu:xenial
     secrets: [ github_token ]
@@ -11,13 +13,29 @@ pipeline:
       - ./build/drone/create_release.sh
     when:
       event: tag
-  build_xenial:
+  build_ubuntu_oss:
     image: ubuntu:xenial
-    secrets: [ github_token ]
     environment:
       - CPPFLAGS=-P
     commands:
-      - ./build/drone/ubuntu_xenial.sh
+      - ./build/drone/ubuntu_oss.sh
+    when:
+      event: tag
+  release_binary_oss:
+    image: plugins/s3
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    bucket: pharos-cluster-binaries
+    region: eu-west-1
+    source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}+oss"
+    target: /
+    when:
+      event: tag
+  build_ubuntu:
+    image: ubuntu:xenial
+    environment:
+      - CPPFLAGS=-P
+    commands:
+      - ./build/drone/ubuntu.sh
     when:
       event: tag
   release_binary:
