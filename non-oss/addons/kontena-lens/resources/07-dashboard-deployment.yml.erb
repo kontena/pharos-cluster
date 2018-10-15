@@ -37,11 +37,11 @@ spec:
               memory: "512Mi"
               cpu: "200m"
         - name: terminal-gateway
-          image: quay.io/kontena/lens-terminal-gateway:1.0.0
+          image: quay.io/kontena/lens-terminal-gateway:<%= version %>
           imagePullPolicy: Always
           env:
           - name: SHELL_DOCKER_IMAGE
-            value: quay.io/kontena/lens-terminal:1.0.0
+            value: quay.io/kontena/lens-terminal:<%= version %>
           - name: LENS_VERSION
             value: <%= version %>
           resources:

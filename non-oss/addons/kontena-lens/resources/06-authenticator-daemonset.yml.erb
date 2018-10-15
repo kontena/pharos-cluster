@@ -23,7 +23,7 @@ spec:
           operator: Exists
       serviceAccountName: lens-operator
       containers:
-        - image: quay.io/kontena/lens-authenticator:1.0.0
+        - image: quay.io/kontena/lens-authenticator:<%= version %>
           name: user-authenticator
           imagePullPolicy: Always
           livenessProbe:
