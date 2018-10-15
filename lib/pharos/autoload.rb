@@ -65,8 +65,3 @@ module Pharos
     autoload :Configurer, 'pharos/host/configurer'
   end
 end
-
-# FIXME Not the right place to load non-oss commands
-Dir.glob(File.join(__dir__, '..', '..', 'non-oss', 'commands', '**/*.rb')).each { |f|
-  require(f)
-}
