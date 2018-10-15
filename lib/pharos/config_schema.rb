@@ -122,6 +122,14 @@ module Pharos
         optional(:pod_security_policy).schema do
           optional(:default_policy).filled(:str?)
         end
+        optional(:admission_plugins).filled do
+          each do
+            schema do
+              required(:name).filled(:str?)
+              optional(:enabled).filled(:bool?)
+            end
+          end
+        end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]
