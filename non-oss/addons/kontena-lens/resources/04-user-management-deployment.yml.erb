@@ -1,5 +1,5 @@
-apiVersion: extensions/v1beta1
-kind: DaemonSet
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: user-management
   namespace: kontena-lens
@@ -16,14 +16,10 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
-      nodeSelector:
-        node-role.kubernetes.io/master: ''
-      tolerations:
-        - effect: NoSchedule
-          operator: Exists
       serviceAccountName: lens-operator
+      replicas: 2
       containers:
-        - image: quay.io/kontena/lens-idp:2018.6.1
+        - image: quay.io/kontena/lens-idp:<%= version %>
           name: user-management
           imagePullPolicy: Always
           env:

@@ -13,7 +13,9 @@ module Pharos
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
-      @context = {}
+      @context = {
+        'post_install_messages' => {}
+      }
     end
 
     # @return [Pharos::SSH::Manager]
@@ -58,6 +60,7 @@ module Pharos
     end
 
     def validate
+      apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
@@ -107,6 +110,7 @@ module Pharos
       # master is now configured and can be used
       apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
       # configure essential services
+      apply_phase(Phases::ConfigurePSP, [master_hosts.first], master: master_hosts.first)
       apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
       apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
@@ -141,6 +145,10 @@ module Pharos
 
         addon.apply
       end
+    end
+
+    def post_install_messages
+      @context['post_install_messages']
     end
 
     def save_config

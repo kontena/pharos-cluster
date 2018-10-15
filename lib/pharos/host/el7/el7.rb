@@ -13,11 +13,7 @@ module Pharos
       end
 
       def install_essentials
-        exec_script(
-          'configure-essentials.sh',
-          HTTP_PROXY: host.http_proxy.to_s,
-          SET_HTTP_PROXY: host.http_proxy.nil? ? 'false' : 'true'
-        )
+        exec_script('configure-essentials.sh')
       end
 
       def configure_repos
@@ -53,6 +49,10 @@ module Pharos
             'configure-docker.sh',
             DOCKER_VERSION: DOCKER_VERSION,
             DOCKER_REPO_NAME: docker_repo_name
+          )
+        elsif custom_docker?
+          exec_script(
+            'configure-docker.sh'
           )
         elsif crio?
           exec_script(

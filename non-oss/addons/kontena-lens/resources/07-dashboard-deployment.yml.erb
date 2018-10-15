@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dashboard
@@ -17,7 +17,7 @@ spec:
       serviceAccountName: lens-operator
       restartPolicy: Always
       containers:
-        - image: quay.io/kontena/lens:latest
+        - image: quay.io/kontena/lens:<%= version %>
           name: dashboard
           imagePullPolicy: Always
           env:
@@ -27,6 +27,8 @@ spec:
               value: http://localhost:9998
             - name: REDIS_CLIENT_HOST
               value: redis
+            - name: USER_MANAGEMENT_ENABLED
+              value: "<%=  (config.user_management.nil? || config.user_management) ? "true" : "false" %>"
           resources:
             requests:
               memory: "256Mi"
@@ -34,12 +36,14 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "200m"
-        - name: kube-shell
-          image: quay.io/kontena/kube-shell-gateway:latest
+        - name: terminal-gateway
+          image: quay.io/kontena/lens-terminal-gateway:<%= version %>
           imagePullPolicy: Always
           env:
           - name: SHELL_DOCKER_IMAGE
-            value: quay.io/kontena/kubectl:latest
+            value: quay.io/kontena/lens-terminal:<%= version %>
+          - name: LENS_VERSION
+            value: <%= version %>
           resources:
             requests:
               memory: "128Mi"

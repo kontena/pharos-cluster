@@ -188,6 +188,14 @@ module Pharos
       end
     end
 
+    def post_install_message(msg = nil)
+      if msg
+        @post_install_message = msg
+      else
+        @post_install_message
+      end
+    end
+
     # @param vars [Hash]
     # @return [Pharos::Kube::Stack]
     def kube_stack(**vars)
@@ -198,6 +206,7 @@ module Pharos
         version: self.class.version,
         config: config,
         arch: cpu_arch,
+        image_repository: cluster_config.image_repository,
         **vars
       )
     end

@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: manage-kubeshell-pods
+  namespace: kube-shell
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kube-shell-pod-manager
+subjects:
+  - kind: ServiceAccount
+    name: lens-operator
+    namespace: kontena-lens
