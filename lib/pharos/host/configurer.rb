@@ -91,6 +91,10 @@ module Pharos
         @host.docker?
       end
 
+      def custom_docker?
+        @host.custom_docker?
+      end
+
       # @return [Pharos::Config,NilClass]
       def cluster_config
         self.class.cluster_config

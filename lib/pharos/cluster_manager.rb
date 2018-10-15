@@ -13,7 +13,9 @@ module Pharos
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
-      @context = {}
+      @context = {
+        'post_install_messages' => {}
+      }
     end
 
     # @return [Pharos::SSH::Manager]
@@ -58,6 +60,7 @@ module Pharos
     end
 
     def validate
+      apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
@@ -142,6 +145,10 @@ module Pharos
 
         addon.apply
       end
+    end
+
+    def post_install_messages
+      @context['post_install_messages']
     end
 
     def save_config
