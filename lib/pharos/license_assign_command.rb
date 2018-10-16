@@ -24,14 +24,8 @@ module Pharos
     def execute
       signal_usage_error 'invalid LICENSE_KEY format' unless license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
 
-      logger.info "Deleted existing subscription token from pharos cluster secrets" if try_delete_existing
-
-      ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token.shellescape}")
+      ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token.shellescape} --dry-run -o yaml | kubectl apply -f -")
       logger.info "Added subscription token to pharos cluster secrets"
-    end
-
-    def try_delete_existing
-      ssh.exec("kubectl delete secret pharos-cluster --namespace=kube-system").success?
     end
 
     def ssh
