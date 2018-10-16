@@ -2,6 +2,7 @@ pipeline:
   test:
     image: ruby:2.4
     commands:
+      - gem install bundler --version="1.16.2" -Nf
       - bundle install --path bundler
       - bundle exec rspec spec/
       - bundle exec rspec non-oss/spec/
