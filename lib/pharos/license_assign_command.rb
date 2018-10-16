@@ -7,15 +7,15 @@ module Pharos
 
     LICENSE_SERVICE_ENDPOINT = "https://get.pharos.sh/api/licenses/%<key>s/assign".freeze
 
-    parameter "LICENSE_KEY", "kontena pharos license key" do |key|
-      signal_usage_error 'invalid LICENSE_KEY format' unless key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
-      key
-    end
-
+    parameter "[LICENSE_KEY]", "kontena pharos license key"
     option '--description', 'DESCRIPTION', "license description"
 
     def default_description
       "pharos version #{Pharos::VERSION} on #{master_host.address}"
+    end
+
+    def default_license_key
+      prompt.ask('Enter Kontena Pharos license key:')
     end
 
     def config
@@ -23,6 +23,7 @@ module Pharos
     end
 
     def execute
+      signal_usage_error 'invalid LICENSE_KEY format' unless license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
       retry_times = 0
       ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token.shellescape}")
       logger.info "Add subscription token to pharos cluster secrets"
