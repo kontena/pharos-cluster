@@ -23,7 +23,6 @@ module Pharos
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha2',
           'kind' => 'MasterConfiguration',
-
           'nodeRegistration' => {
             'name' => @host.hostname
           },
@@ -90,6 +89,8 @@ module Pharos
         configure_audit_webhook(config) if @config.audit&.server
 
         configure_kube_proxy(config) if @config.kube_proxy
+
+        configure_admission_plugins(config)
 
         # Set secrets config location and mount it to api server
         config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
@@ -252,6 +253,16 @@ module Pharos
         end
 
         config
+      end
+
+      DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction).freeze
+
+      def configure_admission_plugins(config)
+        disabled_plugins = @config.admission_plugins&.reject(&:enabled)&.map(&:name) || []
+        enabled_plugins = DEFAULT_ADMISSION_PLUGINS.reject{ |p| disabled_plugins.include?(p) } + (@config.admission_plugins&.select(&:enabled)&.map(&:name) || [])
+
+        config['apiServerExtraArgs']['enable-admission-plugins'] = enabled_plugins.uniq.join(',') unless enabled_plugins.empty?
+        config['apiServerExtraArgs']['disable-admission-plugins'] = disabled_plugins.uniq.join(',') unless disabled_plugins.empty?
       end
     end
   end

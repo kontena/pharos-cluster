@@ -7,18 +7,9 @@ curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-darwin-amd64
 chmod +x /usr/local/bin/rubyc
 version=${TRAVIS_TAG#"v"}
 package="pharos-cluster-darwin-amd64-${version}"
-rubyc -o $package pharos-cluster
+rubyc -o $package --make-args=--silent pharos-cluster
 ./$package version
 
-# ship to github
-curl -sL https://github.com/aktau/github-release/releases/download/v0.7.2/darwin-amd64-github-release.tar.bz2 | tar -xjO > /usr/local/bin/github-release
-chmod +x /usr/local/bin/github-release
-/usr/local/bin/github-release upload \
-    --user kontena \
-    --repo pharos-cluster \
-    --tag $TRAVIS_TAG \
-    --name $package \
-    --file ./$package
-
+rm -rf upload/
 mkdir -p upload
 mv $package upload/

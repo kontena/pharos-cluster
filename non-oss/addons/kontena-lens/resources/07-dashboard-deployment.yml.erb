@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: kontena-lens
+  labels:
+    app: dashboard
+spec:
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      serviceAccountName: lens-operator
+      restartPolicy: Always
+      containers:
+        - image: quay.io/kontena/lens:<%= version %>
+          name: dashboard
+          imagePullPolicy: Always
+          env:
+            - name: KUBE_KONTENA_URL
+              value: http://usermanagement:9999
+            - name: KUBE_TERMINAL_URL
+              value: http://localhost:9998
+            - name: REDIS_CLIENT_HOST
+              value: redis
+            - name: USER_MANAGEMENT_ENABLED
+              value: "<%=  (config.user_management.nil? || config.user_management) ? "true" : "false" %>"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+        - name: terminal-gateway
+          image: quay.io/kontena/lens-terminal-gateway:<%= version %>
+          imagePullPolicy: Always
+          env:
+          - name: SHELL_DOCKER_IMAGE
+            value: quay.io/kontena/lens-terminal:<%= version %>
+          - name: LENS_VERSION
+            value: <%= version %>
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "100m"
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 9998
+              scheme: HTTP
+            initialDelaySeconds: 180
+            timeoutSeconds: 5
+          command: ["bundle"]
+          args: ["exec", "puma", "-p", "9998"]
+

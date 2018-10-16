@@ -58,7 +58,7 @@ module Pharos
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
-      attribute :http_proxy, Pharos::Types::Strict::String
+      attribute :environment, Pharos::Types::Strict::Hash
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
@@ -78,6 +78,12 @@ module Pharos
 
       def peer_address
         private_address || private_interface_address || address
+      end
+
+      def labels
+        return @attributes[:labels] unless worker?
+
+        @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
       end
 
       def kubelet_args(local_only: false, cloud_provider: nil)
@@ -109,6 +115,10 @@ module Pharos
 
       def docker?
         container_runtime == 'docker'
+      end
+
+      def custom_docker?
+        container_runtime == 'custom_docker'
       end
 
       # @return [Integer]

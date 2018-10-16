@@ -258,4 +258,10 @@ describe Pharos::Config do
       end
     end
   end
+
+  describe 'admission_plugins' do
+    it 'returns empty plugins by default' do
+      expect(subject.admission_plugins).to be_nil
+    end
+  end
 end

@@ -37,7 +37,7 @@ describe Pharos::Phases::ConfigureKubelet do
     it "returns a systemd unit" do
       expect(subject.build_systemd_dropin).to eq <<~EOM
         [Service]
-        Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=quay.io/kontena/pause-amd64:3.1'
+        Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
         ExecStartPre=-/sbin/swapoff -a
       EOM
     end

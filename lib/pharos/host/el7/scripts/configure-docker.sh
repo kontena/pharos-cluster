@@ -2,15 +2,6 @@
 
 set -e
 
-mkdir -p /etc/docker
-cat <<EOF >/etc/docker/daemon.json
-{
-    "live-restore": true,
-    "iptables": false,
-    "ip-masq": false
-}
-EOF
-
 reload_daemon() {
     if systemctl is-active --quiet docker; then
         systemctl daemon-reload
@@ -32,7 +23,21 @@ else
     fi
 fi
 
-yum install -y docker-${DOCKER_VERSION}
+if [ -z "$DOCKER_VERSION" ]; then
+    docker info
+    exit 0
+fi
+
+mkdir -p /etc/docker
+cat <<EOF >/etc/docker/daemon.json
+{
+    "live-restore": true,
+    "iptables": false,
+    "ip-masq": false
+}
+EOF
+
+yum install --enablerepo="${DOCKER_REPO_NAME}" -y "docker-${DOCKER_VERSION}"
 
 if ! systemctl is-active --quiet docker; then
     systemctl enable docker

@@ -9,15 +9,17 @@ module Pharos
     REMOTE_FILE = "/etc/kubernetes/admin.conf"
 
     def execute
-      config = Pharos::Kube::Config.new(config_file_content)
-      config.rename_cluster(new_name) if new_name
-      config.rename_context(new_context) if new_context
-      config.update_server_address(master_host.api_address)
-      merge_list.each do |merge|
-        merge_config = Pharos::Kube::Config.new(File.read(merge))
-        config << merge_config
+      Dir.chdir(config_yaml.dirname) do
+        config = Pharos::Kube::Config.new(config_file_content)
+        config.rename_cluster(new_name) if new_name
+        config.rename_context(new_context) if new_context
+        config.update_server_address(master_host.api_address)
+        merge_list.each do |merge|
+          merge_config = Pharos::Kube::Config.new(File.read(merge))
+          config << merge_config
+        end
+        puts config
       end
-      puts config
     end
 
     private

@@ -7,6 +7,7 @@ autoload :RestClient, 'rest-client'
 autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
+autoload :Excon, 'excon'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
@@ -28,6 +29,12 @@ module Pharos
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :HostConfigManager, 'pharos/host_config_manager'
+
+  module CoreExt
+    autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
+    autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
+    autoload :StringCasing, 'pharos/core-ext/string_casing'
+  end
 
   module SSH
     autoload :Client, 'pharos/ssh/client'
