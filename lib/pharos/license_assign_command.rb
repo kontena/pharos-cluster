@@ -22,10 +22,14 @@ module Pharos
     end
 
     def execute
-      signal_usage_error 'invalid LICENSE_KEY format' unless license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
+      validate_license_format
 
-      ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token.shellescape} --dry-run -o yaml | kubectl apply -f -")
+      ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token} --dry-run -o yaml | kubectl apply -f -")
       logger.info "Added subscription token to pharos cluster secrets"
+    end
+
+    def validate_license_format
+      signal_usage_error 'invalid LICENSE_KEY format' unless license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
     end
 
     def ssh
