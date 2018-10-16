@@ -34,6 +34,10 @@ Vagrant.configure("2") do |config|
       end
       host.vm.network "private_network", ip: "192.168.100.#{i + 100}"
       host.vm.provision("shell", path: 'proxy-only.sh') if ENV['VAGRANT_HTTP_PROXY']
+
+      if ENV['VAGRANT_BLOCK_SSH']
+        host.vm.provision("shell", path: 'block-ssh.sh') if i < Integer(ENV['VAGRANT_BLOCK_SSH'])
+      end
     end
   end
 end
