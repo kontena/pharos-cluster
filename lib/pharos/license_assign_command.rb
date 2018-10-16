@@ -5,7 +5,7 @@ module Pharos
 
     include Pharos::Logging
 
-    LICENSE_SERVICE_ENDPOINT = "https://get.pharos.sh/api/licenses/%<key>s/assign".freeze
+    LICENSE_SERVICE_ENDPOINT = 'https://get.pharos.sh/api/licenses/%<key>s/assign'
 
     parameter "[LICENSE_KEY]", "kontena pharos license key"
     option '--description', 'DESCRIPTION', "license description"
@@ -26,7 +26,7 @@ module Pharos
       signal_usage_error 'invalid LICENSE_KEY format' unless license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
       retry_times = 0
       ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token.shellescape}")
-      logger.info "Add subscription token to pharos cluster secrets"
+      logger.info "Added subscription token to pharos cluster secrets"
     rescue K8s::Error::NotFound
       retry_times += 1
       raise if retry_times > 1
