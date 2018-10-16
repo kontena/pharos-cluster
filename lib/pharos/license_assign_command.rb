@@ -26,7 +26,7 @@ module Pharos
       retry_times = 0
       ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token.shellescape}")
       logger.info "Added subscription token to pharos cluster secrets"
-    rescue K8s::Error::NotFound
+    rescue Pharos::SSH::RemoteCommand::ExecError
       retry_times += 1
       raise if retry_times > 1
       ssh.exec!("kubectl delete secret pharos-cluster --namespace=kube-system")
@@ -44,7 +44,7 @@ module Pharos
 
     def subscription_token_request
       logger.info "Exchanging license key for a subscription token"
-      Excon.post(
+      http_client.post(
         LICENSE_SERVICE_ENDPOINT % { key: license_key },
         body: JSON.dump(
           data: {
@@ -65,6 +65,10 @@ module Pharos
       response = JSON.parse(subscription_token_request.body)
       signal_error response['errors'].map { |error| error['title'] }.join(', ') if response['errors']
       response.dig('data', 'attributes', 'license-token', 'token') || signal_error('invalid response')
+    end
+
+    def http_client
+      Excon
     end
   end
 end
