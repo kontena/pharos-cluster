@@ -4,6 +4,7 @@ require_relative 'up_command'
 require_relative 'reset_command'
 require_relative 'version_command'
 require_relative 'kubeconfig_command'
+require_relative 'license_command'
 
 module Pharos
   class RootCommand < Pharos::Command
@@ -11,7 +12,8 @@ module Pharos
 
     subcommand ["build", "up"], "initialize/upgrade cluster", UpCommand
     subcommand "kubeconfig", "fetch admin kubeconfig file", KubeconfigCommand
-    subcommand ["reset"], "reset cluster", ResetCommand
+    subcommand "reset", "reset cluster", ResetCommand
+    subcommand "license", "license subcommands", LicenseCommand
     subcommand ["version"], "show version information", VersionCommand
 
     def self.run
