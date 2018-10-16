@@ -2,7 +2,6 @@
 
 module Pharos
   class LicenseAssignCommand < UpCommand
-
     include Pharos::Logging
 
     LICENSE_SERVICE_ENDPOINT = 'https://get.pharos.sh/api/licenses/%<key>s/assign'
