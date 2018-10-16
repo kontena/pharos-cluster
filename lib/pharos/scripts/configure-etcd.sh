@@ -21,7 +21,7 @@ metadata:
   name: etcd
   namespace: kube-system
 spec:
-  priorityClassName: system-cluster-critical
+  priorityClassName: system-node-critical
   containers:
   - command:
     - etcd
