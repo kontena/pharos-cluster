@@ -23,24 +23,15 @@ module Pharos
     end
 
     def execute
-      kubeclient.update_resource(secret_resource)
-      logger.info "Updated subscription token in pharos cluster secrets"
+      retry_times = 0
+      ssh.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token.shellescape}")
+      logger.info "Add subscription token to pharos cluster secrets"
     rescue K8s::Error::NotFound
-      kubeclient.create_resource(secret_resource)
-      logger.info "Added subscription token to pharos cluster secrets"
-    end
-
-    def kubeconfig_file
-      @kubeconfig_file ||= ssh.file('/etc/kubernetes/admin.conf')
-    end
-
-    def kubeconfig
-      signal_error "kubeconfig file not found" unless kubeconfig_file.exist?
-      K8s::Config.new(YAML.safe_load(kubeconfig_file.read))
-    end
-
-    def kubeclient
-      @kubeclient ||= Pharos::Kube.client(master_host.api_address, kubeconfig)
+      retry_times += 1
+      raise if retry_times > 1
+      ssh.exec!("kubectl delete secret pharos-cluster --namespace=kube-system")
+      logger.info "Deleted existing subscription token from pharos cluster secrets"
+      retry
     end
 
     def ssh
@@ -74,21 +65,6 @@ module Pharos
       response = JSON.parse(subscription_token_request.body)
       signal_error response['errors'].map { |error| error['title'] }.join(', ') if response['errors']
       response.dig('data', 'attributes', 'license-token', 'token') || signal_error('invalid response')
-    end
-
-    def secret_resource
-      @secret_resource ||= K8s::Resource.new(
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: {
-          name: 'pharos-license',
-          namespace: 'kube-system'
-        },
-        type: 'Opaque',
-        data: {
-          key: Base64.strict_encode64(subscription_token)
-        }
-      )
     end
   end
 end
