@@ -16,6 +16,9 @@ spec:
         k8s-app: metrics-server
     spec:
       serviceAccountName: metrics-server
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
       containers:
       - name: metrics-server
         image: <%= image_repository %>/metrics-server:v<%= version %>
