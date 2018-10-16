@@ -7,11 +7,11 @@ module Pharos
 
     banner "Opens SSH sessions to hosts in the Kontena Pharos cluster."
 
-    option ['-r', '--role'], 'ROLE', 'select a server by role'
-    option ['-l', '--label'], 'LABEL=VALUE', 'select a server by label, can be specified multiple times', multivalued: true do |pair|
+    option ['-r', '--role'], 'ROLE', 'select a host by role'
+    option ['-l', '--label'], 'LABEL=VALUE', 'select a host by label, can be specified multiple times', multivalued: true do |pair|
       Hash[*[:key, :value].zip(pair.split('=', 2))]
     end
-    option ['-a', '--address'], 'ADDRESS', 'select a server by public address'
+    option ['-a', '--address'], 'ADDRESS', 'select a hose by public address'
 
     option ['-f', '--first'], :flag, 'only perform on the first matching host'
 
