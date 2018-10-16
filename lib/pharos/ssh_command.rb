@@ -13,7 +13,6 @@ module Pharos
     end
     option ['-a', '--address'], 'ADDRESS', 'select a server by public address'
 
-    option ['-P', '--use-private'], :flag, 'connect to the private address'
     option ['-f', '--first'], :flag, 'only perform on the first matching host'
 
     def hosts
@@ -43,7 +42,7 @@ module Pharos
 
     def run_interactive
       exit_statuses = hosts.map do |host|
-        target = "#{host.user}@#{use_private? ? host.private_address : host.address}"
+        target = "#{host.user}@#{host.address}"
         puts pastel.green("==> Opening a session to #{target} ..") unless !$stdout.tty?
         system('ssh', '-i', host.ssh_key_path, target)
       end
@@ -73,7 +72,7 @@ module Pharos
       end
       results = threads.map(&:value)
       results.each do |host, result|
-        puts pastel.send(result.exit_status.zero? ? :green : :red, "==> Result from #{host.address}")
+        puts pastel.send(result.exit_status.zero? ? :green : :red, "==> Result from #{host.user}@#{host.address}")
         puts result.output.gsub(/^/, "  ")
       end
       results.all? { |_, result| result.success? } ? 0 : 1
