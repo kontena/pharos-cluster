@@ -12,7 +12,6 @@ module Pharos
       Hash[*[:key, :value].zip(pair.split('=', 2))]
     end
     option ['-a', '--address'], 'ADDRESS', 'select a server by public address'
-    option ['-p', '--private-address'], 'ADDRESS', 'select a server by private address'
 
     option ['-P', '--use-private'], :flag, 'connect to the private address'
     option ['-f', '--first'], :flag, 'only perform on the first matching host'
@@ -22,7 +21,6 @@ module Pharos
         load_config.hosts.send(first? ? :find : :select) do |host|
           next if role && host.role != role
           next if address && host.address != address
-          next if private_address && host.private_address != private_address
 
           unless label_list.empty?
             next unless label_list.all? { |l| host.labels[l[:key]] == l[:value] }
