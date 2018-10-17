@@ -74,7 +74,7 @@ Pharos.addon 'kontena-lens' do
 
   def wait_for_dashboard(host)
     puts "    Waiting for Kontena Lens to get up and running"
-    command = "sudo curl -kIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" https://localhost" ## rubocop:disable Style/FormatStringToken
+    command = "sudo curl -kIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" https://localhost" # rubocop:disable Style/FormatStringToken
     response = ssh.exec(command)
     i = 1
     until response.success? && response.output.to_i == 200
@@ -90,7 +90,7 @@ Pharos.addon 'kontena-lens' do
   end
 
   def lens_configured?
-    configmap.nil?
+    !configmap.nil?
   end
 
   def configmap
