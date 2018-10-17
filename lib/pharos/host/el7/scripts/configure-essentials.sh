@@ -43,8 +43,8 @@ if ! grep -q "/usr/local/bin" $env_file ; then
     echo "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" >> $env_file
 fi
 
-if [ ! "$(getenforce)" = "Disabled" ]; then
-    setenforce 0 || true
+if [ ! "$(/usr/sbin/getenforce)" = "Disabled" ]; then
+    /usr/sbin/setenforce 0 || true
     lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
 fi
 
