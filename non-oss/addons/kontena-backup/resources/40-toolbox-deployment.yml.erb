@@ -15,7 +15,7 @@ spec:
       serviceAccountName: ark
       containers:
         - name: toolbox
-          image: quay.io/kontena/pharos-backup-toolbox:0.1.0
+          image: <%= image_repository %>/backup-toolbox:0.1.0
           resources:
             requests:
               memory: "64Mi"

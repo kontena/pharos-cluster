@@ -40,7 +40,7 @@ spec:
           emptyDir: {}
       containers:
         - name: ark
-          image: gcr.io/heptio-images/ark:v<%= ark_version %>
+          image: <%= image_repository %>/backup-ark:v<%= ark_version %>
           command:
             - /ark
           args:
