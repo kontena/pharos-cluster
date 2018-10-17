@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'host-upgrades' do
-  version '0.2.0'
+  version '0.3.0'
   license 'Apache License 2.0'
 
   config {

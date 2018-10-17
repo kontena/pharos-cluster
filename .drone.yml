@@ -2,6 +2,7 @@ pipeline:
   test-ruby:
     image: ruby:2.4
     commands:
+      - gem install bundler -Nf
       - bundle install --path bundler
       - bundle exec rubocop --fail-level A -S --format c --parallel
       - bundle exec rspec non-oss/spec/

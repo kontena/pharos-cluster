@@ -2,9 +2,7 @@
 
 set -e
 
-# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
-. /usr/local/share/pharos/el7.sh
 
 reload_daemon() {
     if systemctl is-active --quiet crio; then
@@ -14,7 +12,7 @@ reload_daemon() {
 }
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
-cat <<"EOF" >"${tmpfile}"
+cat <<"EOF" >${tmpfile}
 [Unit]
 Description=Open Container Initiative Daemon
 Documentation=https://github.com/kubernetes-incubator/cri-o
@@ -40,13 +38,14 @@ Restart=on-abnormal
 WantedBy=multi-user.target
 EOF
 
-if diff "$tmpfile" /etc/systemd/system/crio.service > /dev/null ; then
-    rm -f "$tmpfile"
+if diff $tmpfile /etc/systemd/system/crio.service > /dev/null ; then
+    rm $tmpfile
 else
-    mv "$tmpfile" /etc/systemd/system/crio.service
+    mv $tmpfile /etc/systemd/system/crio.service
 fi
 
 mkdir -p /etc/systemd/system/crio.service.d
+
 if [ -n "$HTTP_PROXY" ]; then
     cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
 [Service]
@@ -60,15 +59,18 @@ else
     fi
 fi
 
-yum_install_with_lock "cri-o" "$CRIO_VERSION"
+export DEBIAN_FRONTEND=noninteractive
+apt-mark unhold cri-o
+apt-get install -y cri-o=${CRIO_VERSION}
+apt-mark hold cri-o
 
 rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
 
 orig_config=$(cat /etc/crio/crio.conf)
 lineinfile "^stream_address =" "stream_address = \"${CRIO_STREAM_ADDRESS}\"" "/etc/crio/crio.conf"
-lineinfile "^cgroup_manager =" "cgroup_manager = \"systemd\"" "/etc/crio/crio.conf"
+lineinfile "^cgroup_manager =" "cgroup_manager = \"cgroupfs\"" "/etc/crio/crio.conf"
 lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
-lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
+lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
 lineinfile "^registries =" "registries = [ \"docker.io\"" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
