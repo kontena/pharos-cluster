@@ -25,11 +25,8 @@ end
 unless ENV['PHAROS_DISABLE_NON_OSS']
   require 'pathname'
   non_oss_path = File.expand_path('../../non-oss', Pathname.new(__FILE__).realpath)
-  $LOAD_PATH.unshift non_oss_path unless $LOAD_PATH.include?(non_oss_path)
-  # rubocop:disable Lint/HandleExceptions
-  begin
+  if File.directory?(non_oss_path)
+    $LOAD_PATH.unshift non_oss_path unless $LOAD_PATH.include?(non_oss_path)
     require 'pharos_cluster_non_oss'
-  rescue LoadError
   end
-  # rubocop:enable Lint/HandleExceptions
 end
