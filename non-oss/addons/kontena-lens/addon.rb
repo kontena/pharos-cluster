@@ -17,14 +17,12 @@ Pharos.addon 'kontena-lens' do
 
   modify_cluster_config {
     if user_management_enabled?
-      configure_token_authentication_webhook
+      cluster_config.set(:authentication, Pharos::Configuration::Authentication.new(token_webhook: token_authentication_webhook_config))
     end
   }
 
   install {
-    Excon.defaults[:ssl_verify_peer] = false # Allow ingress controller default cert
     host = config.host || "lens.#{worker_node_ip}.nip.io"
-
     name = config.name || 'pharos-cluster'
     apply_resources(
       host: host,
@@ -33,12 +31,11 @@ Pharos.addon 'kontena-lens' do
     )
     wait_for_dashboard(host)
     message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
-    unless configmap
-      init_cluster(name, host)
+    unless lens_configured?
+      init_lens_config(name, host, admin_password)
       message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
     end
     post_install_message(message)
-    Excon.defaults[:ssl_verify_peer] = true
   }
 
   def pastel
@@ -61,8 +58,8 @@ Pharos.addon 'kontena-lens' do
     config.user_management&.enabled != false
   end
 
-  def configure_token_authentication_webhook
-    token_webhook_config = Pharos::Configuration::TokenWebhook.new(
+  def token_authentication_webhook_config
+    Pharos::Configuration::TokenWebhook.new(
       config: {
         cluster: {
           name: 'lens-authenticator',
@@ -73,7 +70,6 @@ Pharos.addon 'kontena-lens' do
         }
       }
     )
-    cluster_config.set(:authentication, Pharos::Configuration::Authentication.new(token_webhook: token_webhook_config))
   end
 
   def wait_for_dashboard(host)
@@ -93,7 +89,7 @@ Pharos.addon 'kontena-lens' do
     @admin_password ||= SecureRandom.hex(8)
   end
 
-  def cluster_initialized?
+  def lens_configured?
     configmap.nil?
   end
 
@@ -103,7 +99,7 @@ Pharos.addon 'kontena-lens' do
     nil
   end
 
-  def init_cluster(name, host)
+  def init_lens_config(name, host, admin_password)
     cluster_config = {
       clusterName: name,
       clusterUrl: "https://#{master_host_ip}:6443",
