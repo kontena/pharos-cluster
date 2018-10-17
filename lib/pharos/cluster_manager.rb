@@ -45,9 +45,10 @@ module Pharos
       )
       addon_dirs = [
         File.join(__dir__, '..', '..', 'addons'),
-        File.join(Dir.pwd, 'addons'),
+        File.join(Dir.pwd, 'pharos-addons'),
         File.join(__dir__, '..', '..', 'non-oss', 'addons')
       ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+
       addon_dirs.keep_if { |dir| File.exist?(dir) }
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
 
