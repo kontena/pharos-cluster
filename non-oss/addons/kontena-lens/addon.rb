@@ -74,7 +74,7 @@ Pharos.addon 'kontena-lens' do
 
   def wait_for_dashboard(host)
     puts "    Waiting for Kontena Lens to get up and running"
-    command = "sudo curl -kIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" https://localhost" # rubocop:disable Style/FormatStringToken
+    command = "sudo curl -Is -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" http://localhost/api/config" # rubocop:disable Style/FormatStringToken
     response = ssh.exec(command)
     i = 1
     until response.success? && response.output.to_i == 200
@@ -105,7 +105,7 @@ Pharos.addon 'kontena-lens' do
       clusterUrl: "https://#{master_host_ip}:6443",
       adminPassword: admin_password
     }
-    command = "sudo curl -X POST -d '#{cluster_config.to_json}' -ks -H \"Host: #{host}\" -H \"Content-Type: application/json\" https://localhost/api/cluster"
+    command = "sudo curl -X POST -d '#{cluster_config.to_json}' -s -H \"Host: #{host}\" -H \"Content-Type: application/json\" http://localhost/api/cluster"
     ssh.exec(command)
   end
 
