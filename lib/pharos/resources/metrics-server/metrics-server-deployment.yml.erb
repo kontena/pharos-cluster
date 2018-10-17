@@ -16,9 +16,11 @@ spec:
         k8s-app: metrics-server
     spec:
       serviceAccountName: metrics-server
+      <% if worker_count == 0 %>
       tolerations:
         - effect: NoSchedule
           operator: Exists
+      <% end %>
       priorityClassName: system-cluster-critical
       containers:
       - name: metrics-server
