@@ -1,3 +1,4 @@
+<% if config&.filesystem&.enabled %>
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
@@ -23,3 +24,4 @@ spec:
         args:
         - "-id=cephfs-provisioner-1"
       serviceAccount: cephfs-provisioner
+<% end %>
