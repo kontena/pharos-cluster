@@ -11,7 +11,7 @@ module Pharos
     option ['-l', '--label'], 'LABEL=VALUE', 'select a host by label, can be specified multiple times', multivalued: true do |pair|
       Hash[*[:key, :value].zip(pair.split('=', 2))]
     end
-    option ['-a', '--address'], 'ADDRESS', 'select a hose by public address'
+    option ['-a', '--address'], 'ADDRESS', 'select a host by public address'
 
     option ['-f', '--first'], :flag, 'only perform on the first matching host'
 
