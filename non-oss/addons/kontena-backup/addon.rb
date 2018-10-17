@@ -3,7 +3,9 @@
 Pharos.addon 'kontena-backup' do
   using Pharos::CoreExt::DeepTransformKeys
 
-  version '0.1.0'
+  ark_version = '0.9.6'
+
+  version "#{ark_version}+kontena.1"
   license 'Kontena License'
 
   config_schema {
@@ -51,7 +53,7 @@ Pharos.addon 'kontena-backup' do
 
     apply_resources(
       ark_config: ark_config.deep_stringify_keys,
-      ark_version: '0.9.6'
+      ark_version: ark_version
     )
   }
 
