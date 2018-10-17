@@ -20,7 +20,6 @@ module Pharos
       )
 
       def configure_repos
-        exec_script('repos/cri-o.sh') if crio?
         exec_script("repos/pharos_stretch.sh")
         exec_script('repos/update.sh')
       end
