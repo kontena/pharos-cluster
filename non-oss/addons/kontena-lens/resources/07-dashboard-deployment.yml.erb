@@ -17,7 +17,7 @@ spec:
       serviceAccountName: lens-operator
       restartPolicy: Always
       containers:
-        - image: quay.io/kontena/lens:<%= version %>
+        - image: quay.io/kontena/lens:latest
           name: dashboard
           imagePullPolicy: Always
           env:
@@ -28,7 +28,7 @@ spec:
             - name: REDIS_CLIENT_HOST
               value: redis
             - name: USER_MANAGEMENT_ENABLED
-              value: "<%=  (config.user_management.nil? || config.user_management) ? "true" : "false" %>"
+              value: "<%=  user_management ? "true" : "false" %>"
           resources:
             requests:
               memory: "256Mi"

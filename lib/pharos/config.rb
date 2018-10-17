@@ -87,6 +87,11 @@ module Pharos
       end
     end
 
+    def set(key, value)
+      raise Pharos::Error, "Cannot override #{key}." if data[key.to_s]
+      attributes[key] = value
+    end
+
     # @return [String]
     def to_yaml
       YAML.dump(to_h.deep_stringify_keys)
