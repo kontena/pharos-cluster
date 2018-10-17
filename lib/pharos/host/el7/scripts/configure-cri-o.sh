@@ -4,6 +4,7 @@ set -e
 
 # shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/el7.sh
 
 reload_daemon() {
