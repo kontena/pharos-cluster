@@ -15,4 +15,21 @@ module Pharos
   KUBELET_PROXY_VERSION = '0.3.7'
   COREDNS_VERSION = '1.1.3'
   TELEMETRY_VERSION = '0.1.0'
+
+  # @return [Boolean] true when running the OSS licensed version
+  def self.oss?
+    true
+  end
+end
+
+unless ENV['PHAROS_DISABLE_NON_OSS']
+  require 'pathname'
+  non_oss_path = File.expand_path('../../non-oss', Pathname.new(__FILE__).realpath)
+  $LOAD_PATH.unshift non_oss_path unless $LOAD_PATH.include?(non_oss_path)
+  # rubocop:disable Lint/HandleExceptions
+  begin
+    require 'pharos_cluster_non_oss'
+  rescue LoadError
+  end
+  # rubocop:enable Lint/HandleExceptions
 end
