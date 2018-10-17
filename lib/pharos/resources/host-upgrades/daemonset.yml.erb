@@ -30,6 +30,10 @@ spec:
             - "while true; sleep <%= interval %>; do /usr/bin/unattended-upgrade -d; done"
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
       restartPolicy: Always
       tolerations:
         - effect: NoSchedule
