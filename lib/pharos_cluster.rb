@@ -17,7 +17,4 @@ module Pharos
   TELEMETRY_VERSION = '0.1.0'
 end
 
-begin
-  require "pharos_non_oss"
-rescue LoadError # rubocop:disable Lint/HandleExceptions
-end
+require "pharos_non_oss" if $LOAD_PATH.any? { |path| path.end_with?('non-oss') }
