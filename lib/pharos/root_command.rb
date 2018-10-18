@@ -12,9 +12,9 @@ module Pharos
 
     subcommand ["build", "up"], "initialize/upgrade cluster", UpCommand
     subcommand "kubeconfig", "fetch admin kubeconfig file", KubeconfigCommand
-    subcommand ["reset"], "reset cluster", ResetCommand
+    subcommand "reset", "reset cluster", ResetCommand
     subcommand "ssh", "start an ssh session to a server in a pharos cluster", SSHCommand
-    subcommand ["version"], "show version information", VersionCommand
+    subcommand "version", "show version information", VersionCommand
 
     def self.run
       super
@@ -24,3 +24,5 @@ module Pharos
     end
   end
 end
+
+Dir.glob(File.join(__dir__, '..', '..', 'non-oss', 'commands', '*.rb')).each { |non_oss_command| require non_oss_command }
