@@ -8,21 +8,17 @@ module Pharos
 
     attr_reader :config
 
-    PHASE_DIRS = [
-      File.join(__dir__, 'phases')
-    ]
-
-    ADDON_DIRS = [
-      File.join(__dir__, '..', '..', 'addons'),
-      File.join(Dir.pwd, 'pharos-addons')
-    ]
-
     def self.phase_dirs
-      PHASE_DIRS
+      @phase_dirs ||= [
+        File.join(__dir__, 'phases')
+      ]
     end
 
     def self.addon_dirs
-      ADDON_DIRS
+      @addon_dirs ||= [
+        File.join(__dir__, '..', '..', 'addons'),
+        File.join(Dir.pwd, 'pharos-addons')
+      ]
     end
 
     # @param config [Pharos::Config]
