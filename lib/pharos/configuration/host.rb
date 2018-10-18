@@ -68,6 +68,7 @@ module Pharos
 
         opts = { send_env: [] }
         opts[:keys] = [ssh_key_path] if ssh_key_path
+        opts[:proxy] = Net::SSH::Proxy::Command.new(host.ssh_proxy_command) if ssh_proxy_command
         @ssh = Pharos::SSH::Client.new(address, user, opts)
       end
 
