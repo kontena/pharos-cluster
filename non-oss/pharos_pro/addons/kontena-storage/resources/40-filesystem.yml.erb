@@ -1,0 +1,18 @@
+<% if config&.filesystem&.enabled %>
+apiVersion: ceph.rook.io/v1beta1
+kind: Filesystem
+metadata:
+  name: replicafs
+  namespace: kontena-storage
+spec:
+  metadataPool:
+    replicated:
+      size: 3
+  dataPools:
+    - failureDomain: host
+      replicated:
+        size: <%= config.filesystem.dig(:pool, :replicated, :size) || 3 %>
+  metadataServer:
+    activeCount: 1
+    activeStandby: true
+<% end %>

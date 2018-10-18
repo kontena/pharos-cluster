@@ -84,6 +84,14 @@ Pharos.addon 'kontena-storage' do
     optional(:dashboard).schema do
       required(:enabled).filled(:bool?)
     end
+    optional(:filesystem).schema do
+      required(:enabled).filled(:bool?)
+      optional(:pool).schema do
+        required(:replicated).schema do
+          required(:size).filled(:int?)
+        end
+      end
+    end
     optional(:pool).schema do
       required(:replicated).schema do
         required(:size).filled(:int?)
@@ -92,12 +100,23 @@ Pharos.addon 'kontena-storage' do
   }
 
   install {
+    set_defaults
     cluster = build_cluster_resource
     apply_resources(
       cluster: cluster.to_h.deep_transform_keys(&:to_s),
-      rook_version: version.split('+').first
+      rook_version: self.class.version.split('+').first
     )
   }
+
+  def set_defaults
+    return if config&.pool&.replicated
+
+    config[:pool] = {
+      replicated: {
+        size: 3
+      }
+    }
+  end
 
   # @return [K8s::Resource]
   def build_cluster_resource
@@ -114,12 +133,12 @@ Pharos.addon 'kontena-storage' do
         storage: {
           useAllNodes: config.storage&.use_all_nodes || true,
           useAllDevices: false,
-          deviceFilter: config.storage&.device_filter,
+          deviceFilter: config.storage&.device_filter&.to_h&.deep_transform_keys(&:camelback),
           nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
         },
         placement: (config.placement || {}).to_h.deep_transform_keys(&:camelback),
         resources: (config.resources || {}).to_h.deep_transform_keys(&:camelback),
-        dashboard: config.dashboard || { enabled: false }
+        dashboard: (config.dashboard || { enabled: false }).to_h
       }
     )
   end
