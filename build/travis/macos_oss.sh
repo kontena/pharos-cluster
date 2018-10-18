@@ -2,7 +2,7 @@
 
 set -ue
 
-git rm -r non-oss/
+rm -rf non-oss/
 
 brew install squashfs
 curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-darwin-amd64.gz | gunzip > /usr/local/bin/rubyc

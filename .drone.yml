@@ -14,23 +14,6 @@ pipeline:
       - ./build/drone/create_release.sh
     when:
       event: tag
-  build_ubuntu_oss:
-    image: ubuntu:xenial
-    environment:
-      - CPPFLAGS=-P
-    commands:
-      - ./build/drone/ubuntu_oss.sh
-    when:
-      event: tag
-  release_binary_oss:
-    image: plugins/s3
-    secrets: [ aws_access_key_id, aws_secret_access_key ]
-    bucket: pharos-cluster-binaries
-    region: eu-west-1
-    source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}+oss"
-    target: /
-    when:
-      event: tag
   build_ubuntu:
     image: ubuntu:xenial
     environment:
@@ -46,6 +29,23 @@ pipeline:
     bucket: pharos-cluster-binaries
     region: eu-west-1
     source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}"
+    target: /
+    when:
+      event: tag
+  build_ubuntu_oss:
+    image: ubuntu:xenial
+    environment:
+      - CPPFLAGS=-P
+    commands:
+      - ./build/drone/ubuntu_oss.sh
+    when:
+      event: tag
+  release_binary_oss:
+    image: plugins/s3
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    bucket: pharos-cluster-binaries
+    region: eu-west-1
+    source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}+oss"
     target: /
     when:
       event: tag
