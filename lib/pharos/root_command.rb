@@ -22,5 +22,3 @@ module Pharos
     end
   end
 end
-
-Dir.glob(File.join(__dir__, '..', '..', 'non-oss', 'commands', '*.rb')).each { |non_oss_command| require non_oss_command }

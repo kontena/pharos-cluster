@@ -30,3 +30,5 @@ module Pharos
     klass
   end
 end
+
+require "pharos_non_oss" if $LOAD_PATH.any? { |path| path.end_with?('non-oss') }

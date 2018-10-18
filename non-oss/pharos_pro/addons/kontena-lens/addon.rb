@@ -31,8 +31,10 @@ Pharos.addon 'kontena-lens' do
     )
     wait_for_dashboard(host)
     message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
-    unless lens_configured?
-      init_lens_config(name, host, admin_password)
+    if lens_configured?
+      update_lens_name(name) if configmap.data.clusterName != name
+    else
+      create_lens_config(name, host, admin_password)
       message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
     end
     post_install_message(message)
@@ -99,7 +101,7 @@ Pharos.addon 'kontena-lens' do
     nil
   end
 
-  def init_lens_config(name, host, admin_password)
+  def create_lens_config(name, host, admin_password)
     cluster_config = {
       clusterName: name,
       clusterUrl: "https://#{master_host_ip}:6443",
@@ -107,6 +109,11 @@ Pharos.addon 'kontena-lens' do
     }
     command = "sudo curl -k -L -X POST -d '#{cluster_config.to_json}' -s -H \"Host: #{host}\" -H \"Content-Type: application/json\" http://localhost/api/cluster"
     ssh.exec(command)
+  end
+
+  def update_lens_name(new_name)
+    configmap.data.clusterName = new_name
+    kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').update_resource(configmap)
   end
 
   def ssh
