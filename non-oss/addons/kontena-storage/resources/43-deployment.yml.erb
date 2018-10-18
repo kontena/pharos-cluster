@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cephfs-provisioner
-        image: "quay.io/external_storage/cephfs-provisioner:v2.1.0-k8s1.11"
+        image: "<%= image_repository %>/cephfs-provisioner:v2.1.0-k8s1.11"
         env:
         - name: PROVISIONER_NAME
           value: ceph.com/cephfs
@@ -24,4 +24,7 @@ spec:
         args:
         - "-id=cephfs-provisioner-1"
       serviceAccount: cephfs-provisioner
+      resources:
+        requests:
+          memory: 24Mi
 <% end %>

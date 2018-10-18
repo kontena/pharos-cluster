@@ -100,12 +100,23 @@ Pharos.addon 'kontena-storage' do
   }
 
   install {
+    set_defaults
     cluster = build_cluster_resource
     apply_resources(
       cluster: cluster.to_h.deep_transform_keys(&:to_s),
       rook_version: self.class.version.split('+').first
     )
   }
+
+  def set_defaults
+    unless config&.pool&.replicated
+      config[:pool] = {
+        replicated: {
+          size: 3
+        }
+      }
+    end
+  end
 
   # @return [K8s::Resource]
   def build_cluster_resource
