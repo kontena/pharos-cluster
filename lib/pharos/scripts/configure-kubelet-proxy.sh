@@ -16,6 +16,7 @@ metadata:
   name: pharos-proxy
   namespace: kube-system
 spec:
+  priorityClassName: system-node-critical
   containers:
     - image: ${IMAGE_REPO}/pharos-kubelet-proxy:${VERSION}
       name: proxy

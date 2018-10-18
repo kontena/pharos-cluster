@@ -45,9 +45,10 @@ module Pharos
       )
       addon_dirs = [
         File.join(__dir__, '..', '..', 'addons'),
-        File.join(Dir.pwd, 'addons'),
+        File.join(Dir.pwd, 'pharos-addons'),
         File.join(__dir__, '..', '..', 'non-oss', 'addons')
       ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+
       addon_dirs.keep_if { |dir| File.exist?(dir) }
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
 
@@ -129,6 +130,17 @@ module Pharos
       apply_phase(Phases::ResetHost, config.hosts, ssh: true, parallel: true)
     end
 
+    def apply_addons_cluster_config_modifications
+      addon_manager.each do |addon|
+        begin
+          addon.apply_modify_cluster_config
+        rescue Pharos::Error => e
+          error_msg = "#{addon.name} => " + e.message
+          raise Pharos::AddonManager::InvalidConfig, error_msg
+        end
+      end
+    end
+
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, **options)
@@ -144,6 +156,7 @@ module Pharos
         puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
 
         addon.apply
+        post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
       end
     end
 

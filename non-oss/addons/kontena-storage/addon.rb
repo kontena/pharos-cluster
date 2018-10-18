@@ -2,10 +2,8 @@
 
 Pharos.addon 'kontena-storage' do
   using Pharos::CoreExt::DeepTransformKeys
-  version Pharos::VERSION
+  version '0.8.3+kontena.1'
   license 'Kontena License'
-
-  rook_version = '0.8.3'
 
   config_schema {
     required(:data_dir).filled(:str?)
@@ -97,7 +95,7 @@ Pharos.addon 'kontena-storage' do
     cluster = build_cluster_resource
     apply_resources(
       cluster: cluster.to_h.deep_transform_keys(&:to_s),
-      rook_version: rook_version
+      rook_version: version.split('+').first
     )
   }
 

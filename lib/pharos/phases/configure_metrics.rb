@@ -23,7 +23,8 @@ module Pharos
             'metrics-server',
             version: METRICS_SERVER_VERSION,
             image_repository: @config.image_repository,
-            arch: @host.cpu_arch
+            arch: @host.cpu_arch,
+            worker_count: @config.worker_hosts.size
           )
         rescue K8s::Error::NotFound, K8s::Error::ServiceUnavailable => exc
           # retry until kubernetes api reports that metrics-server is available
