@@ -2,6 +2,8 @@
 
 set -ue
 
+export PHAROS_NON_OSS=true
+
 brew install squashfs
 curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-darwin-amd64.gz | gunzip > /usr/local/bin/rubyc
 chmod +x /usr/local/bin/rubyc
