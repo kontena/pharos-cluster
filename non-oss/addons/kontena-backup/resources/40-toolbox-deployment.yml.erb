@@ -1,0 +1,25 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  namespace: kontena-backup
+  name: toolbox
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: ark
+    spec:
+      restartPolicy: Always
+      serviceAccountName: ark
+      containers:
+        - name: toolbox
+          image: <%= image_repository %>/backup-toolbox:0.1.0
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "20m"
+            limits:
+              memory: "128Mi"
+              cpu: "50m"
