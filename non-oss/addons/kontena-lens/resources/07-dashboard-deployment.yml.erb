@@ -17,7 +17,7 @@ spec:
       serviceAccountName: lens-operator
       restartPolicy: Always
       containers:
-        - image: quay.io/kontena/lens:<%= version %>
+        - image: <%= image_repository %>/lens:<%= version %>
           name: dashboard
           imagePullPolicy: Always
           env:
@@ -37,13 +37,13 @@ spec:
               memory: "512Mi"
               cpu: "200m"
         - name: terminal-gateway
-          image: quay.io/kontena/lens-terminal-gateway:<%= version %>
+          image: <%= image_repository %>lens-terminal-gateway:<%= version %>
           imagePullPolicy: Always
           env:
           - name: SHELL_DOCKER_IMAGE
-            value: quay.io/kontena/lens-terminal:<%= version %>
+            value: <%= image_repository %>/lens-terminal:<%= version %>
           - name: LENS_VERSION
-            value: <%= version %>
+            value: "<%= version %>"
           resources:
             requests:
               memory: "128Mi"

@@ -17,7 +17,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: redis
-        image: docker.io/redis:4-alpine
+        image: <%= image_repository %>/redis:4-alpine
         env:
         - name: MASTER
           value: "true"
