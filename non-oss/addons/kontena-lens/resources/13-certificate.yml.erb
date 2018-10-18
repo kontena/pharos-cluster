@@ -1,10 +1,11 @@
+<% if config.host %>
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
-  name: <%= config.name %>
+  name: kontena-lens
   namespace: kontena-lens
 spec:
-  secretName: <%= config.name %>-tls
+  secretName: kontena-lens-tls
   issuerRef:
     name: letsencrypt
   commonName: <%= config.host %>
@@ -16,3 +17,4 @@ spec:
         ingressClass: nginx
       domains:
       - <%= config.host %>
+<% end %>

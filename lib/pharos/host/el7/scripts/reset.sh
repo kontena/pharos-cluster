@@ -19,7 +19,7 @@ fi
 
 kubeadm reset --force
 
-yum remove -y kubeadm kubelet kubectl docker
+yum remove -y kubeadm kubelet kubectl docker cri-o
 
 sudo rm -rf /etc/kubernetes \
     /etc/pharos \

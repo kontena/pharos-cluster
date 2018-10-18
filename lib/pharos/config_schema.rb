@@ -56,6 +56,7 @@ module Pharos
               end
               optional(:user).filled
               optional(:ssh_key_path).filled
+              optional(:ssh_proxy_command).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
             end
@@ -122,6 +123,14 @@ module Pharos
         optional(:image_repository).filled(:str?)
         optional(:pod_security_policy).schema do
           optional(:default_policy).filled(:str?)
+        end
+        optional(:admission_plugins).filled do
+          each do
+            schema do
+              required(:name).filled(:str?)
+              optional(:enabled).filled(:bool?)
+            end
+          end
         end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|

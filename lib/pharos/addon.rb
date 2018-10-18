@@ -105,6 +105,10 @@ module Pharos
         hooks[:uninstall] = block
       end
 
+      def modify_cluster_config(&block)
+        hooks[:modify_cluster_config] = block
+      end
+
       def validation
         Dry::Validation.Params(Schema) { yield }
       end
@@ -171,6 +175,18 @@ module Pharos
         instance_eval(&hooks[:uninstall])
       else
         delete_resources
+      end
+    end
+
+    def apply_modify_cluster_config
+      instance_eval(&hooks[:modify_cluster_config]) if hooks[:modify_cluster_config]
+    end
+
+    def post_install_message(msg = nil)
+      if msg
+        @post_install_message = msg
+      else
+        @post_install_message
       end
     end
 

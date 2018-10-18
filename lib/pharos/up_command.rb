@@ -97,9 +97,9 @@ module Pharos
       puts pastel.green("==> Sharpening tools ...")
       manager.load
       manager.validate
-
       show_component_versions(config)
       show_addon_versions(manager)
+      manager.apply_addons_cluster_config_modifications
       prompt_continue(config)
 
       puts pastel.green("==> Starting to craft cluster ...")
@@ -114,10 +114,15 @@ module Pharos
       defined_opts = ARGV[1..-1].join(" ")
       defined_opts += " " unless defined_opts.empty?
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
+      manager.post_install_messages.each do |component, message|
+        puts "    Post-install message from #{component}:"
+        message.lines.each do |line|
+          puts "      #{line}"
+        end
+      end
       puts "    To configure kubectl for connecting to the cluster, use:"
       puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
-
       manager.disconnect
     end
 

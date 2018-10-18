@@ -39,7 +39,7 @@ module Pharos
           ssh.exec!('hostname -f').strip
         else
           ssh.exec!('hostname -s').strip
-        end
+        end.downcase
       end
 
       # @return [Pharos::Configuration::OsRelease]

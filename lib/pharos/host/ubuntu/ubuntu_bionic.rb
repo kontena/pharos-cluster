@@ -26,7 +26,6 @@ module Pharos
       )
 
       def configure_repos
-        exec_script('repos/cri-o.sh') if crio?
         exec_script("repos/pharos_bionic.sh")
         exec_script('repos/update.sh')
       end

@@ -13,7 +13,9 @@ module Pharos
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
-      @context = {}
+      @context = {
+        'post_install_messages' => {}
+      }
     end
 
     # @return [Pharos::AddonManager]
@@ -34,9 +36,10 @@ module Pharos
 
       addon_dirs = [
         File.join(__dir__, '..', '..', 'addons'),
-        File.join(Dir.pwd, 'addons'),
+        File.join(Dir.pwd, 'pharos-addons'),
         File.join(__dir__, '..', '..', 'non-oss', 'addons')
       ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+
       addon_dirs.keep_if { |dir| File.exist?(dir) }
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
 
@@ -48,6 +51,7 @@ module Pharos
     end
 
     def validate
+      apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
@@ -116,6 +120,17 @@ module Pharos
       apply_phase(Phases::ResetHost, config.hosts, parallel: true)
     end
 
+    def apply_addons_cluster_config_modifications
+      addon_manager.each do |addon|
+        begin
+          addon.apply_modify_cluster_config
+        rescue Pharos::Error => e
+          error_msg = "#{addon.name} => " + e.message
+          raise Pharos::AddonManager::InvalidConfig, error_msg
+        end
+      end
+    end
+
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, parallel: false, **options)
@@ -148,7 +163,12 @@ module Pharos
         puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
 
         addon.apply
+        post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
       end
+    end
+
+    def post_install_messages
+      @context['post_install_messages']
     end
 
     def save_config

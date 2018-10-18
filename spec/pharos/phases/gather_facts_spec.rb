@@ -144,4 +144,11 @@ describe Pharos::Phases::GatherFacts do
       ]
     end
   end
+
+  describe '#hostname' do
+    it 'returns lowercase hostname' do
+      allow(ssh).to receive(:exec!).with('hostname -s').and_return('host-AAA101')
+      expect(subject.hostname).to eq('host-aaa101')
+    end
+  end
 end
