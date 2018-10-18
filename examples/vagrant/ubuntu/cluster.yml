@@ -1,0 +1,24 @@
+hosts:
+  - address: 192.168.100.100
+    user: vagrant
+    role: master
+    ssh_key_path: ~/.vagrant.d/insecure_private_key
+  - address: 192.168.100.101
+    user: vagrant
+    role: worker
+    ssh_key_path: ~/.vagrant.d/insecure_private_key
+  - address: 192.168.100.102
+    user: vagrant
+    role: worker
+    ssh_key_path: ~/.vagrant.d/insecure_private_key
+network:
+  pod_network_cidr: 10.32.0.0/16
+  service_cidr: 10.33.0.0/16
+  weave:
+    trusted_subnets:
+      - 192.168.100.0/24
+addons:
+  ingress-nginx:
+    enabled: true
+    configmap:
+      map-hash-bucket-size: "128"

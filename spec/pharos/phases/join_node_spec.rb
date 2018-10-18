@@ -14,11 +14,15 @@ describe Pharos::Phases::JoinNode do
   }
   let(:master) { double(:master) }
   let(:ssh) { double(:ssh) }
-  let(:subject) { described_class.new(host, ssh: ssh) }
+  let(:cluster_context) {
+    {
+      'join-command' => join_cmd
+    }
+  }
+  let(:subject) { described_class.new(host, ssh: ssh, cluster_context: cluster_context) }
   let(:join_cmd) { 'kubeadm join --token 531bb9.d1637f0a9b6af2ba 127.0.0.1:6443 --discovery-token-ca-cert-hash sha256:98d563efbb07a11cde93884394ba1d266912def377bfadc65d01a3bcc0ddd30d' }
 
   before(:each) do
-    described_class.cluster_context['join-command'] = join_cmd
     allow(subject).to receive(:already_joined?).and_return(false)
   end
 

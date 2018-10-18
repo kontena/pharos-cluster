@@ -6,20 +6,31 @@ module Pharos
       title "Configure kubelet"
 
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
-        )
+        name: 'kubernetes', version: Pharos::KUBE_VERSION, license: 'Apache License 2.0'
       )
 
-      DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/5-pharos.conf"
+      register_component(
+        name: 'pharos-kubelet-proxy', version: Pharos::KUBELET_PROXY_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| !c.worker_hosts.empty? }
+      )
+
+      DROPIN_PATH = "/etc/systemd/system/kubelet.service.d/11-pharos.conf"
+      CLOUD_CONFIG_DIR = "/etc/pharos/kubelet"
+      CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
 
       def call
-        configure_cni
+        configure_weave_cni if @config.network.provider == 'weave'
+        push_cloud_config if @config.cloud&.config
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
         logger.info { 'Configuring kubelet ...' }
         ensure_dropin(build_systemd_dropin)
+      end
+
+      def push_cloud_config
+        @ssh.exec!("sudo mkdir -p #{CLOUD_CONFIG_DIR}")
+        @ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
 
       # @param dropin [String]
@@ -36,22 +47,35 @@ module Pharos
         exec_script(
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          IMAGE_REPO: @config.image_repository,
           ARCH: @host.cpu_arch.name,
+          VERSION: Pharos::KUBELET_PROXY_VERSION,
           MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
+        )
+        host_configurer.ensure_kubelet(
+          KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
+          KUBE_VERSION: Pharos::KUBE_VERSION,
+          ARCH: @host.cpu_arch.name,
+          IMAGE_REPO: @config.image_repository
+        )
+        exec_script(
+          'wait-kubelet-proxy.sh'
         )
       end
 
       def configure_kube
         logger.info { "Configuring Kubernetes packages ..." }
         exec_script(
-          'configure-kube.sh',
+          'configure-kube.sh'
+        )
+        host_configurer.install_kube_packages(
           KUBE_VERSION: Pharos::KUBE_VERSION,
           KUBEADM_VERSION: Pharos::KUBEADM_VERSION,
           ARCH: @host.cpu_arch.name
         )
       end
 
-      def configure_cni
+      def configure_weave_cni
         exec_script('configure-weave-cni.sh')
       end
 
@@ -65,40 +89,32 @@ module Pharos
       def build_systemd_dropin
         options = []
         options << "Environment='KUBELET_EXTRA_ARGS=#{kubelet_extra_args.join(' ')}'"
-        options << "Environment='KUBELET_DNS_ARGS=#{kubelet_dns_args.join(' ')}'"
         options << "ExecStartPre=-/sbin/swapoff -a"
 
         "[Service]\n#{options.join("\n")}\n"
       end
 
       # @return [Array<String>]
-      def kubelet_dns_args
-        [
-          "--cluster-dns=#{@config.network.dns_service_ip}",
-          "--cluster-domain=cluster.local"
-        ]
-      end
-
-      # @return [Array<String>]
       def kubelet_extra_args
         args = []
-        node_ip = @host.private_address.nil? ? @host.address : @host.private_address
+        if @config.kubelet&.read_only_port
+          args << "--read-only-port=10255"
+        end
+        args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
-        if crio?
-          args << '--container-runtime=remote'
-          args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
+        if @host.resolvconf.systemd_resolved_stub
+          # use usptream resolvers instead of systemd stub resolver at localhost for `dnsPolicy: Default` pods
+          # XXX: kubeadm also handles this?
+          args << '--resolv-conf=/run/systemd/resolve/resolv.conf'
+        elsif @host.resolvconf.nameserver_localhost
+          fail "Host has /etc/resolv.conf configured with localhost as a resolver"
         end
 
-        args << '--read-only-port=0'
-        args << "--node-ip=#{node_ip}"
+        args << "--authentication-token-webhook=true"
+        args << "--pod-infra-container-image=#{@config.image_repository}/pause:3.1"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
-        args << "--hostname-override=#{@host.hostname}"
+        args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
         args
-      end
-
-      def crio?
-        @host.container_runtime == 'cri-o'
       end
     end
   end

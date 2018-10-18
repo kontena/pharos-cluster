@@ -6,18 +6,22 @@ module Pharos
       title "Validate hosts"
 
       def call
-        logger.info { "Checking sudo access ..." }
-        check_sudo
-        logger.info { "Gathering host facts ..." }
-        gather_host_facts
+        logger.info { "Validating current role matches ..." }
+        check_role
         logger.info { "Validating distro and version ..." }
         check_distro_version
         logger.info { "Validating host configuration ..." }
         check_cpu_arch
+        logger.info { "Validating hostname uniqueness ..." }
+        validate_unique_hostnames
+        logger.info { "Validating host routes ..." }
+        validate_routes
       end
 
       def check_distro_version
-        return if @host.os_release.supported?
+        @host.configurer(@ssh) # load configurer
+        return if Pharos::Host::Configurer.configs.any? { |config| config.supported_os?(@host.os_release) }
+
         raise Pharos::InvalidHostError, "Distro not supported: #{@host.os_release.name}"
       end
 
@@ -26,53 +30,42 @@ module Pharos
         raise Pharos::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
 
-      def check_sudo
-        @ssh.exec!('sudo -n true')
-      rescue Pharos::SSH::RemoteCommand::ExecError => exc
-        raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
+      def check_role
+        return if !@host.checks['kubelet_configured']
+
+        raise Pharos::InvalidHostError, "Cannot change worker host role to master" if @host.master? && !@host.checks['ca_exists']
+        raise Pharos::InvalidHostError, "Cannot change master host role to worker" if @host.worker? && @host.checks['ca_exists']
+
+        logger.debug { "#{@host.role} role matches" }
       end
 
-      def gather_host_facts
-        @host.os_release = os_release
-        @host.cpu_arch = cpu_arch
-        @host.hostname = hostname
+      def validate_unique_hostnames
+        duplicates = @config.hosts.reject { |h| h.address == @host.address }.select { |h| h.hostname == @host.hostname }
+        return if duplicates.empty?
+
+        raise Pharos::InvalidHostError, "Duplicate hostname #{@host.hostname} for hosts #{duplicates.map(&:address).join(',')}"
       end
 
-      # @return [String]
-      def hostname
-        cloud_provider = @config.cloud&.provider
-        if cloud_provider == 'aws'
-          @ssh.exec!('hostname -f').strip
-        else
-          @ssh.exec!('hostname -s').strip
+      # @param cidr [String]
+      # @return [nil, Array<Pharos::Configuration::Host::Route>]
+      def overlapping_host_routes?(cidr)
+        routes = @config.network.filter_host_routes(@host.overlapping_routes(cidr))
+
+        return nil if routes.empty?
+
+        routes
+      end
+
+      def validate_routes
+        # rubocop:disable Style/GuardClause
+        if routes = overlapping_host_routes?(@config.network.pod_network_cidr)
+          fail "Overlapping host routes for .network.pod_network_cidr=#{@config.network.pod_network_cidr}: #{routes.join '; '}"
         end
-      end
 
-      # @return [Pharos::Configuration::OsRelease]
-      def os_release
-        os_info = {}
-        @ssh.file('/etc/os-release').each_line do |line|
-          match = line.match(/^(.+)=(.+)$/)
-          os_info[match[1]] = match[2].delete('"')
+        if routes = overlapping_host_routes?(@config.network.service_cidr)
+          fail "Overlapping host routes for .network.service_cidr=#{@config.network.service_cidr}: #{routes.join '; '}"
         end
-        Pharos::Configuration::OsRelease.new(
-          id: os_info['ID'],
-          id_like: os_info['ID_LIKE'],
-          name: os_info['PRETTY_NAME'],
-          version: os_info['VERSION_ID']
-        )
-      end
-
-      # @return [Pharos::Configuration::CpuArch]
-      def cpu_arch
-        cpu = {}
-        @ssh.exec!('lscpu').split("\n").each do |line|
-          match = line.match(/^(.+):\s+(.+)$/)
-          cpu[match[1]] = match[2]
-        end
-        Pharos::Configuration::CpuArch.new(
-          id: cpu['Architecture']
-        )
+        # rubocop:enable Style/GuardClause
       end
     end
   end

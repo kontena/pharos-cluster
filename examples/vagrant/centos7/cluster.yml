@@ -1,0 +1,20 @@
+hosts:
+  - address: 192.168.110.100
+    user: vagrant
+    role: master
+    ssh_key_path: ~/.vagrant.d/insecure_private_key
+  - address: 192.168.110.101
+    user: vagrant
+    role: worker
+    ssh_key_path: ~/.vagrant.d/insecure_private_key
+  - address: 192.168.110.102
+    user: vagrant
+    role: worker
+    ssh_key_path: ~/.vagrant.d/insecure_private_key
+network:
+  provider: calico
+  pod_network_cidr: 172.31.0.0/16
+  service_cidr: 172.32.0.0/16
+addons:
+  ingress-nginx:
+    enabled: true

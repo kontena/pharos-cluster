@@ -1,13 +1,18 @@
-require "pharos/addons/ingress_nginx"
+require "./addons/ingress-nginx/addon"
 
 describe Pharos::Addons::IngressNginx do
-
+  let(:cluster_config) { Pharos::Config.new(
+    hosts: [Pharos::Configuration::Host.new(role: 'worker')],
+    network: {},
+    addons: {},
+    etcd: {}
+  ) }
   let(:config) { { foo: 'bar'} }
+  let(:kube_client) { instance_double(K8s::Client) }
   let(:cpu_arch) { double(:cpu_arch ) }
-  let(:master) { double(:host, address: '1.1.1.1') }
 
   subject do
-    described_class.new(config, enabled: true, master: master, cpu_arch: cpu_arch)
+    described_class.new(config, enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config)
   end
 
   describe "#validate" do
@@ -27,28 +32,34 @@ describe Pharos::Addons::IngressNginx do
 
   describe "#image_name" do
     context "with a configured image" do
-      let(:config) { {default_backend: {image: 'some_image'}} }
+      let(:config) { {default_backend: {'image' => 'some_image'}} }
 
       it "returns configured name" do
         expect(cpu_arch).not_to receive(:name)
-        expect(subject.image_name).to eq("some_image")
+        expect(subject.config.default_backend['image']).to eq("some_image")
       end
     end
+  end
 
-    context "for cpu_arch=arm64" do
-      let(:cpu_arch) { double(:cpu_arch, name: 'arm64' ) }
-
-      it "returns default for arm64" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_ARM64_IMAGE)
-      end
+  describe '#default_backend_replicas' do
+    it 'returns 1 replica for no workers' do
+      allow(subject).to receive(:worker_node_count).and_return(0)
+      expect(subject.default_backend_replicas).to eq(1)
     end
 
-    context "for cpu_arch=amd64" do
-      let(:cpu_arch) { double(:cpu_arch, name: 'amd64' ) }
+    it 'returns 1 replica for single worker' do
+      allow(subject).to receive(:worker_node_count).and_return(1)
+      expect(subject.default_backend_replicas).to eq(1)
+    end
 
-      it "returns default" do
-        expect(subject.image_name).to eq(Pharos::Addons::IngressNginx::DEFAULT_BACKEND_IMAGE)
-      end
+    it 'returns 2 replicas for 3 workers' do
+      allow(subject).to receive(:worker_node_count).and_return(3)
+      expect(subject.default_backend_replicas).to eq(2)
+    end
+
+    it 'returns 7 replicas with 70 workers' do
+      allow(subject).to receive(:worker_node_count).and_return(70)
+      expect(subject.default_backend_replicas).to eq(7)
     end
   end
 end

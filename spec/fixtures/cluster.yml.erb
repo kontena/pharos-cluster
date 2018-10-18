@@ -1,0 +1,5 @@
+hosts:
+<% for ip in ['192.0.2.1'] %>
+  - address: <%= ip %>
+    role: master
+<% end %>

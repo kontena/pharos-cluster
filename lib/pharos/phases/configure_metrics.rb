@@ -5,28 +5,36 @@ module Pharos
     class ConfigureMetrics < Pharos::Phase
       title "Configure metrics"
 
+      METRICS_SERVER_VERSION = '0.2.1'
+
       register_component(
-        Pharos::Phases::Component.new(
-          name: 'heapster', version: '1.5.1', license: 'Apache License 2.0'
-        )
+        name: 'metrics-server', version: METRICS_SERVER_VERSION, license: 'Apache License 2.0'
       )
 
       def call
-        configure_heapster
+        configure_metrics_server
       end
 
-      def configure_heapster
-        logger.info { "Provisioning client certificate for heapster ..." }
-        cert_manager = Pharos::Kube::CertManager.new(@master, 'heapster-client-cert', namespace: 'kube-system')
-        cert, _key = cert_manager.ensure_client_certificate(user: 'heapster')
+      def configure_metrics_server
+        logger.info { "Configuring metrics server ..." }
+        retries = 0
+        begin
+          apply_stack(
+            'metrics-server',
+            version: METRICS_SERVER_VERSION,
+            image_repository: @config.image_repository,
+            arch: @host.cpu_arch,
+            worker_count: @config.worker_hosts.size
+          )
+        rescue K8s::Error::NotFound, K8s::Error::ServiceUnavailable => exc
+          # retry until kubernetes api reports that metrics-server is available
+          raise if retries >= 10
 
-        logger.info { "Configuring heapster ..." }
-        Pharos::Kube.apply_stack(
-          @master.address, 'heapster',
-          version: '1.5.1',
-          arch: @host.cpu_arch,
-          client_cert: cert.to_pem
-        )
+          logger.debug { "#{exc.class.name}: #{exc.message}" }
+          sleep 2**retries
+          retries += 1
+          retry
+        end
       end
     end
   end

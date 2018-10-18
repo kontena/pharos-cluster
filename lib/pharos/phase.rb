@@ -4,6 +4,8 @@ require 'logger'
 
 module Pharos
   class Phase
+    RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
+
     # @return [String]
     def self.title(title = nil)
       @title = title if title
@@ -15,18 +17,21 @@ module Pharos
     end
 
     def self.register_component(component)
-      Pharos::Phases.register_component component
+      Pharos::Phases.register_component(component)
     end
+
+    attr_reader :cluster_context, :host
 
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
     # @param ssh [Pharos::SSH::Client]
     # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, ssh: nil, master: nil)
+    def initialize(host, config: nil, ssh: nil, master: nil, cluster_context: nil)
       @host = host
       @config = config
       @ssh = ssh
       @master = master
+      @cluster_context = cluster_context
     end
 
     def logger
@@ -50,6 +55,7 @@ module Pharos
     end
 
     # @param script [String] name of file under ../scripts/
+    # @param vars [Hash]
     def exec_script(script, vars = {})
       @ssh.exec_script!(
         script,
@@ -58,18 +64,42 @@ module Pharos
       )
     end
 
+    # @param path [String]
+    # @param vars [Hash]
+    # @return [Pharos::YamlFile]
     def parse_resource_file(path, vars = {})
       Pharos::YamlFile.new(resource_path(path)).read(vars)
     end
 
-    # @return [Hash]
-    def cluster_context
-      self.class.cluster_context
+    # @return [Pharos::Host::Configurer]
+    def host_configurer
+      @host.configurer(@ssh)
     end
 
-    # @return [Hash]
-    def self.cluster_context
-      @@cluster_context ||= {} # rubocop:disable Style/ClassVars
+    # @return [K8s::Client]
+    def kube_client
+      fail "Phase #{self.class.name} does not have kube @master" unless @master
+      fail "Phase #{self.class.name} does not have kubeconfig cluster_context" unless cluster_context['kubeconfig']
+
+      @kube_client ||= Pharos::Kube.client(@master.api_address, cluster_context['kubeconfig'])
+    end
+
+    # @param name [String]
+    # @param vars [Hash]
+    def kube_stack(name, **vars)
+      Pharos::Kube.stack(name, File.join(RESOURCE_PATH, name), name: name, **vars)
+    end
+
+    # @param name [String]
+    # @param vars [Hash]
+    def apply_stack(name, **vars)
+      kube_stack(name, **vars).apply(kube_client)
+    end
+
+    # @param name [String]
+    # @return [Array<K8s::Resource>]
+    def delete_stack(name)
+      Pharos::Kube::Stack.new(name).delete(kube_client)
     end
   end
 end

@@ -20,7 +20,7 @@ module Pharos
 
       # Removes the remote file
       def unlink
-        @client.exec!("rm #{escaped_path}")
+        @client.exec!("sudo rm #{escaped_path}")
       end
       alias rm unlink
 
@@ -136,18 +136,31 @@ module Pharos
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
       end
 
+      # @return [String, nil]
+      def readlink
+        target = @client.exec!("readlink #{escaped_path} || echo").strip
+
+        return nil if target.empty?
+
+        target
+      end
+
+      # Returns an array of lines in the remote file
+      # @return [Array<String>]
+      def lines
+        read.lines
+      end
+
       # Yields each line in the remote file
       # @yield [String]
-      def each_line
-        read.split(/[\r\n]/).each do |row|
-          yield row
-        end
+      def each_line(&block)
+        read.each_line(&block)
       end
 
       private
 
       def test?(flag)
-        @client.exec!("sudo sh -c 'test -#{flag} #{escaped_path} && echo true || echo false'").strip == "true"
+        @client.exec!("sudo env -i bash --norc --noprofile -c -- 'test -#{flag} #{escaped_path} && echo true || echo false'").strip == "true"
       end
 
       def temp_file_path(prefix: nil)

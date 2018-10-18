@@ -5,18 +5,45 @@ module Pharos
     class ConfigureClient < Pharos::Phase
       title "Configure kube client"
 
-      def call
-        Dir.mkdir(config_dir, 0o700) unless Dir.exist?(config_dir)
-        config_file = File.join(config_dir, @host.api_address)
-        logger.info { "Fetching kubectl config ..." }
-        config_data = @ssh.file("/etc/kubernetes/admin.conf").read
-        File.chmod(0o600, config_file) if File.exist?(config_file)
-        File.write(config_file, config_data.gsub(%r{(server: https://)(.+)(:6443)}, "\\1#{@host.api_address}\\3"), perm: 0o600)
-        logger.info { "Configuration saved to #{config_file}" }
+      REMOTE_FILE = "/etc/kubernetes/admin.conf"
+
+      # @param optional [Boolean] skip if kubeconfig does not exist instead of failing
+      def initialize(host, optional: false, **options)
+        super(host, **options)
+
+        @optional = optional
       end
 
-      def config_dir
-        File.join(Dir.home, '.pharos')
+      def call
+        return if @optional && !kubeconfig?
+
+        cluster_context['kubeconfig'] = kubeconfig
+
+        client_prefetch unless @optional
+      end
+
+      # @return [String]
+      def kubeconfig?
+        @ssh.file(REMOTE_FILE).exist?
+      end
+
+      # @return [K8s::Config]
+      def read_kubeconfig
+        @ssh.file(REMOTE_FILE).read
+      end
+
+      # @return [K8s::Config]
+      def kubeconfig
+        logger.info { "Fetching kubectl config ..." }
+        config = YAML.safe_load(read_kubeconfig)
+
+        logger.debug { "New config: #{config}" }
+        K8s::Config.new(config)
+      end
+
+      # prefetch client resources to warm up caches
+      def client_prefetch
+        kube_client.apis(prefetch_resources: true)
       end
     end
   end

@@ -2,10 +2,12 @@
 
 module Pharos
   class Command < Clamp::Command
-    option '--[no-]color', :flag, "Colorize output", default: $stdout.tty?
+    include Pharos::Logging
 
-    option ['-v', '--version'], :flag, "print pharos-cluster version" do
-      puts "pharos-cluster #{Pharos::VERSION}"
+    option '--[no-]color', :flag, "colorize output", default: $stdout.tty?
+
+    option ['-v', '--version'], :flag, "print #{File.basename($PROGRAM_NAME)} version" do
+      puts "#{File.basename($PROGRAM_NAME)} #{Pharos::VERSION}"
       exit 0
     end
 
@@ -15,6 +17,22 @@ module Pharos
 
     def pastel
       @pastel ||= Pastel.new(enabled: color?)
+    end
+
+    def prompt
+      @prompt ||= TTY::Prompt.new(enable_color: color?)
+    end
+
+    def rouge
+      @rouge ||= Rouge::Formatters::Terminal256.new(Rouge::Themes::Github.new)
+    end
+
+    def tty?
+      $stdin.tty?
+    end
+
+    def stdin_eof?
+      $stdin.eof?
     end
   end
 end

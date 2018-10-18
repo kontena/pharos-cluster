@@ -5,62 +5,26 @@ module Pharos
     class ConfigureHost < Pharos::Phase
       title "Configure hosts"
 
-      register_component(
-        Pharos::Phases::Component.new(
-          name: 'docker', version: Pharos::DOCKER_VERSION, license: 'Apache License 2.0'
-        )
-      )
-
-      register_component(
-        Pharos::Phases::Component.new(
-          name: 'cri-o', version: Pharos::CRIO_VERSION, license: 'Apache License 2.0'
-        )
-      )
-
       def call
+        unless @host.environment.nil? || @host.environment.empty?
+          logger.info { "Updating environment file ..." }
+          host_configurer.update_env_file
+        end
+
+        logger.info { "Configuring script helpers ..." }
+        host_configurer.configure_script_library
+
         logger.info { "Configuring essential packages ..." }
-        exec_script('configure-essentials.sh')
+        host_configurer.install_essentials
 
         logger.info { "Configuring package repositories ..." }
-        configure_repos
+        host_configurer.configure_repos
 
         logger.info { "Configuring netfilter ..." }
-        exec_script('configure-netfilter.sh')
+        host_configurer.configure_netfilter
 
-        if docker?
-          logger.info { "Configuring container runtime (docker) packages ..." }
-          exec_script(
-            'configure-docker.sh',
-            DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{Pharos::DOCKER_VERSION}-0ubuntu1~16.04.2"
-          )
-        elsif crio?
-          logger.info { "Configuring container runtime (cri-o) packages ..." }
-          exec_script(
-            'configure-cri-o.sh',
-            CRIO_VERSION: Pharos::CRIO_VERSION,
-            CRIO_STREAM_ADDRESS: @host.private_address ? @host.private_address : @host.address,
-            CPU_ARCH: @host.cpu_arch.name
-          )
-        else
-          raise Pharos::Error, "Unknown container runtime: #{@host.container_runtime}"
-        end
-      end
-
-      def configure_repos
-        exec_script('repos/cri-o.sh') if crio?
-        exec_script('repos/kube.sh')
-        exec_script('repos/update.sh')
-      end
-
-      # @param script [String]
-      # @param vars [Hash]
-      def crio?
-        @host.container_runtime == 'cri-o'
-      end
-
-      def docker?
-        @host.container_runtime == 'docker'
+        logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
+        host_configurer.configure_container_runtime
       end
     end
   end

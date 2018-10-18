@@ -1,0 +1,8 @@
+# This ConfigMap is used to configure a self-hosted Calico installation.
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: test
+  namespace: default
+data:
+  foo: bar

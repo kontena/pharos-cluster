@@ -1,10 +1,10 @@
 #!/bin/bash
 
-set -e
+set -ue
 
-if grep -q "${PEER_IP}:6443" /etc/kubernetes/kubelet.conf; then
-  # reconfigure
-  sed -i "s/${PEER_IP}/localhost/g" /etc/kubernetes/kubelet.conf
-  sed -i "s/${PEER_IP}/localhost/g" /etc/kubernetes/bootstrap-kubelet.conf
+SERVER=${SERVER:-localhost:6443}
+
+if ! grep -qF "server: https://$SERVER" /etc/kubernetes/kubelet.conf; then
+  sed -i "s/server: .*/server: https:\/\/$SERVER/g" /etc/kubernetes/kubelet.conf /etc/kubernetes/bootstrap-kubelet.conf
   systemctl restart kubelet
 fi
