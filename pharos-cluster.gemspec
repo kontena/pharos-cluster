@@ -3,6 +3,13 @@ lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "pharos/version"
 
+files = Dir['README', 'LICENSE', 'licenses/*', 'bin/*', 'lib/**/*', 'addons/**/*']
+require_paths = ['lib']
+if ENV['PHAROS_NON_OSS'].to_s == 'true'
+  files += Dir['non-oss/**/*']
+  require_paths << 'non-oss'
+end
+
 Gem::Specification.new do |spec|
   spec.name          = "pharos-cluster"
   spec.version       = Pharos::VERSION.sub('-', '.')
@@ -13,12 +20,10 @@ Gem::Specification.new do |spec|
   spec.description   = "Kontena Pharos cluster manager"
   spec.homepage      = "https://github.com/kontena/pharos-cluster"
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features)/})
-  end
+  spec.files         = files
   spec.bindir        = "bin"
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
+  spec.require_paths = require_paths
   spec.required_ruby_version = '~> 2.4'
 
   spec.add_runtime_dependency "clamp", "1.2.1"

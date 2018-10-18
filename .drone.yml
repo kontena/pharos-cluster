@@ -5,7 +5,7 @@ pipeline:
       - gem install bundler -Nf
       - bundle install --path bundler
       - bundle exec rspec spec/
-      - bundle exec rspec non-oss/spec/
+      - PHAROS_NON_OSS=true bundle exec rspec non-oss/pharos_pro/spec/
       - bundle exec rubocop --fail-level A -S --format c --parallel
   create_gh_release:
     image: ubuntu:xenial

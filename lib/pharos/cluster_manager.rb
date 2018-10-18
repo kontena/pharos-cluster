@@ -8,6 +8,23 @@ module Pharos
 
     attr_reader :config
 
+    PHASE_DIRS = [
+      File.join(__dir__, 'phases')
+    ]
+
+    ADDON_DIRS = [
+      File.join(__dir__, '..', '..', 'addons'),
+      File.join(Dir.pwd, 'pharos-addons')
+    ]
+
+    def self.phase_dirs
+      PHASE_DIRS
+    end
+
+    def self.addon_dirs
+      ADDON_DIRS
+    end
+
     # @param config [Pharos::Config]
     # @param pastel [Pastel]
     def initialize(config, pastel: Pastel.new)
@@ -39,15 +56,8 @@ module Pharos
 
     # load phases/addons
     def load
-      Pharos::PhaseManager.load_phases(
-        File.join(__dir__, 'phases'),
-        File.join(__dir__, '..', '..', 'non-oss', 'phases')
-      )
-      addon_dirs = [
-        File.join(__dir__, '..', '..', 'addons'),
-        File.join(Dir.pwd, 'pharos-addons'),
-        File.join(__dir__, '..', '..', 'non-oss', 'addons')
-      ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+      Pharos::PhaseManager.load_phases(*self.class.phase_dirs)
+      addon_dirs = self.class.addon_dirs + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
 
       addon_dirs.keep_if { |dir| File.exist?(dir) }
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
