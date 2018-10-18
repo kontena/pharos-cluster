@@ -109,13 +109,13 @@ Pharos.addon 'kontena-storage' do
   }
 
   def set_defaults
-    unless config&.pool&.replicated
-      config[:pool] = {
-        replicated: {
-          size: 3
-        }
+    return if config&.pool&.replicated
+
+    config[:pool] = {
+      replicated: {
+        size: 3
       }
-    end
+    }
   end
 
   # @return [K8s::Resource]
