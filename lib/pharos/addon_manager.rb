@@ -78,7 +78,10 @@ module Pharos
 
     # @return [K8s::Client]
     def kube_client
-      @kube_client ||= Pharos::Kube.client(@config.master_host.api_address, @cluster_context['kubeconfig'])
+      if !@kubeclient && @cluster_context['kubeconfig']
+        @kube_client = Pharos::Kube.client(@config.master_host.api_address, @cluster_context['kubeconfig'])
+      end
+      @kube_client
     end
 
     def options
@@ -95,8 +98,6 @@ module Pharos
         addon = addon_class.new(config, enabled: true, **options)
         addon.validate
         yield_addon_with_retry(addon, &block)
-        post_install_message = addon.post_install_message
-        @cluster_context['post_install_messages'][addon.name] = post_install_message if post_install_message
       end
 
       with_disabled_addons do |addon_class|

@@ -16,6 +16,12 @@ spec:
         k8s-app: metrics-server
     spec:
       serviceAccountName: metrics-server
+      <% if worker_count == 0 %>
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      <% end %>
+      priorityClassName: system-cluster-critical
       containers:
       - name: metrics-server
         image: <%= image_repository %>/metrics-server:v<%= version %>
@@ -23,3 +29,7 @@ spec:
         command:
         - /metrics-server
         - --source=kubernetes.summary_api:https://kubernetes.default.svc?useServiceAccount=true&kubeletHttps=true&kubeletPort=10250&insecure=true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi

@@ -96,9 +96,9 @@ module Pharos
       puts pastel.green("==> Sharpening tools ...")
       manager.load
       manager.validate
-
       show_component_versions(config)
       show_addon_versions(manager)
+      manager.apply_addons_cluster_config_modifications
       prompt_continue(config)
 
       puts pastel.green("==> Starting to craft cluster ...")

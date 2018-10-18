@@ -11,16 +11,6 @@ reload_daemon() {
     fi
 }
 
-export DEBIAN_FRONTEND=noninteractive 
-if dpkg -s cri-o-1.10 ; then
-    systemctl stop crio
-    systemctl disable crio
-    apt-get remove -y --purge cri-o-1.10
-    rm /etc/systemd/system/crio.service.d/10-cgroup.conf || true
-    systemctl daemon-reload
-fi
-apt-get install -y conntrack libgpgme11 libseccomp2 libassuan0
-
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
 cat <<"EOF" >${tmpfile}
 [Unit]
@@ -69,15 +59,10 @@ else
     fi
 fi
 
-if [ ! "$(cat /etc/crio/.version)" = "$CRIO_VERSION" ]; then
-    DL_URL="https://dl.bintray.com/kontena/pharos-bin/cri-o/cri-o-v${CRIO_VERSION}-linux-amd64.tar.gz"
-    curl -sSL $DL_URL -o /tmp/cri-o.tar.gz
-    curl -sSL "${DL_URL}.asc" -o /tmp/cri-o.tar.gz.asc
-    gpg --verify /tmp/cri-o.tar.gz.asc /tmp/cri-o.tar.gz
-    tar -C / -xzf /tmp/cri-o.tar.gz
-    rm /tmp/cri-o.tar.gz /tmp/cri-o.tar.gz.asc
-    echo $CRIO_VERSION > /etc/crio/.version 
-fi
+export DEBIAN_FRONTEND=noninteractive
+apt-mark unhold cri-o
+apt-get install -y cri-o=${CRIO_VERSION}
+apt-mark hold cri-o
 
 rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
 
@@ -92,7 +77,7 @@ if ! systemctl is-active --quiet crio; then
     systemctl daemon-reload
     systemctl enable crio
     systemctl start crio
-else 
+else
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
         reload_daemon
     fi
