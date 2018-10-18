@@ -19,5 +19,5 @@ end
 
 begin
   require "pharos_non_oss"
-rescue LoadError
+rescue LoadError # rubocop:disable Lint/HandleExceptions
 end
