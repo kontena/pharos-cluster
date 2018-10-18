@@ -35,6 +35,7 @@ pipeline:
     image: ubuntu:xenial
     environment:
       - CPPFLAGS=-P
+      - PHAROS_NON_OSS=true
     commands:
       - ./build/drone/ubuntu.sh
     when:
