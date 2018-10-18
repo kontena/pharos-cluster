@@ -1,5 +1,5 @@
 require 'pharos/addon'
-require_relative "../../../non-oss/addons/kontena-backup/addon"
+require "pharos_pro/addons/kontena-backup/addon"
 
 describe Pharos::Addons::KontenaBackup do
   let(:cluster_config) { Pharos::Config.new(

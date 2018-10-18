@@ -16,3 +16,5 @@ module Pharos
   COREDNS_VERSION = '1.1.3'
   TELEMETRY_VERSION = '0.1.0'
 end
+
+require "pharos_non_oss" if $LOAD_PATH.any? { |path| path.end_with?('non-oss') }

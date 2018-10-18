@@ -1,6 +1,6 @@
 require 'pharos/addon'
 require 'pharos/kube'
-require './non-oss/addons/kontena-storage/addon'
+require 'pharos_pro/addons/kontena-storage/addon'
 
 RSpec.describe Pharos::Addons::KontenaStorage do
   describe '.validate' do
