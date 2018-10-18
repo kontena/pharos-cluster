@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: user-authenticator
+  namespace: kontena-lens
+  labels:
+    k8s-app: user-authenticator
+spec:
+  selector:
+    matchLabels:
+      k8s-app: user-authenticator
+  template:
+    metadata:
+      labels:
+        k8s-app: user-authenticator
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ''
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      serviceAccountName: lens-operator
+      containers:
+        - image: <%= image_repository %>/lens-authenticator:<%= version %>
+          name: user-authenticator
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 9292
+              scheme: HTTP
+            initialDelaySeconds: 180
+            timeoutSeconds: 5
+          env:
+            - name: KUBERNETES_NAMESPACE
+              value: kontena-lens
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "20m"
+            limits:
+              memory: "256Mi"
+              cpu: "50m"
+      hostNetwork: true
+      restartPolicy: Always

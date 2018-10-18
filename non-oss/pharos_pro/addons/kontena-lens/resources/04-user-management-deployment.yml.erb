@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management
+  namespace: kontena-lens
+  labels:
+    app: user-management
+spec:
+  selector:
+    matchLabels:
+      app: user-management
+  template:
+    metadata:
+      labels:
+        app: user-management
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      serviceAccountName: lens-operator
+      replicas: 2
+      containers:
+        - image: <%= image_repository %>/lens-idp:<%= version %>
+          name: user-management
+          imagePullPolicy: Always
+          env:
+            - name: KUBERNETES_NAMESPACE
+              value: kontena-lens
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "20m"
+            limits:
+              memory: "256Mi"
+              cpu: "50m"
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 9999
+              scheme: HTTP
+            initialDelaySeconds: 180
+            timeoutSeconds: 5

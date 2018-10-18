@@ -1,8 +1,0 @@
-apiVersion: ceph.rook.io/v1beta1
-kind: Pool
-metadata:
-  name: replicapool
-  namespace: kontena-storage
-spec:
-  replicated:
-    size: <%= config&.pool&.replicated&.size || '3' %>

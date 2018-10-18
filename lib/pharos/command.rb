@@ -2,6 +2,8 @@
 
 module Pharos
   class Command < Clamp::Command
+    include Pharos::Logging
+
     option '--[no-]color', :flag, "colorize output", default: $stdout.tty?
 
     option ['-v', '--version'], :flag, "print #{File.basename($PROGRAM_NAME)} version" do

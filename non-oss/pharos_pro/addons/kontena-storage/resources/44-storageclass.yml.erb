@@ -1,0 +1,13 @@
+<% if config&.filesystem&.enabled %>
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: kontena-storage-fs
+provisioner: ceph.com/cephfs
+parameters:
+    monitors: <%= config.pool.replicated.size.times.map { |i| "rook-ceph-mon#{i}:6790" }.join(',') %>
+    adminId: admin
+    adminSecretName: rook-ceph-mon
+    adminSecretNamespace: "kontena-storage"
+    claimRoot: /volumes
+<% end %>
