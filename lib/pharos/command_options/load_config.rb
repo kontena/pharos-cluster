@@ -38,6 +38,7 @@ module Pharos
 
         # @return [Pharos::Config]
         def load_config
+          return @config if @config
           puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
 
           config_hash = config_yaml.load(ENV.to_h)
@@ -48,7 +49,7 @@ module Pharos
 
           signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
-          config
+          @config = config
         end
 
         # @param file [String]
