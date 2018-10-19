@@ -2,7 +2,7 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    include ConfigLoadingOptions
+    include CommandOptions::ConfigLoadingOptions
 
     option ['-y', '--yes'], :flag, 'answer automatically yes to prompts'
 

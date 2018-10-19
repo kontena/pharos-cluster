@@ -2,7 +2,7 @@
 
 module Pharos
   class KubeconfigCommand < Pharos::Command
-    include ConfigLoadingOptions
+    include CommandOptions::ConfigLoadingOptions
 
     option ['-n', '--name'], 'NAME', 'overwrite cluster name', attribute_name: :new_name
     option ['-C', '--context'], 'CONTEXT', 'overwrite context name', attribute_name: :new_context

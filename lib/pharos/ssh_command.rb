@@ -2,7 +2,7 @@
 
 module Pharos
   class SSHCommand < Pharos::Command
-    include HostFilterOptions
+    include CommandOptions::HostFilterOptions
 
     usage "[OPTIONS] -- [COMMANDS] ..."
     parameter "[COMMAND] ...", "Run command on host"

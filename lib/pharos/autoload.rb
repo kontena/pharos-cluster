@@ -32,8 +32,12 @@ module Pharos
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :HostConfigManager, 'pharos/host_config_manager'
-  autoload :HostFilterOptions, 'pharos/host_filter_options'
-  autoload :ConfigLoadingOptions, 'pharos/config_loading_options'
+
+  module CommandOptions
+    autoload :HostFilterOptions, 'pharos/command_options/host_filter_options'
+    autoload :ConfigLoadingOptions, 'pharos/command_options/config_loading_options'
+    autoload :YesOption, 'pharos/command_options/yes_option'
+  end
 
   module CoreExt
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
