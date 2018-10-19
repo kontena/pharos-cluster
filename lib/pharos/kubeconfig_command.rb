@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Pharos
-  class KubeconfigCommand < UpCommand
+  class KubeconfigCommand < Pharos::Command
+    include ConfigLoadingOptions
+
     option ['-n', '--name'], 'NAME', 'overwrite cluster name', attribute_name: :new_name
     option ['-C', '--context'], 'CONTEXT', 'overwrite context name', attribute_name: :new_context
     option ['-m', '--merge'], '[FILE]', 'merge with existing configuration file', multivalued: true

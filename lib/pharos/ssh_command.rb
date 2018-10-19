@@ -1,36 +1,13 @@
 # frozen_string_literal: true
 
 module Pharos
-  class SSHCommand < UpCommand
+  class SSHCommand < Pharos::Command
+    include HostFilterOptions
+
     usage "[OPTIONS] -- [COMMANDS] ..."
     parameter "[COMMAND] ...", "Run command on host"
 
     banner "Opens SSH sessions to hosts in the Kontena Pharos cluster."
-
-    option ['-r', '--role'], 'ROLE', 'select a host by role'
-    option ['-l', '--label'], 'LABEL=VALUE', 'select a host by label, can be specified multiple times', multivalued: true do |pair|
-      Hash[*[:key, :value].zip(pair.split('=', 2))]
-    end
-    option ['-a', '--address'], 'ADDRESS', 'select a host by public address'
-
-    option ['-f', '--first'], :flag, 'only perform on the first matching host'
-
-    def hosts
-      @hosts ||= Array(
-        load_config.hosts.send(first? ? :find : :select) do |host|
-          next if role && host.role != role
-          next if address && host.address != address
-
-          unless label_list.empty?
-            next unless label_list.all? { |l| host.labels[l[:key]] == l[:value] }
-          end
-
-          true
-        end
-      ).tap do |result|
-        signal_usage_error 'no host matched in configuration' if result.empty?
-      end
-    end
 
     def execute
       exit run_interactive if command_list.empty?
@@ -41,7 +18,7 @@ module Pharos
     private
 
     def run_interactive
-      exit_statuses = hosts.map do |host|
+      exit_statuses = filtered_hosts.map do |host|
         target = "#{host.user}@#{host.address}"
         puts pastel.green("==> Opening a session to #{target} ..") unless !$stdout.tty?
         system('ssh', '-i', host.ssh_key_path, target)
@@ -56,7 +33,7 @@ module Pharos
     end
 
     def run_parallel
-      threads = hosts.map do |host|
+      threads = filtered_hosts.map do |host|
         Thread.new do
           begin
             [host, ssh_manager.client_for(host).exec(command_list)]
