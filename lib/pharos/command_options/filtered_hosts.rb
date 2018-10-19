@@ -8,7 +8,9 @@ module Pharos
         base.options :load_config
         base.option ['-r', '--role'], 'ROLE', 'select a host by role'
         base.option ['-l', '--label'], 'LABEL=VALUE', 'select a host by label, can be specified multiple times', multivalued: true do |pair|
-          Hash[*[:key, :value].zip(pair.split('=', 2))]
+          key, value = pair.split('=', 2)
+          signal_usage_error "invalid syntax for label : #{pair}, see --help for usage" if value.nil?
+          { key: key, value: value }
         end
         base.option ['-a', '--address'], 'ADDRESS', 'select a host by public address'
 
@@ -25,6 +27,7 @@ module Pharos
               next if address && host.address != address
 
               unless label_list.empty?
+                next if host.labels.nil?
                 next unless label_list.all? { |l| host.labels[l[:key]] == l[:value] }
               end
 
