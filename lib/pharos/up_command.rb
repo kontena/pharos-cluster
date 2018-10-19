@@ -2,7 +2,7 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    options :load_config, :yes
+    options :load_config, :yes?
 
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
