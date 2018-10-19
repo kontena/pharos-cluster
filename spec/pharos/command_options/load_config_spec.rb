@@ -1,9 +1,9 @@
-describe Pharos::CommandOptions::ConfigLoadingOptions do
+describe Pharos::CommandOptions::LoadConfig do
   let(:arguments) { [] }
 
   subject do
     Class.new(Pharos::Command) do
-      include Pharos::CommandOptions::ConfigLoadingOptions
+      options :load_config
 
       def config
         @config ||= load_config

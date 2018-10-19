@@ -2,9 +2,7 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    include CommandOptions::ConfigLoadingOptions
-
-    option ['-y', '--yes'], :flag, 'answer automatically yes to prompts'
+    options :load_config, :yes
 
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")

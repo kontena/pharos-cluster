@@ -2,10 +2,10 @@
 
 module Pharos
   module CommandOptions
-    module HostFilterOptions
+    module FilteredHosts
       def self.included(base)
         base.prepend(InstanceMethods)
-        base.include(ConfigLoadingOptions)
+        base.options :load_config
         base.option ['-r', '--role'], 'ROLE', 'select a host by role'
         base.option ['-l', '--label'], 'LABEL=VALUE', 'select a host by label, can be specified multiple times', multivalued: true do |pair|
           Hash[*[:key, :value].zip(pair.split('=', 2))]

@@ -34,9 +34,9 @@ module Pharos
   autoload :HostConfigManager, 'pharos/host_config_manager'
 
   module CommandOptions
-    autoload :HostFilterOptions, 'pharos/command_options/host_filter_options'
-    autoload :ConfigLoadingOptions, 'pharos/command_options/config_loading_options'
-    autoload :YesOption, 'pharos/command_options/yes_option'
+    autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'
+    autoload :LoadConfig, 'pharos/command_options/load_config'
+    autoload :Yes, 'pharos/command_options/yes'
   end
 
   module CoreExt
