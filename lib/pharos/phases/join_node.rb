@@ -23,6 +23,7 @@ module Pharos
         end
         join_command << "--node-name #{@host.hostname}"
         join_command << "--ignore-preflight-errors DirAvailable--etc-kubernetes-manifests"
+        join_command << "--ignore-preflight-errors SystemVerification"
 
         @ssh.exec!('sudo ' + join_command.join(' '))
       end
