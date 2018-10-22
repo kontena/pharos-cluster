@@ -78,6 +78,7 @@ module Pharos
 
         cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
         cmd.concat(%w(bash --norc --noprofile -x -s))
+        logger.debug { "exec: #{cmd}" }
         exec!(cmd, stdin: script, source: name, **options)
       end
 
