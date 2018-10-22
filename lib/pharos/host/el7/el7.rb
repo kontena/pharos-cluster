@@ -44,7 +44,6 @@ module Pharos
 
       def configure_container_runtime
         if docker?
-          insecure_registries = cluster_config.container_runtime.insecure_registries.to_json.inspect
           exec_script(
             'configure-docker.sh',
             DOCKER_VERSION: DOCKER_VERSION,
@@ -52,13 +51,11 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
-          insecure_registries = cluster_config.container_runtime.insecure_registries.to_json.inspect
           exec_script(
             'configure-docker.sh',
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
-          insecure_registries = cluster_config.container_runtime.insecure_registries.map(&:inspect).join(",").inspect
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,

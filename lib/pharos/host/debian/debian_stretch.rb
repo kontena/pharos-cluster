@@ -26,7 +26,7 @@ module Pharos
 
       def configure_container_runtime
         raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}" unless crio?
-        insecure_registries = cluster_config.container_runtime.insecure_registries.map(&:inspect).join(",").inspect
+
         exec_script(
           'configure-cri-o.sh',
           CRIO_VERSION: Pharos::CRIO_VERSION,

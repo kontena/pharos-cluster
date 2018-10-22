@@ -95,6 +95,18 @@ module Pharos
         @host.custom_docker?
       end
 
+      # Return stringified json array for insecure registries
+      #
+      # @return [String]
+      def insecure_registries
+        if crio?
+          cluster_config.container_runtime.insecure_registries.map(&:inspect).join(",").inspect
+        else
+          # docker & custom docker
+          cluster_config.container_runtime.insecure_registries.to_json.inspect
+        end
+      end
+
       # @return [Pharos::Config,NilClass]
       def cluster_config
         self.class.cluster_config
