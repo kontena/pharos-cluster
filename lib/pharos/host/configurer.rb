@@ -95,7 +95,8 @@ module Pharos
         @host.custom_docker?
       end
 
-      # Return stringified json array for insecure registries
+      # Return stringified json array(ish) for insecure registries properly escaped for safe
+      # passing to scripts via ENV.
       #
       # @return [String]
       def insecure_registries
@@ -103,7 +104,7 @@ module Pharos
           cluster_config.container_runtime.insecure_registries.map(&:inspect).join(",").inspect
         else
           # docker & custom docker
-          cluster_config.container_runtime.insecure_registries.to_json.inspect
+          JSON.dump(cluster_config.container_runtime.insecure_registries).inspect
         end
       end
 
