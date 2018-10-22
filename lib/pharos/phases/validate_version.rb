@@ -63,7 +63,7 @@ module Pharos
 
       # Returns a requirement like "~>", "1.3.0"  which will match >= 1.3.0 && < 1.4.0
       def requirement
-        Gem::Requirement.new('~>' + pharos_version.segments.first(2).join('.') + '.0')
+        Gem::Requirement.new('~>' + pharos_version.segments.first(2).join('.') + (pharos_version.prerelease? ? '.0-alpha.0' : '.0'))
       end
     end
   end
