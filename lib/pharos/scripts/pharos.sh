@@ -14,14 +14,14 @@ file_exists() {
 lineinfile() {
     [ "$#" -lt 3 ] && return 1
 
-    match=$1
-    line=$2
+    match="$1"
+    line="$2"
     shift
     shift
 
     for file in "$@"; do
         file_exists "$file" || return 1
-        grep -q "${match}" $file && sed "s|${match}.*|${line}|" -i $file || echo $line >> $file
+        grep -q "${match}" "$file" && sed "s|${match}.*|${line}|" -i "$file" || echo "$line" >> "$file"
     done
 
     return 0
@@ -37,6 +37,6 @@ linefromfile() {
 
     for file in "$@"; do
         file_exists "$file" || return 1
-        sed -i "/${match}/d" $file
+        sed -i "/${match}/d" "$file"
     done
 }

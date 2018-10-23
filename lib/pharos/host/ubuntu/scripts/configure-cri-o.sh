@@ -2,6 +2,7 @@
 
 set -e
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
 reload_daemon() {
@@ -12,7 +13,7 @@ reload_daemon() {
 }
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
-cat <<"EOF" >${tmpfile}
+cat <<"EOF" >"${tmpfile}"
 [Unit]
 Description=Open Container Initiative Daemon
 Documentation=https://github.com/kubernetes-incubator/cri-o
@@ -38,10 +39,10 @@ Restart=on-abnormal
 WantedBy=multi-user.target
 EOF
 
-if diff $tmpfile /etc/systemd/system/crio.service > /dev/null ; then
-    rm $tmpfile
+if diff "$tmpfile" /etc/systemd/system/crio.service > /dev/null ; then
+    rm -f "$tmpfile"
 else
-    mv $tmpfile /etc/systemd/system/crio.service
+    mv "$tmpfile" /etc/systemd/system/crio.service
 fi
 
 mkdir -p /etc/systemd/system/crio.service.d
@@ -61,7 +62,7 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold cri-o
-apt-get install -y cri-o=${CRIO_VERSION}
+apt-get install -y cri-o="${CRIO_VERSION}"
 apt-mark hold cri-o
 
 rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true

@@ -49,6 +49,6 @@ EOF
 
 export DEBIAN_FRONTEND=noninteractive
 
-apt-mark unhold $DOCKER_PACKAGE || echo "Nothing to unhold"
-apt-get install -y $DOCKER_PACKAGE=$DOCKER_VERSION
-apt-mark hold $DOCKER_PACKAGE
+apt-mark unhold "$DOCKER_PACKAGE" || echo "Nothing to unhold"
+apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION"
+apt-mark hold "$DOCKER_PACKAGE"

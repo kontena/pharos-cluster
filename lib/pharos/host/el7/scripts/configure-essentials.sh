@@ -2,6 +2,7 @@
 
 set -e
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
 cat <<"EOF" >/usr/local/share/pharos/el7.sh
@@ -36,11 +37,11 @@ fi
 
 env_file="/etc/environment"
 
-lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" $env_file
-lineinfile "^LANG=" "LANG=en_US.utf-8" $env_file
+lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" "$env_file"
+lineinfile "^LANG=" "LANG=en_US.utf-8" "$env_file"
 
-if ! grep -q "/usr/local/bin" $env_file ; then
-    echo "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" >> $env_file
+if ! grep -q "/usr/local/bin" "$env_file" ; then
+    lineinfile "^PATH=" "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" "$env_file"
 fi
 
 if [ ! "$(/usr/sbin/getenforce)" = "Disabled" ]; then
