@@ -42,5 +42,16 @@ module Pharos
     def stdin_eof?
       $stdin.eof?
     end
+
+    # @param secs [Integer]
+    # @return [String]
+    def humanize_duration(secs)
+      [[60, :second], [60, :minute], [24, :hour], [1000, :day]].map{ |count, name|
+        next unless secs.positive?
+        secs, n = secs.divmod(count).map(&:to_i)
+        next if n.zero?
+        "#{n} #{name}#{'s' unless n == 1}"
+      }.compact.reverse.join(' ')
+    end
   end
 end
