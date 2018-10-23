@@ -16,7 +16,7 @@ describe Pharos::UpCommand do
     let(:config) { double(:config) }
 
     it 'prompts' do
-      allow(subject).to receive(:tty?).and_return(true)
+      allow($stdin).to receive(:tty?).and_return(true)
       expect(subject).to receive(:prompt).and_return(prompt)
       expect(prompt).to receive(:yes?)
       subject.prompt_continue(config)
