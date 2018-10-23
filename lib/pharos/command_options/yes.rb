@@ -10,7 +10,7 @@ module Pharos
 
       module InstanceMethods
         def confirm_yes!(message)
-          unless self.yes?
+          unless yes?
             if !$stdin.tty?
               warn('--yes required when running in non interactive mode')
               exit 1
