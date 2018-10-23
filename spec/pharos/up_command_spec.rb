@@ -23,20 +23,20 @@ describe Pharos::UpCommand do
     end
 
     it 'does not prompt with --yes' do
-      allow(subject).to receive(:yes?).and_return(true)
+      allow(subject).to receive(:confirm_yes!).and_return(true)
       expect(subject).not_to receive(:prompt)
       subject.prompt_continue(config)
     end
 
     it 'shows config' do
-      allow(subject).to receive(:yes?).and_return(true)
+      allow(subject).to receive(:confirm_yes!).and_return(true)
       expect(subject).to receive(:color?).and_return(true).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
       subject.prompt_continue(config)
     end
 
     it 'shows config without color' do
-      allow(subject).to receive(:yes?).and_return(true)
+      allow(subject).to receive(:confirm_yes!).and_return(true)
       expect(subject).to receive(:color?).and_return(false).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
       subject.prompt_continue(config)
