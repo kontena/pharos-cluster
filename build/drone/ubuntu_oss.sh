@@ -14,5 +14,5 @@ gem install bundler
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-linux-amd64-${version}+oss"
 mkdir -p /root/.pharos/build
-rubyc -o $package -d /root/.pharos/build --make-args=--silent pharos-cluster
-./$package version
+rubyc -o "$package" -d /root/.pharos/build --make-args=--silent pharos-cluster
+./"$package" version

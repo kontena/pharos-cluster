@@ -2,6 +2,7 @@
 
 set -e
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
 if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then

@@ -14,7 +14,8 @@ module Pharos
       'kubelet' => {},
       'telemetry' => {},
       'pod_security_policy' => {},
-      'addon_paths' => []
+      'addon_paths' => [],
+      'container_runtime' => {}
     }.freeze
 
     # @param data [Hash]
@@ -130,6 +131,9 @@ module Pharos
               optional(:enabled).filled(:bool?)
             end
           end
+        end
+        optional(:container_runtime).schema do
+          optional(:insecure_registries).each(type?: String)
         end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|

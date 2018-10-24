@@ -39,7 +39,8 @@ cat <<EOF >/etc/docker/daemon.json
     "log-opts": {
         "max-size": "20m",
         "max-file": "3"
-    }
+    },
+    "insecure-registries": $INSECURE_REGISTRIES
 }
 EOF
 
@@ -49,6 +50,6 @@ EOF
 
 export DEBIAN_FRONTEND=noninteractive
 
-apt-mark unhold $DOCKER_PACKAGE || echo "Nothing to unhold"
-apt-get install -y $DOCKER_PACKAGE=$DOCKER_VERSION
-apt-mark hold $DOCKER_PACKAGE
+apt-mark unhold "$DOCKER_PACKAGE" || echo "Nothing to unhold"
+apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION"
+apt-mark hold "$DOCKER_PACKAGE"

@@ -1,3 +1,5 @@
+require 'recursive-open-struct'
+
 describe Pharos::Host::Configurer do
   let(:test_config_class) do
     Class.new(described_class) do
@@ -82,5 +84,71 @@ describe Pharos::Host::Configurer do
         subject.update_env_file
       end
     end
+  end
+
+  describe '#insecure_registries' do
+
+    context 'for docker' do
+      before do
+        allow(host).to receive(:crio?).and_return(false)
+      end
+
+      it 'gives properly escaped json array string' do
+        cfg = RecursiveOpenStruct.new({
+          container_runtime: {
+            insecure_registries: [
+              "registry.foobar.acme",
+              "localhost:5000"
+            ]
+          }
+        })
+        expect(subject).to receive(:cluster_config).and_return(cfg)
+
+        expect(subject.insecure_registries).to eq("\"[\\\"registry.foobar.acme\\\",\\\"localhost:5000\\\"]\"")
+      end
+
+      it 'works for empty array' do
+        cfg = RecursiveOpenStruct.new({
+          container_runtime: {
+            insecure_registries: []
+          }
+        })
+        expect(subject).to receive(:cluster_config).and_return(cfg)
+
+        expect(subject.insecure_registries).to eq("\"[]\"")
+      end
+    end
+
+    context 'for crio' do
+      before do
+        allow(host).to receive(:crio?).and_return(true)
+      end
+
+      it 'gives properly escaped json array string with brackets stripped' do
+        cfg = RecursiveOpenStruct.new({
+          container_runtime: {
+            insecure_registries: [
+              "registry.foobar.acme",
+              "localhost:5000"
+            ]
+          }
+        })
+        expect(subject).to receive(:cluster_config).and_return(cfg)
+
+        expect(subject.insecure_registries).to eq("\"\\\"registry.foobar.acme\\\",\\\"localhost:5000\\\"\"")
+      end
+
+      it 'works for empty array' do
+        cfg = RecursiveOpenStruct.new({
+          container_runtime: {
+            insecure_registries: []
+          }
+        })
+        expect(subject).to receive(:cluster_config).and_return(cfg)
+
+        expect(subject.insecure_registries).to eq("\"\"")
+      end
+    end
+
   end
 end
