@@ -135,7 +135,11 @@ module Pharos
     def apply_reset_hosts(hosts, drain: true, delete: true)
       master_hosts = sorted_master_hosts
       apply_phase(Phases::GatherFacts, hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true) if (drain || delete)
+
+      if drain || delete
+        apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)
+      end
+
       apply_phase(Phases::Drain, hosts, parallel: false) if drain
       apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first) if delete
       apply_phase(Phases::ResetHost, hosts, ssh: true, parallel: true)
