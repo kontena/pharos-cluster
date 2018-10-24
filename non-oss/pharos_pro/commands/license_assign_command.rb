@@ -10,7 +10,7 @@ module Pharos
     option '--description', 'DESCRIPTION', "license description"
 
     def default_description
-      "pharos version #{Pharos::VERSION} on #{master_host.address}"
+      "pharos version #{Pharos.version} on #{master_host.address}"
     end
 
     def default_license_key
@@ -54,7 +54,7 @@ module Pharos
         headers: {
           'Accept' => 'application/json',
           'Content-Type' => 'application/json',
-          'User-Agent' => "pharos-cluster/#{Pharos::VERSION}"
+          'User-Agent' => "pharos-cluster/#{Pharos.version}"
         }
       )
     end
