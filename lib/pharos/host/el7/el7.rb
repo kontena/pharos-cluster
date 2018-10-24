@@ -47,11 +47,13 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_VERSION: DOCKER_VERSION,
-            DOCKER_REPO_NAME: docker_repo_name
+            DOCKER_REPO_NAME: docker_repo_name,
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
           exec_script(
-            'configure-docker.sh'
+            'configure-docker.sh',
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
           exec_script(
@@ -59,7 +61,8 @@ module Pharos
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository
+            IMAGE_REPO: cluster_config.image_repository,
+            INSECURE_REGISTRIES: insecure_registries
           )
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
