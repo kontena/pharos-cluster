@@ -40,12 +40,13 @@ env_file="/etc/environment"
 lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" "$env_file"
 lineinfile "^LANG=" "LANG=en_US.utf-8" "$env_file"
 
-if ! grep -q "/usr/local/bin" "$env_file" ; then
-    lineinfile "^PATH=" "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" "$env_file"
+if [[ $PATH != *local/bin* ]] || [[ $PATH != *usr/sbin* ]]; then
+  PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
+  lineinfile "^PATH=" "PATH=$PATH" "$env_file"
 fi
 
-if [ ! "$(/usr/sbin/getenforce)" = "Disabled" ]; then
-    /usr/sbin/setenforce 0 || true
+if ! (getenforce | grep -q "Disabled"); then
+    setenforce 0 || true
     lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
 fi
 
