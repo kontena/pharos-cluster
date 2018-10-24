@@ -13,6 +13,7 @@ require_relative 'configuration/kubelet'
 require_relative 'configuration/pod_security_policy'
 require_relative 'configuration/telemetry'
 require_relative 'configuration/admission_plugin'
+require_relative 'configuration/container_runtime'
 
 module Pharos
   class Config < Pharos::Configuration::Struct
@@ -50,6 +51,7 @@ module Pharos
     attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
+    attribute :container_runtime, Pharos::Configuration::ContainerRuntime
 
     attr_accessor :data
 

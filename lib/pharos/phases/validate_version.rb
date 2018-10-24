@@ -21,7 +21,7 @@ module Pharos
 
       # @param cluster_version [String]
       def validate_version(cluster_version)
-        cluster_version = Gem::Version.new(cluster_version)
+        cluster_version = Gem::Version.new(cluster_version.gsub(/\+.*/, ''))
         raise "Downgrade not supported" if cluster_version > pharos_version
         raise "Upgrade path not supported" unless requirement.satisfied_by?(cluster_version)
 
@@ -63,7 +63,7 @@ module Pharos
 
       # Returns a requirement like "~>", "1.3.0"  which will match >= 1.3.0 && < 1.4.0
       def requirement
-        Gem::Requirement.new('~>' + pharos_version.segments.first(2).join('.') + '.0')
+        Gem::Requirement.new('~>' + pharos_version.segments.first(2).join('.') + (pharos_version.prerelease? ? '.0-a' : '.0'))
       end
     end
   end

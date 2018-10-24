@@ -33,6 +33,12 @@ module Pharos
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :HostConfigManager, 'pharos/host_config_manager'
 
+  module CommandOptions
+    autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'
+    autoload :LoadConfig, 'pharos/command_options/load_config'
+    autoload :Yes, 'pharos/command_options/yes'
+  end
+
   module CoreExt
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
