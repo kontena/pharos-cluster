@@ -13,7 +13,9 @@ module Pharos
         cluster_context['kubeconfig'] = kubeconfig
         config_map = previous_config_map
         if config_map
-          validate_version(config_map.data['pharos-version'])
+          existing_version = config_map.data['pharos-version']
+          cluster_context['existing-pharos-version'] = existing_version
+          validate_version(existing_version)
         else
           logger.info { 'No version detected' }
         end
