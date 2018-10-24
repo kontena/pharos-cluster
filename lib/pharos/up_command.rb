@@ -96,7 +96,7 @@ module Pharos
       end
       if existing_version && Pharos::VERSION != existing_version
         puts
-        puts pastel.yellow("Cluster is currently running Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
+        puts pastel.yellow("Cluster is currently running Kontea Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
         puts
       end
       if tty? && !yes?
