@@ -10,13 +10,13 @@ module Pharos
 
       module InstanceMethods
         def confirm_yes!(message)
-          unless yes?
-            if !$stdin.tty?
-              warn('--yes required when running in non interactive mode')
-              exit 1
-            else
-              exit 1 unless prompt.yes?(message, default: false)
-            end
+          return if yes?
+
+          if !$stdin.tty?
+            warn('--yes required when running in non interactive mode')
+            exit 1
+          else
+            exit 1 unless prompt.yes?(message, default: false)
           end
         rescue TTY::Reader::InputInterrupt
           warn 'Interrupted'
