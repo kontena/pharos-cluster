@@ -15,7 +15,7 @@ module Pharos
     option '--[no-]color', :flag, "colorize output", default: $stdout.tty?
 
     option ['-v', '--version'], :flag, "print #{File.basename($PROGRAM_NAME)} version" do
-      puts "#{File.basename($PROGRAM_NAME)} #{Pharos::VERSION}"
+      puts "#{File.basename($PROGRAM_NAME)} #{Pharos.version}"
       exit 0
     end
 

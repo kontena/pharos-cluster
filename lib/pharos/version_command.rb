@@ -4,7 +4,7 @@ module Pharos
   class VersionCommand < Pharos::Command
     def execute
       puts "Kontena Pharos:"
-      puts "  - #{File.basename($PROGRAM_NAME)} version #{Pharos::VERSION}"
+      puts "  - #{File.basename($PROGRAM_NAME)} version #{Pharos.version}"
       ClusterManager.new(Pharos::Config.new({}), pastel: false).load
 
       phases.each do |os, phases|
