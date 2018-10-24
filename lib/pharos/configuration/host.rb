@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# frozen_stritng_literal: true
-
 require_relative 'os_release'
 require_relative 'cpu_arch'
 
