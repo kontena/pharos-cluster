@@ -3,6 +3,9 @@
 module Pharos
   class ResetCommand < Pharos::Command
     parameter '[HOST] ...', "list of host addresses to reset"
+    option '--[no-]drain', :flag, "enable or disable node drain before reset", default: true
+    option '--[no-]delete', :flag, "enable or disable node delete before reset", default: true
+
     options :filtered_hosts, :yes?
 
     def execute
@@ -46,7 +49,7 @@ module Pharos
 
       start_time = Time.now
       puts pastel.green("==> Starting to reset hosts ...")
-      cluster_manager.apply_reset_hosts(hosts)
+      cluster_manager.apply_reset_hosts(hosts, drain: drain?, delete: delete?)
       reset_time = Time.now - start_time
       puts pastel.green("==> Hosts have been reset! (took #{humanize_duration(reset_time.to_i)})")
     end
