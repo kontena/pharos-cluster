@@ -94,7 +94,7 @@ module Pharos
       else
         puts config.to_yaml
       end
-      if existing_version && Pharos::VERSION != existing_version
+      if existing_version && Pharos.version != existing_version
         puts
         puts pastel.yellow("Cluster is currently running Kontea Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
         puts
