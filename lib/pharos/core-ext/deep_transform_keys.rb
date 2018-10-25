@@ -32,6 +32,14 @@ module Pharos
         replace(::Pharos::CoreExt::DeepTransformKeys.deep_transform_keys(self, &:to_s))
       end
 
+      def deep_symbolize_keys
+        ::Pharos::CoreExt::DeepTransformKeys.deep_transform_keys(self, &:to_sym)
+      end
+
+      def deep_symbolize_keys!
+        replace(::Pharos::CoreExt::DeepTransformKeys.deep_transform_keys(self, &:to_sym))
+      end
+
       refine Hash do
         include ::Pharos::CoreExt::DeepTransformKeys
       end

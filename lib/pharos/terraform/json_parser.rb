@@ -7,6 +7,10 @@ module Pharos
     class JsonParser
       class ParserError < Pharos::Error; end
 
+      using Pharos::CoreExt::DeepTransformKeys
+
+      HOST_DEFAULTS = { role: 'worker' }.freeze
+
       # @param json [String]
       def initialize(json)
         @json = json
@@ -16,19 +20,6 @@ module Pharos
         @data ||= JSON.parse(@json)
       rescue JSON::ParserError => ex
         raise ParserError, ex.message
-      end
-
-      # @return [Array<Hash>]
-      def hosts
-        hosts = []
-        values = data.dig('pharos_hosts', 'value') || data.dig('pharos', 'value')
-        values.each do |_, arr|
-          bundle = arr[0]
-          bundle['address'].each_with_index do |h, i|
-            hosts << parse_host(bundle, h, i)
-          end
-        end
-        hosts
       end
 
       # @return [Hash]
@@ -47,22 +38,41 @@ module Pharos
         @api ||= data.dig('pharos_api', 'value')
       end
 
-      # @param bundle [Hash]
-      # @param host [Hash]
-      # @param index [Integer]
-      # @return [Hash]
-      def parse_host(bundle, host, index)
-        host = {
-          address: host,
-          role: bundle['role'] || 'worker'
-        }
-        host[:private_address] = bundle['private_address'][index] if bundle['private_address']
-        host[:labels] = bundle['label'][0] if bundle['label']
-        host[:user] = bundle['user'] if bundle['user']
-        host[:ssh_key_path] = bundle['ssh_key_path'] if bundle['ssh_key_path']
-        host[:container_runtime] = bundle['container_runtime'] if bundle['container_runtime']
+      def hosts
+        host_bundles.map do |bundle|
+          addresses = bundle_host_addresses(Array(bundle.delete('address')), Array(bundle.delete('private_address')))
 
-        host
+          # Take out the hashes
+          hashes = {
+            labels: bundle.delete('label')&.first,
+            taints: bundle.delete('taint')&.first,
+            environment: bundle.delete('environment')&.first
+          }.compact
+
+          # Symbolize and merge over defaults and restore the hashes
+          bundle = HOST_DEFAULTS.merge(bundle.deep_symbolize_keys).merge(hashes)
+
+          # Glue the bundle into each address hash
+          addresses.map { |address| address.merge(bundle) }
+        end.inject(:+)
+      end
+
+      def host_bundles
+        (data.dig('pharos_hosts', 'value') || data.dig('pharos', 'value')).values.map(&:first)
+      end
+
+      def bundle_host_addresses(public_addresses, private_addresses)
+        unless public_addresses.empty? || private_addresses.empty?
+          raise "address and private_address array size mismatch" unless public_addresses.size == private_addresses.size
+        end
+
+        if public_addresses.empty? || private_addresses.empty?
+          (public_addresses + private_addresses).map { |address| { address: address } }
+        else
+          public_addresses.zip(private_addresses).map do |public_address, private_address|
+            { address: public_address, private_address: private_address }
+          end
+        end
       end
     end
   end
