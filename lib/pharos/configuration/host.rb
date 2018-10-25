@@ -165,7 +165,8 @@ module Pharos
         configurer&.new(self, ssh)
       end
 
-      def set_bastion(bastion)
+      # @param bastion [Pharos::Configuration::Bastion]
+      def configure_bastion(bastion)
         return if self.bastion
 
         attributes[:bastion] = bastion

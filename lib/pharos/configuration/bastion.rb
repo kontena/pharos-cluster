@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Pharos
   module Configuration
     class Bastion < Pharos::Configuration::Struct
