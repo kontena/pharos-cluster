@@ -60,6 +60,7 @@ module Pharos
       attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :environment, Pharos::Types::Strict::Hash
+      attribute :bastion, Pharos::Configuration::Bastion
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
@@ -162,6 +163,12 @@ module Pharos
       def configurer(ssh)
         configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
         configurer&.new(self, ssh)
+      end
+
+      def set_bastion(bastion)
+        return if self.bastion
+
+        attributes[:bastion] = bastion
       end
     end
   end

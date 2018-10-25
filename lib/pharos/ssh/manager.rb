@@ -17,6 +17,7 @@ module Pharos
         opts[:keys] = [host.ssh_key_path] if host.ssh_key_path
         opts[:send_env] = [] # override default to not send LC_* envs
         opts[:proxy] = Net::SSH::Proxy::Command.new(host.ssh_proxy_command) if host.ssh_proxy_command
+        opts[:bastion] = host.bastion if host.bastion
         @clients[host] = Pharos::SSH::Client.new(host.address, host.user, opts).tap(&:connect)
       end
 

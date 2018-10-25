@@ -62,6 +62,11 @@ module Pharos
             end
           end
         end
+        optional(:bastion).schema do
+          required(:address).filled(:str?)
+          optional(:user).filled(:str?)
+          optional(:ssh_key_path).filled(:str?)
+        end
         optional(:api).schema do
           optional(:endpoint).filled(:str?)
         end
