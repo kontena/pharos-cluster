@@ -11,7 +11,7 @@ module Pharos
 
     def execute
       exit run_interactive if command_list.empty?
-      exit run_single(hosts.first) if hosts.size == 1
+      exit run_single(filtered_hosts.first) if filtered_hosts.size == 1
       exit run_parallel
     end
 
