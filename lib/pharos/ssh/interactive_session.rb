@@ -15,8 +15,14 @@ module Pharos
         $stdin.raw!
         $stdin.echo = false
         $stdin.sync = true
+        old_winch_handler = "DEFAULT"
 
         @client.session.open_channel do |channel|
+          old_winch_handler = Signal.trap("SIGWINCH") do
+            rows, columns = IO.console.winsize
+            channel.send_channel_request "window-change", :long, columns, :long, rows, :long, 0, :long, 0
+          end
+
           @client.session.listen_to($stdin) do |stdin|
             input = stdin.readpartial(1024)
             channel.send_data(input) unless input.empty?
@@ -30,7 +36,8 @@ module Pharos
             $stdout.write(data)
           end
 
-          channel.request_pty do
+          rows, columns = IO.console.winsize
+          channel.request_pty term: ENV['TERM'] || 'ascii', chars_wide: columns, chars_high: rows do
             channel.send_channel_request "shell"
           end
 
@@ -39,6 +46,7 @@ module Pharos
           end
         end.wait
       ensure
+        Signal.trap("SIGWINCH", old_winch_handler)
         $stdin.cooked!
         $stdin.echo = true
       end
