@@ -18,10 +18,6 @@ module Pharos
         raise ParserError, ex.message
       end
 
-      def bastion
-        @bastion ||= data.dig('pharos_bastion', 'value')
-      end
-
       # @return [Array<Hash>]
       def hosts
         hosts = []
@@ -66,6 +62,7 @@ module Pharos
         host[:taints] = bundle['taint'] if bundle['taint']
         host[:user] = bundle['user'] if bundle['user']
         host[:ssh_key_path] = bundle['ssh_key_path'] if bundle['ssh_key_path']
+        host[:bastion] = bundle['bastion'][0] if bundle['bastion']
         host[:ssh_proxy_command] = bundle['ssh_proxy_command'] if bundle['ssh_proxy_command']
         host[:container_runtime] = bundle['container_runtime'] if bundle['container_runtime']
 

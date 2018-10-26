@@ -63,7 +63,6 @@ module Pharos
           config['api'] ||= {}
           config['addons'] ||= {}
           config['hosts'] += tf_parser.hosts
-          config['bastion'] = tf_parser.bastion if tf_parser.bastion
           config['api'].merge!(tf_parser.api) if tf_parser.api
           config['addons'].each do |name, conf|
             if addon_config = tf_parser.addons[name]

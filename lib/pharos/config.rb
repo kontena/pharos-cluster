@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'types'
-require_relative 'configuration/bastion'
 require_relative 'configuration/host'
 require_relative 'configuration/api'
 require_relative 'configuration/network'
@@ -32,16 +31,12 @@ module Pharos
       config.data = raw_data.freeze
 
       # inject api_endpoint & bastion to each host object
-      config.hosts.each { |h|
-        h.api_endpoint = config.api&.endpoint
-        h.configure_bastion(config.bastion) if config.bastion
-      }
+      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
 
       config
     end
 
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
-    attribute :bastion, Pharos::Configuration::Bastion
     attribute :network, Pharos::Configuration::Network
     attribute :kube_proxy, Pharos::Configuration::KubeProxy
     attribute :api, Pharos::Configuration::Api
@@ -99,11 +94,11 @@ module Pharos
     def kube_client(kubeconfig)
       return @kube_client if @kube_client
 
-      if bastion.nil?
+      if master_host.bastion.nil?
         api_address = master_host.api_address
         api_port = 6443
       else
-        ssh = Pharos::SSH::Manager.new.client_for(bastion.host)
+        ssh = Pharos::SSH::Manager.new.client_for(master_host.bastion.host)
         api_address = 'localhost'
         api_port = ssh.gateway(master_host.api_address, 6443)
       end

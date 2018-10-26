@@ -2,6 +2,7 @@
 
 require_relative 'os_release'
 require_relative 'cpu_arch'
+require_relative 'bastion'
 
 module Pharos
   module Configuration
