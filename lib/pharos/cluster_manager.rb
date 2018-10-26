@@ -6,7 +6,7 @@ module Pharos
   class ClusterManager
     include Pharos::Logging
 
-    attr_reader :config
+    attr_reader :config, :context
 
     def self.phase_dirs
       @phase_dirs ||= [
@@ -64,6 +64,7 @@ module Pharos
 
     def gather_facts
       apply_phase(Phases::GatherFacts, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureClient, [sorted_master_hosts.first], ssh: true, master: sorted_master_hosts.first, parallel: false, optional: true)
     end
 
     def validate

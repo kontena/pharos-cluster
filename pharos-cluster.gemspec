@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "clamp", "1.2.1"
   spec.add_runtime_dependency "pastel"
   spec.add_runtime_dependency "net-ssh", "5.0.2"
+  spec.add_runtime_dependency "net-ssh-gateway", "2.0.0"
   spec.add_runtime_dependency "ed25519", "1.2.4"
   spec.add_runtime_dependency "bcrypt_pbkdf", ">= 1.0", "< 2.0"
   spec.add_runtime_dependency "dry-types", "0.13.2"
@@ -37,7 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "fugit", "~> 1.1.2"
   spec.add_runtime_dependency "rouge", "~> 3.1"
   spec.add_runtime_dependency "tty-prompt", "~> 0.16"
-  spec.add_runtime_dependency "k8s-client", "~> 0.3.4"
+  spec.add_runtime_dependency "k8s-client", "~> 0.4.2"
   spec.add_runtime_dependency "excon", "~> 0.62.0"
 
   spec.add_development_dependency "bundler", "~> 1.15"

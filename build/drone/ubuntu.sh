@@ -10,7 +10,7 @@ chmod +x /usr/local/bin/rubyc
 gem install bundler
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-linux-amd64-${version}"
-sudo mkdir -p /root/.pharos/build
+mkdir -p /root/.pharos/build
 rubyc -o "$package" -d /root/.pharos/build --make-args=--silent pharos-cluster
 rm -rf /root/.pharos/build
 ./"$package" version

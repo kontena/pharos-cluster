@@ -59,6 +59,11 @@ module Pharos
               optional(:ssh_proxy_command).filled
               optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
+              optional(:bastion).schema do
+                required(:address).filled(:str?)
+                optional(:user).filled(:str?)
+                optional(:ssh_key_path).filled(:str?)
+              end
             end
           end
         end
