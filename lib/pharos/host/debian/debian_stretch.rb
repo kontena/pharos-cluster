@@ -40,7 +40,8 @@ module Pharos
           )
         elsif custom_docker?
           exec_script(
-            'configure-docker.sh'
+            'configure-docker.sh',
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
           exec_script(
