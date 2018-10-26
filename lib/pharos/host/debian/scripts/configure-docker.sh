@@ -39,7 +39,8 @@ cat <<EOF >/etc/docker/daemon.json
     "log-opts": {
         "max-size": "20m",
         "max-file": "3"
-    }
+    },
+    "insecure-registries": $INSECURE_REGISTRIES
 }
 EOF
 
