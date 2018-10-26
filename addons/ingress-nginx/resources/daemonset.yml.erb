@@ -25,12 +25,14 @@ spec:
       <%- end -%>
       serviceAccountName: nginx-ingress-serviceaccount
       hostNetwork: true
+      <%- unless config.tolerations.empty? -%>
       tolerations:
       <%- config.tolerations.each do |t| -%>
         -
           <%- t.each do |k,v| -%>
           <%= k %>: <%= v %>
           <%- end -%>
+      <%- end -%>
       <%- end -%>
       initContainers:
       - command:
