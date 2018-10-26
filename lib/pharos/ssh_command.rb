@@ -10,7 +10,12 @@ module Pharos
     banner "Opens SSH sessions to hosts in the Kontena Pharos cluster."
 
     def execute
-      exit run_interactive if command_list.empty?
+      if command_list.empty?
+        signal_usage_error 'interactive mode can not be used with a non-interactive terminal' unless $stdin.tty? && $stdout.tty?
+        run_interactive
+        exit 0
+      end
+
       exit run_single(hosts.first) if hosts.size == 1
       exit run_parallel
     end
@@ -18,12 +23,11 @@ module Pharos
     private
 
     def run_interactive
-      exit_statuses = filtered_hosts.map do |host|
+      filtered_hosts.map do |host|
         target = "#{host.user}@#{host.address}"
-        puts pastel.green("==> Opening a session to #{target} ..") unless !$stdout.tty?
-        system('ssh', '-i', host.ssh_key_path, target)
+        puts pastel.green("==> Opening a session to #{target} ..")
+        ssh_manager.client_for(host).interactive_session
       end
-      exit_statuses.all?(&:itself) ? 0 : 1
     end
 
     def run_single(host)
