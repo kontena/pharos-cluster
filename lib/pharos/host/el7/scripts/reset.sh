@@ -6,12 +6,14 @@ systemctl stop kubelet
 systemctl disable kubelet
 
 if systemctl is-active --quiet docker ; then
+    # shellcheck disable=SC2046
     docker stop $(docker ps -q)
     systemctl stop docker
     systemctl disable docker
 fi
 
 if systemctl is-active --quiet crio ; then
+    # shellcheck disable=SC2046
     crictl stopp $(crictl pods -q)
     systemctl stop crio
     systemctl disable crio
@@ -19,7 +21,7 @@ fi
 
 kubeadm reset --force
 
-yum remove -y kubeadm kubelet kubectl docker
+yum remove -y kubeadm kubelet kubectl docker cri-o
 
 sudo rm -rf /etc/kubernetes \
     /etc/pharos \

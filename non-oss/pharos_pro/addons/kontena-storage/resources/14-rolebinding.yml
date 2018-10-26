@@ -1,0 +1,14 @@
+# Allow the pods in this namespace to work with configmaps
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: kontena-storage-cluster
+  namespace: kontena-storage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kontena-storage-cluster
+subjects:
+- kind: ServiceAccount
+  name: kontena-storage-cluster
+  namespace: kontena-storage

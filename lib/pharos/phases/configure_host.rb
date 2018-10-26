@@ -6,6 +6,11 @@ module Pharos
       title "Configure hosts"
 
       def call
+        unless @host.environment.nil? || @host.environment.empty?
+          logger.info { "Updating environment file ..." }
+          host_configurer.update_env_file
+        end
+
         logger.info { "Configuring script helpers ..." }
         host_configurer.configure_script_library
 

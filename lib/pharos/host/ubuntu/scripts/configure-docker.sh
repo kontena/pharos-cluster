@@ -2,25 +2,6 @@
 
 set -e
 
-mkdir -p /etc/docker
-cat <<EOF >/etc/docker/daemon.json
-{
-    "storage-driver": "overlay2",
-    "live-restore": true,
-    "iptables": false,
-    "ip-masq": false,
-    "log-driver": "json-file",
-    "log-opts": {
-        "max-size": "20m",
-        "max-file": "3"
-    }
-}
-EOF
-
-debconf-set-selections <<EOF
-docker.io docker.io/restart boolean true
-EOF
-
 reload_daemon() {
     if systemctl is-active --quiet docker; then
         systemctl daemon-reload
@@ -42,8 +23,33 @@ else
     fi
 fi
 
+if [ -z "$DOCKER_VERSION" ]; then
+    docker info
+    exit 0
+fi
+
+mkdir -p /etc/docker
+cat <<EOF >/etc/docker/daemon.json
+{
+    "storage-driver": "overlay2",
+    "live-restore": true,
+    "iptables": false,
+    "ip-masq": false,
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "20m",
+        "max-file": "3"
+    },
+    "insecure-registries": $INSECURE_REGISTRIES
+}
+EOF
+
+debconf-set-selections <<EOF
+docker.io docker.io/restart boolean true
+EOF
+
 export DEBIAN_FRONTEND=noninteractive
 
-apt-mark unhold $DOCKER_PACKAGE
-apt-get install -y $DOCKER_PACKAGE=$DOCKER_VERSION
-apt-mark hold $DOCKER_PACKAGE
+apt-mark unhold "$DOCKER_PACKAGE" || echo "Nothing to unhold"
+apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION"
+apt-mark hold "$DOCKER_PACKAGE"

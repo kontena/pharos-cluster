@@ -38,7 +38,7 @@ spec:
                 secretKeyRef:
                   name: weave-passwd
                   key: weave-passwd
-          image: '<%= image_repository %>/weave-kube-<%= arch.name %>:<%= version %>'
+          image: '<%= image_repository %>/weave-kube:<%= version %>'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -73,7 +73,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: '<%= image_repository %>/weave-npc-<%= arch.name %>:<%= version %>'
+          image: '<%= image_repository %>/weave-npc:<%= version %>'
           resources:
             requests:
               cpu: 10m
@@ -88,6 +88,7 @@ spec:
       securityContext:
         seLinuxOptions: {}
       serviceAccountName: weave-net
+      priorityClassName: system-node-critical
       tolerations:
         - effect: NoSchedule
           operator: Exists

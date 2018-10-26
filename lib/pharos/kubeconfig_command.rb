@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Pharos
-  class KubeconfigCommand < UpCommand
+  class KubeconfigCommand < Pharos::Command
+    options :load_config
+
     option ['-n', '--name'], 'NAME', 'overwrite cluster name', attribute_name: :new_name
     option ['-C', '--context'], 'CONTEXT', 'overwrite context name', attribute_name: :new_context
     option ['-m', '--merge'], '[FILE]', 'merge with existing configuration file', multivalued: true
@@ -9,15 +11,17 @@ module Pharos
     REMOTE_FILE = "/etc/kubernetes/admin.conf"
 
     def execute
-      config = Pharos::Kube::Config.new(config_file_content)
-      config.rename_cluster(new_name) if new_name
-      config.rename_context(new_context) if new_context
-      config.update_server_address(master_host.api_address)
-      merge_list.each do |merge|
-        merge_config = Pharos::Kube::Config.new(File.read(merge))
-        config << merge_config
+      Dir.chdir(config_yaml.dirname) do
+        config = Pharos::Kube::Config.new(config_file_content)
+        config.rename_cluster(new_name) if new_name
+        config.rename_context(new_context) if new_context
+        config.update_server_address(master_host.api_address)
+        merge_list.each do |merge|
+          merge_config = Pharos::Kube::Config.new(File.read(merge))
+          config << merge_config
+        end
+        puts config
       end
-      puts config
     end
 
     private

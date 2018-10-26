@@ -2,9 +2,10 @@
 
 set -e
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
-
-yum install -y conntrack-tools libseccomp gpgme libassuan
+# shellcheck disable=SC1091
+. /usr/local/share/pharos/el7.sh
 
 reload_daemon() {
     if systemctl is-active --quiet crio; then
@@ -14,7 +15,7 @@ reload_daemon() {
 }
 
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
-cat <<"EOF" >${tmpfile}
+cat <<"EOF" >"${tmpfile}"
 [Unit]
 Description=Open Container Initiative Daemon
 Documentation=https://github.com/kubernetes-incubator/cri-o
@@ -40,10 +41,10 @@ Restart=on-abnormal
 WantedBy=multi-user.target
 EOF
 
-if diff $tmpfile /etc/systemd/system/crio.service > /dev/null ; then
-    rm $tmpfile
+if diff "$tmpfile" /etc/systemd/system/crio.service > /dev/null ; then
+    rm -f "$tmpfile"
 else
-    mv $tmpfile /etc/systemd/system/crio.service
+    mv "$tmpfile" /etc/systemd/system/crio.service
 fi
 
 mkdir -p /etc/systemd/system/crio.service.d
@@ -60,15 +61,7 @@ else
     fi
 fi
 
-if [ ! "$(cat /etc/crio/.version)" = "$CRIO_VERSION" ]; then
-    DL_URL="https://dl.bintray.com/kontena/pharos-bin/cri-o/cri-o-v${CRIO_VERSION}-linux-amd64.tar.gz"
-    curl -sSL $DL_URL -o /tmp/cri-o.tar.gz
-    curl -sSL "${DL_URL}.asc" -o /tmp/cri-o.tar.gz.asc
-    gpg --verify /tmp/cri-o.tar.gz.asc /tmp/cri-o.tar.gz
-    tar -C / -xzf /tmp/cri-o.tar.gz
-    rm /tmp/cri-o.tar.gz /tmp/cri-o.tar.gz.asc
-    echo $CRIO_VERSION > /etc/crio/.version 
-fi
+yum_install_with_lock "cri-o" "$CRIO_VERSION"
 
 rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
 
@@ -78,12 +71,13 @@ lineinfile "^cgroup_manager =" "cgroup_manager = \"systemd\"" "/etc/crio/crio.co
 lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
 lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
 lineinfile "^registries =" "registries = [ \"docker.io\"" "/etc/crio/crio.conf"
+lineinfile "^insecure_registries =" "insecure_registries = [ $INSECURE_REGISTRIES" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
     systemctl daemon-reload
     systemctl enable crio
     systemctl start crio
-else 
+else
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
         reload_daemon
     fi

@@ -53,7 +53,7 @@ module Pharos
       # True if the file exists. Assumes a bash-like shell.
       # @return [Boolean]
       def exist?
-        @client.exec!("sudo sh -c 'test -e #{escaped_path} && echo true || echo false'").strip == "true"
+        @client.exec!("sudo env -i bash --norc --noprofile -c -- 'test -e #{escaped_path} && echo true || echo false'").strip == "true"
       end
 
       # Performs the block if the remote file exists, otherwise returns false
@@ -91,12 +91,16 @@ module Pharos
         target
       end
 
+      # Returns an array of lines in the remote file
+      # @return [Array<String>]
+      def lines
+        read.lines
+      end
+
       # Yields each line in the remote file
       # @yield [String]
-      def each_line
-        read.split(/[\r\n]/).each do |row|
-          yield row
-        end
+      def each_line(&block)
+        read.each_line(&block)
       end
 
       private

@@ -13,8 +13,8 @@ if [[ $DRONE_TAG =~ .+-.+ ]]; then
     /usr/local/bin/github-release release \
         --user kontena \
         --repo pharos-cluster \
-        --tag $DRONE_TAG \
-        --name $DRONE_TAG \
+        --tag "$DRONE_TAG" \
+        --name "$DRONE_TAG" \
         --description "Pre-release, only for testing" \
         --draft \
         --pre-release
@@ -23,6 +23,6 @@ else
         --user kontena \
         --repo pharos-cluster \
         --draft \
-        --tag $DRONE_TAG \
-        --name $DRONE_TAG
+        --tag "$DRONE_TAG" \
+        --name "$DRONE_TAG"
 fi

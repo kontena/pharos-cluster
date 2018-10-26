@@ -1,17 +1,34 @@
 # frozen_string_literal: true
 
+require 'pathname'
+
 module Pharos
   class ClusterManager
     include Pharos::Logging
 
-    attr_reader :config
+    attr_reader :config, :context
+
+    def self.phase_dirs
+      @phase_dirs ||= [
+        File.join(__dir__, 'phases')
+      ]
+    end
+
+    def self.addon_dirs
+      @addon_dirs ||= [
+        File.join(__dir__, '..', '..', 'addons'),
+        File.join(Dir.pwd, 'pharos-addons')
+      ]
+    end
 
     # @param config [Pharos::Config]
     # @param pastel [Pastel]
     def initialize(config, pastel: Pastel.new)
       @config = config
       @pastel = pastel
-      @context = {}
+      @context = {
+        'post_install_messages' => {}
+      }
     end
 
     # @return [Pharos::SSH::Manager]
@@ -35,23 +52,28 @@ module Pharos
 
     # load phases/addons
     def load
-      Pharos::PhaseManager.load_phases(__dir__ + '/phases/')
-      addon_dirs = [
-        File.join(__dir__, '..', '..', 'addons'),
-        File.join(Dir.pwd, 'addons')
-      ] + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+      Pharos::PhaseManager.load_phases(*self.class.phase_dirs)
+      addon_dirs = self.class.addon_dirs + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
+
+      addon_dirs.keep_if { |dir| File.exist?(dir) }
+      addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
+
       Pharos::AddonManager.load_addons(*addon_dirs)
       Pharos::HostConfigManager.load_configs(@config)
     end
 
     def gather_facts
       apply_phase(Phases::GatherFacts, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureClient, [sorted_master_hosts.first], ssh: true, master: sorted_master_hosts.first, parallel: false, optional: true)
     end
 
     def validate
+      apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
+      master = sorted_master_hosts.first
+      apply_phase(Phases::ValidateVersion, [master], master: master, ssh: true, parallel: false)
     end
 
     # @return [Array<Pharos::Configuration::Host>]
@@ -95,21 +117,35 @@ module Pharos
 
       # master is now configured and can be used
       apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
+      # configure essential services
+      apply_phase(Phases::ConfigurePSP, [master_hosts.first], master: master_hosts.first)
       apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
-
       apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
+
       apply_phase(Phases::ConfigureBootstrap, [master_hosts.first], ssh: true) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
-
       apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+
+      # configure services that need workers
+      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
+      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
     end
 
     def apply_reset
       apply_phase(Phases::ResetHost, config.hosts, ssh: true, parallel: true)
+    end
+
+    def apply_addons_cluster_config_modifications
+      addon_manager.each do |addon|
+        begin
+          addon.apply_modify_cluster_config
+        rescue Pharos::Error => e
+          error_msg = "#{addon.name} => " + e.message
+          raise Pharos::AddonManager::InvalidConfig, error_msg
+        end
+      end
     end
 
     # @param phase_class [Pharos::Phase]
@@ -127,7 +163,12 @@ module Pharos
         puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
 
         addon.apply
+        post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
       end
+    end
+
+    def post_install_messages
+      @context['post_install_messages']
     end
 
     def save_config

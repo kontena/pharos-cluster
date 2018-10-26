@@ -42,6 +42,7 @@ module Pharos
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           IMAGE_REPO: @config.image_repository
         )
+        logger.info { 'Waiting for etcd to respond ...' }
         exec_script(
           'wait-etcd.sh',
           PEER_IP: @host.peer_address

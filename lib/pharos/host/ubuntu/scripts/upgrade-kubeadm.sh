@@ -2,16 +2,12 @@
 
 set -ex
 
-if [ -x /usr/local/bin/pharos-kubeadm-${VERSION} ]; then
-    exit
-fi
+[ -x "/usr/local/bin/pharos-kubeadm-${VERSION}" ] && exit
 
-BIN_URL="https://dl.bintray.com/kontena/pharos-bin/kube/${VERSION}/kubeadm-${ARCH}.gz"
-
-curl -fsSL https://bintray.com/user/downloadSubjectPublicKey?username=bintray | gpg --import
-curl -fsSL $BIN_URL -o /tmp/kubeadm.gz
-curl -fsSL "${BIN_URL}.asc" -o /tmp/kubeadm.gz.asc
-gpg --verify /tmp/kubeadm.gz.asc /tmp/kubeadm.gz
-gunzip /tmp/kubeadm.gz
-install -o root -g root -m 0755 -T /tmp/kubeadm /usr/local/bin/pharos-kubeadm-${VERSION}
-rm /tmp/kubeadm /tmp/kubeadm.gz.asc
+tmpdir=$(mktemp -d)
+cd "$tmpdir"
+apt-get download "kubeadm=${VERSION}-00"
+dpkg-deb -R kubeadm_"${VERSION}"-00*.deb kubeadm
+install -o root -g root -m 0755 -T ./kubeadm/usr/bin/kubeadm "/usr/local/bin/pharos-kubeadm-${VERSION}"
+rm -rf "$tmpdir"
+"/usr/local/bin/pharos-kubeadm-${VERSION}" version

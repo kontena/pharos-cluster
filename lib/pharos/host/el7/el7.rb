@@ -13,16 +13,11 @@ module Pharos
       end
 
       def install_essentials
-        exec_script(
-          'configure-essentials.sh',
-          HTTP_PROXY: host.http_proxy.to_s,
-          SET_HTTP_PROXY: host.http_proxy.nil? ? 'false' : 'true'
-        )
+        exec_script('configure-essentials.sh')
       end
 
       def configure_repos
         exec_script('repos/pharos_centos7.sh')
-        exec_script('repos/cri-o.sh') if crio?
         exec_script('repos/update.sh')
       end
 
@@ -42,11 +37,23 @@ module Pharos
         ['--cgroup-driver=systemd']
       end
 
+      # @return [String] repository name to use with --enable-repo yum option
+      def docker_repo_name
+        abstract_method!
+      end
+
       def configure_container_runtime
         if docker?
           exec_script(
             'configure-docker.sh',
-            DOCKER_VERSION: DOCKER_VERSION
+            DOCKER_VERSION: DOCKER_VERSION,
+            DOCKER_REPO_NAME: docker_repo_name,
+            INSECURE_REGISTRIES: insecure_registries
+          )
+        elsif custom_docker?
+          exec_script(
+            'configure-docker.sh',
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
           exec_script(
@@ -54,7 +61,8 @@ module Pharos
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository
+            IMAGE_REPO: cluster_config.image_repository,
+            INSECURE_REGISTRIES: insecure_registries
           )
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"

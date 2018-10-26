@@ -13,7 +13,9 @@ module Pharos
       'kube_proxy' => {},
       'kubelet' => {},
       'telemetry' => {},
-      'addon_paths' => []
+      'pod_security_policy' => {},
+      'addon_paths' => [],
+      'container_runtime' => {}
     }.freeze
 
     # @param data [Hash]
@@ -54,8 +56,9 @@ module Pharos
               end
               optional(:user).filled
               optional(:ssh_key_path).filled
-              optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
-              optional(:http_proxy).filled(:str?)
+              optional(:ssh_proxy_command).filled
+              optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
+              optional(:environment).filled
             end
           end
         end
@@ -118,6 +121,20 @@ module Pharos
           optional(:enabled).filled(:bool?)
         end
         optional(:image_repository).filled(:str?)
+        optional(:pod_security_policy).schema do
+          optional(:default_policy).filled(:str?)
+        end
+        optional(:admission_plugins).filled do
+          each do
+            schema do
+              required(:name).filled(:str?)
+              optional(:enabled).filled(:bool?)
+            end
+          end
+        end
+        optional(:container_runtime).schema do
+          optional(:insecure_registries).each(type?: String)
+        end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]

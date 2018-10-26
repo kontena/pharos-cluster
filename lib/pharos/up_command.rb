@@ -2,37 +2,10 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
-      begin
-        Pharos::YamlFile.new(File.realpath(config_file))
-      rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
-      end
-    end
-
-    option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
-      begin
-        File.realpath(config_path)
-      rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
-      end
-    end
-
-    option ['-y', '--yes'], :flag, 'answer automatically yes to prompts'
-
-    # @return [Pharos::YamlFile]
-    def default_config_yaml
-      if !tty? && !stdin_eof?
-        Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
-      else
-        cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
-        signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
-        Pharos::YamlFile.new(cluster_config)
-      end
-    end
+    options :load_config, :yes?
 
     def execute
-      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
+      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})")
 
       Pharos::Kube.init_logging!
 
@@ -52,41 +25,6 @@ module Pharos
       exit 1
     end
 
-    # @return [Pharos::Config]
-    def load_config
-      puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
-
-      config_hash = config_yaml.load(ENV.to_h)
-
-      load_terraform(tf_json, config_hash) if tf_json
-
-      config = Pharos::Config.load(config_hash)
-
-      signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
-
-      config
-    end
-
-    # @param file [String]
-    # @param config [Hash]
-    # @return [Hash]
-    def load_terraform(file, config)
-      puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
-
-      tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
-      config['hosts'] ||= []
-      config['api'] ||= {}
-      config['addons'] ||= {}
-      config['hosts'] += tf_parser.hosts
-      config['api'].merge!(tf_parser.api) if tf_parser.api
-      config['addons'].each do |name, conf|
-        if addon_config = tf_parser.addons[name]
-          conf.merge!(addon_config)
-        end
-      end
-      config
-    end
-
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config)
@@ -96,10 +34,10 @@ module Pharos
       puts pastel.green("==> Sharpening tools ...")
       manager.load
       manager.validate
-
       show_component_versions(config)
       show_addon_versions(manager)
-      prompt_continue(config)
+      manager.apply_addons_cluster_config_modifications
+      prompt_continue(config, manager.context['existing-pharos-version'])
 
       puts pastel.green("==> Starting to craft cluster ...")
       manager.apply_phases
@@ -113,10 +51,15 @@ module Pharos
       defined_opts = ARGV[1..-1].join(" ")
       defined_opts += " " unless defined_opts.empty?
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
+      manager.post_install_messages.each do |component, message|
+        puts "    Post-install message from #{component}:"
+        message.lines.each do |line|
+          puts "      #{line}"
+        end
+      end
       puts "    To configure kubectl for connecting to the cluster, use:"
       puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
-
       manager.disconnect
     end
 
@@ -141,7 +84,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    def prompt_continue(config)
+    # @param existing_version [String]
+    def prompt_continue(config, existing_version)
       lexer = Rouge::Lexers::YAML.new
       puts pastel.green("==> Configuration is generated and shown below:")
       if color?
@@ -149,6 +93,11 @@ module Pharos
         puts ""
       else
         puts config.to_yaml
+      end
+      if existing_version && Pharos.version != existing_version
+        puts
+        puts pastel.yellow("Cluster is currently running Kontea Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
+        puts
       end
       if tty? && !yes?
         exit 1 unless prompt.yes?('Continue?')

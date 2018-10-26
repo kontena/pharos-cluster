@@ -1,0 +1,30 @@
+<% if config&.filesystem&.enabled %>
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: cephfs-provisioner
+  namespace: kontena-storage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: cephfs-provisioner
+    spec:
+      containers:
+      - name: cephfs-provisioner
+        image: "<%= image_repository %>/cephfs-provisioner:v2.1.0-k8s1.11"
+        env:
+        - name: PROVISIONER_NAME
+          value: ceph.com/cephfs
+        command:
+        - "/usr/local/bin/cephfs-provisioner"
+        args:
+        - "-id=cephfs-provisioner-1"
+      serviceAccount: cephfs-provisioner
+      resources:
+        requests:
+          memory: 24Mi
+<% end %>

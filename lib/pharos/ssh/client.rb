@@ -7,6 +7,14 @@ module Pharos
   module SSH
     Error = Class.new(StandardError)
 
+    EXPORT_ENVS = {
+      http_proxy: '$http_proxy',
+      HTTP_PROXY: '$HTTP_PROXY',
+      HTTPS_PROXY: '$HTTPS_PROXY',
+      NO_PROXY: '$NO_PROXY',
+      PATH: '$PATH'
+    }.freeze
+
     class Client
       attr_reader :session
 
@@ -66,9 +74,11 @@ module Pharos
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
         script = File.read(path || name)
-        cmd = %w(sudo)
-        env.each { |key, value| cmd << "#{key}=#{value.shellescape}" }
-        cmd.concat %w(sh -x)
+        cmd = %w(sudo env -i -)
+
+        cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
+        cmd.concat(%w(bash --norc --noprofile -x -s))
+        logger.debug { "exec: #{cmd}" }
         exec!(cmd, stdin: script, source: name, **options)
       end
 

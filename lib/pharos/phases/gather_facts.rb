@@ -5,6 +5,8 @@ require 'ipaddr'
 module Pharos
   module Phases
     class GatherFacts < Pharos::Phase
+      using Pharos::CoreExt::IPAddrLoopback if RUBY_VERSION < '2.5.0'
+
       title "Gather host facts"
 
       def call
@@ -37,7 +39,7 @@ module Pharos
           @ssh.exec!('hostname -f').strip
         else
           @ssh.exec!('hostname -s').strip
-        end
+        end.downcase
       end
 
       # @return [Pharos::Configuration::OsRelease]
@@ -98,39 +100,26 @@ module Pharos
       end
 
       # @return [Array<String>]
-      def read_resolvconf_nameservers
-        nameservers = []
-
-        @ssh.file('/etc/resolv.conf').each_line do |line|
-          if match = line.match(/nameserver (.+)/)
-            nameservers << match[1]
-          end
-        end
-
-        nameservers
+      def resolvconf_nameservers
+        @resolvconf_nameservers ||= @ssh.file('/etc/resolv.conf').lines.map { |l| l[/^nameserver ([\h:.]+)/, 1] }.compact
       end
 
-      LOCALNET = IPAddr.new('127.0.0.0/8')
-
-      # Host /etc/resolv.conf is configured to use a nameserver at localhost in the host network namespace
       # @return [Boolean]
-      def check_resolvconf_nameserver_localhost
-        resolvers = read_resolvconf_nameservers.map{ |ip| IPAddr.new(ip) }
-        resolvers.any? { |ip| LOCALNET.include?(ip) }
+      def resolvconf_nameserver_localhost?
+        resolvconf_nameservers.any? { |ip| IPAddr.new(ip).loopback? }
       end
 
       # Host /etc/resolv.conf is configured to use the systemd-resolved stub resolver at 127.0.0.53
       # @return [Boolean]
-      def check_resolvconf_systemd_resolved_stub
-        symlink = @ssh.file('/etc/resolv.conf').readlink
-        !!symlink && symlink.end_with?('/run/systemd/resolve/stub-resolv.conf')
+      def resolvconf_systemd_resolved_stub?
+        !!@ssh.file('/etc/resolv.conf').readlink && resolvconf_nameservers.include?('127.0.0.53')
       end
 
       # @return [Pharos::Configuration::Host::ResolvConf]
       def read_resolvconf
         Pharos::Configuration::Host::ResolvConf.new(
-          nameserver_localhost: check_resolvconf_nameserver_localhost,
-          systemd_resolved_stub: check_resolvconf_systemd_resolved_stub
+          nameserver_localhost: resolvconf_nameserver_localhost?,
+          systemd_resolved_stub: resolvconf_systemd_resolved_stub?
         )
       end
 
