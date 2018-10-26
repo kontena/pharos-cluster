@@ -12,6 +12,7 @@ PATH
       fugit (~> 1.1.2)
       k8s-client (~> 0.4.2)
       net-ssh (= 5.0.2)
+      net-ssh-gateway (= 2.0.0)
       pastel
       rouge (~> 3.1)
       tty-prompt (~> 0.16)
@@ -78,6 +79,8 @@ GEM
       recursive-open-struct (~> 1.1.0)
     necromancer (0.4.0)
     net-ssh (5.0.2)
+    net-ssh-gateway (2.0.0)
+      net-ssh (>= 4.0.0)
     parallel (1.12.1)
     parser (2.5.1.2)
       ast (~> 2.4.0)
