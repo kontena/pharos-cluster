@@ -110,6 +110,10 @@ module Pharos
         Pharos::SSH::RemoteFile.new(self, path)
       end
 
+      def interactive_session
+        Pharos::SSH::InteractiveSession.new(self).run
+      end
+
       def disconnect
         @session.close if @session && !@session.closed?
       end
