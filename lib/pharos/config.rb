@@ -31,10 +31,11 @@ module Pharos
       config = new(schema_data)
       config.data = raw_data.freeze
 
-      # inject api_endpoint to each host object
-      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
-      # inject bastion to each host object
-      config.hosts.each { |h| h.configure_bastion(config.bastion) } if config.bastion
+      # inject api_endpoint & bastion to each host object
+      config.hosts.each { |h|
+        h.api_endpoint = config.api&.endpoint
+        h.configure_bastion(config.bastion) if configure_bastion
+      }
 
       config
     end
