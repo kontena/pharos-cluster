@@ -34,7 +34,7 @@ module Pharos
       # inject api_endpoint & bastion to each host object
       config.hosts.each { |h|
         h.api_endpoint = config.api&.endpoint
-        h.configure_bastion(config.bastion) if configure_bastion
+        h.configure_bastion(config.bastion) if config.bastion
       }
 
       config
