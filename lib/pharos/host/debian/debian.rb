@@ -10,7 +10,6 @@ module Pharos
       end
 
       def configure_repos
-        exec_script('repos/cri-o.sh')
         exec_script('repos/kube.sh')
         exec_script('repos/update.sh')
       end

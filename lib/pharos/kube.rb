@@ -41,8 +41,8 @@ module Pharos
     # @param host [String]
     # @param config [Hash]
     # @return [K8s::Client]
-    def self.client(host, config)
-      K8s::Client.config(K8s::Config.new(config), server: "https://#{host}:6443")
+    def self.client(host, config, port = 6443)
+      K8s::Client.config(K8s::Config.new(config), server: "https://#{host}:#{port}")
     end
 
     # @param name [String]

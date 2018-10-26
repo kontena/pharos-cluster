@@ -16,7 +16,7 @@ module Pharos
         exit 0
       end
 
-      exit run_single(hosts.first) if hosts.size == 1
+      exit run_single(filtered_hosts.first) if filtered_hosts.size == 1
       exit run_parallel
     end
 
