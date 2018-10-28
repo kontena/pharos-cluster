@@ -37,7 +37,7 @@ spec:
               memory: "512Mi"
               cpu: "200m"
         - name: terminal-gateway
-          image: <%= image_repository %>lens-terminal-gateway:<%= version %>
+          image: <%= image_repository %>/lens-terminal-gateway:<%= version %>
           imagePullPolicy: Always
           env:
           - name: SHELL_DOCKER_IMAGE
