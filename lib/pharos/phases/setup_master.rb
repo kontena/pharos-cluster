@@ -11,7 +11,8 @@ module Pharos
 
       def call
         push_external_etcd_certs if @config.etcd&.certificate
-        push_audit_config if @config.audit&.server
+        push_audit_policy if @config.audit
+        push_audit_config if @config.audit&.webhook&.server
         push_authentication_token_webhook_config if @config.authentication&.token_webhook
         push_cloud_config if @config.cloud&.config
       end
@@ -26,13 +27,17 @@ module Pharos
         @ssh.file('/etc/pharos/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
       end
 
+      def push_audit_policy
+        @ssh.exec!("sudo mkdir -p /etc/pharos/audit")
+        @ssh.file("/etc/pharos/audit/policy.yml").write(parse_resource_file('audit/policy.yml'))
+      end
+
       def push_audit_config
         logger.info { "Pushing audit configs to master ..." }
         @ssh.exec!("sudo mkdir -p /etc/pharos/audit")
         @ssh.file("/etc/pharos/audit/webhook.yml").write(
           parse_resource_file('audit/webhook-config.yml.erb', server: @config.audit.server)
         )
-        @ssh.file("/etc/pharos/audit/policy.yml").write(parse_resource_file('audit/policy.yml'))
       end
 
       # @param webhook_config [Hash]

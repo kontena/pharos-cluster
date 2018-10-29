@@ -86,7 +86,8 @@ module Pharos
         configure_token_webhook(config) if @config.authentication&.token_webhook
 
         # Configure audit related things if needed
-        configure_audit_webhook(config) if @config.audit&.server
+        configure_audit_webhook(config) if @config.audit&.webhook&.server
+        configure_audit_file(config) if @config.audit&.file
 
         configure_kube_proxy(config) if @config.kube_proxy
 
@@ -159,10 +160,10 @@ module Pharos
           "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
           "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
         )
-        config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
+        config['apiServerExtraVolumes'] += volume_mounts_for_audit_config
       end
 
-      def volume_mounts_for_audit_webhook
+      def volume_mounts_for_audit_config
         volume_mounts = []
         volume_mount = {
           'name' => 'k8s-audit-webhook',
@@ -191,6 +192,24 @@ module Pharos
         }
         volume_mounts << volume_mount
         volume_mounts
+      end
+
+      def configure_audit_file(config)
+        config['apiServerExtraArgs'].merge!(
+          "audit-log-path" => @config.audit.file.path,
+          "audit-log-maxage" => @config.audit.file.max_age.to_s,
+          "audit-log-maxbackup" => @config.audit.file.max_backups.to_s,
+          "audit-log-maxsize" => @config.audit.file.max_size.to_s,
+          "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
+        )
+        base_dir = File.dirname(@config.audit.file.path)
+        config['apiServerExtraVolumes'] += [{
+          'name' => 'k8s-audit-file',
+          'hostPath' => base_dir,
+          'mountPath' => base_dir,
+          'writable' => true
+        }]
+        config['apiServerExtraVolumes'] += volume_mounts_for_audit_config
       end
 
       # @param config [Hash]

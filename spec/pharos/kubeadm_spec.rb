@@ -19,13 +19,15 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
   describe '#generate_config' do
 
-    context 'with auth configuration' do
+    context 'with webhook audit configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
         network: {},
         addons: {},
         audit: {
-          server: 'foobar'
+          webhook: {
+            server: 'foobar'
+          }
         }
       ) }
 
@@ -36,6 +38,36 @@ describe Pharos::Kubeadm::ConfigGenerator do
           'name' => 'k8s-audit-webhook',
           'hostPath' => '/etc/pharos/audit',
           'mountPath' => '/etc/pharos/audit'
+        })
+      end
+    end
+
+    context 'with file audit configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        audit: {
+          file: {
+            path: '/var/log/kube_audit/audit.json',
+            max_age: 30,
+            max_backups: 10,
+            max_size: 200
+          }
+        }
+      ) }
+
+      it 'comes with proper audit config' do
+        config = subject.generate_config
+        expect(config.dig('apiServerExtraArgs', 'audit-log-path')).to eq('/var/log/kube_audit/audit.json')
+        expect(config.dig('apiServerExtraArgs', 'audit-log-maxage')).to eq('30')
+        expect(config.dig('apiServerExtraArgs', 'audit-log-maxbackup')).to eq('10')
+        expect(config.dig('apiServerExtraArgs', 'audit-log-maxsize')).to eq('200')
+        expect(config.dig('apiServerExtraVolumes')).to include({
+          'name' => 'k8s-audit-file',
+          'hostPath' => '/var/log/kube_audit',
+          'mountPath' => '/var/log/kube_audit',
+          'writable' => true
         })
       end
     end
