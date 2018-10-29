@@ -15,7 +15,15 @@ module Pharos
       'telemetry' => {},
       'pod_security_policy' => {},
       'addon_paths' => [],
-      'container_runtime' => {}
+      'container_runtime' => {},
+      'audit' => {
+        'file' => {
+          'path' => '/var/log/kubernetes/audit.json',
+          'max_size' => 100, # Max 100M files
+          'max_age' => 30, # Max 30 days old audits
+          'max_backups' => 20 # Max 20 rolled files, each 100M
+        }
+      }
     }.freeze
 
     # @param data [Hash]
