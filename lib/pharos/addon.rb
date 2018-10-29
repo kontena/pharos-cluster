@@ -62,6 +62,14 @@ module Pharos
         @addon_location || __dir__
       end
 
+      def priority(priority = nil)
+        if priority
+          @priority = priority
+        else
+          @priority.to_i
+        end
+      end
+
       def version(version = nil)
         if version
           @version = version
