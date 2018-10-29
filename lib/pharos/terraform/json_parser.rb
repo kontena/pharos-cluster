@@ -46,6 +46,7 @@ module Pharos
           hashes = {
             labels: bundle.delete('label')&.first,
             taints: bundle.delete('taint')&.first,
+            bastion: bundle.delete('bastion')&.first,
             environment: bundle.delete('environment')&.first
           }.compact
 
