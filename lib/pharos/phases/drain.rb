@@ -6,7 +6,7 @@ module Pharos
       title "Drain node"
 
       def call
-        master_ssh.exec!("kubectl drain --force --timeout=5m --ignore-daemonsets --delete-local-data #{@host.hostname}")
+        master_ssh.exec!("kubectl drain --grace-period=120 --force --timeout=5m --ignore-daemonsets --delete-local-data #{@host.hostname}")
       end
     end
   end
