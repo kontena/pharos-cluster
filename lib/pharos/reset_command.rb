@@ -2,30 +2,18 @@
 
 module Pharos
   class ResetCommand < Pharos::Command
-    parameter '[HOST] ...', "list of host addresses to reset"
     option '--[no-]drain', :flag, "enable or disable node drain before reset", default: true
     option '--[no-]delete', :flag, "enable or disable node delete before reset", default: true
 
     options :filtered_hosts, :yes?
 
     def execute
-      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
 
-      hosts =
-        if host_list.empty?
-          filtered_hosts
-        else
-          load_config.hosts.select { |host| host_list.include?(host.address) }
-        end
-
-      if hosts.empty?
-        warn "no hosts found"
-        exit 1
-      end
+      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})")
+      puts pastel.green("==> Reading instructions ...")
 
       Dir.chdir(config_yaml.dirname) do
-        return reset_all if hosts.size == load_config.hosts.size
-        reset_hosts(hosts)
+        filtered_hosts.size == load_config.hosts.size ? reset_all : reset_hosts
       end
       cluster_manager.disconnect
     rescue Pharos::ConfigError => exc
@@ -37,19 +25,19 @@ module Pharos
       exit 1
     end
 
-    def reset_hosts(hosts)
-      remaining_hosts = load_config.hosts - hosts
+    def reset_hosts
+      remaining_hosts = load_config.hosts - filtered_hosts
       if remaining_hosts.none?(&:master?)
         signal_error 'There would be no master hosts left in the cluster after the reset. Reset the whole cluster by running this command without host filters.'
-      elsif hosts.size > 1
-        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset #{hosts.size} hosts #{hosts.map(&:address).join(',')} (data may be lost)?"))
+      elsif filtered_hosts.size > 1
+        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset #{filtered_hosts.size} hosts #{filtered_hosts.map(&:address).join(',')} (data may be lost)?"))
       else
-        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset the host #{hosts.first.address} (data may be lost)?"))
+        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset the host #{filtered_hosts.first.address} (data may be lost)?"))
       end
 
       start_time = Time.now
       puts pastel.green("==> Starting to reset hosts ...")
-      cluster_manager.apply_reset_hosts(hosts, drain: drain?, delete: delete?)
+      cluster_manager.apply_reset_hosts(filtered_hosts, drain: drain?, delete: delete?)
       reset_time = Time.now - start_time
       puts pastel.green("==> Hosts have been reset! (took #{humanize_duration(reset_time.to_i)})")
     end

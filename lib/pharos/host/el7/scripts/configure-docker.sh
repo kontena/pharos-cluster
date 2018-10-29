@@ -33,7 +33,8 @@ cat <<EOF >/etc/docker/daemon.json
 {
     "live-restore": true,
     "iptables": false,
-    "ip-masq": false
+    "ip-masq": false,
+    "insecure-registries": $INSECURE_REGISTRIES
 }
 EOF
 

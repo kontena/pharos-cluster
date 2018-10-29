@@ -45,7 +45,7 @@ cat <<EOF >/etc/docker/daemon.json
 EOF
 
 debconf-set-selections <<EOF
-docker.io docker.io/restart boolean true
+docker-ce docker-ce/restart boolean true
 EOF
 
 export DEBIAN_FRONTEND=noninteractive

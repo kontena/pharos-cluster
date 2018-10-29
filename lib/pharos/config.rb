@@ -13,6 +13,7 @@ require_relative 'configuration/kubelet'
 require_relative 'configuration/pod_security_policy'
 require_relative 'configuration/telemetry'
 require_relative 'configuration/admission_plugin'
+require_relative 'configuration/container_runtime'
 
 module Pharos
   class Config < Pharos::Configuration::Struct
@@ -29,7 +30,7 @@ module Pharos
       config = new(schema_data)
       config.data = raw_data.freeze
 
-      # inject api_endpoint to each host object
+      # inject api_endpoint & bastion to each host object
       config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
 
       config
@@ -50,6 +51,7 @@ module Pharos
     attribute :addon_paths, Pharos::Types::Array.default([])
     attribute :addons, Pharos::Types::Hash.default({})
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
+    attribute :container_runtime, Pharos::Configuration::ContainerRuntime
 
     attr_accessor :data
 
@@ -85,6 +87,23 @@ module Pharos
       else
         etcd_hosts
       end
+    end
+
+    # @param kubeconfig [Hash]
+    # @return [K8s::Client]
+    def kube_client(kubeconfig)
+      return @kube_client if @kube_client
+
+      if master_host.bastion.nil?
+        api_address = master_host.api_address
+        api_port = 6443
+      else
+        ssh = Pharos::SSH::Manager.new.client_for(master_host.bastion.host)
+        api_address = 'localhost'
+        api_port = ssh.gateway(master_host.api_address, 6443)
+      end
+
+      @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)
     end
 
     # @param key [Symbol]

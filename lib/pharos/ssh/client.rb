@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'net/ssh'
+require 'net/ssh/gateway'
 require 'shellwords'
 
 module Pharos
@@ -31,9 +32,26 @@ module Pharos
         end
       end
 
+      def bastion
+        @bastion ||= @opts.delete(:bastion)
+      end
+
       def connect
         logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
-        @session = Net::SSH.start(@host, @user, @opts)
+        if bastion
+          gw_opts = {}
+          gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
+          gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
+          @session = gateway.ssh(@host, @user, @opts)
+        else
+          @session = Net::SSH.start(@host, @user, @opts)
+        end
+      end
+
+      # @return [Integer] local port number
+      def gateway(host, port)
+        gateway = Net::SSH::Gateway.new(@host, @user, @opts)
+        gateway.open(host, port)
       end
 
       # @example
@@ -78,6 +96,7 @@ module Pharos
 
         cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
         cmd.concat(%w(bash --norc --noprofile -x -s))
+        logger.debug { "exec: #{cmd}" }
         exec!(cmd, stdin: script, source: name, **options)
       end
 
@@ -89,6 +108,10 @@ module Pharos
 
       def file(path)
         Pharos::SSH::RemoteFile.new(self, path)
+      end
+
+      def interactive_session
+        Pharos::SSH::InteractiveSession.new(self).run
       end
 
       def disconnect

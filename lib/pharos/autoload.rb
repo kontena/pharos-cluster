@@ -51,6 +51,7 @@ module Pharos
     autoload :RemoteCommand, 'pharos/ssh/remote_command'
     autoload :RemoteFile, 'pharos/ssh/remote_file'
     autoload :Tempfile, 'pharos/ssh/tempfile'
+    autoload :InteractiveSession, 'pharos/ssh/interactive_session'
   end
 
   module Terraform

@@ -84,10 +84,9 @@ module Pharos
 
     # @return [K8s::Client]
     def kube_client
-      fail "Phase #{self.class.name} does not have kube @master" unless @master
       fail "Phase #{self.class.name} does not have kubeconfig cluster_context" unless cluster_context['kubeconfig']
 
-      @kube_client ||= Pharos::Kube.client(@master.api_address, cluster_context['kubeconfig'])
+      @config.kube_client(cluster_context['kubeconfig'])
     end
 
     # @param name [String]

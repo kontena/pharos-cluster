@@ -5,7 +5,7 @@ module Pharos
     options :load_config, :yes?
 
     def execute
-      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
+      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})")
 
       Pharos::Kube.init_logging!
 
@@ -37,7 +37,7 @@ module Pharos
       show_component_versions(config)
       show_addon_versions(manager)
       manager.apply_addons_cluster_config_modifications
-      prompt_continue(config)
+      prompt_continue(config, manager.context['existing-pharos-version'])
 
       puts pastel.green("==> Starting to craft cluster ...")
       manager.apply_phases
@@ -84,7 +84,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    def prompt_continue(config)
+    # @param existing_version [String]
+    def prompt_continue(config, existing_version)
       lexer = Rouge::Lexers::YAML.new
       puts pastel.green("==> Configuration is generated and shown below:")
       if color?
@@ -93,6 +94,13 @@ module Pharos
       else
         puts config.to_yaml
       end
+
+      if existing_version && Pharos.version != existing_version
+        puts
+        puts pastel.yellow("Cluster is currently running Kontea Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
+        puts
+      end
+
       confirm_yes!('Continue?')
     end
   end

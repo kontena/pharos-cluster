@@ -15,6 +15,7 @@ describe Pharos::Host::UbuntuXenial do
     context 'docker' do
       it 'configures docker' do
         allow(subject).to receive(:docker?).and_return(true)
+        allow(subject).to receive(:insecure_registries)
         expect(subject).to receive(:exec_script).with('configure-docker.sh', anything)
         subject.configure_container_runtime
       end
@@ -23,6 +24,7 @@ describe Pharos::Host::UbuntuXenial do
     context 'cri-o' do
       it 'configures cri-o' do
         allow(subject).to receive(:cluster_config).and_return(cluster_config)
+        allow(subject).to receive(:insecure_registries)
         allow(subject).to receive(:docker?).and_return(false)
         allow(subject).to receive(:crio?).and_return(true)
         expect(subject).to receive(:exec_script).with('configure-cri-o.sh', anything)

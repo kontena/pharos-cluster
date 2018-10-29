@@ -79,7 +79,7 @@ module Pharos
     # @return [K8s::Client]
     def kube_client
       if !@kubeclient && @cluster_context['kubeconfig']
-        @kube_client = Pharos::Kube.client(@config.master_host.api_address, @cluster_context['kubeconfig'])
+        @kube_client = @config.kube_client(@cluster_context['kubeconfig'])
       end
       @kube_client
     end

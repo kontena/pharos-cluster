@@ -10,6 +10,7 @@ Pharos.addon 'ingress-nginx' do
     attribute :default_backend, Pharos::Types::Hash.default(
       'image' => 'registry.pharos.sh/kontenapharos/pharos-default-backend:0.0.3'
     )
+    attribute :tolerations, Pharos::Types::Array.default([])
   }
 
   config_schema {
@@ -18,6 +19,7 @@ Pharos.addon 'ingress-nginx' do
     optional(:default_backend).schema {
       optional(:image).filled(:str?)
     }
+    optional(:tolerations).each(:hash?)
   }
 
   install {

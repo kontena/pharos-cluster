@@ -73,6 +73,7 @@ lineinfile "^cgroup_manager =" "cgroup_manager = \"cgroupfs\"" "/etc/crio/crio.c
 lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
 lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
 lineinfile "^registries =" "registries = [ \"docker.io\"" "/etc/crio/crio.conf"
+lineinfile "^insecure_registries =" "insecure_registries = [ $INSECURE_REGISTRIES" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
     systemctl daemon-reload
