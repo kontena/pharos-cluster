@@ -112,7 +112,15 @@ module Pharos
           optional(:config).filled(:str?)
         end
         optional(:audit).schema do
-          required(:server).filled(:str?)
+          optional(:webhook).schema do
+            required(:server).filled(:str?)
+          end
+          optional(:file).schema do
+            required(:path).filled(:str?)
+            required(:max_age).filled(:int?, gt?: 0)
+            required(:max_size).filled(:int?, gt?: 0)
+            required(:max_backups).filled(:int?, gt?: 0)
+          end
         end
         optional(:kube_proxy).schema do
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
