@@ -50,7 +50,10 @@ module Pharos
     end
 
     def configs
-      @config.addons
+      @configs ||= @config.addons.sort_by { |name, _config|
+        addon_class = addon_classes.find { |a| a.addon_name == name }
+        addon_class.priority
+      }.to_h
     end
 
     def prev_configs

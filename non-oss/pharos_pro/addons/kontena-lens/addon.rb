@@ -3,6 +3,7 @@
 Pharos.addon 'kontena-lens' do
   version '1.1.0'
   license 'Kontena License'
+  priority 10
 
   config_schema {
     optional(:name).filled(:str?)
@@ -11,6 +12,9 @@ Pharos.addon 'kontena-lens' do
       optional(:email).filled(:str?)
     end
     optional(:user_management).schema do
+      optional(:enabled).filled(:bool?)
+    end
+    optional(:persistence).schema do
       optional(:enabled).filled(:bool?)
     end
   }

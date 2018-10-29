@@ -35,4 +35,9 @@ spec:
             cpu: "50m"
       volumes:
       - name: data
+        <% if config.persistence&.enabled %>
+        persistentVolumeClaim:
+          claimName: redis-pvc
+        <% else %>
         emptyDir: {}
+        <% end %>
