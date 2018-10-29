@@ -8,7 +8,6 @@ module Pharos
     options :filtered_hosts, :yes?
 
     def execute
-
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})")
       puts pastel.green("==> Reading instructions ...")
 
@@ -21,6 +20,7 @@ module Pharos
       exit 11
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
+
       warn "#{ex.class.name} : #{ex.message}"
       exit 1
     end
