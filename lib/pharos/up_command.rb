@@ -94,27 +94,14 @@ module Pharos
       else
         puts config.to_yaml
       end
+
       if existing_version && Pharos.version != existing_version
         puts
         puts pastel.yellow("Cluster is currently running Kontea Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
         puts
       end
-      if tty? && !yes?
-        exit 1 unless prompt.yes?('Continue?')
-      end
-    rescue TTY::Reader::InputInterrupt
-      exit 1
-    end
 
-    # @param secs [Integer]
-    # @return [String]
-    def humanize_duration(secs)
-      [[60, :second], [60, :minute], [24, :hour], [1000, :day]].map{ |count, name|
-        next unless secs.positive?
-        secs, n = secs.divmod(count).map(&:to_i)
-        next if n.zero?
-        "#{n} #{name}#{'s' unless n == 1}"
-      }.compact.reverse.join(' ')
+      confirm_yes!('Continue?')
     end
   end
 end
