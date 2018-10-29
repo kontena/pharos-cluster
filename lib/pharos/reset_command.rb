@@ -9,7 +9,6 @@ module Pharos
 
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})")
-      puts pastel.green("==> Reading instructions ...")
 
       Dir.chdir(config_yaml.dirname) do
         filtered_hosts.size == load_config.hosts.size ? reset_all : reset_hosts
