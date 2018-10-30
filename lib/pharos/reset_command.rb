@@ -29,9 +29,9 @@ module Pharos
       if remaining_hosts.none?(&:master?)
         signal_error 'There would be no master hosts left in the cluster after the reset. Reset the whole cluster by running this command without host filters.'
       elsif filtered_hosts.size > 1
-        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset #{filtered_hosts.size} hosts #{filtered_hosts.map(&:address).join(',')} (data may be lost)?"))
+        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset #{filtered_hosts.size} hosts #{filtered_hosts.map(&:address).join(',')} (data may be lost)?"), false)
       else
-        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset the host #{filtered_hosts.first.address} (data may be lost)?"))
+        confirm_yes!(pastel.bright_yellow("==> Do you really want to reset the host #{filtered_hosts.first.address} (data may be lost)?"), false)
       end
 
       start_time = Time.now
@@ -42,7 +42,7 @@ module Pharos
     end
 
     def reset_all
-      confirm_yes!(pastel.bright_yellow("==> Do you really want to reset all hosts in the cluster (reset will wipe configuration & data from all hosts)?"))
+      confirm_yes!(pastel.bright_yellow("==> Do you really want to reset all hosts in the cluster (reset will wipe configuration & data from all hosts)?"), false)
 
       start_time = Time.now
 

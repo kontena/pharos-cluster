@@ -101,7 +101,7 @@ module Pharos
         puts
       end
 
-      confirm_yes!('Continue?')
+      confirm_yes!('Continue?', true)
     end
   end
 end
