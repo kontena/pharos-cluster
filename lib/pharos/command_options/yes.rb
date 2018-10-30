@@ -9,7 +9,7 @@ module Pharos
       end
 
       module InstanceMethods
-        def confirm_yes!(message, default = true)
+        def confirm_yes!(message, default: true)
           return if yes?
 
           if !$stdin.tty?
