@@ -1,3 +1,5 @@
+global:
+  role: worker
 hosts:
   - address: 1.1.1.1
     private_interface: eth1
@@ -7,13 +9,11 @@ hosts:
     container_runtime: cri-o
   - address: 2.2.2.2
     private_interface: eth1
-    role: worker
     container_runtime: cri-o
     labels:
       disk: hdd
   - address: 3.3.3.3
     private_address: 10.10.1.3
-    role: worker
     container_runtime: cri-o
     labels:
       disk: ssd

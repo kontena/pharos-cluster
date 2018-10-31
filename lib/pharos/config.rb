@@ -27,6 +27,14 @@ module Pharos
     # @raise [Pharos::ConfigError]
     # @return [Pharos::Config]
     def self.load(raw_data)
+      raw_data.deep_stringify_keys!
+      if raw_data['global'] && raw_data['hosts']
+        raw_data['hosts'] = raw_data['hosts'].map do |host|
+          raw_data['global'].merge(host)
+        end
+        raw_data.delete('global')
+      end
+
       schema_data = Pharos::ConfigSchema.load(raw_data)
 
       config = new(schema_data)

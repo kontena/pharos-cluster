@@ -31,6 +31,31 @@ describe Pharos::Config do
       end
     end
 
+    context 'with host globals' do
+      let(:data) {
+        {
+          'global' => {
+            'user' => 'root',
+            'role' => 'worker'
+          },
+          'hosts' => [
+            { 'address' => '127.0.0.1', role: 'master' },
+            { 'address' => '127.0.0.2' },
+            { 'address' => '127.0.0.3', 'user' => 'ubuntu' }
+          ]
+        }
+      }
+
+      it 'merges global config to each host' do
+        expect(subject.hosts[0].user).to eq 'root'
+        expect(subject.hosts[1].user).to eq 'root'
+        expect(subject.hosts[2].user).to eq 'ubuntu'
+        expect(subject.hosts[0].role).to eq 'master'
+        expect(subject.hosts[1].role).to eq 'worker'
+        expect(subject.hosts[2].role).to eq 'worker'
+      end
+    end
+
     describe 'taints' do
       let(:data) { {
         'hosts' => [
