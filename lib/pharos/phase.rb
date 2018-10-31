@@ -119,6 +119,7 @@ module Pharos
 
       logger.info { "Running #{state} #{klass_title} hooks .." }
       hooks.each do |hook|
+        logger.info { "Running #{hook} .." }
         case hook
         when Array
           ssh_client.exec!(hook.join(' '))
@@ -131,7 +132,6 @@ module Pharos
             ssh_client.file(to).write(File.open(local_file, 'r'))
           end
         end
-        logger.info { "Running #{hook} .." }
       end
     end
 
