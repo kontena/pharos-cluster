@@ -10,7 +10,9 @@ rules:
       - ''
     resourceNames:
       - pharos-config
+      - pharos-cluster
     resources:
       - configmaps
+      - secrets
     verbs:
       - get
