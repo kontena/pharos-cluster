@@ -17,6 +17,9 @@ Pharos.addon 'kontena-lens' do
     optional(:persistence).schema do
       optional(:enabled).filled(:bool?)
     end
+    optional(:shell).schema do
+      optional(:image).filled(:str?)
+    end
   }
 
   modify_cluster_config {

@@ -41,7 +41,11 @@ spec:
           imagePullPolicy: Always
           env:
           - name: SHELL_DOCKER_IMAGE
+          <% if config&.shell&.image -%>
+            value: <%= config.shell.image %>
+          <% else -%>
             value: <%= image_repository %>/lens-terminal:<%= version %>
+          <% end -%>
           - name: LENS_VERSION
             value: "<%= version %>"
           resources:
