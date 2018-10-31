@@ -16,6 +16,8 @@ module Pharos
         validate_unique_hostnames
         logger.info { "Validating host routes ..." }
         validate_routes
+        logger.info { "Validating localhost dns resolve ..." }
+        validate_localhost_resolve
       end
 
       def check_distro_version
@@ -44,6 +46,11 @@ module Pharos
         return if duplicates.empty?
 
         raise Pharos::InvalidHostError, "Duplicate hostname #{@host.hostname} for hosts #{duplicates.map(&:address).join(',')}"
+      end
+
+      def validate_localhost_resolve
+        localhost_ip = @ssh.exec!("ping -c 1 localhost | grep -Eo -m 1 '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}';")
+        raise Pharos::InvalidHostError, "Localhost ip does not look right: #{localhost_ip}" unless localhost_ip.start_with?('127.')
       end
 
       # @param cidr [String]
