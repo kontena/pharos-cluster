@@ -247,4 +247,30 @@ describe Pharos::Phases::ValidateHost do
       end
     end
   end
+
+  describe '#validate_peer_address' do
+    context 'for master role' do
+      it "fails if peer_address is not found on host" do
+        expect(ssh).to receive(:exec!).with('sudo hostname --all-ip-addresses').and_return("1.1.1.1 2.2.2.2")
+        expect{subject.validate_peer_address}.to raise_error
+      end
+
+      it "does not fail if peer_address is found on host" do
+        expect(ssh).to receive(:exec!).with('sudo hostname --all-ip-addresses').and_return("1.1.1.1 192.0.2.1 2.2.2.2")
+        expect{subject.validate_peer_address}.not_to raise_error
+      end
+    end
+
+    context 'for worker role' do
+      let(:host) { Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: 'worker'
+      ) }
+
+      it 'does not verfiy peer_address' do
+        expect(ssh).not_to receive(:exec!)
+        expect{subject.validate_peer_address}.not_to raise_error
+      end
+    end
+  end
 end
