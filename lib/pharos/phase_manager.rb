@@ -89,7 +89,7 @@ module Pharos
       run(phases, parallel: parallel) do |phase|
         start = Time.now
 
-        phase.call
+        phase.run
 
         logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
       end

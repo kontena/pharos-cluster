@@ -72,6 +72,8 @@ module Pharos
                 optional(:user).filled(:str?)
                 optional(:ssh_key_path).filled(:str?)
               end
+              optional(:before).filled
+              optional(:after).filled
             end
           end
         end

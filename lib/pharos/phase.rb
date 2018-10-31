@@ -106,5 +106,44 @@ module Pharos
     def delete_stack(name)
       Pharos::Kube::Stack.new(name).delete(kube_client)
     end
+
+    def process_hooks(state)
+      return unless host.is_a?(Pharos::Configuration::Host)
+      hooks = host.send(state)&.fetch(klass_title)
+      return if hooks.nil?
+
+      ssh_client = @ssh || Pharos::SSH::Manager.new.client_for(host)
+
+      hooks = [hooks].compact unless hooks.is_a?(Array)
+      return if hooks.empty?
+
+      logger.info { "Running #{state} #{klass_title} hooks .." }
+      hooks.each do |hook|
+        case hook
+        when Array
+          ssh_client.exec!(hook.join(' '))
+        when String
+          ssh_client.exec!(hook)
+        when Hash
+          Dir.glob(hook['copy_from']).each do |local_file|
+            to = File.join(hook['to'], File.basename(local_file))
+            logger.info { "Uploading file #{local_file} to #{host.address}:#{to}" }
+            ssh_client.file(to).write(File.open(local_file, 'r'))
+          end
+        end
+        logger.info { "Running #{hook} .." }
+      end
+    end
+
+    def run
+      process_hooks(:before)
+      call
+    ensure
+      process_hooks(:after)
+    end
+
+    def klass_title
+      @klass_title ||= self.class.name.extend(Pharos::CoreExt::StringCasing).underscore.split('::').last
+    end
   end
 end

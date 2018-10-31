@@ -62,6 +62,8 @@ module Pharos
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :environment, Pharos::Types::Strict::Hash
       attribute :bastion, Pharos::Configuration::Bastion
+      attribute :before, Pharos::Types::Strict::Hash
+      attribute :after, Pharos::Types::Strict::Hash
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
 
