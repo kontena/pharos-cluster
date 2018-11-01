@@ -106,5 +106,18 @@ module Pharos
     def delete_stack(name)
       Pharos::Kube::Stack.new(name).delete(kube_client)
     end
+
+    # @return [Pharos::SSH::Manager]
+    def ssh_manager
+      Pharos::SSH::Manager.instance
+    end
+
+    def mutex
+      self.class.mutex
+    end
+
+    def self.mutex
+      @mutex ||= Mutex.new
+    end
   end
 end
