@@ -12,6 +12,9 @@ yum_install_with_lock() {
     version=$2
     linefromfile "^0:${package}-" $versionlock
     yum install -y "${package}-${version}"
+    if ! rpm -qi "${package}-${version}" > /dev/null ; then
+        yum downgrade -y "${package}-${version}"
+    fi
     lineinfile "^0:${package}-" "0:${package}-${version}-0.*" $versionlock
 }
 EOF
