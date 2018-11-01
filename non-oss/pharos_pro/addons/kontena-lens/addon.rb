@@ -41,6 +41,8 @@ Pharos.addon 'kontena-lens' do
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
     else
+      @retries = 1
+      @max_retries = 3
       create_lens_config(name, host, admin_password)
       message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
     end
@@ -114,8 +116,20 @@ Pharos.addon 'kontena-lens' do
       clusterUrl: "https://#{master_host_ip}:6443",
       adminPassword: admin_password
     }
-    command = "sudo curl -k -L -X POST -d '#{cluster_config.to_json}' -s -H \"Host: #{host}\" -H \"Content-Type: application/json\" http://localhost/api/cluster"
-    ssh.exec(command)
+    command = "sudo curl -iksL -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" http://localhost/api/cluster"
+    result = ssh.exec(command)
+    raise "Could not create Kontena Lens configuration" unless result.output.lines.include?("HTTP/1.1 200 OK\r\n")
+  rescue => e
+    if @retries <= @max_retries
+      @retries += 1
+      timeout = 2 ** @retries
+      puts "    #{e.message}"
+      puts "    retrying after #{timeout} seconds"
+      sleep timeout
+      retry
+    else
+      raise "#{e.message}"
+    end
   end
 
   def update_lens_name(new_name)
