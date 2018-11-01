@@ -27,7 +27,7 @@ module Pharos
           logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
           host_configurer.configure_container_runtime
         else
-          mutex.synchronize {
+          mutex.synchronize do
             if master_healthy?
               logger.info { "Draining node ..." }
               master_ssh.exec!("kubectl drain --force --ignore-daemonsets --delete-local-data #{@host.hostname}")
