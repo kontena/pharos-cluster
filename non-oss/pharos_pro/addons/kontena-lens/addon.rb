@@ -118,18 +118,17 @@ Pharos.addon 'kontena-lens' do
     }
     command = "sudo curl -iksL -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" http://localhost/api/cluster"
     result = ssh.exec(command)
-    raise "Could not create Kontena Lens configuration" unless result.output.lines.include?("HTTP/1.1 200 OK\r\n")
-  rescue => e
+    raise Pharos::InvalidAddonError, "Could not create Kontena Lens configuration" unless result.output.lines.include?("HTTP/1.1 200 OK\r\n")
+  rescue Pharos::InvalidAddonError => e
     if @retries <= @max_retries
       @retries += 1
-      timeout = 2 ** @retries
+      timeout = 2**@retries
       puts "    #{e.message}"
       puts "    retrying after #{timeout} seconds"
       sleep timeout
       retry
-    else
-      raise "#{e.message}"
     end
+    raise Pharos::InvalidAddonError, e.message
   end
 
   def update_lens_name(new_name)
