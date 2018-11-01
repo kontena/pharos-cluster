@@ -69,6 +69,10 @@ module Pharos
         end
       end
 
+      def configure_container_runtime_safe?
+        true
+      end
+
       def ensure_kubelet(args)
         exec_script(
           'ensure-kubelet.sh',

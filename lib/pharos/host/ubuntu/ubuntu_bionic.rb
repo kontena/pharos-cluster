@@ -56,6 +56,10 @@ module Pharos
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
       end
+
+      def configure_container_runtime_safe?
+        false
+      end
     end
   end
 end

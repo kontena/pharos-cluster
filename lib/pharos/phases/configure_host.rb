@@ -23,7 +23,7 @@ module Pharos
         logger.info { "Configuring netfilter ..." }
         host_configurer.configure_netfilter
 
-        if @host.new?
+        if @host.new? || host_configurer.configure_container_runtime_safe?
           logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
           host_configurer.configure_container_runtime
         else

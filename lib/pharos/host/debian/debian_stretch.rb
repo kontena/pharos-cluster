@@ -57,6 +57,10 @@ module Pharos
         end
       end
 
+      def configure_container_runtime_safe?
+        true
+      end
+
       def reset
         exec_script(
           "reset.sh",
