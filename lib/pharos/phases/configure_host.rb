@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'singleton'
+
 module Pharos
   module Phases
     class ConfigureHost < Pharos::Phase
@@ -23,8 +25,31 @@ module Pharos
         logger.info { "Configuring netfilter ..." }
         host_configurer.configure_netfilter
 
-        logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
-        host_configurer.configure_container_runtime
+        if @host.new?
+          logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
+          host_configurer.configure_container_runtime
+        else
+          mutex.synchronize {
+            if master_healthy?
+              logger.info { "Draining node ..." }
+              master_ssh.exec!("kubectl drain --force --ignore-daemonsets --delete-local-data #{@host.hostname}")
+            end
+            logger.info { "Reconfiguring container runtime (#{@host.container_runtime}) packages ..." }
+            host_configurer.configure_container_runtime
+            if master_healthy?
+              logger.info { "Uncordoning node ..." }
+              master_ssh.exec!("kubectl uncordon #{@host.hostname}")
+            end
+          }
+        end
+      end
+
+      def master_ssh
+        ssh_manager.client_for(@master)
+      end
+
+      def master_healthy?
+        @master.master_sort_score == 0
       end
     end
   end

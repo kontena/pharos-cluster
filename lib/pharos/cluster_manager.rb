@@ -33,7 +33,7 @@ module Pharos
 
     # @return [Pharos::SSH::Manager]
     def ssh_manager
-      @ssh_manager ||= Pharos::SSH::Manager.new
+      Pharos::SSH::Manager.instance
     end
 
     # @return [Pharos::AddonManager]
@@ -92,7 +92,7 @@ module Pharos
       master_hosts = sorted_master_hosts
 
       apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, master: master_hosts.first, parallel: true)
       apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints

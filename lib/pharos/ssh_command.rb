@@ -60,7 +60,7 @@ module Pharos
     end
 
     def ssh_manager
-      @ssh_manager ||= Pharos::SSH::Manager.new
+      Pharos::SSH::Manager.instance
     end
   end
 end

@@ -6,6 +6,8 @@ require 'net/ssh/proxy/jump'
 module Pharos
   module SSH
     class Manager
+      include Singleton
+
       def initialize
         @clients = {}
       end
