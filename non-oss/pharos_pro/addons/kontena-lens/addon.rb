@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-lens' do
-  version '1.1.0'
+  version '1.2.0'
   license 'Kontena License'
   priority 10
 
