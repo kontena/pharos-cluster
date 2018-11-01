@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'singleton'
-
 module Pharos
   module Phases
     class ConfigureHost < Pharos::Phase

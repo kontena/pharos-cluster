@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'singleton'
 require 'net/ssh'
 require 'net/ssh/proxy/jump'
 
