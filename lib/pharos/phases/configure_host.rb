@@ -38,7 +38,7 @@ module Pharos
               logger.info { "Uncordoning node ..." }
               master_ssh.exec!("kubectl uncordon #{@host.hostname}")
             end
-          }
+          end
         end
       end
 
