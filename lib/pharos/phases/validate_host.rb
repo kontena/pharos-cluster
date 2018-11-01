@@ -18,6 +18,8 @@ module Pharos
         validate_routes
         logger.info { "Validating localhost dns resolve ..." }
         validate_localhost_resolve
+        logger.info { "Validating peer address ..." }
+        validate_peer_address
       end
 
       def check_distro_version
@@ -73,6 +75,14 @@ module Pharos
           fail "Overlapping host routes for .network.service_cidr=#{@config.network.service_cidr}: #{routes.join '; '}"
         end
         # rubocop:enable Style/GuardClause
+      end
+
+      def validate_peer_address
+        return unless @host.master?
+
+        host_addresses = @ssh.exec!("sudo hostname --all-ip-addresses").split(" ")
+
+        fail "Peer address #{@host.peer_address} does not seem to be a node local address" unless host_addresses.include?(@host.peer_address)
       end
     end
   end
