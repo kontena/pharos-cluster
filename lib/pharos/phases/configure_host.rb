@@ -49,7 +49,7 @@ module Pharos
       end
 
       def master_healthy?
-        @master.master_sort_score == 0
+        @master.master_sort_score.zero?
       end
     end
   end
