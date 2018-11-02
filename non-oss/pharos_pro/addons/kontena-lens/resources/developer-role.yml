@@ -4,7 +4,7 @@ metadata:
   name: developer
 rules:
 - apiGroups: ["", "extensions", "apps"]
-  resources: ["deployments", "replicasets", "pods", "daemonsets", "statefulsets", "configmaps", "secrets", "persistentvolumeclaims", "resourcequotas"]
+  resources: ["events", "deployments", "replicasets", "pods", "daemonsets", "statefulsets", "configmaps", "secrets", "persistentvolumeclaims", "resourcequotas"]
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources: ["pods"]
