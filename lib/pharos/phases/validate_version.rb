@@ -10,7 +10,7 @@ module Pharos
       def call
         return unless kubeconfig?
         if @host.master_sort_score.positive?
-          logger.warn { 'Master seems unhealthy, cannot detect cluster version.' }
+          logger.warn { "Master seems unhealthy, can't detect cluster version." }
           return
         end
 
