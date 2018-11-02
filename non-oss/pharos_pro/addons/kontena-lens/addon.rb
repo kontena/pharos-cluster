@@ -137,6 +137,6 @@ Pharos.addon 'kontena-lens' do
   end
 
   def ssh
-    @ssh ||= Pharos::SSH::Manager.new.client_for(worker_node)
+    @ssh ||= Pharos::SSH::Manager.instance.client_for(worker_node)
   end
 end
