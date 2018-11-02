@@ -48,7 +48,7 @@ module Pharos
       manager.save_config
 
       craft_time = Time.now - start_time
-      defined_opts = ARGV[1..-1].join(" ")
+      defined_opts = ARGV[1..-1].reject { |opt| %w(-y --yes).include?(opt) }.join(" ")
       defined_opts += " " unless defined_opts.empty?
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       manager.post_install_messages.each do |component, message|
