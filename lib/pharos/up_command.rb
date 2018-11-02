@@ -4,6 +4,8 @@ module Pharos
   class UpCommand < Pharos::Command
     options :load_config, :yes?
 
+    option ['-f', '--force'], :flag, "force upgrade"
+
     def execute
       puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})")
 
@@ -31,13 +33,15 @@ module Pharos
       manager = ClusterManager.new(config, pastel: pastel)
       start_time = Time.now
 
+      manager.context['force'] = force?
+
       puts pastel.green("==> Sharpening tools ...")
       manager.load
       manager.validate
       show_component_versions(config)
       show_addon_versions(manager)
       manager.apply_addons_cluster_config_modifications
-      prompt_continue(config, manager.context['existing-pharos-version'])
+      prompt_continue(config, manager.context)
 
       puts pastel.green("==> Starting to craft cluster ...")
       manager.apply_phases
@@ -85,7 +89,8 @@ module Pharos
 
     # @param config [Pharos::Config]
     # @param existing_version [String]
-    def prompt_continue(config, existing_version)
+    def prompt_continue(config, context)
+      existing_version = context['existing-pharos-version']
       lexer = Rouge::Lexers::YAML.new
       puts pastel.green("==> Configuration is generated and shown below:")
       if color?
@@ -98,6 +103,15 @@ module Pharos
       if existing_version && Pharos.version != existing_version
         puts
         puts pastel.yellow("Cluster is currently running Kontea Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
+        if context['unsafe_upgrade']
+          if force?
+            puts
+            puts pastel.red("WARNING:") + " using --force to attempt an unsafe upgrade, this can break your cluster."
+          else
+            signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" +
+              "the command with --force or use the non-oss licensed Kontena Pharos version."
+          end
+        end
         puts
       end
 

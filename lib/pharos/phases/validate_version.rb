@@ -29,9 +29,13 @@ module Pharos
       def validate_version(cluster_version)
         cluster_version = Gem::Version.new(cluster_version.gsub(/\+.*/, ''))
         raise "Downgrade not supported" if cluster_version > pharos_version
-        raise "Upgrade path not supported" unless requirement.satisfied_by?(cluster_version)
 
-        logger.info { "Valid cluster version detected: #{cluster_version}" }
+        if requirement.satisfied_by?(cluster_version)
+          logger.info { "Valid cluster version detected: #{cluster_version}" }
+        else
+          logger.warn { "Invalid cluster version detected: #{cluster_version}" }
+          cluster_context['unsafe_upgrade'] = true
+        end
       end
 
       # @return [String]
