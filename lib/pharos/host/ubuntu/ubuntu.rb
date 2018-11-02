@@ -40,6 +40,22 @@ module Pharos
         )
       end
 
+      def configure_container_runtime_safe?
+        return true if custom_docker?
+
+        if docker?
+          result = ssh.exec("dpkg-query --show docker.io")
+          return true if result.error? # docker not installed
+          return true if result.stdout.split("\t")[1].to_s.start_with?(DOCKER_VERSION)
+        elsif crio?
+          result = ssh.exec("dpkg-query --show cri-o")
+          return true if result.error? # cri-o not installed
+          return true if result.stdout.split("\t")[1].to_s.start_with?(Pharos::CRIO_VERSION)
+        end
+
+        false
+      end
+
       def reset
         exec_script("reset.sh")
       end
