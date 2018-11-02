@@ -6,6 +6,8 @@ metadata:
   labels:
     k8s-app: user-authenticator
 spec:
+  updateStrategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       k8s-app: user-authenticator
@@ -25,7 +27,6 @@ spec:
       containers:
         - image: <%= image_repository %>/lens-authenticator:<%= version %>
           name: user-authenticator
-          imagePullPolicy: Always
           livenessProbe:
             httpGet:
               path: /ping
@@ -44,4 +45,3 @@ spec:
               memory: "256Mi"
               cpu: "50m"
       hostNetwork: true
-      restartPolicy: Always
