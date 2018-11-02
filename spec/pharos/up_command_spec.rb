@@ -39,21 +39,21 @@ describe Pharos::UpCommand do
       allow(subject).to receive(:confirm_yes!).and_return(true)
       expect(subject).to receive(:color?).and_return(false).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
-      subject.prompt_continue(config, Pharos.version)
+      subject.prompt_continue(config, 'existing-pharos-version' => Pharos.version)
     end
 
     it 'shows a warning when the cluster is going to be upgraded' do
       allow(subject).to receive(:yes?).and_return(true)
       expect(subject).to receive(:color?).and_return(false).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
-      expect{subject.prompt_continue(config, '0.0.0')}.to output(/will be upgraded/).to_stdout
+      expect{subject.prompt_continue(config, 'existing-pharos-version' => '0.0.0')}.to output(/will be upgraded/).to_stdout
     end
 
     it 'does not show a warning when the cluster is going to be upgraded' do
       allow(subject).to receive(:yes?).and_return(true)
       expect(subject).to receive(:color?).and_return(false).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
-      expect{subject.prompt_continue(config, Pharos.version)}.not_to output(/will be upgraded/).to_stdout
+      expect{subject.prompt_continue(config, 'existing-pharos-version' => Pharos.version)}.not_to output(/will be upgraded/).to_stdout
     end
   end
 end
