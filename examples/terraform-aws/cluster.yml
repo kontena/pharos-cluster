@@ -12,5 +12,15 @@ addons:
   host-upgrades:
     enabled: true
     interval: "7d"
-  kured:
+  helm:
     enabled: true
+  kontena-lens:
+    enabled: true
+    name: pharos-aws
+    persistence:
+      enabled: true
+  kontena-storage:
+    enabled: true
+    data_dir: /var/lib/kontena-storage
+    storage:
+      use_all_nodes: true
