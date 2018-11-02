@@ -124,6 +124,10 @@ module Pharos
         container_runtime == 'custom_docker'
       end
 
+      def new?
+        !checks['kubelet_configured']
+      end
+
       # @return [Integer]
       def master_sort_score
         if checks['api_healthy']

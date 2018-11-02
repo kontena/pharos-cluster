@@ -62,10 +62,8 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold cri-o
-apt-get install -y cri-o="${CRIO_VERSION}"
+apt-get install -y --allow-downgrades cri-o="${CRIO_VERSION}"
 apt-mark hold cri-o
-
-rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
 
 orig_config=$(cat /etc/crio/crio.conf)
 lineinfile "^stream_address =" "stream_address = \"${CRIO_STREAM_ADDRESS}\"" "/etc/crio/crio.conf"
@@ -80,11 +78,18 @@ if ! systemctl is-active --quiet crio; then
     systemctl enable crio
     systemctl start crio
 else
+    if [ -f /etc/cni/net.d/100-crio-bridge.conf ] || [ -f /etc/cni/net.d/200-loopback.conf ]; then
+        rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
+        reload_daemon
+        exit 0
+    fi
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
         reload_daemon
+        exit 0
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
         reload_daemon
+        exit 0
     fi
 fi

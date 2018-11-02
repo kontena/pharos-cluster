@@ -52,6 +52,10 @@ module Pharos
         abstract_method!
       end
 
+      def configure_container_runtime_safe?
+        abstract_method!
+      end
+
       def reset
         abstract_method!
       end

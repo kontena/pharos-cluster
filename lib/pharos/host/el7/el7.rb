@@ -69,6 +69,20 @@ module Pharos
         end
       end
 
+      def configure_container_runtime_safe?
+        return true if custom_docker?
+
+        if docker?
+          return true if ssh.exec("rpm -qi docker").error? # docker not installed
+          return true if ssh.exec("rpm -qi docker-#{DOCKER_VERSION}").success?
+        elsif crio?
+          return true if ssh.exec("rpm -qi cri-o").error? # cri-o not installed
+          return true if ssh.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
+        end
+
+        false
+      end
+
       def ensure_kubelet(args)
         exec_script(
           'ensure-kubelet.sh',

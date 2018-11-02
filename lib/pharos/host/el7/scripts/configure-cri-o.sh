@@ -63,8 +63,6 @@ fi
 
 yum_install_with_lock "cri-o" "$CRIO_VERSION"
 
-rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
-
 orig_config=$(cat /etc/crio/crio.conf)
 lineinfile "^stream_address =" "stream_address = \"${CRIO_STREAM_ADDRESS}\"" "/etc/crio/crio.conf"
 lineinfile "^cgroup_manager =" "cgroup_manager = \"systemd\"" "/etc/crio/crio.conf"
@@ -78,11 +76,19 @@ if ! systemctl is-active --quiet crio; then
     systemctl enable crio
     systemctl start crio
 else
+    if [ -f /etc/cni/net.d/100-crio-bridge.conf ] || [ -f /etc/cni/net.d/200-loopback.conf ]; then
+        rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
+        reload_daemon
+        exit 0
+    fi
+
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
         reload_daemon
+        exit 0
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
         reload_daemon
+        exit 0
     fi
 fi

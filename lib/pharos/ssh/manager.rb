@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
+require 'singleton'
 require 'net/ssh'
 require 'net/ssh/proxy/jump'
 
 module Pharos
   module SSH
     class Manager
+      include Singleton
+
       def initialize
         @clients = {}
       end
