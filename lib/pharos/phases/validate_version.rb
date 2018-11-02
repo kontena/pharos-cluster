@@ -9,6 +9,10 @@ module Pharos
 
       def call
         return unless kubeconfig?
+        if @host.master_sort_score > 0
+          logger.warn { 'Master seems unhealthy, cannot detect cluster version.' }
+          return
+        end
 
         cluster_context['kubeconfig'] = kubeconfig
         config_map = previous_config_map
