@@ -27,6 +27,7 @@ module Pharos
           logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
           host_configurer.configure_container_runtime
         else
+          logger.info { "Reconfiguration of container runtime (#{@host.container_runtime}) might affect workloads, switching to a safe mode ..." }
           mutex.synchronize do
             if master_healthy?
               logger.info { "Draining node ..." }
@@ -37,6 +38,8 @@ module Pharos
             if master_healthy?
               logger.info { "Uncordoning node ..." }
               master_ssh.exec!("kubectl uncordon #{@host.hostname}")
+              logger.info { "Waiting for node to be ready ..." }
+              sleep 10 until master_ssh.exec("kubectl get nodes -o jsonpath=\"{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}\" | grep 'Ready=True'").success?
             end
           end
         end
