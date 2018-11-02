@@ -23,6 +23,7 @@ module Pharos
       exit 11
     rescue StandardError => ex
       raise unless ENV['DEBUG'].to_s.empty?
+
       warn "#{ex.class.name} : #{ex.message}"
       exit 1
     end
@@ -108,8 +109,8 @@ module Pharos
             puts
             puts pastel.red("WARNING:") + " using --force to attempt an unsafe upgrade, this can break your cluster."
           else
-            signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" +
-              "the command with --force or use the non-oss licensed Kontena Pharos version."
+            signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" \
+                         "the command with --force or use the non-oss licensed Kontena Pharos version."
           end
         end
         puts
