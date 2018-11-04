@@ -36,7 +36,7 @@ module Pharos
       def install
         cfg = kubeadm.generate_config
 
-        logger.info { "Initializing control plane ..." }
+        logger.info { "Initializing control plane (v#{Pharos::KUBE_VERSION}) ..." }
         logger.debug { cfg.to_yaml }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
@@ -59,7 +59,7 @@ module Pharos
 
         cfg = kubeadm.generate_config
 
-        logger.info { "Configuring control plane ..." }
+        logger.info { "Reconfiguring control plane (v#{Pharos::KUBE_VERSION})..." }
         logger.debug { cfg.to_yaml }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
@@ -144,13 +144,13 @@ module Pharos
           logger.debug { "apiserver cert is up to update: #{sans}" }
           return false
         else
-          logger.debug { "apisever cert is missing SANs: #{missing_sans} (extra: #{extra_sans})" }
+          logger.debug { "apiserver cert is missing SANs: #{missing_sans} (extra: #{extra_sans})" }
           return true
         end
       end
 
       def replace_cert
-        logger.info { "Replacing apisever cert" }
+        logger.info { "Replacing apiserver cert" }
 
         @ssh.file(APISERVER_CERT).rm
         @ssh.file(APISERVER_KEY).rm
