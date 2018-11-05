@@ -51,6 +51,7 @@ module Pharos
         end
 
         logger.info { "Control plane upgrade succeeded!" }
+        cluster_context['api_upgraded'] = true
       end
     end
   end
