@@ -93,12 +93,27 @@ module Pharos
         api_endpoint || address
       end
 
+      # @return [String]
       def peer_address
         private_address || private_interface_address || address
       end
 
+      # @param host [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_address_for(host)
+        if region == host.region
+          peer_address
+        else
+          address
+        end
+      end
+
+      def region
+        labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
+      end
+
       def labels
-        return @attributes[:labels] unless worker?
+        return @attributes[:labels] || {} unless worker?
 
         @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
       end

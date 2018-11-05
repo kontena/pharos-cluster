@@ -31,6 +31,8 @@ spec:
             - name: EXTRA_ARGS
               value: "--trusted-subnets <%= trusted_subnets.join(',') %>"
             <% end %>
+            - name: KUBE_PEERS
+              value: "<%= kube_peers.join(' ') %>"
             - name: IPALLOC_RANGE
               value: "<%= ipalloc_range %>"
             - name: WEAVE_PASSWORD

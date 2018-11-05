@@ -51,8 +51,9 @@ module Pharos
 
       # @return [Array<String>]
       def initial_cluster
+        first_host = @config.etcd_hosts.first
         @config.etcd_hosts.map { |h|
-          "#{peer_name(h)}=https://#{h.peer_address}:2380"
+          "#{peer_name(h)}=https://#{h.peer_address_for(first_host)}:2380"
         }
       end
 
