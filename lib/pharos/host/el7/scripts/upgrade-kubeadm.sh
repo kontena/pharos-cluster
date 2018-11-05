@@ -11,7 +11,7 @@ fi
 
 tmpdir=$(mktemp -d)
 mkdir -p "$tmpdir"
-yum install "kubeadm-${VERSION}" -y --downloadonly --downloaddir="$tmpdir"
+yum install "kubeadm-${VERSION}" -y --downloadonly --downloaddir="$tmpdir" --disableplugin=versionlock
 cd "$tmpdir"
 rpm2cpio kubeadm*.rpm | cpio -idmv
 install -o root -g root -m 0755 -T ./usr/bin/kubeadm "/usr/local/bin/pharos-kubeadm-${VERSION}"
