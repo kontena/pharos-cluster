@@ -97,7 +97,7 @@ module Pharos
 
       if existing_version && Pharos.version != existing_version
         puts
-        puts pastel.yellow("Cluster is currently running Kontea Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
+        puts pastel.yellow("Cluster is currently running Kontena Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
         puts
       end
 
