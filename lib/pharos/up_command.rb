@@ -110,7 +110,7 @@ module Pharos
             puts pastel.red("WARNING:") + " using --force to attempt an unsafe upgrade, this can break your cluster."
           else
             signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" \
-                         "the command with --force or use the non-oss licensed Kontena Pharos version."
+                         "the command with --force or use the Kontena Pharos Pro version."
           end
         end
         puts
