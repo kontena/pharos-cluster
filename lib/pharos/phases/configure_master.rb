@@ -27,10 +27,9 @@ module Pharos
           install
           install_kubeconfig
         elsif !cluster_context['api_upgraded']
-          logger.info { "Kubernetes control plane is up to date." }
           reconfigure
         else
-
+          logger.info { "Kubernetes control plane is up to date." }
         end
 
         cluster_context['master-certs'] = pull_kube_certs unless cluster_context['master-certs']
