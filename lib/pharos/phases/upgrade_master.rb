@@ -12,9 +12,19 @@ module Pharos
       def upgrade?
         file = @ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
         return false unless file.exist?
-        return false if file.read.match?(/kube-apiserver-.+:v#{Pharos::KUBE_VERSION}/)
+
+        match = file.read.match(/kube-apiserver-.+:v(.+)/)
+        current_major_minor = parse_major_minor(match[1])
+        new_major_minor = parse_major_minor(Pharos::KUBE_VERSION)
+        return false if current_major_minor == new_major_minor
 
         true
+      end
+
+      # @param version [String]
+      # @return [String]
+      def parse_major_minor(version)
+        version.split('.')[0...2].join('.')
       end
 
       def call
@@ -33,7 +43,7 @@ module Pharos
       def upgrade
         cfg = kubeadm.generate_config
 
-        logger.info { "Upgrading control plane ..." }
+        logger.info { "Upgrading control plane to v#{Pharos::KUBE_VERSION} ..." }
         logger.debug { cfg.to_yaml }
 
         @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
@@ -41,6 +51,7 @@ module Pharos
         end
 
         logger.info { "Control plane upgrade succeeded!" }
+        cluster_context['api_upgraded'] = true
       end
     end
   end
