@@ -29,7 +29,7 @@ Pharos.addon 'kontena-lens' do
   }
 
   install {
-    host = config.host || "lens.#{worker_node_ip}.nip.io"
+    host = config.host || "lens.#{gateway_node_ip}.nip.io"
     name = config.name || 'pharos-cluster'
     apply_resources(
       host: host,
@@ -53,12 +53,12 @@ Pharos.addon 'kontena-lens' do
     @pastel ||= Pastel.new
   end
 
-  def worker_node
-    cluster_config.worker_hosts.first
+  def gateway_node
+    cluster_config.worker_hosts.first || cluster_config.master_hosts.first
   end
 
-  def worker_node_ip
-    worker_node&.address
+  def gateway_node_ip
+    gateway_node&.address
   end
 
   def master_host_ip
@@ -137,6 +137,6 @@ Pharos.addon 'kontena-lens' do
   end
 
   def ssh
-    @ssh ||= Pharos::SSH::Manager.instance.client_for(worker_node)
+    @ssh ||= Pharos::SSH::Manager.instance.client_for(gateway_node)
   end
 end
