@@ -133,7 +133,7 @@ Pharos.addon 'kontena-storage' do
         storage: {
           useAllNodes: config.storage&.use_all_nodes || true,
           useAllDevices: false,
-          deviceFilter: config.storage&.device_filter&.to_h&.deep_transform_keys(&:camelback),
+          deviceFilter: config.storage&.device_filter,
           nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
         },
         placement: (config.placement || {}).to_h.deep_transform_keys(&:camelback),
