@@ -51,8 +51,8 @@ module Pharos
       end
 
       def validate_localhost_resolve
-        localhost_ip = @ssh.exec!("ping -c 1 localhost | grep -Eo -m 1 '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}';")
-        raise Pharos::InvalidHostError, "Localhost ip does not look right: #{localhost_ip}" unless localhost_ip.start_with?('127.')
+        return if @ssh.exec?("ping -c 1 -r -w 1 localhost")
+        raise Pharos::InvalidHostError, "Hostname 'localhost' does not seem to resolve to an address on the local host"
       end
 
       # @param cidr [String]
