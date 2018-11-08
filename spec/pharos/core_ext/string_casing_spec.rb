@@ -1,11 +1,4 @@
 describe Pharos::CoreExt::StringCasing do
-  context 'as a module' do
-    subject { "fooBar".extend(described_class) }
-    it 'underscores a string' do
-      expect(subject.underscore).to eq "foo_bar"
-    end
-  end
-
   context 'as a refinement' do
     using Pharos::CoreExt::StringCasing
 
