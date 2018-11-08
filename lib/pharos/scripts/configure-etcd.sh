@@ -3,7 +3,7 @@
 set -e
 
 etcd_version_matches() {
-  grep -q "etcd-${ARCH}:${ETCD_VERSION}" /etc/kubernetes/manifests/pharos-etcd.yaml
+  grep -q "etcd:${ETCD_VERSION}" /etc/kubernetes/manifests/pharos-etcd.yaml
 }
 
 mkdir -p /etc/kubernetes/manifests
