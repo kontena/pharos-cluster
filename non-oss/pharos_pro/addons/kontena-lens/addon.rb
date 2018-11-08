@@ -36,14 +36,15 @@ Pharos.addon 'kontena-lens' do
       email: config.tls&.email,
       user_management: user_management_enabled?
     )
-    wait_for_dashboard(host)
+    protocol = config.tls&.email ? 'http' : 'https' # with cert-manager we have to use http since tls secret is not in place immediately
+    wait_for_dashboard(protocol, host)
     message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
     else
       @retries = 1
       @max_retries = 3
-      create_lens_config(name, host, admin_password)
+      create_lens_config(name, protocol, host, admin_password)
       message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
     end
     post_install_message(message)
@@ -83,9 +84,9 @@ Pharos.addon 'kontena-lens' do
     )
   end
 
-  def wait_for_dashboard(host)
+  def wait_for_dashboard(protocol, host)
     puts "    Waiting for Kontena Lens to get up and running ..."
-    command = "sudo curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" http://localhost/" # rubocop:disable Style/FormatStringToken
+    command = "sudo curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" #{protocol}://localhost/" # rubocop:disable Style/FormatStringToken
     response = ssh.exec(command)
     i = 1
     until response.output.to_i == 200
@@ -110,13 +111,13 @@ Pharos.addon 'kontena-lens' do
     nil
   end
 
-  def create_lens_config(name, host, admin_password)
+  def create_lens_config(name, protocol, host, admin_password)
     cluster_config = {
       clusterName: name,
       clusterUrl: "https://#{master_host_ip}:6443",
       adminPassword: admin_password
     }
-    command = "sudo curl -iksL -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" http://localhost/api/cluster"
+    command = "sudo curl -iksL -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" #{protocol}://localhost/api/cluster"
     result = ssh.exec(command)
     raise Pharos::InvalidAddonError, "Could not create Kontena Lens configuration" unless result.output.lines.include?("HTTP/1.1 200 OK\r\n")
   rescue Pharos::InvalidAddonError => e
