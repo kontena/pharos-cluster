@@ -10,7 +10,7 @@ module Pharos
         when Array
           value.map { |v| deep_transform_keys(v, &block) }
         when Hash
-          Hash[value.map { |k, v| [yield(k), deep_transform_keys(v, &block)] }]
+          Hash[value.map { |k, v| [yield(k.dup), deep_transform_keys(v, &block)] }]
         else
           value
         end
