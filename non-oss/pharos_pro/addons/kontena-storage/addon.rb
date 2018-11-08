@@ -44,10 +44,10 @@ Pharos.addon 'kontena-storage' do
       end
     end
     optional(:placement).schema do
-      optional(:all).schema
-      optional(:mgr).schema
-      optional(:mon).schema
-      optional(:osd).schema
+      optional(:all).filled(:hash?)
+      optional(:mgr).filled(:hash?)
+      optional(:mon).filled(:hash?)
+      optional(:osd).filled(:hash?)
     end
     optional(:resources).schema do
       optional(:mgr).schema do
@@ -131,7 +131,7 @@ Pharos.addon 'kontena-storage' do
         serviceAccount: 'kontena-storage-cluster',
         dataDirHostPath: config.data_dir,
         storage: {
-          useAllNodes: config.storage&.use_all_nodes || true,
+          useAllNodes: config.storage&.use_all_nodes,
           useAllDevices: false,
           deviceFilter: config.storage&.device_filter,
           nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
