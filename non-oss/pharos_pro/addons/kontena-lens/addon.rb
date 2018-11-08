@@ -36,7 +36,7 @@ Pharos.addon 'kontena-lens' do
       email: config.tls&.email,
       user_management: user_management_enabled?
     )
-    protocol = config.host && config.tls&.email ? 'http' : 'https' # with cert-manager we have to use http since tls secret is not in place immediately
+    protocol = config.tls&.email ? 'http' : 'https' # with cert-manager we have to use http since tls secret is not in place immediately
     wait_for_dashboard(protocol, host)
     message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
     if lens_configured?

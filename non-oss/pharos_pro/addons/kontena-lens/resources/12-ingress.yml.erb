@@ -10,7 +10,7 @@ spec:
   tls:
     - hosts:
       - <%= host %>
-      <% if config.host && email %>
+      <% if email %>
       secretName: kontena-lens-tls
       <% end %>
   rules:
