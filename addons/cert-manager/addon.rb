@@ -58,7 +58,7 @@ Pharos.addon 'cert-manager' do
 
   def migrate_le_acme_issuers
     kube_client.api('certmanager.k8s.io/v1alpha1').resource('issuers', namespace: nil).list.each do |issuer|
-      next unless issuer.spec.acme.server == le_acme_v1_endpoint
+      next unless issuer&.spec&.acme&.server == le_acme_v1_endpoint
 
       rc = kube_client.client_for_resource(issuer, namespace: issuer.metadata.namespace)
       rc.merge_patch(issuer.metadata.name, { spec: patch_spec }, namespace: issuer.metadata.namespace, strategic_merge: false)
@@ -67,7 +67,7 @@ Pharos.addon 'cert-manager' do
 
   def migrate_le_acme_cluster_issuers
     kube_client.api('certmanager.k8s.io/v1alpha1').resource('clusterissuers', namespace: nil).list.each do |issuer|
-      next unless issuer.spec.acme.server == le_acme_v1_endpoint
+      next unless issuer&.spec&.acme&.server == le_acme_v1_endpoint
 
       rc = kube_client.client_for_resource(issuer)
       rc.merge_patch(issuer.metadata.name, { spec: patch_spec }, strategic_merge: false)
