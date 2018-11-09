@@ -12,7 +12,7 @@ module Pharos
       end
     end
 
-    def run(*_)
+    def run(*_args)
       super
     rescue Pharos::ConfigError => exc
       warn "==> #{exc}"
