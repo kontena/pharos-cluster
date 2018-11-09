@@ -15,12 +15,5 @@ module Pharos
     subcommand "reset", "reset cluster", ResetCommand
     subcommand "ssh", "start an ssh session to a server in a pharos cluster", SSHCommand
     subcommand "version", "show version information", VersionCommand
-
-    def self.run
-      super
-    rescue StandardError => exc
-      warn exc.message
-      warn exc.backtrace.join("\n")
-    end
   end
 end
