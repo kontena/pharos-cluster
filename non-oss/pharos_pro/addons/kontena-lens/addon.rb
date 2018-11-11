@@ -9,6 +9,7 @@ Pharos.addon 'kontena-lens' do
     optional(:name).filled(:str?)
     optional(:host).filled(:str?)
     optional(:tls).schema do
+      optional(:enabled).filled(:bool?)
       optional(:email).filled(:str?)
     end
     optional(:user_management).schema do
@@ -29,6 +30,7 @@ Pharos.addon 'kontena-lens' do
   }
 
   install {
+    set_defaults
     host = config.host || "lens.#{gateway_node_ip}.nip.io"
     name = config.name || 'pharos-cluster'
     apply_resources(
@@ -36,7 +38,7 @@ Pharos.addon 'kontena-lens' do
       email: config.tls&.email,
       user_management: user_management_enabled?
     )
-    protocol = config.tls&.email ? 'http' : 'https' # with cert-manager we have to use http since tls secret is not in place immediately
+    protocol = config.tls&.enabled ? config.tls&.email ? 'http' : 'https' : 'http' # with cert-manager we have to use http since tls secret is not in place immediately
     wait_for_dashboard(protocol, host)
     message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
     if lens_configured?
@@ -49,6 +51,18 @@ Pharos.addon 'kontena-lens' do
     end
     post_install_message(message)
   }
+
+  def set_defaults
+    return unless config.tls&.enabled.nil?
+
+    if config.tls
+      config[:tls][:enabled] = true
+    else
+      config[:tls] = {
+        enabled: true
+      }
+    end
+  end
 
   def pastel
     @pastel ||= Pastel.new
