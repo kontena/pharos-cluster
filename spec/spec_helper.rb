@@ -125,4 +125,5 @@ RSpec.configure do |config|
   end
 
   config.include FixturesHelper
+  config.include FakeFS::SpecHelpers, fakefs: true
 end
