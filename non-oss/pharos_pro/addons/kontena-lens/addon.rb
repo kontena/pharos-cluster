@@ -3,6 +3,8 @@
 require 'bcrypt'
 
 Pharos.addon 'kontena-lens' do
+  using Pharos::CoreExt::Colorize
+
   version '1.2.0'
   license 'Kontena License'
   priority 10
@@ -38,7 +40,7 @@ Pharos.addon 'kontena-lens' do
       email: config.tls&.email,
       user_management: user_management_enabled?
     )
-    message = "Kontena Lens is configured to respond at: " + pastel.cyan("https://#{host}")
+    message = "Kontena Lens is configured to respond at: " + "https://#{host}".cyan
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
     else
@@ -49,7 +51,7 @@ Pharos.addon 'kontena-lens' do
         create_config(name, host)
       end
       message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
-      message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
+      message << "\nYou can sign in with the following admin credentials (you won't see these again): " + "admin / #{admin_password}".cyan
     end
     post_install_message(message)
   }
@@ -104,10 +106,6 @@ Pharos.addon 'kontena-lens' do
       }
     )
     kube_client.api('v1').resource('configmaps').create_resource(config)
-  end
-
-  def pastel
-    @pastel ||= Pastel.new
   end
 
   # @return [Pharos::Configuration::Host]

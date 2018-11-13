@@ -3,6 +3,8 @@
 module Pharos
   module CommandOptions
     module LoadConfig
+      using Pharos::CoreExt::Colorize
+
       def self.included(base)
         base.prepend(InstanceMethods)
         base.option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
@@ -36,7 +38,7 @@ module Pharos
         def load_config
           return @config if @config
 
-          puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
+          puts("==> Reading instructions ...".green) if $stdout.tty?
 
           config_hash = config_yaml.load(ENV.to_h)
 
@@ -53,7 +55,7 @@ module Pharos
         # @param config [Hash]
         # @return [Hash]
         def load_terraform(file, config)
-          puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
+          puts("==> Importing configuration from Terraform ...".green) if $stdout.tty?
 
           tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
           config['hosts'] ||= []

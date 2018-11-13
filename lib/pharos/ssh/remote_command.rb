@@ -3,6 +3,8 @@
 module Pharos
   module SSH
     class RemoteCommand
+      using Pharos::CoreExt::Colorize
+
       Error = Class.new(StandardError)
 
       class ExecError < Error
@@ -57,7 +59,6 @@ module Pharos
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
         @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
         @source = source
-        initialize_debug
         freeze
       end
 
@@ -111,40 +112,29 @@ module Pharos
 
       private
 
-      attr_reader :pastel
-
-      def initialize_debug
-        if self.class.debug?
-          @debug = true
-          @pastel = Pastel.new(enabled: $stdout.tty?)
-        else
-          @debug = false
-        end
-      end
-
       def debug?
-        @debug
+        self.class.debug?
       end
 
       def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
+        $stdout << INDENT << ("$ #{cmd}" + (source ? " < #{source}" : "")).cyan << "\n"
       end
 
       def debug_stdout(data)
         data.each_line do |line|
-          $stdout.write(INDENT + pastel.dim(line.to_s))
+          $stdout << INDENT << line.to_s.dim
         end
       end
 
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stdout.write(INDENT + pastel.red(line.to_s))
+          $stdout << INDENT << line.to_s.red
         end
       end
 
       def debug_exit(exit_status)
-        $stdout.write(INDENT + pastel.yellow("! #{exit_status}") + "\n")
+        $stdout << INDENT << "! #{exit_status}".yellow << "\n"
       end
     end
   end
