@@ -5,7 +5,6 @@ autoload :SecureRandom, 'securerandom'
 autoload :YAML, 'yaml'
 autoload :JSON, 'json'
 autoload :RestClient, 'rest-client'
-autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
 autoload :K8s, 'k8s-client'
@@ -43,6 +42,7 @@ module Pharos
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
     autoload :StringCasing, 'pharos/core-ext/string_casing'
+    autoload :Colorize, 'pharos/core-ext/colorize'
   end
 
   module SSH

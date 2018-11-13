@@ -13,6 +13,7 @@ module Pharos
     end
 
     def run(*_args)
+      Pharos::CoreExt::Colorize.disable! unless color?
       super
     rescue Pharos::ConfigError => exc
       warn "==> #{exc}"
@@ -32,10 +33,6 @@ module Pharos
 
     option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
       ENV["DEBUG"] = "true"
-    end
-
-    def pastel
-      @pastel ||= Pastel.new(enabled: color?)
     end
 
     def prompt

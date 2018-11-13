@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-lens' do
+  using Pharos::CoreExt::Colorize
+
   version '1.2.0'
   license 'Kontena License'
   priority 10
@@ -38,21 +40,17 @@ Pharos.addon 'kontena-lens' do
     )
     protocol = config.tls&.email ? 'http' : 'https' # with cert-manager we have to use http since tls secret is not in place immediately
     wait_for_dashboard(protocol, host)
-    message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
+    message = "Kontena Lens is running at: " + "https://#{host}".cyan
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
     else
       @retries = 1
       @max_retries = 3
       create_lens_config(name, protocol, host, admin_password)
-      message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
+      message << "\nYou can sign in with admin credentials: " + "admin / #{admin_password}".cyan
     end
     post_install_message(message)
   }
-
-  def pastel
-    @pastel ||= Pastel.new
-  end
 
   def gateway_node
     cluster_config.worker_hosts.first || cluster_config.master_hosts.first
