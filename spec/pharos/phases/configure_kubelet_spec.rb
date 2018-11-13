@@ -24,10 +24,13 @@ describe Pharos::Phases::ConfigureKubelet do
       kubelet: {read_only_port: false}
   ) }
 
+  let(:configurers) { [] }
+
   subject { described_class.new(host, config: config) }
 
   before do
-    Pharos::HostConfigManager.load_configs(config)
+    allow(Pharos::Host::Configurer).to receive(:configurers).and_return(configurers)
+    Pharos::Host::Configurer.load_configurers
     host.resolvconf = host_resolvconf
 
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))

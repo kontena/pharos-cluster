@@ -53,7 +53,7 @@ module Pharos
       addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
 
       Pharos::AddonManager.load_addons(*addon_dirs)
-      Pharos::HostConfigManager.load_configs(@config)
+      Pharos::Host::Configurer.load_configurers
     end
 
     def gather_facts

@@ -32,8 +32,11 @@ module Pharos
       config = new(schema_data)
       config.data = raw_data.freeze
 
-      # inject api_endpoint & bastion to each host object
-      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
+      # inject api_endpoint & config reference to each host object
+      config.hosts.each do |host|
+        host.api_endpoint = config.api&.endpoint
+        host.config = config
+      end
 
       config
     end
