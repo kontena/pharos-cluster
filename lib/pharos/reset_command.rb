@@ -14,14 +14,6 @@ module Pharos
         filtered_hosts.size == load_config.hosts.size ? reset_all : reset_hosts
       end
       cluster_manager.disconnect
-    rescue Pharos::ConfigError => exc
-      warn "==> #{exc}"
-      exit 11
-    rescue StandardError => ex
-      raise unless ENV['DEBUG'].to_s.empty?
-
-      warn "#{ex.class.name} : #{ex.message}"
-      exit 1
     end
 
     def reset_hosts
