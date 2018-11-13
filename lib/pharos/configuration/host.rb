@@ -4,6 +4,9 @@ require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
 
+require 'net/ssh'
+require 'net/ssh/proxy/jump'
+
 module Pharos
   module Configuration
     class Host < Pharos::Configuration::Struct
@@ -73,6 +76,17 @@ module Pharos
         return nil unless hostname
 
         hostname.split('.').first
+      end
+
+      def ssh
+        return @ssh if @ssh
+
+        opts = {}
+        opts[:keys] = [ssh_key_path] if ssh_key_path
+        opts[:send_env] = [] # override default to not send LC_* envs
+        opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
+        opts[:bastion] = bastion if bastion
+        @ssh = Pharos::SSH::Client.new(address, user, opts).tap(&:connect)
       end
 
       def api_address

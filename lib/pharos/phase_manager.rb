@@ -21,8 +21,7 @@ module Pharos
     end
 
     # @param dirs [Array<String>]
-    def initialize(ssh_manager:, **options)
-      @ssh_manager = ssh_manager
+    def initialize(**options)
       @options = options
     end
 
@@ -75,11 +74,8 @@ module Pharos
     end
 
     # @return [Pharos::Phase]
-    def prepare_phase(phase_class, host, ssh: false, **options)
+    def prepare_phase(phase_class, host, **options)
       options = @options.merge(options)
-
-      options[:ssh] = @ssh_manager.client_for(host) if ssh
-
       phase_class.new(host, **options)
     end
 

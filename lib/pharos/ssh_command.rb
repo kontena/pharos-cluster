@@ -26,12 +26,12 @@ module Pharos
       filtered_hosts.map do |host|
         target = "#{host.user}@#{host.address}"
         puts pastel.green("==> Opening a session to #{target} ..")
-        ssh_manager.client_for(host).interactive_session
+        host.ssh.interactive_session
       end
     end
 
     def run_single(host)
-      result = ssh_manager.client_for(host).exec(command_list)
+      result = host.ssh.exec(command_list)
       puts result.output
       result.exit_status
     end
@@ -40,7 +40,7 @@ module Pharos
       threads = filtered_hosts.map do |host|
         Thread.new do
           begin
-            [host, ssh_manager.client_for(host).exec(command_list)]
+            [host, host.ssh.exec(command_list)]
           rescue StandardError => ex
             [
               host,
@@ -57,10 +57,6 @@ module Pharos
         puts result.output.gsub(/^/, "  ")
       end
       results.all? { |_, result| result.success? } ? 0 : 1
-    end
-
-    def ssh_manager
-      Pharos::SSH::Manager.instance
     end
   end
 end

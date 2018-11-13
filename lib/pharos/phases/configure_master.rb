@@ -15,7 +15,7 @@ module Pharos
       end
 
       def install?
-        !@ssh.file("/etc/kubernetes/admin.conf").exist?
+        !ssh.file("/etc/kubernetes/admin.conf").exist?
       end
 
       def call
@@ -41,7 +41,7 @@ module Pharos
         logger.info { "Initializing control plane (v#{Pharos::KUBE_VERSION}) ..." }
         logger.debug { cfg.to_yaml }
 
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-init.sh',
             CONFIG: tmp_file
@@ -52,8 +52,8 @@ module Pharos
       end
 
       def install_kubeconfig
-        @ssh.exec!('install -m 0700 -d ~/.kube')
-        @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
+        ssh.exec!('install -m 0700 -d ~/.kube')
+        ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
 
       def reconfigure
@@ -64,7 +64,7 @@ module Pharos
         logger.info { "Reconfiguring control plane (v#{Pharos::KUBE_VERSION})..." }
         logger.debug { cfg.to_yaml }
 
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-reconfigure.sh',
             CONFIG: tmp_file
@@ -74,11 +74,11 @@ module Pharos
 
       # @param certs [Hash] path => PEM data
       def push_kube_certs(certs)
-        @ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
+        ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
         certs.each do |file, contents|
           path = File.join(KUBE_DIR, 'pki', file)
-          @ssh.file(path).write(contents)
-          @ssh.exec!("sudo chmod 0400 #{path}")
+          ssh.file(path).write(contents)
+          ssh.exec!("sudo chmod 0400 #{path}")
         end
       end
 
@@ -87,7 +87,7 @@ module Pharos
         certs = {}
         SHARED_CERT_FILES.each do |file|
           path = File.join(KUBE_DIR, 'pki', file)
-          certs[file] = @ssh.file(path).read
+          certs[file] = ssh.file(path).read
         end
         certs
       end
@@ -95,7 +95,7 @@ module Pharos
       # @param path [String]
       # @return [OpenSSL::X509::Certificate, nil] nil if not exist
       def read_cert(path)
-        file = @ssh.file(path)
+        file = ssh.file(path)
 
         return nil unless file.exist?
 
@@ -154,8 +154,8 @@ module Pharos
       def replace_cert
         logger.info { "Replacing apiserver cert" }
 
-        @ssh.file(APISERVER_CERT).rm
-        @ssh.file(APISERVER_KEY).rm
+        ssh.file(APISERVER_CERT).rm
+        ssh.file(APISERVER_KEY).rm
       end
     end
   end

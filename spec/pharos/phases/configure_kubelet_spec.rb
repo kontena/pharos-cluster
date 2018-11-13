@@ -23,8 +23,7 @@ describe Pharos::Phases::ConfigureKubelet do
       kubelet: {read_only_port: false}
   ) }
 
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(host, config: config, ssh: ssh) }
+  subject { described_class.new(host, config: config) }
 
   before(:each) do
     host.resolvconf = host_resolvconf

@@ -138,6 +138,6 @@ Pharos.addon 'kontena-lens' do
   end
 
   def ssh
-    @ssh ||= Pharos::SSH::Manager.instance.client_for(gateway_node)
+    @ssh ||= gateway_node.ssh
   end
 end

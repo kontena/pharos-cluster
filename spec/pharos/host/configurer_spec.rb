@@ -8,7 +8,7 @@ describe Pharos::Host::Configurer do
   end
 
   let(:host) { double(:host) }
-  let(:ssh) { double(:ssh) }
+  let(:ssh) { instance_double(Pharos::SSH::Client) }
   let(:subject) { described_class.new(host, ssh) }
 
   describe '#register_config' do

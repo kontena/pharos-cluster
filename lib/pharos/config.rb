@@ -100,9 +100,8 @@ module Pharos
         api_address = master_host.api_address
         api_port = 6443
       else
-        ssh = Pharos::SSH::Manager.instance.client_for(master_host.bastion.host)
         api_address = 'localhost'
-        api_port = ssh.gateway(master_host.api_address, 6443)
+        api_port = host.ssh.gateway(master_host.api_address, 6443)
       end
 
       @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)

@@ -14,7 +14,6 @@ describe Pharos::Kubeadm::ConfigGenerator do
       etcd: {}
   ) }
 
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
   subject { described_class.new(config, master) }
 
   describe '#generate_config' do

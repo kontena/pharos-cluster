@@ -31,15 +31,9 @@ module Pharos
       }
     end
 
-    # @return [Pharos::SSH::Manager]
-    def ssh_manager
-      Pharos::SSH::Manager.instance
-    end
-
     # @return [Pharos::AddonManager]
     def phase_manager
       @phase_manager = Pharos::PhaseManager.new(
-        ssh_manager: ssh_manager,
         config: @config,
         cluster_context: @context
       )
@@ -63,17 +57,17 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::GatherFacts, config.hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureClient, [sorted_master_hosts.first], ssh: true, master: sorted_master_hosts.first, parallel: false, optional: true)
+      apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
+      apply_phase(Phases::ConfigureClient, [sorted_master_hosts.first], master: sorted_master_hosts.first, parallel: false, optional: true)
     end
 
     def validate
       apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
-      apply_phase(Phases::ValidateHost, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
       master = sorted_master_hosts.first
-      apply_phase(Phases::ValidateVersion, [master], master: master, ssh: true, parallel: false)
+      apply_phase(Phases::ValidateVersion, [master], master: master, parallel: false)
     end
 
     # @return [Array<Pharos::Configuration::Host>]
@@ -91,29 +85,29 @@ module Pharos
       # ca etc config files
       master_hosts = sorted_master_hosts
 
-      apply_phase(Phases::MigrateMaster, master_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::ConfigureHost, config.hosts, ssh: true, master: master_hosts.first, parallel: true)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)
+      apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
+      apply_phase(Phases::ConfigureHost, config.hosts, master: master_hosts.first, parallel: true)
+      apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints
         # we need to use sorted etcd hosts because phases expects that first one has
         # ca etc config files
         etcd_hosts = sorted_etcd_hosts
-        apply_phase(Phases::ConfigureCfssl, etcd_hosts, ssh: true, parallel: true)
-        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], ssh: true, parallel: false)
-        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], ssh: true, parallel: false)
-        apply_phase(Phases::ConfigureEtcd, etcd_hosts, ssh: true, parallel: true)
+        apply_phase(Phases::ConfigureCfssl, etcd_hosts, parallel: true)
+        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], parallel: false)
+        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], parallel: false)
+        apply_phase(Phases::ConfigureEtcd, etcd_hosts, parallel: true)
       end
 
-      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::SetupMaster, master_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::UpgradeMaster, master_hosts, ssh: true, master: master_hosts.first, parallel: false) # requires optional early ConfigureClient
+      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, parallel: false)
+      apply_phase(Phases::SetupMaster, master_hosts, parallel: true)
+      apply_phase(Phases::UpgradeMaster, master_hosts, master: master_hosts.first, parallel: false) # requires optional early ConfigureClient
 
-      apply_phase(Phases::MigrateWorker, config.worker_hosts, ssh: true, parallel: true, master: master_hosts.first)
-      apply_phase(Phases::ConfigureKubelet, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true, master: master_hosts.first)
+      apply_phase(Phases::ConfigureKubelet, config.hosts, parallel: true)
 
-      apply_phase(Phases::ConfigureMaster, master_hosts, ssh: true, parallel: false)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false)
+      apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
+      apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false)
 
       # master is now configured and can be used
       apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
@@ -123,10 +117,10 @@ module Pharos
       apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
 
-      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first], ssh: true) # using `kubeadm token`, not the kube API
+      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first]) # using `kubeadm token`, not the kube API
 
-      apply_phase(Phases::JoinNode, config.worker_hosts, ssh: true, parallel: true)
-      apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, ssh: false, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
+      apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
 
       # configure services that need workers
       apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
@@ -135,19 +129,19 @@ module Pharos
 
     def apply_reset_hosts(hosts, drain: true, delete: true)
       master_hosts = sorted_master_hosts
-      apply_phase(Phases::GatherFacts, hosts, ssh: true, parallel: true)
+      apply_phase(Phases::GatherFacts, hosts, parallel: true)
 
       if drain || delete
-        apply_phase(Phases::ConfigureClient, [master_hosts.first], ssh: true, master: master_hosts.first, parallel: false, optional: true)
+        apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false, optional: true)
       end
 
       apply_phase(Phases::Drain, hosts, parallel: false) if drain
       apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first) if delete
-      apply_phase(Phases::ResetHost, hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ResetHost, hosts, parallel: true)
     end
 
     def apply_reset_all
-      apply_phase(Phases::ResetHost, config.hosts, ssh: true, parallel: true)
+      apply_phase(Phases::ResetHost, config.hosts, parallel: true)
     end
 
     def apply_addons_cluster_config_modifications
@@ -190,7 +184,7 @@ module Pharos
     end
 
     def disconnect
-      ssh_manager.disconnect_all
+      config.hosts.map(&:ssh).select(&:connected?).each(&:disconnect)
     end
   end
 end

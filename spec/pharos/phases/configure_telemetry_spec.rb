@@ -2,7 +2,7 @@ require 'pharos/phases/configure_telemetry'
 require 'fileutils'
 
 describe Pharos::Phases::ConfigureTelemetry do
-  subject { described_class.new(double, config: double, ssh: double) }
+  subject { described_class.new(double, config: double) }
 
   describe '#customer_token' do
     it 'returns empty string if not found' do

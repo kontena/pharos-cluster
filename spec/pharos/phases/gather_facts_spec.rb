@@ -1,16 +1,21 @@
 require 'pharos/phases/gather_facts'
 
 describe Pharos::Phases::GatherFacts do
-  let(:config) { Pharos::Config.new(
-      hosts: [
-        Pharos::Configuration::Host.new(
-          address: '192.0.2.1',
-          role: 'master'
-        ),
-      ],
-  ) }
+  let(:host) do
+    Pharos::Configuration::Host.new(
+      address: '192.0.2.1',
+      role: 'master'
+    )
+  end
+
+  let(:config) { Pharos::Config.new(hosts: [host]) }
+
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(config.hosts[0], config: config, ssh: ssh) }
+  subject { described_class.new(config.hosts[0], config: config) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(ssh)
+  end
 
   describe '#private_interface_address' do
     let(:iface) { 'eth0' }
