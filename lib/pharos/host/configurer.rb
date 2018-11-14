@@ -148,6 +148,7 @@ module Pharos
           host_env_file.read.lines.each do |line|
             line.strip!
             next if line.start_with?('#')
+
             key, val = line.split('=', 2)
             val = nil if val.to_s.empty?
             original_data[key] = val

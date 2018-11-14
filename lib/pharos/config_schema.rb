@@ -33,6 +33,7 @@ module Pharos
       schema = build
       result = schema.call(DEFAULT_DATA.merge(data))
       raise Pharos::ConfigError, result.messages unless result.success?
+
       result.to_h
     end
 

@@ -31,6 +31,7 @@ module Pharos
       if result.is_a?(String)
         raise ParseError, "File #{"#{@filename} " if @filename}does not appear to be in YAML format"
       end
+
       result
     rescue Psych::SyntaxError => ex
       raise ParseError, ex.message

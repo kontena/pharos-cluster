@@ -53,6 +53,7 @@ module Pharos
       @configs ||= @config.addons.sort_by { |name, _config|
         addon_class = addon_classes.find { |a| a.addon_name == name }
         raise UnknownAddon, "unknown addon: #{name}" if addon_class.nil?
+
         addon_class.priority
       }.to_h
     end

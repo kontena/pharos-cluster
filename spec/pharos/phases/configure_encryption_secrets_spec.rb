@@ -17,33 +17,24 @@ describe Pharos::Phases::ConfigureSecretsEncryption do
   end
 
   let(:master_ssh) { instance_double(Pharos::SSH::Client) }
+  let(:file) { instance_double(Pharos::SSH::RemoteFile) }
+  let(:secrets_config) { 'hello' }
+  let(:cluster_context) { { 'secrets_encryption' => secrets_config } }
+
   subject { described_class.new(master, config: config) }
 
   before do
+    allow(subject).to receive(:cluster_context).and_return(cluster_context)
     allow(master).to receive(:ssh).and_return(master_ssh)
+    allow(master_ssh).to receive(:file).with('/etc/pharos/secrets-encryption/config.yml').and_return(file)
   end
 
-  describe '#read_config_keys' do
-    let(:file) { instance_double(Pharos::SSH::RemoteFile) }
-
-    before do
-      allow(master_ssh).to receive(:file).with('/etc/pharos/secrets-encryption/config.yml').and_return(file)
-    end
-
-    it 'returns nil if no config file existing' do
-      expect(file).to receive(:exist?).and_return(false)
-
-      expect(subject.read_config_keys).to be_nil
-    end
-
-    it 'returns aescbc keys if configured' do
-      expect(file).to receive(:exist?).and_return(true)
-      expect(file).to receive(:read).and_return(fixture("secrets_cfg.yaml"))
-
-      expect(subject.read_config_keys).to eq({
-        'key1' => 's6Xm3BlhHWkD0/5mW5tcks5kcdeWxE3qWkx/gA6hlcI=',
-        'key2' => '23VanHzmFuMQgfnVQrp9oJf0lLa82mThTBVDXd8Uw0s=',
-      })
+  describe '#call' do
+    it 'writes config file' do
+      expect(master_ssh).to receive(:exec!).with(/test.+?install/).and_return(true)
+      expect(file).to receive(:write).with('hello').and_return(true)
+      expect(file).to receive(:chmod).with('0700').and_return(true)
+      subject.call
     end
   end
 end

@@ -13,7 +13,7 @@ module Pharos
     end
 
     def to_s
-      "#{self.class.title} @ #{@host}"
+      "#{self.class.title} @ #{host}"
     end
 
     def self.register_component(component)
@@ -33,12 +33,12 @@ module Pharos
     end
 
     def ssh
-      @host.ssh
+      host.ssh
     end
 
     def logger
       @logger ||= Logger.new($stdout).tap do |logger|
-        logger.progname = @host.to_s
+        logger.progname = host.to_s
         logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
         logger.formatter = proc do |_severity, _datetime, progname, msg|
           "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }
@@ -75,12 +75,13 @@ module Pharos
 
     # @return [Pharos::Host::Configurer]
     def host_configurer
-      @host_configurer ||= @host.configurer
+      @host_configurer ||= host.configurer
     end
 
     # @return [Pharos::SSH::Client]
     def master_ssh
       return cluster_context['master-ssh'] if cluster_context['master-ssh']
+
       fail "Phase #{self.class.name} does not have master ssh"
     end
 

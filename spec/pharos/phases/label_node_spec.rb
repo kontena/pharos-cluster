@@ -3,7 +3,8 @@ require 'pharos/phases/label_node'
 describe Pharos::Phases::LabelNode do
   let(:master) { Pharos::Configuration::Host.new(address: '192.0.2.1') }
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.2', labels: { foo: 'bar' } ) }
-  let(:subject) { described_class.new(host, master: master) }
+  let(:config) { Pharos::Config.new(hosts: [host]) }
+  let(:subject) { described_class.new(host, master: master, config: config) }
 
   let(:kube_client) { instance_double(K8s::Client) }
   let(:kube_api_v1) { instance_double(K8s::APIClient) }
@@ -29,13 +30,13 @@ describe Pharos::Phases::LabelNode do
           }
         })
       ])
-      expect(subject.find_node).not_to be_nil
+      expect(subject.find_node(host)).not_to be_nil
     end
 
     it 'returns nil if node not found' do
       host.hostname = 'host-01'
       allow(kube_nodes).to receive(:get).with('host-01').and_raise(K8s::Error::NotFound.new('GET', '/asdf', 404, "Not Found", K8s::API::MetaV1::Status.new(metadata: {})))
-      expect(subject.find_node).to be_nil
+      expect(subject.find_node(host)).to be_nil
     end
   end
 
