@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'pastel'
 
 module Pharos
@@ -22,4 +23,3 @@ module Pharos
     end
   end
 end
-
