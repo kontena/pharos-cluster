@@ -19,9 +19,16 @@ describe Pharos::Host::Configurer do
     end
 
     it 'registers multiple versions to configs' do
-      expect(described_class.configs.size).to eq(2)
-      expect(described_class.configs.first.os_version).to eq('1.0.0')
-      expect(described_class.configs.last.os_version).to eq('1.1.0')
+      expect(
+        described_class.config_for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '1.0.0')
+        )
+      ).not_to be_nil
+      expect(
+        described_class.config_for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '1.1.0')
+        )
+      ).not_to be_nil
     end
 
     it 'registers config class' do
