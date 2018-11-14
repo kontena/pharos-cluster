@@ -156,10 +156,15 @@ module Pharos
           Pharos::Phases.register_component(component)
         end
 
+        # @param name [String]
+        # @param version [String]
         def register_config(name, version)
           @os_name = name
           @os_version = version
-          configs << self
+          configs << Class.new(self) do
+            @os_name = name
+            @os_version = version
+          end
           self
         end
 
