@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 require 'fugit'
 require 'dry-validation'
 
@@ -36,6 +35,14 @@ module Pharos
       result.to_h
     end
 
+    module CustomPredicates
+      include Dry::Logic::Predicates
+
+      predicate(:hostname_or_ip?) do |value|
+        value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
+      end
+    end
+
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Lint/NestedMethodDefinition
@@ -43,15 +50,22 @@ module Pharos
         configure do
           def self.messages
             super.merge(
-              en: { errors: { network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts" } }
+              en: {
+                errors: {
+                  network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
+                  hostname_or_ip?: "is invalid"
+                }
+              }
             )
           end
         end
+
         required(:hosts).filled(min_size?: 1) do
           each do
             schema do
-              required(:address).filled
-              optional(:private_address).filled
+              predicates(CustomPredicates)
+              required(:address).filled(:str?, :hostname_or_ip?)
+              optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
