@@ -92,7 +92,7 @@ Pharos.addon 'kontena-lens' do
   # @param host [String]
   def wait_for_dashboard(protocol, host)
     puts "    Waiting for Kontena Lens to get up and running ..."
-    command = "sudo curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" #{protocol}://localhost/" # rubocop:disable Style/FormatStringToken
+    command = "curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" #{protocol}://localhost/" # rubocop:disable Style/FormatStringToken
     response = ssh.exec(command)
     i = 1
     until response.output.to_i == 200
@@ -130,7 +130,7 @@ Pharos.addon 'kontena-lens' do
       clusterUrl: "https://#{master_host_ip}:6443",
       adminPassword: admin_password
     }
-    command = "sudo curl -iksL -o /dev/null -w \"%{http_code}\" -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" #{protocol}://localhost/api/cluster" # rubocop:disable Style/FormatStringToken
+    command = "curl -iksL -o /dev/null -w \"%{http_code}\" -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" #{protocol}://localhost/api/cluster" # rubocop:disable Style/FormatStringToken
     response = ssh.exec(command)
     raise Pharos::InvalidAddonError, "Could not create Kontena Lens configuration" unless response.output.to_i == 200
   rescue Pharos::InvalidAddonError => e
