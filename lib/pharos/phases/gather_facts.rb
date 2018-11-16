@@ -9,6 +9,8 @@ module Pharos
 
       title "Gather host facts"
 
+      FULL_HOSTNAME_CLOUD_PROVIDERS = %w(aws vsphere).freeze
+
       def call
         logger.info { "Checking sudo access ..." }
         check_sudo
@@ -35,7 +37,7 @@ module Pharos
       # @return [String]
       def hostname
         cloud_provider = @config.cloud&.provider
-        if cloud_provider == 'aws'
+        if FULL_HOSTNAME_CLOUD_PROVIDERS.include?(cloud_provider)
           @ssh.exec!('hostname -f').strip
         else
           @ssh.exec!('hostname -s').strip
