@@ -145,5 +145,22 @@ describe Pharos::Phases::GatherFacts do
       allow(ssh).to receive(:exec!).with('hostname -s').and_return('host-AAA101')
       expect(subject.hostname).to eq('host-aaa101')
     end
+
+    it 'uses full hostname for aws' do
+      allow(config).to receive(:cloud).and_return(Pharos::Configuration::Cloud.new(provider: 'aws'))
+      expect(ssh).to receive(:exec!).with('hostname -f').and_return('host-01.mydomain.local')
+      subject.hostname
+    end
+
+    it 'uses full hostname for vsphere' do
+      allow(config).to receive(:cloud).and_return(Pharos::Configuration::Cloud.new(provider: 'vsphere'))
+      expect(ssh).to receive(:exec!).with('hostname -f').and_return('host-01.mydomain.local')
+      subject.hostname
+    end
+
+    it 'uses short hostname' do
+      expect(ssh).to receive(:exec!).with('hostname -s').and_return('host-01.mydomain.local')
+      subject.hostname
+    end
   end
 end
