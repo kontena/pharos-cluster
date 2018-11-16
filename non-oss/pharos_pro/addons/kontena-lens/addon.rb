@@ -54,14 +54,17 @@ Pharos.addon 'kontena-lens' do
     @pastel ||= Pastel.new
   end
 
+  # @return [Pharos::Configuration::Host]
   def gateway_node
     cluster_config.worker_hosts.first || cluster_config.master_hosts.first
   end
 
+  # @return [String, NilClass]
   def gateway_node_ip
     gateway_node&.address
   end
 
+  # @return [String, NilClass]
   def master_host_ip
     cluster_config.master_host&.address
   end
@@ -70,6 +73,7 @@ Pharos.addon 'kontena-lens' do
     config.user_management&.enabled != false
   end
 
+  # @return [Pharos::Configuration::TokenWebhook]
   def token_authentication_webhook_config
     Pharos::Configuration::TokenWebhook.new(
       config: {
@@ -84,9 +88,11 @@ Pharos.addon 'kontena-lens' do
     )
   end
 
+  # @param protocol [String]
+  # @param host [String]
   def wait_for_dashboard(protocol, host)
     puts "    Waiting for Kontena Lens to get up and running ..."
-    command = "sudo curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" #{protocol}://localhost/" # rubocop:disable Style/FormatStringToken
+    command = "curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" #{protocol}://localhost/" # rubocop:disable Style/FormatStringToken
     response = ssh.exec(command)
     i = 1
     until response.output.to_i == 200
@@ -97,6 +103,7 @@ Pharos.addon 'kontena-lens' do
     end
   end
 
+  # @return [String]
   def admin_password
     @admin_password ||= SecureRandom.hex(8)
   end
@@ -105,21 +112,27 @@ Pharos.addon 'kontena-lens' do
     !configmap.nil?
   end
 
+  # @return [K8s::Resource, NilClass]
   def configmap
     @configmap ||= kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').get('config')
   rescue K8s::Error::NotFound
     nil
   end
 
+  # @param name [String]
+  # @param protocol [String]
+  # @param host [String]
+  # @param admin_password [String]
+  # @raise [Pharos::InvalidAddonError]
   def create_lens_config(name, protocol, host, admin_password)
     cluster_config = {
       clusterName: name,
       clusterUrl: "https://#{master_host_ip}:6443",
       adminPassword: admin_password
     }
-    command = "sudo curl -iksL -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" #{protocol}://localhost/api/cluster"
-    result = ssh.exec(command)
-    raise Pharos::InvalidAddonError, "Could not create Kontena Lens configuration" unless result.output.lines.include?("HTTP/1.1 200 OK\r\n")
+    command = "curl -iksL -o /dev/null -w \"%{http_code}\" -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" #{protocol}://localhost/api/cluster" # rubocop:disable Style/FormatStringToken
+    response = ssh.exec(command)
+    raise Pharos::InvalidAddonError, "Could not create Kontena Lens configuration" unless response.output.to_i == 200
   rescue Pharos::InvalidAddonError => e
     if @retries <= @max_retries
       @retries += 1
@@ -132,6 +145,8 @@ Pharos.addon 'kontena-lens' do
     raise Pharos::InvalidAddonError, e.message
   end
 
+  # @param new_name [String]
+  # @return [K8s::Resource]
   def update_lens_name(new_name)
     configmap.data.clusterName = new_name
     kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').update_resource(configmap)
