@@ -9,10 +9,12 @@ module Pharos
       attr_reader :path
       # Initializes an instance of a remote file
       # @param [Pharos::SSH::Client]
+      # @param @exec_options [Hash]
       # @param path [String]
-      def initialize(client, path)
+      def initialize(client, path, **exec_options)
         @client = client
         @path = path
+        @exec_options = exec_options
         freeze
       end
 
@@ -20,7 +22,7 @@ module Pharos
 
       # Removes the remote file
       def unlink
-        @client.exec!("sudo rm #{escaped_path}")
+        @client.exec!("sudo rm #{escaped_path}", **@exec_options)
       end
       alias rm unlink
 
@@ -36,24 +38,25 @@ module Pharos
         tmp = temp_file_path.shellescape
         @client.exec!(
           "cat > #{tmp} && (sudo mv #{tmp} #{escaped_path} || (rm #{tmp}; exit 1))",
-          stdin: content
+          stdin: content,
+          **@exec_options
         )
       end
 
       def chmod(mode)
-        @client.exec!("sudo chmod #{mode} #{escaped_path}")
+        @client.exec!("sudo chmod #{mode} #{escaped_path}", **@exec_options)
       end
 
       # Returns remote jfile content
       # @return [String]
       def read
-        @client.exec!("sudo cat #{escaped_path}")
+        @client.exec!("sudo cat #{escaped_path}", **@exec_options)
       end
 
       # True if the file exists. Assumes a bash-like shell.
       # @return [Boolean]
       def exist?
-        @client.exec!("sudo env -i bash --norc --noprofile -c -- 'test -e #{escaped_path} && echo true || echo false'").strip == "true"
+        @client.exec!("sudo env -i bash --norc --noprofile -c -- 'test -e #{escaped_path} && echo true || echo false'", **@exec_options).strip == "true"
       end
 
       # Performs the block if the remote file exists, otherwise returns false
@@ -65,26 +68,26 @@ module Pharos
       # Moves the current file to target path
       # @param target [String]
       def move(target)
-        @client.exec!("sudo mv #{@path} #{target.shellescape}")
+        @client.exec!("sudo mv #{@path} #{target.shellescape}", **@exec_options)
       end
       alias mv move
 
       # Copies the current file to target path
       # @param target [String]
       def copy(target)
-        @client.exec!("sudo cp #{escaped_path} #{target.shellescape}")
+        @client.exec!("sudo cp #{escaped_path} #{target.shellescape}", **@exec_options)
       end
       alias cp copy
 
       # Creates a symlink at the target path that points to the current file
       # @param target [String]
       def link(target)
-        @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
+        @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}", **@exec_options)
       end
 
       # @return [String, nil]
       def readlink
-        target = @client.exec!("readlink #{escaped_path} || echo").strip
+        target = @client.exec!("readlink #{escaped_path} || echo", **@exec_options).strip
 
         return nil if target.empty?
 

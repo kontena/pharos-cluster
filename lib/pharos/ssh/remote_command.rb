@@ -51,12 +51,13 @@ module Pharos
       # @param client [Pharos::SSH::Client] ssh client instance
       # @param cmd [String,Array<String>] command to execute
       # @param stdin [String,IO] attach string or stream to command STDIN
-      # @param debug
-      def initialize(client, cmd, stdin: nil, source: nil)
+      # @param hide [Regexp] hide sensitive content from debug output
+      def initialize(client, cmd, stdin: nil, source: nil, hide: nil)
         @client = client
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
         @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
         @source = source
+        @hide = hide
         initialize_debug
         freeze
       end
@@ -127,24 +128,30 @@ module Pharos
       end
 
       def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
+        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{hide(source)}" : "")) + "\n")
       end
 
       def debug_stdout(data)
         data.each_line do |line|
-          $stdout.write(INDENT + pastel.dim(line.to_s))
+          $stdout.write(INDENT + pastel.dim(hide(line.to_s)))
         end
       end
 
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stdout.write(INDENT + pastel.red(line.to_s))
+          $stdout.write(INDENT + pastel.red(hide(line.to_s)))
         end
       end
 
       def debug_exit(exit_status)
         $stdout.write(INDENT + pastel.yellow("! #{exit_status}") + "\n")
+      end
+
+      def hide(string)
+        return string if @hide.nil?
+
+        string.gsub(@hide, '[HIDDEN]')
       end
     end
   end

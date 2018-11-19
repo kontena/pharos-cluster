@@ -45,7 +45,7 @@ module Pharos
 
       # @return [String]
       def read_kubeconfig
-        @ssh.file(REMOTE_KUBECONFIG).read
+        @ssh.file(REMOTE_KUBECONFIG, hide: /\w+-\w+-data: .+?$/m).read
       end
 
       # @return [Hash]

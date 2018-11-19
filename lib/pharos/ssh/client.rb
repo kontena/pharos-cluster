@@ -106,8 +106,8 @@ module Pharos
         exec(cmd, **options).success?
       end
 
-      def file(path)
-        Pharos::SSH::RemoteFile.new(self, path)
+      def file(path, **exec_options)
+        Pharos::SSH::RemoteFile.new(self, path, **exec_options)
       end
 
       def interactive_session
