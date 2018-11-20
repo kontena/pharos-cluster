@@ -38,7 +38,7 @@ Pharos.addon 'kontena-lens' do
       email: config.tls&.email,
       user_management: user_management_enabled?
     )
-    message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
+    message = "Kontena Lens is configured to respond at: " + pastel.cyan("https://#{host}")
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
     else
@@ -48,7 +48,8 @@ Pharos.addon 'kontena-lens' do
       unless config_exists?
         create_config(name, host)
       end
-      message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
+      message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
+      message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
     end
     post_install_message(message)
   }
