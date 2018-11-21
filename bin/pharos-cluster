@@ -12,7 +12,6 @@ STDOUT.sync = true
 # cacert.pem from excon's data/ dir.
 if ENV['SSL_CERT_PATH'].to_s.empty?
   cert_file = File.expand_path('../data/cacert.pem', __dir__)
-  puts File.exist?(cert_file).inspect
   ENV['SSL_CERT_PATH'] = cert_file if File.exist?(cert_file)
 end
 
