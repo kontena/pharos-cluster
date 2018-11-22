@@ -161,4 +161,8 @@ Pharos.addon 'kontena-lens' do
     configmap.data.clusterName = new_name
     kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').update_resource(configmap)
   end
+
+  def ssh
+    @ssh ||= gateway_node&.ssh
+  end
 end

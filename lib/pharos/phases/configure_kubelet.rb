@@ -29,18 +29,18 @@ module Pharos
       end
 
       def push_cloud_config
-        @ssh.exec!("sudo mkdir -p #{CLOUD_CONFIG_DIR}")
-        @ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
+        ssh.exec!("sudo mkdir -p #{CLOUD_CONFIG_DIR}")
+        ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
 
       # @param dropin [String]
       def ensure_dropin(dropin)
         return if dropin == existing_dropin
 
-        @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
-        @ssh.file(DROPIN_PATH).write(dropin)
-        @ssh.exec!("sudo systemctl daemon-reload")
-        @ssh.exec!("sudo systemctl restart kubelet")
+        ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
+        ssh.file(DROPIN_PATH).write(dropin)
+        ssh.exec!("sudo systemctl daemon-reload")
+        ssh.exec!("sudo systemctl restart kubelet")
       end
 
       def configure_kubelet_proxy
@@ -81,7 +81,7 @@ module Pharos
 
       # @return [String, nil]
       def existing_dropin
-        file = @ssh.file(DROPIN_PATH)
+        file = ssh.file(DROPIN_PATH)
         file.read if file.exist?
       end
 

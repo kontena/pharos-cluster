@@ -63,14 +63,14 @@ module Pharos
       end
 
       def sync_ca
-        return if cluster_context['etcd-ca'].keys.all? { |k| @ssh.file(File.join(CA_PATH, k)).exist? }
+        return if cluster_context['etcd-ca'].keys.all? { |k| ssh.file(File.join(CA_PATH, k)).exist? }
 
         logger.info { 'Pushing certificate authority files to host ...' }
-        @ssh.exec!("sudo mkdir -p #{CA_PATH}")
+        ssh.exec!("sudo mkdir -p #{CA_PATH}")
 
         cluster_context['etcd-ca'].each do |file, crt|
           path = File.join(CA_PATH, file)
-          @ssh.file(path).write(crt)
+          ssh.file(path).write(crt)
         end
       end
 
