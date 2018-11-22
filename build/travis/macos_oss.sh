@@ -6,7 +6,6 @@ rm -rf non-oss/
 
 brew install squashfs
 curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-darwin-amd64.gz | gunzip > /usr/local/bin/rubyc
-curl -sL https://curl.haxx.se/ca/cacert.pem > data/cacert.pem
 chmod +x /usr/local/bin/rubyc
 
 # Download updated SSL certs
