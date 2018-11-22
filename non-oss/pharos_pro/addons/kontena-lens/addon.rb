@@ -21,6 +21,7 @@ Pharos.addon 'kontena-lens' do
     end
     optional(:shell).schema do
       optional(:image).filled(:str?)
+      optional(:skip_refresh).filled(:bool?)
     end
   }
 

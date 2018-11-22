@@ -48,6 +48,10 @@ spec:
           <%- end -%>
           - name: LENS_VERSION
             value: "<%= version %>"
+          <%- if config&.shell&.skip_refresh -%>
+          - name: skip_refresh
+            value: "true"
+          <%- end -%>
           resources:
             requests:
               memory: "128Mi"
