@@ -10,6 +10,10 @@ rm -rf non-oss/
 # build binary
 curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-linux-amd64.gz | gunzip > /usr/local/bin/rubyc
 chmod +x /usr/local/bin/rubyc
+
+# Download updated SSL certs
+curl -sL https://curl.haxx.se/ca/cacert.pem > data/cacert.pem
+
 gem install bundler
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-linux-amd64-${version}+oss"
