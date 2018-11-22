@@ -14,6 +14,8 @@ module Pharos
 
     def run(*_args)
       super
+    rescue Clamp::HelpWanted
+      raise
     rescue Pharos::ConfigError => exc
       warn "==> #{exc}"
       exit 11
