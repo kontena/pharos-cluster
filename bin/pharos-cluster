@@ -8,6 +8,13 @@ $LOAD_PATH.unshift lib_path unless $LOAD_PATH.include?(lib_path)
 
 STDOUT.sync = true
 
+# Excon will pick these when setting up SSL. If none are found, it will use the bundled
+# cacert.pem from excon's data/ dir.
+if ENV['SSL_CERT_PATH'].to_s.empty?
+  cert_file = File.expand_path('../data/cacert.pem', __dir__)
+  ENV['SSL_CERT_PATH'] = cert_file if File.exist?(cert_file)
+end
+
 require 'pharos_cluster'
 Signal.trap("SIGPIPE", "SYSTEM_DEFAULT")
 Pharos::RootCommand.run
