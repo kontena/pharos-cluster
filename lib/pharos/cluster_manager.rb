@@ -134,6 +134,14 @@ module Pharos
         apply_phase(Phases::Drain, hosts, parallel: false)
         apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first)
       end
+      addon_manager.each do |addon|
+        if addon.enabled?
+          puts @pastel.cyan("==> Resetting addon #{addon.name}")
+          hosts.each do |host|
+            addon.apply_reset_host(host)
+          end
+        end
+      end
       apply_phase(Phases::ResetHost, hosts, parallel: true)
     end
 
