@@ -127,21 +127,14 @@ module Pharos
       apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
     end
 
-    def apply_reset_hosts(hosts, drain: true, delete: true)
+    # @param hosts [Array<Pharos::Configuration::Host>]
+    def apply_reset_hosts(hosts)
       master_hosts = sorted_master_hosts
-      apply_phase(Phases::GatherFacts, hosts, parallel: true)
-
-      if drain || delete
-        apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false, optional: true)
+      if master_hosts.first.master_sort_score == 0
+        apply_phase(Phases::Drain, hosts, parallel: false)
+        apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first)
       end
-
-      apply_phase(Phases::Drain, hosts, parallel: false) if drain
-      apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first) if delete
       apply_phase(Phases::ResetHost, hosts, parallel: true)
-    end
-
-    def apply_reset_all
-      apply_phase(Phases::ResetHost, config.hosts, parallel: true)
     end
 
     def apply_addons_cluster_config_modifications

@@ -6,6 +6,7 @@ module Pharos
       title "Delete node"
 
       def call
+        logger.info { "deleting node from kubernetes api ..." }
         master_ssh.exec!("kubectl delete node #{@host.hostname}")
       end
     end
