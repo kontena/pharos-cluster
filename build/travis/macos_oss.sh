@@ -10,6 +10,7 @@ curl -sL https://curl.haxx.se/ca/cacert.pem > data/cacert.pem
 chmod +x /usr/local/bin/rubyc
 
 # Download updated SSL certs
+mkdir -p data
 curl -sL https://curl.haxx.se/ca/cacert.pem > data/cacert.pem
 
 version=${TRAVIS_TAG#"v"}

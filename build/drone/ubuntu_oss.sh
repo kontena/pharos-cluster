@@ -12,6 +12,7 @@ curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-linux-amd64.
 chmod +x /usr/local/bin/rubyc
 
 # Download updated SSL certs
+mkdir -p data
 curl -sL https://curl.haxx.se/ca/cacert.pem > data/cacert.pem
 
 gem install bundler
