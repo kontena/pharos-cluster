@@ -19,14 +19,6 @@ module Pharos
       Dir.chdir(config_yaml.dirname) do
         configure(config)
       end
-    rescue Pharos::ConfigError => exc
-      warn "==> #{exc}"
-      exit 11
-    rescue StandardError => ex
-      raise unless ENV['DEBUG'].to_s.empty?
-
-      warn "#{ex.class.name} : #{ex.message}"
-      exit 1
     end
 
     # @param config [Pharos::Config]

@@ -16,8 +16,10 @@ module Pharos
         exit 0
       end
 
-      exit run_single(filtered_hosts.first) if filtered_hosts.size == 1
-      exit run_parallel
+      Dir.chdir(config_yaml.dirname) do
+        exit run_single(filtered_hosts.first) if filtered_hosts.size == 1
+        exit run_parallel
+      end
     end
 
     private

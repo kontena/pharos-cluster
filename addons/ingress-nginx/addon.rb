@@ -5,7 +5,9 @@ Pharos.addon 'ingress-nginx' do
   license 'Apache License 2.0'
 
   config {
-    attribute :configmap, Pharos::Types::Hash
+    attribute :configmap, Pharos::Types::Hash.default(
+      'worker-shutdown-timeout' => '3600s' # keep connection/workers alive for 1 hour
+    )
     attribute :node_selector, Pharos::Types::Hash
     attribute :default_backend, Pharos::Types::Hash.default(
       'image' => 'registry.pharos.sh/kontenapharos/pharos-default-backend:0.0.3'

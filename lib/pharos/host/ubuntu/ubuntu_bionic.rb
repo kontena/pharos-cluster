@@ -7,7 +7,7 @@ module Pharos
     class UbuntuBionic < Ubuntu
       register_config 'ubuntu', '18.04'
 
-      DOCKER_VERSION = '17.12.1'
+      DOCKER_VERSION = '18.06.1'
       CFSSL_VERSION = '1.2'
 
       register_component(
@@ -35,7 +35,7 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1",
+            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1~18.04.1",
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
