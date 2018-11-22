@@ -41,6 +41,11 @@ Pharos.addon 'openebs' do
     )
   }
 
+  reset_host { |host|
+    data_dir = config.default_storage_pool.path.strip
+    host.ssh.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
+  }
+
   def validate
     super
     raise Pharos::InvalidAddonError, "Cannot set more replicas than workers" if config.default_storage_class[:replicas] && config.default_storage_class[:replicas] > cluster_config.worker_hosts.count
