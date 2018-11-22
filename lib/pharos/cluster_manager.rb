@@ -130,16 +130,16 @@ module Pharos
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_reset_hosts(hosts)
       master_hosts = sorted_master_hosts
-      if master_hosts.first.master_sort_score == 0
+      if master_hosts.first.master_sort_score.zero?
         apply_phase(Phases::Drain, hosts, parallel: false)
         apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first)
       end
       addon_manager.each do |addon|
-        if addon.enabled?
-          puts @pastel.cyan("==> Resetting addon #{addon.name}")
-          hosts.each do |host|
-            addon.apply_reset_host(host)
-          end
+        next unless addon.enabled?
+
+        puts @pastel.cyan("==> Resetting addon #{addon.name}")
+        hosts.each do |host|
+          addon.apply_reset_host(host)
         end
       end
       apply_phase(Phases::ResetHost, hosts, parallel: true)
