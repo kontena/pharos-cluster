@@ -3,7 +3,7 @@ lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "pharos/version"
 
-files = Dir['README.md', 'LICENSE', 'licenses/*', 'bin/*', 'lib/**/*', 'addons/**/*', 'data/**/*']
+files = Dir['README.md', 'LICENSE', 'licenses/*', 'bin/*', 'lib/**/*', 'addons/**/*']
 require_paths = ['lib']
 if ENV['PHAROS_NON_OSS'] == 'true'
   files += Dir['non-oss/**/*']
