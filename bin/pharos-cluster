@@ -1,14 +1,6 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-if ARGV.first == 'spec'
-  ARGV.shift
-  ARGV << 'spec' if ARGV.empty?
-  require 'rspec/core'
-  RSpec::Core::Runner.invoke
-  exit 0
-end
-
 # add lib to libpath (only needed when running from the sources)
 require 'pathname'
 lib_path = File.expand_path('../../lib', Pathname.new(__FILE__).realpath)
