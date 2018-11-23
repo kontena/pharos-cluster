@@ -12,7 +12,7 @@ jobs:
   include:
     - stage: publish binary
       script: ./build/travis/macos.sh
-      rvm: 2.4
+      rvm: 2.5
       os: osx
       deploy:
         provider: s3
@@ -28,7 +28,7 @@ jobs:
           all_branches: true
     - stage: publish binary
       script: ./build/travis/macos_oss.sh
-      rvm: 2.4
+      rvm: 2.5
       os: osx
       deploy:
         provider: s3

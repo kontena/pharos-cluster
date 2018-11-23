@@ -147,12 +147,10 @@ module Pharos
 
     def apply_addons_cluster_config_modifications
       addon_manager.each do |addon|
-        begin
-          addon.apply_modify_cluster_config
-        rescue Pharos::Error => e
-          error_msg = "#{addon.name} => " + e.message
-          raise Pharos::AddonManager::InvalidConfig, error_msg
-        end
+        addon.apply_modify_cluster_config
+      rescue Pharos::Error => e
+        error_msg = "#{addon.name} => " + e.message
+        raise Pharos::AddonManager::InvalidConfig, error_msg
       end
     end
 
