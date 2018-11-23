@@ -114,7 +114,6 @@ module Pharos
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
-          args << "--cadvisor-port=0"
           args << "--address=127.0.0.1"
         else
           args << "--node-ip=#{peer_address}" if cloud_provider.nil?
