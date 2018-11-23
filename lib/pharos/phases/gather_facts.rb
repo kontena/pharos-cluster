@@ -129,11 +129,9 @@ module Pharos
       def read_routes
         routes = []
         ssh.exec!("sudo ip route").each_line do |line|
-          begin
-            routes << Pharos::Configuration::Host::Route.parse(line)
-          rescue RuntimeError => exc
-            logger.warn { exc }
-          end
+          routes << Pharos::Configuration::Host::Route.parse(line)
+        rescue RuntimeError => exc
+          logger.warn { exc }
         end
 
         routes
