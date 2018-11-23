@@ -7,7 +7,7 @@ AllCops:
     - Gemfile
     - "*.gemspec"
     - bundler/**/*
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.5
 
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:

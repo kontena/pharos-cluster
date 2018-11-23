@@ -1,6 +1,6 @@
 pipeline:
   test-ruby:
-    image: ruby:2.4
+    image: ruby:2.5
     commands:
       - gem install bundler -Nf
       - bundle install --path bundler
