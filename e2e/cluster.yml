@@ -12,9 +12,10 @@ addons:
     enabled: true
   helm:
     enabled: true
-  cert-manager:
-    enabled: true
-    issuer:
-      name: letsencrypt-staging
-      server: https://acme-staging-v02.api.letsencrypt.org/directory
-      email: me@domain.com
+  # TODO: fix cert-manager on travis
+  #cert-manager:
+  #  enabled: true
+  #  issuer:
+  #    name: letsencrypt-staging
+  #    server: https://acme-staging-v02.api.letsencrypt.org/directory
+  #    email: me@domain.com
