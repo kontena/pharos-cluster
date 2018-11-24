@@ -2,9 +2,6 @@ language: ruby
 sudo: required
 cache: bundler
 bundler_args: --without development
-env:
-  global:
-    - secure: "AX0y/vETBJ4C93/RWgTZNFwlm8r+4b0cWExOa3G4NBvxc3x1PBjA9sD7LOezUxMCaOuTM1GF+vpXupreeZtdU6mUqQNJSsOH5sWivPfQwCmxbhODW/CGhlhKZT0pTJQ2QhUbp6zXeLfQ3WJT4X4VH2NP5zkfJ7Q0hO7AJqqty/+mAZLbtaBkw1eKhwWPx1t3UQx9zY07V2WsJQCmj9O/bdMyoa3uoTvSahzvAQsY/1XQ6OMZrVvt7JGoFjEVLNnttT3at3HvG3Izwb8u+ftrCr+0u6V9tUPAH+1WHJgP1fYrysU2n+HwhvGYlkl3TYt0wxP9ccz18NiFGf3SOf+OSBQJ11cQ6RJ7R6Qo/RLpW2AffjYW881d32pORbVsEpj8vBvElfJKbl0rT4IgIRJxxCuZnqVbX+8szma9EAmltGbtNdyuX4WxARZ3XNlFONacX5mnubRZDruYijNPzv3tCb6KBaRV5yfg8dhMPjOf6r0i8r0+9IFRsfszVMSxJhrnXlhtaYn7OikqBDOSiCa/VeSBb09fl/klnTCpCHFRICYgWqO8vf1jWvXLuKtHA7E3Ah4CJTkirY4eFwLMEN2kJ6g28OudWMU/urL4/rRb4LpzlDySy9KFA8f1/+7A/mzLDv7Iket2ig6/Pa7ymnYSlmypzVZTvcpJr0EfK+hmr6E="
 stages:
   - name: e2e
   - name: publish binary

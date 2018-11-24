@@ -8,7 +8,6 @@ chmod 0600 ~/.ssh/authorized_keys
 
 ifconfig
 
-bundle install
 bundle exec bin/pharos-cluster
 bundle exec bin/pharos-cluster -v
 bundle exec bin/pharos-cluster version
