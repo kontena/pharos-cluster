@@ -4,5 +4,17 @@ hosts:
     user: travis
     role: master
     ssh_key_path: ~/.ssh/id_rsa_travis
+    taints: []
 network:
   provider: weave
+addons:
+  ingress-nginx:
+    enabled: true
+  helm:
+    enabled: true
+  cert-manager:
+    enabled: true
+    issuer:
+      name: letsencrypt-staging
+      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      email: me@domain.com
