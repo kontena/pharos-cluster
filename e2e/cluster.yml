@@ -4,9 +4,10 @@ hosts:
     user: travis
     role: master
     ssh_key_path: ~/.ssh/id_rsa_travis
+    container_runtime: $CONTAINER_RUNTIME
     taints: []
 network:
-  provider: weave
+  provider: $NETWORK_PROVIDER
 addons:
   ingress-nginx:
     enabled: true
