@@ -1,5 +1,6 @@
 hosts:
   - address: 127.0.0.1
+    private_interface: ens4
     user: travis
     role: master
     ssh_key_path: ~/.ssh/id_rsa_travis
