@@ -1,0 +1,7 @@
+hosts:
+  - address: 127.0.0.1
+    user: travis
+    role: master
+    ssh_key_path: ~/.ssh/id_rsa_travis
+network:
+  provider: weave
