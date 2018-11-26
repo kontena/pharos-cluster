@@ -20,7 +20,7 @@ module Pharos
       def store_initial_cluster_state
         return if cluster_context['etcd-initial-cluster-state']
 
-        state = if @ssh.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
+        state = if ssh.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
                   'existing'
                 else
                   'new'
@@ -67,7 +67,7 @@ module Pharos
 
       # @return [Pharos::Etcd::Client]
       def etcd
-        @etcd ||= Pharos::Etcd::Client.new(@ssh)
+        @etcd ||= Pharos::Etcd::Client.new(ssh)
       end
 
       # @return [String,NilClass]

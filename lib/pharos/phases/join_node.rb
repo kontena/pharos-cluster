@@ -7,7 +7,7 @@ module Pharos
       PROXY_ADDRESS = '127.0.0.1:6443'
 
       def already_joined?
-        @ssh.file("/etc/kubernetes/kubelet.conf").exist?
+        ssh.file("/etc/kubernetes/kubelet.conf").exist?
       end
 
       def call
@@ -25,7 +25,7 @@ module Pharos
         join_command << "--ignore-preflight-errors DirAvailable--etc-kubernetes-manifests"
         join_command << "--ignore-preflight-errors SystemVerification" # kubeadm does not like fresh docker versions ...
 
-        @ssh.exec!('sudo ' + join_command.join(' '))
+        ssh.exec!('sudo ' + join_command.join(' '))
       end
     end
   end

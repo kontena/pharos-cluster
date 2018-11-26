@@ -6,7 +6,11 @@ describe Pharos::Phases::ValidateVersion do
   let(:config) { Pharos::Config.new(hosts: [host]) }
   let(:ssh) { instance_double(Pharos::SSH::Client) }
   let(:cluster_context) { Hash.new }
-  subject { described_class.new(host, config: config, ssh: ssh, cluster_context: cluster_context) }
+  subject { described_class.new(host, config: config, cluster_context: cluster_context) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(ssh)
+  end
 
   describe '#validate_version' do
     it 'allows re-up for stable releases' do

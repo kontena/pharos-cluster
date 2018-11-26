@@ -114,6 +114,10 @@ module Pharos
         Pharos::SSH::InteractiveSession.new(self).run
       end
 
+      def connected?
+        @session && !@session.closed?
+      end
+
       def disconnect
         @session.close if @session && !@session.closed?
       end

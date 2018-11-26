@@ -97,7 +97,7 @@ describe Pharos::Configuration::Host do
     it 'returns os release when supported' do
       Pharos::HostConfigManager.load_configs(double(:cluster_config))
       allow(subject).to receive(:os_release).and_return(double(:os_release, id: 'ubuntu', version: '16.04'))
-      expect(subject.configurer(double(:ssh))).to be_instance_of(Pharos::Host::UbuntuXenial)
+      expect(subject.configurer(double(:ssh))).to be_kind_of(Pharos::Host::UbuntuXenial)
     end
   end
 

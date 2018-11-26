@@ -10,6 +10,10 @@ module Pharos
       )
 
       register_component(
+        name: 'coredns', version: Pharos::COREDNS_VERSION, license: 'Apache License 2.0'
+      )
+
+      register_component(
         name: 'pharos-kubelet-proxy', version: Pharos::KUBELET_PROXY_VERSION, license: 'Apache License 2.0',
         enabled: proc { |c| !c.worker_hosts.empty? }
       )
@@ -19,7 +23,6 @@ module Pharos
       CLOUD_CONFIG_FILE = (CLOUD_CONFIG_DIR + '/cloud-config')
 
       def call
-        configure_weave_cni if @config.network.provider == 'weave'
         push_cloud_config if @config.cloud&.config
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
@@ -29,18 +32,18 @@ module Pharos
       end
 
       def push_cloud_config
-        @ssh.exec!("sudo mkdir -p #{CLOUD_CONFIG_DIR}")
-        @ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
+        ssh.exec!("sudo mkdir -p #{CLOUD_CONFIG_DIR}")
+        ssh.file(CLOUD_CONFIG_FILE).write(File.open(File.expand_path(@config.cloud.config)))
       end
 
       # @param dropin [String]
       def ensure_dropin(dropin)
         return if dropin == existing_dropin
 
-        @ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
-        @ssh.file(DROPIN_PATH).write(dropin)
-        @ssh.exec!("sudo systemctl daemon-reload")
-        @ssh.exec!("sudo systemctl restart kubelet")
+        ssh.exec!("sudo mkdir -p /etc/systemd/system/kubelet.service.d/")
+        ssh.file(DROPIN_PATH).write(dropin)
+        ssh.exec!("sudo systemctl daemon-reload")
+        ssh.exec!("sudo systemctl restart kubelet")
       end
 
       def configure_kubelet_proxy
@@ -75,13 +78,9 @@ module Pharos
         )
       end
 
-      def configure_weave_cni
-        exec_script('configure-weave-cni.sh')
-      end
-
       # @return [String, nil]
       def existing_dropin
-        file = @ssh.file(DROPIN_PATH)
+        file = ssh.file(DROPIN_PATH)
         file.read if file.exist?
       end
 

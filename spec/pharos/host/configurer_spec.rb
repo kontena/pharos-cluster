@@ -3,12 +3,13 @@ require 'recursive-open-struct'
 describe Pharos::Host::Configurer do
   let(:test_config_class) do
     Class.new(described_class) do
+      register_config 'test', '1.0.0'
       register_config 'test', '1.1.0'
     end
   end
 
   let(:host) { double(:host) }
-  let(:ssh) { double(:ssh) }
+  let(:ssh) { instance_double(Pharos::SSH::Client) }
   let(:subject) { described_class.new(host, ssh) }
 
   describe '#register_config' do
@@ -17,9 +18,22 @@ describe Pharos::Host::Configurer do
       expect(test_config_class.os_version).to eq('1.1.0')
     end
 
+    it 'registers multiple versions to configs' do
+      expect(
+        described_class.config_for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '1.0.0')
+        )
+      ).not_to be_nil
+      expect(
+        described_class.config_for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '1.1.0')
+        )
+      ).not_to be_nil
+    end
+
     it 'registers config class' do
       test_config_class # load
-      expect(described_class.configs.last).to eq(test_config_class)
+      expect(described_class.configs.last.superclass).to eq(test_config_class)
     end
   end
 

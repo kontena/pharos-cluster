@@ -5,8 +5,7 @@ describe Pharos::Phases::ValidateVersion do
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.1', role: 'master') }
   let(:network_config) { {} }
   let(:config) { Pharos::Config.new(hosts: [host]) }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(host, config: config, ssh: ssh) }
+  subject { described_class.new(host, config: config) }
 
   describe '#validate_version' do
     it 'allows re-up for stable releases' do

@@ -5,7 +5,7 @@ module Pharos
     class ConfigureWeave < Pharos::Phase
       title "Configure Weave network"
 
-      WEAVE_VERSION = '2.4.1'
+      WEAVE_VERSION = '2.5.0'
 
       register_component(
         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
@@ -13,6 +13,7 @@ module Pharos
       )
 
       def call
+        configure_cni
         ensure_passwd
         ensure_resources
       end
@@ -50,6 +51,10 @@ module Pharos
 
       def generate_password
         SecureRandom.hex(24)
+      end
+
+      def configure_cni
+        exec_script('configure-weave-cni.sh')
       end
     end
   end

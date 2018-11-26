@@ -29,7 +29,7 @@ module Pharos
       end
 
       def master_ssh
-        ssh_manager.client_for(@master)
+        @master.ssh
       end
 
       def master_healthy?

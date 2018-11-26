@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require 'bcrypt'
+
 Pharos.addon 'kontena-lens' do
-  version '1.2.0'
+  version '1.3.0'
   license 'Kontena License'
   priority 10
 
@@ -38,34 +40,87 @@ Pharos.addon 'kontena-lens' do
       tls_enabled: tls_enabled?,
       user_management: user_management_enabled?
     )
-    protocol = !tls_enabled? || config.tls&.email ? 'http' : 'https' # with cert-manager we have to use http since tls secret is not in place immediately
-    wait_for_dashboard(protocol, host)
-    message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
+    protocol = !tls_enabled? 'http' : 'https'
+    message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
     else
-      @retries = 1
-      @max_retries = 3
-      create_lens_config(name, protocol, host, admin_password)
-      message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
+      unless admin_exists?
+        create_admin_user(admin_password)
+      end
+      unless config_exists?
+        create_config(name, host)
+      end
+      message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
+      message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
     end
     post_install_message(message)
   }
+
+  # @return [Boolean]
+  def admin_exists?
+    kube_client.api('beta.kontena.io/v1').resource('users').get('admin')
+    true
+  rescue K8s::Error::NotFound
+    false
+  end
+
+  # @param admin_password [String]
+  # @return [K8s::Resource]
+  def create_admin_user(admin_password)
+    admin = K8s::Resource.new(
+      apiVersion: 'beta.kontena.io/v1',
+      kind: 'User',
+      metadata: {
+        name: 'admin'
+      },
+      spec: {
+        username: 'admin',
+        passwordDigest: BCrypt::Password.create(admin_password)
+      }
+    )
+    kube_client.api('beta.kontena.io/v1').resource('users').create_resource(admin)
+  end
+
+  # @return [Boolean]
+  def config_exists?
+    kube_client.api('v1').resource('configmaps').get('config', namespace: 'kontena-lens')
+    true
+  rescue K8s::Error::NotFound
+    false
+  end
+
+  # @param name [String]
+  # @param host [String]
+  # @return [K8s::Resource]
+  def create_config(name, host)
+    config = K8s::Resource.new(
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        name: 'config',
+        namespace: 'kontena-lens'
+      },
+      data: {
+        clusterName: name,
+        clusterUrl: host
+      }
+    )
+    kube_client.api('v1').resource('configmaps').create_resource(config)
+  end
 
   def pastel
     @pastel ||= Pastel.new
   end
 
+  # @return [Pharos::Configuration::Host]
   def gateway_node
     cluster_config.worker_hosts.first || cluster_config.master_hosts.first
   end
 
+  # @return [String, NilClass]
   def gateway_node_ip
     gateway_node&.address
-  end
-
-  def master_host_ip
-    cluster_config.master_host&.address
   end
 
   def tls_enabled?
@@ -76,6 +131,7 @@ Pharos.addon 'kontena-lens' do
     config.user_management&.enabled != false
   end
 
+  # @return [Pharos::Configuration::TokenWebhook]
   def token_authentication_webhook_config
     Pharos::Configuration::TokenWebhook.new(
       config: {
@@ -90,19 +146,7 @@ Pharos.addon 'kontena-lens' do
     )
   end
 
-  def wait_for_dashboard(protocol, host)
-    puts "    Waiting for Kontena Lens to get up and running ..."
-    command = "sudo curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" #{protocol}://localhost/" # rubocop:disable Style/FormatStringToken
-    response = ssh.exec(command)
-    i = 1
-    until response.output.to_i == 200
-      sleep 10
-      puts "    Still waiting... (#{i * 10}s elapsed)"
-      i += 1
-      response = ssh.exec(command)
-    end
-  end
-
+  # @return [String]
   def admin_password
     @admin_password ||= SecureRandom.hex(8)
   end
@@ -111,39 +155,21 @@ Pharos.addon 'kontena-lens' do
     !configmap.nil?
   end
 
+  # @return [K8s::Resource, NilClass]
   def configmap
     @configmap ||= kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').get('config')
   rescue K8s::Error::NotFound
     nil
   end
 
-  def create_lens_config(name, protocol, host, admin_password)
-    cluster_config = {
-      clusterName: name,
-      clusterUrl: "https://#{master_host_ip}:6443",
-      adminPassword: admin_password
-    }
-    command = "sudo curl -iksL -X POST -d '#{cluster_config.to_json}' -H \"Host: #{host}\" -H \"Content-Type: application/json\" #{protocol}://localhost/api/cluster"
-    result = ssh.exec(command)
-    raise Pharos::InvalidAddonError, "Could not create Kontena Lens configuration" unless result.output.lines.include?("HTTP/1.1 200 OK\r\n")
-  rescue Pharos::InvalidAddonError => e
-    if @retries <= @max_retries
-      @retries += 1
-      timeout = 2**@retries
-      puts "    #{e.message}"
-      puts "    retrying after #{timeout} seconds"
-      sleep timeout
-      retry
-    end
-    raise Pharos::InvalidAddonError, e.message
-  end
-
+  # @param new_name [String]
+  # @return [K8s::Resource]
   def update_lens_name(new_name)
     configmap.data.clusterName = new_name
     kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').update_resource(configmap)
   end
 
   def ssh
-    @ssh ||= Pharos::SSH::Manager.instance.client_for(gateway_node)
+    @ssh ||= gateway_node&.ssh
   end
 end

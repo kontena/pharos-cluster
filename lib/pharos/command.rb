@@ -12,6 +12,19 @@ module Pharos
       end
     end
 
+    def run(*_args)
+      super
+    rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
+      raise
+    rescue Pharos::ConfigError => exc
+      warn "==> #{exc}"
+      exit 11
+    rescue StandardError => ex
+      raise unless ENV['DEBUG'].to_s.empty?
+
+      signal_error "#{ex.class.name} : #{ex.message}"
+    end
+
     option '--[no-]color', :flag, "colorize output", default: $stdout.tty?
 
     option ['-v', '--version'], :flag, "print #{File.basename($PROGRAM_NAME)} version" do
