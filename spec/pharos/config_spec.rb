@@ -9,6 +9,29 @@ describe Pharos::Config do
   subject { described_class.load(data) }
 
   describe 'hosts' do
+    context 'invalid host address' do
+      let(:hosts) { [
+        { 'address' => ' 192.0.2.1', 'role' => 'master' },
+      ] }
+      it 'fails to load' do
+        expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
+          expect(exc.errors[:hosts][0][:address][0]).to eq "is invalid"
+        end
+      end
+    end
+
+    context 'invalid host private address' do
+      let(:hosts) { [
+        { 'address' => '192.0.2.1', 'private_address' => '"127.0.0.1"', 'role' => 'master' },
+      ] }
+      it 'fails to load' do
+        expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
+          expect(exc.errors[:hosts][0][:private_address][0]).to eq "is invalid"
+        end
+      end
+    end
+
+
     context 'without hosts' do
       let(:data) { {} }
 
