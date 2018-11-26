@@ -49,7 +49,7 @@ spec:
           - name: LENS_VERSION
             value: "<%= version %>"
           <%- if config&.shell&.skip_refresh -%>
-          - name: skip_refresh
+          - name: SKIP_REFRESH
             value: "true"
           <%- end -%>
           resources:
