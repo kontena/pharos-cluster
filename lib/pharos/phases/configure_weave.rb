@@ -54,7 +54,7 @@ module Pharos
       def calculate_kube_peers
         peer_ips = Set.new
         @config.hosts.each do |host|
-          @config.hosts.select { |other_host| other_host != host}.each do |peer_host|
+          @config.hosts.reject { |other_host| other_host == host }.each do |peer_host|
             peer_ips << host.peer_address_for(peer_host)
           end
         end
