@@ -1,3 +1,4 @@
+require "pharos/host/configurer"
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do
@@ -25,7 +26,8 @@ describe Pharos::Phases::ConfigureKubelet do
 
   subject { described_class.new(host, config: config) }
 
-  before(:each) do
+  before do
+    Pharos::HostConfigManager.load_configs(config)
     host.resolvconf = host_resolvconf
 
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))
