@@ -136,7 +136,7 @@ module Pharos
       addon_manager.each do |addon|
         next unless addon.enabled?
 
-        puts @pastel.cyan("==> Resetting addon #{addon.name}")
+        puts "==> Resetting addon #{addon.name}".cyan
         hosts.each do |host|
           addon.apply_reset_host(host)
         end
