@@ -40,7 +40,7 @@ Pharos.addon 'kontena-lens' do
       tls_enabled: tls_enabled?,
       user_management: user_management_enabled?
     )
-    protocol = !tls_enabled? 'http' : 'https'
+    protocol = tls_enabled? ? 'https' : 'http'
     message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
