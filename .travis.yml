@@ -4,6 +4,7 @@ cache: bundler
 bundler_args: --without development
 stages:
   - name: e2e
+  - name: test binary
   - name: publish binary
     if: tag IS present
 jobs:
@@ -40,10 +41,11 @@ jobs:
       env:
         - CONTAINER_RUNTIME=cri-o
         - NETWORK_PROVIDER=calico
-    - stage: publish binary
+    - stage: test binary
       script: ./build/travis/macos.sh
       rvm: 2.5
       os: osx
+      install: ls -l
       deploy:
         provider: s3
         access_key_id:
