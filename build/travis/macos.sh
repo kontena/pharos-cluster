@@ -14,7 +14,7 @@ chmod +x /usr/local/bin/rubyc
 
 version=${TRAVIS_TAG#"v"}
 package="pharos-cluster-darwin-amd64-${version}"
-rubyc -o "$package" --make-args=--silent pharos-cluster
+rubyc --openssl-dir=/usr/local/etc/openssl -o "$package" --make-args=--silent pharos-cluster
 ./"$package" version
 
 rm -rf upload/

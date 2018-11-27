@@ -14,6 +14,6 @@ chmod +x /usr/local/bin/rubyc
 version=${DRONE_TAG#"v"}
 package="pharos-cluster-linux-amd64-${version}"
 mkdir -p /root/.pharos/build
-rubyc -o "$package" -d /root/.pharos/build --make-args=--silent pharos-cluster
+rubyc --openssl-dir=/etc/ssl -o "$package" -d /root/.pharos/build --make-args=--silent pharos-cluster
 rm -rf /root/.pharos/build
 ./"$package" version
