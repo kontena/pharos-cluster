@@ -7,7 +7,7 @@ apt-get install -y -q squashfs-tools build-essential ruby bison ruby-dev git-cor
 
 update-ca-certificates
 
-curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-0.5.0-extra-linux-amd64.gz | gunzip > /usr/local/bin/rubyc
+curl -sL https://dl.bintray.com/kontena/ruby-packer/0.5.0-dev/rubyc-0.5.0-extra2-linux-amd64.gz | gunzip > /usr/local/bin/rubyc
 chmod +x /usr/local/bin/rubyc
 
 rm -rf non-oss/
