@@ -11,6 +11,7 @@ Pharos.addon 'kontena-lens' do
     optional(:name).filled(:str?)
     optional(:host).filled(:str?)
     optional(:tls).schema do
+      optional(:enabled).filled(:bool?)
       optional(:email).filled(:str?)
     end
     optional(:user_management).schema do
@@ -36,9 +37,11 @@ Pharos.addon 'kontena-lens' do
     apply_resources(
       host: host,
       email: config.tls&.email,
+      tls_enabled: tls_enabled?,
       user_management: user_management_enabled?
     )
-    message = "Kontena Lens is configured to respond at: " + pastel.cyan("https://#{host}")
+    protocol = tls_enabled? ? 'https' : 'http'
+    message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
     if lens_configured?
       update_lens_name(name) if configmap.data.clusterName != name
     else
@@ -118,6 +121,10 @@ Pharos.addon 'kontena-lens' do
   # @return [String, NilClass]
   def gateway_node_ip
     gateway_node&.address
+  end
+
+  def tls_enabled?
+    config.tls&.enabled != false
   end
 
   def user_management_enabled?
