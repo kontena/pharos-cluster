@@ -110,19 +110,18 @@ module Pharos
     end
 
     # @param addon [Pharos::Addon]
-    # @param retry_times [Integer]
-    def yield_addon_with_retry(addon, retry_times = 10)
-      retries = 0
+    # @param retry_duration [Integer] in seconds, default 300 = 5 minutes
+    def yield_addon_with_retry(addon, retry_duration = 300)
+      start_time = Time.now
       begin
         yield addon
       rescue *RETRY_ERRORS => exc
-        raise if retries >= retry_times
+        raise if Time.now - start_time > retry_duration
 
         logger.error { "got error (#{exc.class.name}): #{exc.message.strip}" }
         logger.debug { exc.backtrace.join("\n") }
-        logger.error { "retrying after #{2**retries} seconds ..." }
-        sleep 2**retries
-        retries += 1
+        logger.error { "retrying after 2 seconds ..." }
+        sleep 2
         retry
       end
     end

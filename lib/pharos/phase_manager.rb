@@ -45,19 +45,18 @@ module Pharos
     end
 
     # @param phase [Pharos::Phases::Base]
-    # @param retry_times [Integer]
-    def yield_phase_with_retry(phase, retry_times = 10)
-      retries = 0
+    # @param retry_duration [Integer] seconds to retry until giving up, default 5 minutes.
+    def yield_phase_with_retry(phase, retry_duration = 300)
+      start_time = Time.now
       begin
         yield phase
       rescue *RETRY_ERRORS => exc
-        raise if retries >= retry_times
+        raise if Time.now - start_time > retry_duration
 
         logger.error { "[#{phase.host}] got error (#{exc.class.name}): #{exc.message.strip}" }
         logger.debug { exc.backtrace.join("\n") }
-        logger.error { "[#{phase.host}] retrying after #{2**retries} seconds ..." }
-        sleep 2**retries
-        retries += 1
+        logger.error { "[#{phase.host}] retrying after 2 seconds ..." }
+        sleep 2
         retry
       end
     end
