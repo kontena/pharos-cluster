@@ -2,27 +2,10 @@
 
 set -e
 
-reload_daemon() {
-    if systemctl is-active --quiet docker; then
-        systemctl daemon-reload
-        systemctl restart docker
-    fi
-}
+# shellcheck disable=SC1091
+. /usr/local/share/pharos/util.sh
 
-if [ -n "$HTTP_PROXY" ] || [ -n "$NO_PROXY" ]; then
-    mkdir -p /etc/systemd/system/docker.service.d
-    cat <<EOF >/etc/systemd/system/docker.service.d/http-proxy.conf
-[Service]
-Environment="HTTP_PROXY=${HTTP_PROXY:-}"
-Environment="NO_PROXY=${NO_PROXY:-}"
-EOF
-    reload_daemon
-else
-    if [ -f /etc/systemd/system/docker.service.d/http-proxy.conf ]; then
-        rm /etc/systemd/system/docker.service.d/http-proxy.conf
-        reload_daemon
-    fi
-fi
+configure_container_runtime_proxy "docker"
 
 if [ -z "$DOCKER_VERSION" ]; then
     docker info
