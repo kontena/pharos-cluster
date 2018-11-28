@@ -28,7 +28,9 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
         - /metrics-server
-        - --source=kubernetes.summary_api:https://kubernetes.default.svc?useServiceAccount=true&kubeletHttps=true&kubeletPort=10250&insecure=true
+        - --kubelet-insecure-tls=true
+        - --logtostderr=true
+        - --kubelet-preferred-address-types=InternalIP
         resources:
           requests:
             cpu: 10m
