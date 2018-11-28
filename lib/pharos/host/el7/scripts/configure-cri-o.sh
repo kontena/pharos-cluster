@@ -48,10 +48,11 @@ else
 fi
 
 mkdir -p /etc/systemd/system/crio.service.d
-if [ -n "$HTTP_PROXY" ]; then
+if [ -n "$HTTP_PROXY" ] || [ -n "$NO_PROXY" ]; then
     cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
 [Service]
-Environment="HTTP_PROXY=${HTTP_PROXY}"
+Environment="HTTP_PROXY=${HTTP_PROXY:-}"
+Environment="NO_PROXY=${NO_PROXY:-}"
 EOF
     reload_daemon
 else

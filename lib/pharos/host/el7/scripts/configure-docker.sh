@@ -9,11 +9,12 @@ reload_daemon() {
     fi
 }
 
-if [ -n "$HTTP_PROXY" ]; then
+if [ -n "$HTTP_PROXY" ] || [ -n "$NO_PROXY" ]; then
     mkdir -p /etc/systemd/system/docker.service.d
     cat <<EOF >/etc/systemd/system/docker.service.d/http-proxy.conf
 [Service]
-Environment="HTTP_PROXY=${HTTP_PROXY}"
+Environment="HTTP_PROXY=${HTTP_PROXY:-}"
+Environment="NO_PROXY=${NO_PROXY:-}"
 EOF
     reload_daemon
 else
