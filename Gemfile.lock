@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pharos-cluster (2.1.0.alpha.0)
+    pharos-cluster (2.1.0.alpha.1)
       bcrypt
       bcrypt_pbkdf (>= 1.0, < 2.0)
       clamp (= 1.2.1)
@@ -11,7 +11,7 @@ PATH
       ed25519 (= 1.2.4)
       excon (~> 0.62.0)
       fugit (~> 1.1.2)
-      k8s-client (~> 0.6.1)
+      k8s-client (~> 0.6.3)
       net-ssh (= 5.0.2)
       net-ssh-gateway (= 2.0.0)
       pastel
@@ -75,13 +75,14 @@ GEM
     jsonpath (0.9.6)
       multi_json
       to_regexp (~> 0.2.1)
-    k8s-client (0.6.1)
+    k8s-client (0.6.3)
       deep_merge (~> 1.2.1)
       dry-struct (~> 0.5.0)
       excon (~> 0.62.0)
       hashdiff (~> 0.3.7)
       jsonpath (~> 0.9.5)
       recursive-open-struct (~> 1.1.0)
+      yajl-ruby (~> 1.4.0)
     multi_json (1.13.1)
     necromancer (0.4.0)
     net-ssh (5.0.2)
@@ -126,13 +127,13 @@ GEM
     to_regexp (0.2.1)
     tty-color (0.4.3)
     tty-cursor (0.6.0)
-    tty-prompt (0.17.2)
+    tty-prompt (0.18.0)
       necromancer (~> 0.4.0)
       pastel (~> 0.7.0)
       timers (~> 4.0)
       tty-cursor (~> 0.6.0)
-      tty-reader (~> 0.4.0)
-    tty-reader (0.4.0)
+      tty-reader (~> 0.5.0)
+    tty-reader (0.5.0)
       tty-cursor (~> 0.6.0)
       tty-screen (~> 0.6.4)
       wisper (~> 2.0.0)
@@ -141,6 +142,7 @@ GEM
       thread_safe (~> 0.1)
     unicode-display_width (1.4.0)
     wisper (2.0.0)
+    yajl-ruby (1.4.1)
 
 PLATFORMS
   ruby
@@ -154,4 +156,4 @@ DEPENDENCIES
   rubocop (~> 0.57)
 
 BUNDLED WITH
-   1.16.2
+   1.16.3
