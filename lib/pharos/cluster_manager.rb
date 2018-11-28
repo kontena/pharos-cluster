@@ -58,7 +58,6 @@ module Pharos
 
     def gather_facts
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [sorted_master_hosts.first], master: sorted_master_hosts.first, parallel: false, optional: true)
     end
 
     def validate
@@ -87,7 +86,6 @@ module Pharos
 
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, master: master_hosts.first, parallel: true)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints
         # we need to use sorted etcd hosts because phases expects that first one has
@@ -101,15 +99,15 @@ module Pharos
 
       apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, parallel: false)
       apply_phase(Phases::SetupMaster, master_hosts, parallel: true)
-      apply_phase(Phases::UpgradeMaster, master_hosts, master: master_hosts.first, parallel: false) # requires optional early ConfigureClient
+      apply_phase(Phases::UpgradeMaster, master_hosts, master: master_hosts.first, parallel: false)
 
       apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true, master: master_hosts.first)
       apply_phase(Phases::ConfigureKubelet, config.hosts, parallel: true)
 
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false)
 
       # master is now configured and can be used
+      apply_phase(Phases::WarmUpClientCache, [master_hosts.first], master: master_hosts.first, parallel: false)
       apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
       # configure essential services
       apply_phase(Phases::ConfigurePSP, [master_hosts.first], master: master_hosts.first)

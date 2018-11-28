@@ -5,16 +5,17 @@ module Pharos
     class ValidateVersion < Pharos::Phase
       title "Validate cluster version"
 
-      REMOTE_KUBECONFIG = "/etc/kubernetes/admin.conf"
-
       def call
-        return unless kubeconfig?
-        if @host.master_sort_score.positive?
+        if kube_client.nil?
+          logger.debug { "Kubernetes not configured on #{host}" }
+          return nil
+        end
+
+        if host.master_sort_score.positive?
           logger.warn { "Master seems unhealthy, can't detect cluster version." }
           return
         end
 
-        cluster_context['kubeconfig'] = kubeconfig
         config_map = previous_config_map
         if config_map
           existing_version = config_map.data['pharos-version']
@@ -36,26 +37,6 @@ module Pharos
           logger.warn { "Invalid cluster version detected: #{cluster_version}" }
           cluster_context['unsafe_upgrade'] = true
         end
-      end
-
-      # @return [String]
-      def kubeconfig?
-        ssh.file(REMOTE_KUBECONFIG).exist?
-      end
-
-      # @return [String]
-      def read_kubeconfig
-        ssh.file(REMOTE_KUBECONFIG).read
-      end
-
-      # @return [Hash]
-      def kubeconfig
-        logger.debug { "Fetching kubectl config ..." }
-        config = Pharos::Kube::Config.new(read_kubeconfig)
-        config.update_server_address(@host.api_address)
-
-        logger.debug { "New config: #{config}" }
-        config.to_h
       end
 
       # @return [K8s::Resource, nil]

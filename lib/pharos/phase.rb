@@ -80,15 +80,12 @@ module Pharos
 
     # @return [Pharos::SSH::Client]
     def master_ssh
-      return cluster_context['master-ssh'] if cluster_context['master-ssh']
-      fail "Phase #{self.class.name} does not have master ssh"
+      @config.master_host.ssh
     end
 
     # @return [K8s::Client]
     def kube_client
-      fail "Phase #{self.class.name} does not have kubeconfig cluster_context" unless cluster_context['kubeconfig']
-
-      @config.kube_client(cluster_context['kubeconfig'])
+      @config.kube_client
     end
 
     # @param name [String]

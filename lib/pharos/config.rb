@@ -91,20 +91,30 @@ module Pharos
       end
     end
 
-    # @param kubeconfig [Hash]
-    # @return [K8s::Client]
-    def kube_client(kubeconfig)
+    def kube_client
       return @kube_client if @kube_client
 
+      kubeconfig_file = master_host.ssh.file("/etc/kubernetes/admin.conf")
+      return nil unless kubeconfig_file.exist?
+
+      kubeconfig = kubeconfig_file.read
+
       if master_host.bastion.nil?
-        api_address = master_host.api_address
+        api_address = master_host.api_address # TODO use sorted
         api_port = 6443
       else
         api_address = 'localhost'
-        api_port = host.ssh.gateway(master_host.api_address, 6443)
+        api_port = host.ssh.gateway(master_host.api_address, 6443) # TODO use sorted
       end
 
-      @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)
+      config = Pharos::Kube::Config.new(kubeconfig)
+      config.update_server_address(api_address, api_port)
+
+      @kube_client = Pharos::Kube.client(api_address, config.to_h, api_port)
+    end
+
+    def reset_kube_client
+      @kube_client = nil
     end
 
     # @param key [Symbol]

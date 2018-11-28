@@ -106,12 +106,12 @@ module Pharos
         self
       end
 
-      def update_server_address(new_address)
+      def update_server_address(new_address, new_port = 6443)
         unless config['clusters'].size == 1
           raise InvalidConfigError, "Configuration cluster count expected to be one"
         end
 
-        config['clusters'].first['cluster']['server'].gsub!(%r{(https://)(.+)(:6443)}, "\\1#{new_address}\\3")
+        config['clusters'].first['cluster']['server'].gsub!(%r{(https://)(.+)(:6443)}, "\\1#{new_address}:#{new_port}")
       end
 
       private

@@ -33,6 +33,7 @@ module Pharos
         end
 
         cluster_context['master-certs'] = pull_kube_certs unless cluster_context['master-certs']
+        @config.reset_kube_client
       end
 
       def install
