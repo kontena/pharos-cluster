@@ -108,16 +108,26 @@ module Pharos
         end
       end
 
+      # @return [String]
       def region
         labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
       end
 
+      # @return [Hash]
       def labels
         return @attributes[:labels] || {} unless worker?
 
         @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
       end
 
+      # @return [Hash]
+      def checks
+        @checks ||= {}
+      end
+
+      # @param local_only [Boolean]
+      # @param cloud_provider [String, NilClass]
+      # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 

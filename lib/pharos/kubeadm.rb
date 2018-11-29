@@ -126,7 +126,7 @@ module Pharos
         config['etcd'] = {
           'external' => {
             'endpoints' => @config.etcd_hosts.map { |h|
-              "https://#{h.peer_address}:2379"
+              "https://#{@config.etcd_peer_address(h)}:2379"
             },
             'certFile'  => '/etc/pharos/pki/etcd/client.pem',
             'caFile'    => '/etc/pharos/pki/ca.pem',
