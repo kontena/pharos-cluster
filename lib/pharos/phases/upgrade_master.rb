@@ -10,21 +10,30 @@ module Pharos
       end
 
       def upgrade?
-        file = ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
-        return false unless file.exist?
+        current = current_apiserver_version
+        return false if current.nil?
 
-        match = file.read.match(/kube-apiserver:v(.+)/)
-        current_major_minor = parse_major_minor(match[1])
+        current_major_minor = parse_major_minor(current)
+        logger.debug { "Current Kubernetes API server version: #{current} (#{current_major_minor})" }
+
         new_major_minor = parse_major_minor(Pharos::KUBE_VERSION)
-        return false if current_major_minor == new_major_minor
 
-        true
+        current_major_minor != new_major_minor
+      end
+
+      def current_apiserver_version
+        file = ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
+        return nil unless file.exist?
+
+        manifest = Pharos::YamlFile.new(file).load
+        image = manifest.dig('spec', 'containers')&.find { |c| c['name'] == 'kube-apiserver' }&.dig('image')
+        image&.split(':')&.last&.delete_prefix('v')
       end
 
       # @param version [String]
       # @return [String]
       def parse_major_minor(version)
-        version.split('.')[0...2].join('.')
+        version.split('.').first(2).join('.')
       end
 
       def call
