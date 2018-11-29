@@ -56,6 +56,10 @@ spec:
             - --annotations-prefix=nginx.ingress.kubernetes.io
             - --enable-dynamic-configuration
             - --sort-backends
+            <% if config.enable_dynamic_certificates %>
+            - --enable-dynamic-certificates
+            - --enable-ssl-chain-completion=false
+            <% end %>
           securityContext:
             capabilities:
                 drop:
