@@ -13,7 +13,7 @@ module Pharos
         file = ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
         return false unless file.exist?
 
-        match = file.read.match(/kube-apiserver:v(.+)/)
+        match = file.read.match(/kube-apiserver.*:v(.+)/)
         current_major_minor = parse_major_minor(match[1])
         new_major_minor = parse_major_minor(Pharos::KUBE_VERSION)
         return false if current_major_minor == new_major_minor
