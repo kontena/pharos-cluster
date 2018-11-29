@@ -87,7 +87,7 @@ module Pharos
       if etcd_hosts.empty?
         master_hosts.sort_by(&:etcd_sort_score)
       else
-        etcd_hosts..sort_by(&:etcd_sort_score)
+        etcd_hosts.sort_by(&:etcd_sort_score)
       end
     end
 
