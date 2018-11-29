@@ -18,7 +18,7 @@ describe Pharos::Configuration::Host do
           role: 'master',
           user: 'root'
         )
-        expect(subject.labels).to eq(nil)
+        expect(subject.labels).to eq({})
       end
 
       it 'returns given labels' do
