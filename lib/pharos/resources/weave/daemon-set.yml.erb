@@ -29,10 +29,8 @@ spec:
               value: "1"
             <% if !trusted_subnets.empty? %>
             - name: EXTRA_ARGS
-              value: "--trusted-subnets <%= trusted_subnets.join(',') %>"
+              value: "--no-discovery --trusted-subnets <%= trusted_subnets.join(',') %>"
             <% end %>
-            - name: KUBE_PEERS
-              value: "<%= kube_peers.join(' ') %>"
             - name: IPALLOC_RANGE
               value: "<%= ipalloc_range %>"
             - name: WEAVE_PASSWORD
@@ -84,6 +82,17 @@ spec:
           volumeMounts:
             - name: xtables-lock
               mountPath: /run/xtables.lock
+        - name: weave-flying-shuttle
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          image: 'quay.io/jakolehm/weave-flying-shuttle:latest'
+          resources:
+            requests:
+              cpu: 10m
       hostNetwork: true
       hostPID: true
       restartPolicy: Always

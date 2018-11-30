@@ -45,21 +45,8 @@ module Pharos
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,
-          version: WEAVE_VERSION,
-          kube_peers: calculate_kube_peers
+          version: WEAVE_VERSION
         )
-      end
-
-      # @return [Array<String>]
-      def calculate_kube_peers
-        peer_ips = Set.new
-        @config.hosts.each do |host|
-          @config.hosts.reject { |other_host| other_host == host }.each do |peer_host|
-            peer_ips << host.peer_address_for(peer_host)
-          end
-        end
-
-        peer_ips.to_a
       end
 
       def generate_password
