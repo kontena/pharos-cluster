@@ -66,12 +66,12 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def master_hosts
-      @master_hosts ||= hosts.select { |h| h.role == 'master' }.sort_by(&:master_sort_score)
+      hosts.select { |h| h.role == 'master' }.sort_by(&:master_sort_score)
     end
 
     # @return [Pharos::Configuration::Node]
     def master_host
-      @master_host ||= master_hosts.first
+      master_hosts.first
     end
 
     # @return [Array<Pharos::Configuration::Node>]
