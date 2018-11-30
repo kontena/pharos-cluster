@@ -7,13 +7,6 @@ set -e
 # shellcheck disable=SC1091
 . /usr/local/share/pharos/el7.sh
 
-reload_daemon() {
-    if systemctl is-active --quiet crio; then
-        systemctl daemon-reload
-        systemctl restart crio
-    fi
-}
-
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
 cat <<"EOF" >"${tmpfile}"
 [Unit]
@@ -47,19 +40,7 @@ else
     mv "$tmpfile" /etc/systemd/system/crio.service
 fi
 
-mkdir -p /etc/systemd/system/crio.service.d
-if [ -n "$HTTP_PROXY" ]; then
-    cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
-[Service]
-Environment="HTTP_PROXY=${HTTP_PROXY}"
-EOF
-    reload_daemon
-else
-    if [ -f /etc/systemd/system/crio.service.d/http-proxy.conf ]; then
-        rm /etc/systemd/system/crio.service.d/http-proxy.conf
-        reload_daemon
-    fi
-fi
+configure_container_runtime_proxy "crio"
 
 yum_install_with_lock "cri-o" "$CRIO_VERSION"
 

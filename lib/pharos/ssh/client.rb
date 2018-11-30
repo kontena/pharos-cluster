@@ -13,6 +13,7 @@ module Pharos
       HTTP_PROXY: '$HTTP_PROXY',
       HTTPS_PROXY: '$HTTPS_PROXY',
       NO_PROXY: '$NO_PROXY',
+      FTP_PROXY: '$FTP_PROXY',
       PATH: '$PATH'
     }.freeze
 
