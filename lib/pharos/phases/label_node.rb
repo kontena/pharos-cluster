@@ -21,20 +21,24 @@ module Pharos
 
       # @param node [K8s::Resource]
       def patch_labels(node)
-        kube_nodes.merge_patch(node.metadata.name, {
-          metadata: {
-            labels: @host.labels
-          }
-        })
+        kube_nodes.update_resource(
+          node.merge(
+            metadata: {
+              labels: @host.labels
+            }
+          )
+        )
       end
 
       # @param node [K8s::Resource]
       def patch_taints(node)
-        kube_nodes.merge_patch(node.metadata.name, {
-          metadata: {
-            taints: @host.taints.map(&:to_h)
-          }
-        })
+        kube_nodes.update_resource(
+          node.merge(
+            spec: {
+              taints: @host.taints.map(&:to_h)
+            }
+          )
+        )
       end
 
       def find_node
