@@ -117,7 +117,7 @@ module Pharos
       def labels
         labels = @attributes[:labels] || {}
 
-        labels['node-address.pharos.sh/external-ip'] = address
+        labels['node-address.kontena.io/external-ip'] = address
         labels['node-role.kubernetes.io/worker'] = '' if worker?
 
         labels
