@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'ingress-nginx' do
-  version '0.17.1'
+  version '0.21.0'
   license 'Apache License 2.0'
 
   config {
@@ -13,6 +13,7 @@ Pharos.addon 'ingress-nginx' do
       'image' => 'registry.pharos.sh/kontenapharos/pharos-default-backend:0.0.3'
     )
     attribute :tolerations, Pharos::Types::Array.default([])
+    attribute :extra_args, Pharos::Types::Array.default([])
   }
 
   config_schema {
@@ -22,6 +23,7 @@ Pharos.addon 'ingress-nginx' do
       optional(:image).filled(:str?)
     }
     optional(:tolerations).each(:hash?)
+    optional(:extra_args).each(:str?)
   }
 
   install {
@@ -29,7 +31,8 @@ Pharos.addon 'ingress-nginx' do
       configmap: config.configmap || {},
       node_selector: config.node_selector || {},
       default_backend_image: config.default_backend['image'],
-      default_backend_replicas: default_backend_replicas
+      default_backend_replicas: default_backend_replicas,
+      extra_args: config.extra_args
     )
   }
 
