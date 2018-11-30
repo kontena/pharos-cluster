@@ -29,7 +29,7 @@ spec:
               value: "1"
             <% if !trusted_subnets.empty? %>
             - name: EXTRA_ARGS
-              value: "--trusted-subnets <%= trusted_subnets.join(',') %>"
+              value: "--no-discovery --trusted-subnets <%= trusted_subnets.join(',') %>"
             <% end %>
             - name: IPALLOC_RANGE
               value: "<%= ipalloc_range %>"
@@ -82,6 +82,17 @@ spec:
           volumeMounts:
             - name: xtables-lock
               mountPath: /run/xtables.lock
+        - name: weave-flying-shuttle
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          image: '<%= image_repository %>/weave-flying-shuttle:<%= flying_shuttle_version %>'
+          resources:
+            requests:
+              cpu: 10m
       hostNetwork: true
       hostPID: true
       restartPolicy: Always

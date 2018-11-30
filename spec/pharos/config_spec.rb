@@ -125,6 +125,48 @@ describe Pharos::Config do
     end
   end
 
+  describe '#master_hosts' do
+    let(:data) { {
+      'hosts' => [
+        { 'address' => '192.0.2.1', 'role' => 'master'},
+        { 'address' => '192.0.2.2', 'role' => 'master'},
+        { 'address' => '192.0.2.3', 'role' => 'worker'},
+      ]
+    } }
+
+    it 'returns hosts with role=master' do
+      expect(subject.master_hosts.size).to eq(2)
+      expect(subject.master_hosts.first.address).to eq('192.0.2.1')
+      expect(subject.master_hosts.last.address).to eq('192.0.2.2')
+    end
+
+    it 'sorts masters by score' do
+      subject.hosts[1].checks['api_healthy'] = true
+      expect(subject.master_hosts.first.address).to eq('192.0.2.2')
+    end
+  end
+
+  describe '#etcd_hosts' do
+    let(:data) { {
+      'hosts' => [
+        { 'address' => '192.0.2.1', 'role' => 'master'},
+        { 'address' => '192.0.2.2', 'role' => 'master'},
+        { 'address' => '192.0.2.3', 'role' => 'worker'},
+      ]
+    } }
+
+    it 'returns hosts with role=master' do
+      expect(subject.etcd_hosts.size).to eq(2)
+      expect(subject.etcd_hosts.first.address).to eq('192.0.2.1')
+      expect(subject.etcd_hosts.last.address).to eq('192.0.2.2')
+    end
+
+    it 'sorts etcd hosts by score' do
+      subject.hosts[1].checks['etcd_healthy'] = true
+      expect(subject.etcd_hosts.first.address).to eq('192.0.2.2')
+    end
+  end
+
   describe 'kube_proxy' do
     it 'defaults to iptables' do
       expect(subject.kube_proxy.mode).to eq 'iptables'
