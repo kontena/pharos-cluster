@@ -29,7 +29,7 @@ module Pharos
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'imageRepository' => @config.image_repository,
           'api' => {
-            'advertiseAddress' => @host.peer_address,
+            'advertiseAddress' => advertise_address,
             'controlPlaneEndpoint' => 'localhost'
           },
           'apiServerCertSANs' => build_extra_sans,
@@ -101,6 +101,11 @@ module Pharos
           'mountPath' => SECRETS_CFG_DIR
         }
         config
+      end
+
+      # @return [String]
+      def advertise_address
+        @config.regions.size == 1 ? @host.peer_address : @host.address
       end
 
       def master_taint?
