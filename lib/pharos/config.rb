@@ -99,12 +99,12 @@ module Pharos
 
     # @return [Array<String>]
     def etcd_regions
-      @etcd_regions ||= etcd_hosts.map { |host| host.region }.compact.uniq
+      @etcd_regions ||= etcd_hosts.map(:&region).compact.uniq
     end
 
     # @return [Array<String>]
     def regions
-      @regions ||= hosts.map { |host| host.region }.compact.uniq
+      @regions ||= hosts.map(:&region).compact.uniq
     end
 
     # @param kubeconfig [Hash]
