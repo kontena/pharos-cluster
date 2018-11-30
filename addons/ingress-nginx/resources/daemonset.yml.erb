@@ -55,9 +55,8 @@ spec:
             - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
             - --annotations-prefix=nginx.ingress.kubernetes.io
             - --sort-backends
-            <% if config.enable_dynamic_certificates %>
-            - --enable-dynamic-certificates
-            - --enable-ssl-chain-completion=false
+            <% config.extra_args.each do |arg| %>
+            - <%= arg %>
             <% end %>
           securityContext:
             capabilities:

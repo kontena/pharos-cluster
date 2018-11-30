@@ -13,7 +13,7 @@ Pharos.addon 'ingress-nginx' do
       'image' => 'registry.pharos.sh/kontenapharos/pharos-default-backend:0.0.3'
     )
     attribute :tolerations, Pharos::Types::Array.default([])
-    attribute :enable_dynamic_certificates, Pharos::Types::Bool.default(false)
+    attribute :extra_args, Pharos::Types::Array.default([])
   }
 
   config_schema {
@@ -23,7 +23,7 @@ Pharos.addon 'ingress-nginx' do
       optional(:image).filled(:str?)
     }
     optional(:tolerations).each(:hash?)
-    optional(:enable_dynamic_certificates).filled(:bool?)
+    optional(:extra_args).each(:str?)
   }
 
   install {
@@ -32,7 +32,7 @@ Pharos.addon 'ingress-nginx' do
       node_selector: config.node_selector || {},
       default_backend_image: config.default_backend['image'],
       default_backend_replicas: default_backend_replicas,
-      enable_dynamic_certificates: config.enable_dynamic_certificates
+      extra_args: config.extra_args
     )
   }
 
