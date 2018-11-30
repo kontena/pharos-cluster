@@ -14,7 +14,7 @@ module Pharos
       )
 
       register_component(
-        name: 'weave-flying-shuttle', version: WEAVE_VERSION, license: 'Apache License 2.0',
+        name: 'weave-flying-shuttle', version: WEAVE_FLYING_SHUTTLE_VERSION, license: 'Apache License 2.0',
         enabled: proc { |c| c.network.provider == 'weave' }
       )
 
