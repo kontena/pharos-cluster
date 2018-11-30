@@ -72,7 +72,7 @@ Pharos.addon 'kontena-lens' do
       last_applied['spec']['template']['spec'].delete('replicas')
       patch = { metadata: { annotations: {} } }
       patch[:metadata][:annotations][last_config_annotation] = JSON.generate(last_applied)
-      user_mgmt_deployment = kube_client.api('apps/v1').resource('deployments', namespace: 'kontena-lens').merge_patch('user-management', patch)
+      kube_client.api('apps/v1').resource('deployments', namespace: 'kontena-lens').merge_patch('user-management', patch)
       return true
     end
     false
