@@ -89,7 +89,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'quay.io/jakolehm/weave-flying-shuttle:latest'
+          image: '<%= image_repository %>/weave-flying-shuttle:<%= flying_shuttle_version %>'
           resources:
             requests:
               cpu: 10m
