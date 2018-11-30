@@ -115,9 +115,12 @@ module Pharos
 
       # @return [Hash]
       def labels
-        return @attributes[:labels] || {} unless worker?
+        labels = @attributes[:labels] || {}
 
-        @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
+        labels['node-address.pharos.sh/external-ip'] = address
+        labels['node-role.kubernetes.io/worker'] = '' if worker?
+
+        labels
       end
 
       # @return [Hash]
