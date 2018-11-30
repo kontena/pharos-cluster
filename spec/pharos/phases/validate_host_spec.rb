@@ -31,7 +31,7 @@ describe Pharos::Phases::ValidateHost do
       'kubelet_configured' => false
     } }
     before do
-      host.checks = checks
+      allow(host).to receive(:checks).and_return(checks)
     end
     subject { described_class.new(host, config: config) }
 
