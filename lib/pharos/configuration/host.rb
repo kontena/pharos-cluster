@@ -66,7 +66,7 @@ module Pharos
       attribute :environment, Pharos::Types::Strict::Hash
       attribute :bastion, Pharos::Configuration::Bastion
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes
 
       def to_s
         short_hostname || address
@@ -76,6 +76,10 @@ module Pharos
         return nil unless hostname
 
         hostname.split('.').first
+      end
+
+      def checks
+        @checks ||= {}
       end
 
       def ssh
