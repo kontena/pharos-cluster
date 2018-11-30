@@ -71,7 +71,11 @@ module Pharos
 
     # @return [Pharos::Configuration::Node]
     def master_host
-      @master_host ||= master_hosts.first
+      sorted_master_hosts.first
+    end
+
+    def sorted_master_hosts
+      master_hosts.sort_by(&:master_sort_score)
     end
 
     # @return [Array<Pharos::Configuration::Node>]
@@ -94,17 +98,19 @@ module Pharos
     def kube_client
       return @kube_client if @kube_client
 
-      kubeconfig_file = master_host.ssh.file("/etc/kubernetes/admin.conf")
+      master = master_host
+
+      kubeconfig_file = master.ssh.file("/etc/kubernetes/admin.conf")
       return nil unless kubeconfig_file.exist?
 
       kubeconfig = kubeconfig_file.read
 
-      if master_host.bastion.nil?
-        api_address = master_host.api_address # TODO use sorted
+      if master.bastion.nil?
+        api_address = master.api_address
         api_port = 6443
       else
         api_address = 'localhost'
-        api_port = host.ssh.gateway(master_host.api_address, 6443) # TODO use sorted
+        api_port = master.ssh.gateway(master.api_address, 6443)
       end
 
       config = Pharos::Kube::Config.new(kubeconfig)

@@ -82,7 +82,7 @@ module Pharos
     def apply_phases
       # we need to use sorted masters because phases expects that first one has
       # ca etc config files
-      master_hosts = sorted_master_hosts
+      master_hosts = config.sorted_master_hosts
 
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, master: master_hosts.first, parallel: true)
