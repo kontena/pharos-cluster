@@ -14,7 +14,11 @@ module Pharos
           mutex.synchronize do
             if master_healthy?
               logger.info { "Draining node ..." }
-              master_ssh.exec!("kubectl drain --force --ignore-daemonsets --delete-local-data #{@host.hostname}")
+              begin
+                drain_host
+              rescue Pharos::SSH::RemoteCommand::ExecError
+                drain_host!
+              end
             end
             logger.info { "Reconfiguring container runtime (#{@host.container_runtime}) packages ..." }
             host_configurer.configure_container_runtime
@@ -26,6 +30,14 @@ module Pharos
             end
           end
         end
+      end
+
+      def drain_host
+        master_ssh.exec!("kubectl drain --force --timeout=120s --ignore-daemonsets --delete-local-data #{@host.hostname}")
+      end
+
+      def drain_host!
+        master_ssh.exec!("kubectl drain --force --grace-period=0 --ignore-daemonsets --delete-local-data #{@host.hostname}")
       end
 
       def master_ssh
