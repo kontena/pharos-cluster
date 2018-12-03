@@ -58,7 +58,7 @@ module Pharos
 
     def gather_facts
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [sorted_master_hosts.first], master: sorted_master_hosts.first, parallel: false, optional: true)
+      apply_phase(Phases::ConfigureClient, [config.master_host], master: config.master_host, parallel: false, optional: true)
     end
 
     def validate
@@ -66,33 +66,17 @@ module Pharos
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
-      master = sorted_master_hosts.first
-      apply_phase(Phases::ValidateVersion, [master], master: master, parallel: false)
-    end
-
-    # @return [Array<Pharos::Configuration::Host>]
-    def sorted_master_hosts
-      config.master_hosts.sort_by(&:master_sort_score)
-    end
-
-    # @return [Array<Pharos::Configuration::Host>]
-    def sorted_etcd_hosts
-      config.etcd_hosts.sort_by(&:etcd_sort_score)
+      apply_phase(Phases::ValidateVersion, [config.master_host], master: config.master_host, parallel: false)
     end
 
     def apply_phases
-      # we need to use sorted masters because phases expects that first one has
-      # ca etc config files
-      master_hosts = sorted_master_hosts
-
+      master_hosts = config.master_hosts
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, master: master_hosts.first, parallel: true)
       apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints
-        # we need to use sorted etcd hosts because phases expects that first one has
-        # ca etc config files
-        etcd_hosts = sorted_etcd_hosts
+        etcd_hosts = config.etcd_hosts
         apply_phase(Phases::ConfigureCfssl, etcd_hosts, parallel: true)
         apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], parallel: false)
         apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], parallel: false)
@@ -129,7 +113,7 @@ module Pharos
 
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_reset_hosts(hosts)
-      master_hosts = sorted_master_hosts
+      master_hosts = config.master_hosts
       if master_hosts.first.master_sort_score.zero?
         apply_phase(Phases::Drain, hosts, parallel: false)
         apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first)
@@ -178,7 +162,7 @@ module Pharos
     end
 
     def save_config
-      master_host = sorted_master_hosts.first
+      master_host = config.master_host
       apply_phase(Phases::StoreClusterConfiguration, [master_host], master: master_host)
     end
 
