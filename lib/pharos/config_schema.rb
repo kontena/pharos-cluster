@@ -153,7 +153,7 @@ module Pharos
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
         end
-        optional(:kubeadm).schema do
+        optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
         end
         optional(:telemetry).schema do
