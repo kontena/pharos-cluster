@@ -26,10 +26,12 @@ describe Pharos::Phases::ConfigureKubelet do
 
   subject { described_class.new(host, config: config) }
 
-  before do
-    Pharos::HostConfigManager.load_configs(config)
-    host.resolvconf = host_resolvconf
+  before :all do
+    Pharos::Host::Configurer.load_configurers
+  end
 
+  before do
+    host.resolvconf = host_resolvconf
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))
     allow(host).to receive(:os_release).and_return(host_osrelease)
   end

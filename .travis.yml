@@ -44,6 +44,7 @@ jobs:
       script: ./build/travis/macos.sh
       rvm: 2.5
       os: osx
+      install: ls -l
       deploy:
         provider: s3
         access_key_id:
@@ -60,6 +61,7 @@ jobs:
       script: ./build/travis/macos_oss.sh
       rvm: 2.5
       os: osx
+      install: ls -l
       deploy:
         provider: s3
         access_key_id:

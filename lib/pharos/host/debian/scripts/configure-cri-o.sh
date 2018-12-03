@@ -5,13 +5,6 @@ set -e
 # shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
-reload_daemon() {
-    if systemctl is-active --quiet crio; then
-        systemctl daemon-reload
-        systemctl restart crio
-    fi
-}
-
 tmpfile=$(mktemp /tmp/crio-service.XXXXXX)
 cat <<"EOF" >"${tmpfile}"
 [Unit]
@@ -45,20 +38,7 @@ else
     mv "$tmpfile" /etc/systemd/system/crio.service
 fi
 
-mkdir -p /etc/systemd/system/crio.service.d
-
-if [ -n "$HTTP_PROXY" ]; then
-    cat <<EOF >/etc/systemd/system/crio.service.d/http-proxy.conf
-[Service]
-Environment="HTTP_PROXY=${HTTP_PROXY}"
-EOF
-    reload_daemon
-else
-    if [ -f /etc/systemd/system/crio.service.d/http-proxy.conf ]; then
-        rm /etc/systemd/system/crio.service.d/http-proxy.conf
-        reload_daemon
-    fi
-fi
+configure_container_runtime_proxy "crio"
 
 export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold cri-o
@@ -81,10 +61,10 @@ if ! systemctl is-active --quiet crio; then
     systemctl start crio
 else
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
-        reload_daemon
+        reload_systemd_daemon "crio"
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
-        reload_daemon
+        reload_systemd_daemon "crio"
     fi
 fi

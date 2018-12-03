@@ -29,7 +29,7 @@ module Pharos
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'imageRepository' => @config.image_repository,
           'api' => {
-            'advertiseAddress' => @host.peer_address,
+            'advertiseAddress' => advertise_address,
             'controlPlaneEndpoint' => 'localhost'
           },
           'apiServerCertSANs' => build_extra_sans,
@@ -103,6 +103,11 @@ module Pharos
         config
       end
 
+      # @return [String]
+      def advertise_address
+        @config.regions.size == 1 ? @host.peer_address : @host.address
+      end
+
       def master_taint?
         return true unless @host.taints
 
@@ -126,7 +131,7 @@ module Pharos
         config['etcd'] = {
           'external' => {
             'endpoints' => @config.etcd_hosts.map { |h|
-              "https://#{h.peer_address}:2379"
+              "https://#{@config.etcd_peer_address(h)}:2379"
             },
             'certFile'  => '/etc/pharos/pki/etcd/client.pem',
             'caFile'    => '/etc/pharos/pki/ca.pem',

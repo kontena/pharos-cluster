@@ -54,8 +54,10 @@ spec:
             - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
             - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
             - --annotations-prefix=nginx.ingress.kubernetes.io
-            - --enable-dynamic-configuration
             - --sort-backends
+            <% config.extra_args.each do |arg| %>
+            - <%= arg %>
+            <% end %>
           securityContext:
             capabilities:
                 drop:
