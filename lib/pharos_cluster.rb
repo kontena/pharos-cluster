@@ -9,7 +9,7 @@ require_relative "pharos/root_command"
 
 module Pharos
   CRIO_VERSION = '1.11.9'
-  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.11.4' }
+  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.11.5' }
   KUBEADM_VERSION = ENV.fetch('KUBEADM_VERSION') { KUBE_VERSION }
   ETCD_VERSION = ENV.fetch('ETCD_VERSION') { '3.2.18' }
   KUBELET_PROXY_VERSION = '0.3.7'
