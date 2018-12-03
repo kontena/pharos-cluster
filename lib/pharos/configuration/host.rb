@@ -78,10 +78,6 @@ module Pharos
         hostname.split('.').first
       end
 
-      def checks
-        @checks ||= {}
-      end
-
       def ssh
         return @ssh if @ssh
 
