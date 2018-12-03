@@ -47,7 +47,7 @@ apt-mark hold cri-o
 
 orig_config=$(cat /etc/crio/crio.conf)
 lineinfile "^stream_address =" "stream_address = \"${CRIO_STREAM_ADDRESS}\"" "/etc/crio/crio.conf"
-lineinfile "^cgroup_manager =" "cgroup_manager = \"cgroupfs\"" "/etc/crio/crio.conf"
+lineinfile "^cgroup_manager =" "cgroup_manager = \"${CRIO_CGROUP_MANAGER}\"" "/etc/crio/crio.conf"
 lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
 lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause:3.1\"" "/etc/crio/crio.conf"
 lineinfile "^registries =" "registries = [ \"docker.io\"" "/etc/crio/crio.conf"

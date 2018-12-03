@@ -48,6 +48,7 @@ module Pharos
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
+            CRIO_CGROUP_MANAGER: 'cgroupfs',
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
