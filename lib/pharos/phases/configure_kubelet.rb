@@ -53,7 +53,7 @@ module Pharos
           IMAGE_REPO: @config.image_repository,
           ARCH: @host.cpu_arch.name,
           VERSION: Pharos::KUBELET_PROXY_VERSION,
-          MASTER_HOSTS: @config.master_hosts.map(&:peer_address).join(',')
+          MASTER_HOSTS: master_addresses.join(',')
         )
         host_configurer.ensure_kubelet(
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
@@ -64,6 +64,11 @@ module Pharos
         exec_script(
           'wait-kubelet-proxy.sh'
         )
+      end
+
+      # @return [Array<String>]
+      def master_addresses
+        @config.master_hosts.map { |master| master.peer_address_for(@host) }
       end
 
       def configure_kube
@@ -88,6 +93,15 @@ module Pharos
       def build_systemd_dropin
         options = []
         options << "Environment='KUBELET_EXTRA_ARGS=#{kubelet_extra_args.join(' ')}'"
+
+        if @config.control_plane&.use_proxy && @host.environment
+          @host.environment.each do |key, value|
+            next unless key.downcase.end_with?('_proxy')
+
+            options << "Environment='#{key}=#{value}'"
+          end
+        end
+
         options << "ExecStartPre=-/sbin/swapoff -a"
 
         "[Service]\n#{options.join("\n")}\n"

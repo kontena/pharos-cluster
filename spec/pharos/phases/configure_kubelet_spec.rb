@@ -10,38 +10,84 @@ describe Pharos::Phases::ConfigureKubelet do
     id: 'ubuntu',
     version: '16.04',
   ) }
-  let(:host) { Pharos::Configuration::Host.new(
-    address: 'test',
-    private_address: '192.168.42.1',
-  ) }
+
+  let(:environment_config) { {} }
+
+  let(:host) do
+    Pharos::Configuration::Host.new(
+      {
+        address: 'test',
+        private_address: '192.168.42.1'
+      }.merge(environment_config)
+    )
+  end
 
   let(:config_network) { { }}
-  let(:config) { Pharos::Config.new(
-      hosts: [host],
-      network: config_network,
-      addons: {},
-      etcd: {},
-      kubelet: {read_only_port: false}
-  ) }
+  let(:control_plane_config) { {} }
+
+  let(:config) do
+    Pharos::Config.new(
+      {
+        hosts: [host],
+        network: config_network,
+        addons: {},
+        etcd: {},
+        kubelet: {read_only_port: false}
+      }.merge(control_plane_config)
+    )
+  end
 
   subject { described_class.new(host, config: config) }
 
-  before do
-    Pharos::HostConfigManager.load_configs(config)
-    host.resolvconf = host_resolvconf
+  before :all do
+    Pharos::Host::Configurer.load_configurers
+  end
 
+  before do
+    host.resolvconf = host_resolvconf
     allow(host).to receive(:cpu_arch).and_return(double(:cpu_arch, name: 'amd64'))
     allow(host).to receive(:os_release).and_return(host_osrelease)
   end
 
   describe '#build_systemd_dropin' do
-    it "returns a systemd unit" do
-      expect(subject.build_systemd_dropin).to eq <<~EOM
-        [Service]
-        Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
-        ExecStartPre=-/sbin/swapoff -a
-      EOM
+    context 'without proxy settings' do
+      it "returns a systemd unit" do
+        expect(subject.build_systemd_dropin).to eq <<~EOM
+          [Service]
+          Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+          ExecStartPre=-/sbin/swapoff -a
+        EOM
+      end
     end
+
+    context 'with proxy settings' do
+      let(:environment_config) { { environment: { 'http_proxy' => 'proxy.example.com', 'NO_PROXY' => '127.0.0.1' } } }
+
+      context 'when control_plane use_proxy is true' do
+        let(:control_plane_config) { { control_plane: { use_proxy: true } } }
+
+        it "returns a systemd unit" do
+          expect(subject.build_systemd_dropin).to eq <<~EOM
+            [Service]
+            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+            Environment='http_proxy=proxy.example.com'
+            Environment='NO_PROXY=127.0.0.1'
+            ExecStartPre=-/sbin/swapoff -a
+          EOM
+        end
+      end
+
+      context 'when control_plane use_proxy is false' do
+        it "returns a systemd unit" do
+          expect(subject.build_systemd_dropin).to eq <<~EOM
+            [Service]
+            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+            ExecStartPre=-/sbin/swapoff -a
+          EOM
+        end
+      end
+    end
+
   end
 
   describe "#kubelet_extra_args" do

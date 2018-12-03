@@ -12,6 +12,7 @@ require_relative 'configuration/file_audit'
 require_relative 'configuration/webhook_audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
+require_relative 'configuration/control_plane'
 require_relative 'configuration/pod_security_policy'
 require_relative 'configuration/telemetry'
 require_relative 'configuration/admission_plugin'
@@ -32,8 +33,11 @@ module Pharos
       config = new(schema_data)
       config.data = raw_data.freeze
 
-      # inject api_endpoint & bastion to each host object
-      config.hosts.each { |h| h.api_endpoint = config.api&.endpoint }
+      # inject api_endpoint & config reference to each host object
+      config.hosts.each do |host|
+        host.api_endpoint = config.api&.endpoint
+        host.config = config
+      end
 
       config
     end
@@ -47,6 +51,7 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :control_plane, Pharos::Configuration::ControlPlane
     attribute :telemetry, Pharos::Configuration::Telemetry
     attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
     attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
@@ -66,16 +71,12 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def master_hosts
-      @master_hosts ||= hosts.select { |h| h.role == 'master' }
+      hosts.select { |h| h.role == 'master' }.sort_by(&:master_sort_score)
     end
 
     # @return [Pharos::Configuration::Node]
     def master_host
       sorted_master_hosts.first
-    end
-
-    def sorted_master_hosts
-      master_hosts.sort_by(&:master_sort_score)
     end
 
     # @return [Array<Pharos::Configuration::Node>]
@@ -89,9 +90,9 @@ module Pharos
 
       etcd_hosts = hosts.select { |h| h.role == 'etcd' }
       if etcd_hosts.empty?
-        master_hosts
+        master_hosts.sort_by(&:etcd_sort_score)
       else
-        etcd_hosts
+        etcd_hosts.sort_by(&:etcd_sort_score)
       end
     end
 
@@ -121,6 +122,22 @@ module Pharos
 
     def reset_kube_client
       @kube_client = nil
+    end
+
+    # @param peer [Pharos::Configuration::Host]
+    # @return [String]
+    def etcd_peer_address(peer)
+      etcd_regions.size > 1 ? peer.address : peer.peer_address
+    end
+
+    # @return [Array<String>]
+    def etcd_regions
+      @etcd_regions ||= etcd_hosts.map(&:region).compact.uniq
+    end
+
+    # @return [Array<String>]
+    def regions
+      @regions ||= hosts.map(&:region).compact.uniq
     end
 
     # @param key [Symbol]

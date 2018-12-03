@@ -12,13 +12,15 @@ describe Pharos::Configuration::Host do
 
   describe '#labels' do
     context 'for master' do
-      it 'returns empty labels by default' do
+      it 'returns external-ip and role label by default' do
         subject = described_class.new(
           address: '192.168.100.100',
           role: 'master',
           user: 'root'
         )
-        expect(subject.labels).to eq(nil)
+        expect(subject.labels).to eq({
+          'node-address.kontena.io/external-ip' => '192.168.100.100'
+        })
       end
 
       it 'returns given labels' do
@@ -31,7 +33,7 @@ describe Pharos::Configuration::Host do
             baz: 'baf'
           }
         )
-        expect(subject.labels).to eq({foo: 'bar', baz: 'baf'})
+        expect(subject.labels).to include(foo: 'bar', baz: 'baf')
       end
     end
 
@@ -46,7 +48,7 @@ describe Pharos::Configuration::Host do
             baz: 'baf'
           }
         )
-        expect(subject.labels).to eq({foo: 'bar', baz: 'baf'})
+        expect(subject.labels).to include(foo: 'bar', baz: 'baf')
       end
 
       it 'returns default worker label' do
@@ -55,7 +57,7 @@ describe Pharos::Configuration::Host do
           role: 'worker',
           user: 'root'
         )
-        expect(subject.labels).to eq({ 'node-role.kubernetes.io/worker': "" })
+        expect(subject.labels).to include('node-role.kubernetes.io/worker' => "")
       end
     end
   end
@@ -89,15 +91,18 @@ describe Pharos::Configuration::Host do
   end
 
   describe '#configurer' do
+    before(:all) do
+      Pharos::Host::Configurer.load_configurers
+    end
+
     it 'returns nil on non-supported os release' do
       allow(subject).to receive(:os_release).and_return(double(:os_release, id: 'foo', version: 'bar'))
-      expect(subject.configurer(double(:ssh))).to be_nil
+      expect(subject.configurer).to be_nil
     end
 
     it 'returns os release when supported' do
-      Pharos::HostConfigManager.load_configs(double(:cluster_config))
       allow(subject).to receive(:os_release).and_return(double(:os_release, id: 'ubuntu', version: '16.04'))
-      expect(subject.configurer(double(:ssh))).to be_kind_of(Pharos::Host::UbuntuXenial)
+      expect(subject.configurer).to be_kind_of(Pharos::Host::UbuntuXenial)
     end
   end
 
