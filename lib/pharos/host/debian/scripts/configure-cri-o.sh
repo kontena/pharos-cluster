@@ -61,10 +61,10 @@ if ! systemctl is-active --quiet crio; then
     systemctl start crio
 else
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
-        reload_daemon
+        reload_systemd_daemon "crio"
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
-        reload_daemon
+        reload_systemd_daemon "crio"
     fi
 fi

@@ -47,9 +47,9 @@ apt-mark hold cri-o
 
 orig_config=$(cat /etc/crio/crio.conf)
 lineinfile "^stream_address =" "stream_address = \"${CRIO_STREAM_ADDRESS}\"" "/etc/crio/crio.conf"
-lineinfile "^cgroup_manager =" "cgroup_manager = \"cgroupfs\"" "/etc/crio/crio.conf"
+lineinfile "^cgroup_manager =" "cgroup_manager = \"${CRIO_CGROUP_MANAGER}\"" "/etc/crio/crio.conf"
 lineinfile "^log_size_max =" "log_size_max = 134217728" "/etc/crio/crio.conf"
-lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause-${CPU_ARCH}:3.1\"" "/etc/crio/crio.conf"
+lineinfile "^pause_image =" "pause_image = \"${IMAGE_REPO}\/pause:3.1\"" "/etc/crio/crio.conf"
 lineinfile "^registries =" "registries = [ \"docker.io\"" "/etc/crio/crio.conf"
 lineinfile "^insecure_registries =" "insecure_registries = [ $INSECURE_REGISTRIES" "/etc/crio/crio.conf"
 
@@ -60,16 +60,16 @@ if ! systemctl is-active --quiet crio; then
 else
     if [ -f /etc/cni/net.d/100-crio-bridge.conf ] || [ -f /etc/cni/net.d/200-loopback.conf ]; then
         rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
-        reload_daemon
+        reload_systemd_daemon "crio"
         exit 0
     fi
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
-        reload_daemon
+        reload_systemd_daemon "crio"
         exit 0
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
-        reload_daemon
+        reload_systemd_daemon "crio"
         exit 0
     fi
 fi
