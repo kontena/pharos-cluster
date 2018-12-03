@@ -69,12 +69,12 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Node>]
     def master_hosts
-      @master_hosts ||= hosts.select { |h| h.role == 'master' }
+      hosts.select { |h| h.role == 'master' }.sort_by(&:master_sort_score)
     end
 
     # @return [Pharos::Configuration::Node]
     def master_host
-      @master_host ||= master_hosts.first
+      master_hosts.first
     end
 
     # @return [Array<Pharos::Configuration::Node>]
@@ -88,10 +88,26 @@ module Pharos
 
       etcd_hosts = hosts.select { |h| h.role == 'etcd' }
       if etcd_hosts.empty?
-        master_hosts
+        master_hosts.sort_by(&:etcd_sort_score)
       else
-        etcd_hosts
+        etcd_hosts.sort_by(&:etcd_sort_score)
       end
+    end
+
+    # @param peer [Pharos::Configuration::Host]
+    # @return [String]
+    def etcd_peer_address(peer)
+      etcd_regions.size > 1 ? peer.address : peer.peer_address
+    end
+
+    # @return [Array<String>]
+    def etcd_regions
+      @etcd_regions ||= etcd_hosts.map(&:region).compact.uniq
+    end
+
+    # @return [Array<String>]
+    def regions
+      @regions ||= hosts.map(&:region).compact.uniq
     end
 
     # @param kubeconfig [Hash]

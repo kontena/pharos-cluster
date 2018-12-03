@@ -33,14 +33,14 @@ module Pharos
         member_list = etcd.members
         new_members = @config.etcd_hosts.reject { |h|
           member_list.find { |m|
-            m['peerURLs'] == ["https://#{h.peer_address}:2380"]
+            m['peerURLs'] == ["https://#{@config.etcd_peer_address(h)}:2380"]
           }
         }
         if new_members.size > 1
           fail "Cannot add multiple etcd peers at once"
         end
         new_members.each do |h|
-          logger.info { "Adding new etcd peer https://#{h.peer_address}:2380 ..." }
+          logger.info { "Adding new etcd peer https://#{@config.etcd_peer_address(h)}:2380 ..." }
           etcd.add_member(h)
         end
 
@@ -51,7 +51,7 @@ module Pharos
         member_list = etcd.members
         remove_members = member_list.reject { |m|
           @config.etcd_hosts.find { |h|
-            m['peerURLs'] == ["https://#{h.peer_address}:2380"]
+            m['peerURLs'] == ["https://#{@config.etcd_peer_address(h)}:2380"]
           }
         }
         if remove_members.size / member_list.size.to_f >= 0.5

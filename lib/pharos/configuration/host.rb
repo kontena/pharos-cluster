@@ -93,16 +93,44 @@ module Pharos
         api_endpoint || address
       end
 
+      # @return [String]
       def peer_address
         private_address || private_interface_address || address
       end
 
-      def labels
-        return @attributes[:labels] unless worker?
-
-        @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
+      # @param host [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_address_for(host)
+        if region == host.region
+          peer_address
+        else
+          address
+        end
       end
 
+      # @return [String]
+      def region
+        labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
+      end
+
+      # @return [Hash]
+      def labels
+        labels = @attributes[:labels] || {}
+
+        labels['node-address.kontena.io/external-ip'] = address
+        labels['node-role.kubernetes.io/worker'] = '' if worker?
+
+        labels
+      end
+
+      # @return [Hash]
+      def checks
+        @checks ||= {}
+      end
+
+      # @param local_only [Boolean]
+      # @param cloud_provider [String, NilClass]
+      # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 

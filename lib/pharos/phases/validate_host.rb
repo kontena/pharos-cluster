@@ -82,6 +82,9 @@ module Pharos
         host_addresses = ssh.exec!("sudo hostname --all-ip-addresses").split(" ")
 
         fail "Peer address #{@host.peer_address} does not seem to be a node local address" unless host_addresses.include?(@host.peer_address)
+
+        etcd_peer_address = @config.etcd_peer_address(@host)
+        fail "Etcd peer address #{etcd_peer_address} does not seem to be a node local address" unless host_addresses.include?(etcd_peer_address)
       end
     end
   end
