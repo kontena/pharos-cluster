@@ -12,6 +12,7 @@ require_relative 'configuration/file_audit'
 require_relative 'configuration/webhook_audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
+require_relative 'configuration/control_plane'
 require_relative 'configuration/pod_security_policy'
 require_relative 'configuration/telemetry'
 require_relative 'configuration/admission_plugin'
@@ -50,6 +51,7 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :control_plane, Pharos::Configuration::ControlPlane
     attribute :telemetry, Pharos::Configuration::Telemetry
     attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
     attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')

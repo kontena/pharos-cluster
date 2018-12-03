@@ -44,7 +44,8 @@ module Pharos
         ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-init.sh',
-            CONFIG: tmp_file
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
           )
         end
 
@@ -67,7 +68,8 @@ module Pharos
         ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-reconfigure.sh',
-            CONFIG: tmp_file
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
           )
         end
       end
