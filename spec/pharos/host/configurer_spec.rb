@@ -9,15 +9,17 @@ describe Pharos::Host::Configurer do
   end
 
   let(:host) { double(:host) }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
-  let(:subject) { described_class.new(host) }
-
-  let(:configurers) { [] }
 
   before do
-    allow(host).to receive(:ssh).and_return(ssh)
-    allow(test_config_class).to receive(:configs).and_return(configurers)
+    Pharos::Host::Configurer.configurers.delete_if { |c| c.supported_os_releases&.first&.id == 'test' }
+    test_config_class
   end
+
+  after do
+    Pharos::Host::Configurer.configurers.delete_if { |c| c == test_config_class }
+  end
+
+  subject { described_class.new(host) }
 
   describe '#register_config' do
     it 'registers multiple versions to configs' do
