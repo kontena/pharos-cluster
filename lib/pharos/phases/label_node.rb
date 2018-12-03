@@ -10,10 +10,6 @@ module Pharos
       end
 
       def perform
-          logger.info { "No labels or taints set ... " }
-          return
-        end
-
         config.hosts.each do |host|
           if host.labels.empty? && @host.taints.nil?
             logger.info { "No labels or taints set for #{host} ... " }
