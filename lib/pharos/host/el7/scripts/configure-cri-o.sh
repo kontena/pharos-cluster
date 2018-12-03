@@ -59,17 +59,17 @@ if ! systemctl is-active --quiet crio; then
 else
     if [ -f /etc/cni/net.d/100-crio-bridge.conf ] || [ -f /etc/cni/net.d/200-loopback.conf ]; then
         rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
-        reload_daemon
+        reload_systemd_daemon "crio"
         exit 0
     fi
 
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
-        reload_daemon
+        reload_systemd_daemon "crio"
         exit 0
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
-        reload_daemon
+        reload_systemd_daemon "crio"
         exit 0
     fi
 fi
