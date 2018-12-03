@@ -66,7 +66,7 @@ module Pharos
       attribute :environment, Pharos::Types::Strict::Hash
       attribute :bastion, Pharos::Configuration::Bastion
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes, :config
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes, :config
 
       def to_s
         short_hostname || address
