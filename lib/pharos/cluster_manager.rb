@@ -58,7 +58,7 @@ module Pharos
 
     def gather_facts
       apply_phase(Phases::GatherFacts, config.hosts)
-      apply_phase(Phases::ConfigureClient, [config.master_host], master: sorted_master_hosts.first, optional: true)
+      apply_phase(Phases::ConfigureClient, [config.master_host], master: config.master_host, optional: true)
     end
 
     def validate
