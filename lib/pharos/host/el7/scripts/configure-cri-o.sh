@@ -53,6 +53,9 @@ lineinfile "^registries =" "registries = [ \"docker.io\"" "/etc/crio/crio.conf"
 lineinfile "^insecure_registries =" "insecure_registries = [ $INSECURE_REGISTRIES" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
+    if [ -f /etc/cni/net.d/100-crio-bridge.conf ] || [ -f /etc/cni/net.d/200-loopback.conf ]; then
+        rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
+    fi
     systemctl daemon-reload
     systemctl enable crio
     systemctl start crio
