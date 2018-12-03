@@ -38,6 +38,10 @@ if ! rpm -qi iscsi-initiator-utils ; then
     yum install -y iscsi-initiator-utils
 fi
 
+if ! rpm -qi yum-utils ; then
+    yum install -y yum-utils
+fi
+
 env_file="/etc/environment"
 
 lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" "$env_file"
