@@ -49,7 +49,7 @@ module Pharos
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository,
+            IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
         else

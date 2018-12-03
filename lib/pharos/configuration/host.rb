@@ -66,8 +66,7 @@ module Pharos
       attribute :environment, Pharos::Types::Strict::Hash
       attribute :bastion, Pharos::Configuration::Bastion
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes
-      attr_writer :checks
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes, :config
 
       def to_s
         short_hostname || address
@@ -149,7 +148,7 @@ module Pharos
           args << "--hostname-override=#{hostname}"
         end
 
-        args += configurer(nil).kubelet_args
+        args += configurer.kubelet_args
 
         args
       end
@@ -206,10 +205,11 @@ module Pharos
         routes.select{ |route| route.overlaps? cidr }
       end
 
-      # @param ssh [Pharos::SSH::Client]
-      def configurer(ssh)
-        configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
-        configurer&.new(self, ssh)
+      # @return [NilClass,Pharos::Host::Configurer]
+      def configurer
+        return @configurer if @configurer
+        raise "Os release not set" unless os_release&.id
+        @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
       end
 
       # @param bastion [Pharos::Configuration::Bastion]
