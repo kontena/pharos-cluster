@@ -93,6 +93,15 @@ module Pharos
       def build_systemd_dropin
         options = []
         options << "Environment='KUBELET_EXTRA_ARGS=#{kubelet_extra_args.join(' ')}'"
+
+        if @config.control_plane&.use_proxy && @host.environment
+          @host.environment.each do |key, value|
+            next unless key.downcase.end_with?('_proxy')
+
+            options << "Environment='#{key}=#{value}'"
+          end
+        end
+
         options << "ExecStartPre=-/sbin/swapoff -a"
 
         "[Service]\n#{options.join("\n")}\n"
