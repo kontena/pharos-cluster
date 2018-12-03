@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pharos-cluster (2.0.3.rc.1)
+    pharos-cluster (2.0.4)
       bcrypt_pbkdf (>= 1.0, < 2.0)
       clamp (= 1.2.1)
       dry-struct (= 0.5.0)
@@ -118,13 +118,13 @@ GEM
     timers (4.2.0)
     tty-color (0.4.3)
     tty-cursor (0.6.0)
-    tty-prompt (0.17.2)
+    tty-prompt (0.18.0)
       necromancer (~> 0.4.0)
       pastel (~> 0.7.0)
       timers (~> 4.0)
       tty-cursor (~> 0.6.0)
-      tty-reader (~> 0.4.0)
-    tty-reader (0.4.0)
+      tty-reader (~> 0.5.0)
+    tty-reader (0.5.0)
       tty-cursor (~> 0.6.0)
       tty-screen (~> 0.6.4)
       wisper (~> 2.0.0)
@@ -146,4 +146,4 @@ DEPENDENCIES
   rubocop (~> 0.57)
 
 BUNDLED WITH
-   1.16.2
+   1.16.3
