@@ -24,8 +24,6 @@ describe Pharos::Phases::ConfigureKubelet do
       kubelet: {read_only_port: false}
   ) }
 
-  let(:configurers) { [] }
-
   subject { described_class.new(host, config: config) }
 
   before :all do
