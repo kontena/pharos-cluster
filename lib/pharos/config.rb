@@ -76,7 +76,7 @@ module Pharos
 
     # @return [Pharos::Configuration::Node]
     def master_host
-      sorted_master_hosts.first
+      master_hosts.first
     end
 
     # @return [Array<Pharos::Configuration::Node>]
