@@ -30,6 +30,14 @@ module Pharos
         exec_script('repos/update.sh')
       end
 
+      # @return [Array<String>]
+      def kubelet_args
+        kubelet_args = super
+        kubelet_args << '--cgroup-driver=systemd' if fresh_install?
+
+        kubelet_args
+      end
+
       def configure_container_runtime
         if docker?
           exec_script(
@@ -44,10 +52,12 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
+          cgroup_manager = fresh_install? ? 'systemd' : 'cgroupfs'
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
+            CRIO_CGROUP_MANAGER: cgroup_manager,
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
@@ -55,6 +65,10 @@ module Pharos
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
+      end
+
+      def fresh_install?
+        @fresh_install ||= !ssh.file('/etc/crio/crio.conf').exist?
       end
 
       def configure_container_runtime_safe?
