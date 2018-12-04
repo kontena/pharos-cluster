@@ -35,7 +35,7 @@ module Pharos
         api_manifest = ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
         return false unless api_manifest.exist?
 
-        !api_manifest.read.match(/--enable-admission-plugins=.*(PodSecurityPolicy).*/)
+        !api_manifest.read.match?(/--enable-admission-plugins=.*PodSecurityPolicy/)
       end
 
       def call
