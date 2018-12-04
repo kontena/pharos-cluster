@@ -19,7 +19,6 @@ module Pharos
     }.freeze
 
     class Client
-
       include MonitorMixin
 
       attr_reader :session
