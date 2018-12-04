@@ -56,6 +56,7 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
+          can_pull = ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
@@ -64,6 +65,7 @@ module Pharos
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
+          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
@@ -76,7 +78,8 @@ module Pharos
           return true if ssh.exec("rpm -qi docker").error? # docker not installed
           return true if ssh.exec("rpm -qi docker-#{DOCKER_VERSION}").success?
         elsif crio?
-          return true if ssh.exec("rpm -qi cri-o").error? # cri-o not installed
+          bin_exist = ssh.file('/usr/local/bin/crio').exist?
+          return true if ssh.exec("rpm -qi cri-o").error? && !bin_exist # cri-o not installed
           return true if ssh.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
         end
 
@@ -103,6 +106,15 @@ module Pharos
           VERSION: version,
           ARCH: host.cpu_arch.name
         )
+      end
+
+      def cleanup_crio!
+        ssh.exec!("sudo systemctl stop kubelet")
+        ssh.exec!("sudo crictl stopp $(crictl pods -q)")
+        ssh.exec!("sudo crictl rmp $(crictl pods -q)")
+        ssh.exec!("sudo crictl rmi $(crictl images -q)")
+      ensure
+        ssh.exec!("sudo systemctl start kubelet")
       end
 
       def reset
