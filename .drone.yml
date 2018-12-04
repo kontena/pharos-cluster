@@ -14,10 +14,12 @@ pipeline:
       - bash -c 'shopt -s globstar; shellcheck **/*.sh'
   setup-e2e:
     image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
     commands:
       - ./e2e/drone_setup.sh
   teardown-e2e:
     image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
     commands:
       - ./e2e/drone_teardown.sh
     when:
