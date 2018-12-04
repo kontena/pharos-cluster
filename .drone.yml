@@ -12,6 +12,16 @@ pipeline:
     commands:
       - apk update && apk add bash
       - bash -c 'shopt -s globstar; shellcheck **/*.sh'
+  setup-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    commands:
+      - ./e2e/drone_setup.sh
+  teardown-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      status: [ failure, success ]
   create_gh_release:
     image: ubuntu:xenial
     secrets: [ github_token ]
