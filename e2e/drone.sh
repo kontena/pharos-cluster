@@ -2,6 +2,9 @@
 
 set -ue
 
+export PHAROS_NON_OSS=true
+
+bundle install
 bundle exec bin/pharos-cluster
 bundle exec bin/pharos-cluster -v
 bundle exec bin/pharos-cluster version
