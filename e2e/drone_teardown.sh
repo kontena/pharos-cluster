@@ -1,6 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
 cd e2e/digitalocean
-terraform destroy -auto-approve
+until terraform destroy -auto-approve
+do
+  echo "Destroy failed... trying again in 5s"
+  sleep 5
+done
