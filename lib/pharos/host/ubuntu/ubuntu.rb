@@ -44,7 +44,6 @@ module Pharos
         exec_script("reset.sh")
       end
 
-
       def configure_container_runtime_safe?
         return true if custom_docker?
 
