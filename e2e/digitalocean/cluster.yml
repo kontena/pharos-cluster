@@ -22,3 +22,4 @@ addons:
     data_dir: /var/lib/kontena-storage
     storage:
       use_all_nodes: true
+      device_filter: ^sd[a-x]
