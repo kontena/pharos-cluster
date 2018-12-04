@@ -16,6 +16,9 @@ module Pharos
       super
     rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
       raise
+    rescue Errno::EPIPE
+      raise unless ENV['DEBUG'].to_s.empty?
+      exit 141
     rescue Pharos::ConfigError => exc
       warn "==> #{exc}"
       exit 11
