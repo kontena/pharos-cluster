@@ -1,6 +1,3 @@
-variable "do_token" {}
-
-
 variable "cluster_name" {
   default = "pharos"
 }
@@ -35,7 +32,6 @@ variable "image" {
 
 
 provider "digitalocean" {
-  token = "${var.do_token}"
 }
 
 resource "tls_private_key" "ssh_key" {
