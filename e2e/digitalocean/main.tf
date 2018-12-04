@@ -63,7 +63,7 @@ resource "digitalocean_droplet" "pharos_master" {
   region             = "${var.region}"
   size               = "${var.master_size}"
   private_networking = true
-  ssh_keys           = "${var.ssh_keys}"
+  ssh_keys           = "${digitalocean_ssh_key.default.fingerprint}"
 }
 
 resource "random_pet" "pharos_worker" {
@@ -80,7 +80,7 @@ resource "digitalocean_droplet" "pharos_worker" {
   region             = "${var.region}"
   size               = "${var.worker_size}"
   private_networking = true
-  ssh_keys           = "${var.ssh_keys}"
+  ssh_keys           = "${digitalocean_ssh_key.default.fingerprint}"
 }
 
 resource "digitalocean_volume" "pharos_storage" {
