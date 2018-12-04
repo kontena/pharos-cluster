@@ -53,6 +53,7 @@ module Pharos
           )
         elsif crio?
           cgroup_manager = fresh_install? ? 'systemd' : 'cgroupfs'
+          can_pull = ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
@@ -62,6 +63,7 @@ module Pharos
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
+          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
@@ -69,22 +71,6 @@ module Pharos
 
       def fresh_install?
         @fresh_install ||= !ssh.file('/etc/crio/crio.conf').exist?
-      end
-
-      def configure_container_runtime_safe?
-        return true if custom_docker?
-
-        if docker?
-          result = ssh.exec("dpkg-query --show docker.io")
-          return true if result.error? # docker not installed
-          return true if result.stdout.split("\t")[1].to_s.start_with?(DOCKER_VERSION)
-        elsif crio?
-          result = ssh.exec("dpkg-query --show cri-o")
-          return true if result.error? # cri-o not installed
-          return true if result.stdout.split("\t")[1].to_s.start_with?(Pharos::CRIO_VERSION)
-        end
-
-        false
       end
     end
   end
