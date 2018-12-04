@@ -49,7 +49,7 @@ Pharos.addon 'kontena-lens' do
         create_admin_user(admin_password)
       end
       unless config_exists?
-        create_config(name, host)
+        create_config(name, "https://#{master_host_ip}:6443")
       end
       message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
       message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
@@ -91,9 +91,9 @@ Pharos.addon 'kontena-lens' do
   end
 
   # @param name [String]
-  # @param host [String]
+  # @param kubernetes_api_url [String]
   # @return [K8s::Resource]
-  def create_config(name, host)
+  def create_config(name, kubernetes_api_url)
     config = K8s::Resource.new(
       apiVersion: 'v1',
       kind: 'ConfigMap',
@@ -103,7 +103,7 @@ Pharos.addon 'kontena-lens' do
       },
       data: {
         clusterName: name,
-        clusterUrl: host
+        clusterUrl: kubernetes_api_url
       }
     )
     kube_client.api('v1').resource('configmaps').create_resource(config)
@@ -129,6 +129,11 @@ Pharos.addon 'kontena-lens' do
 
   def user_management_enabled?
     config.user_management&.enabled != false
+  end
+
+  # @return [String, NilClass]
+  def master_host_ip
+    cluster_config.master_host&.address
   end
 
   # @return [Pharos::Configuration::TokenWebhook]
