@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.bindir        = "bin"
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = require_paths
-  spec.required_ruby_version = '~> 2.4'
+  spec.required_ruby_version = '~> 2.5'
 
   spec.add_runtime_dependency "clamp", "1.2.1"
   spec.add_runtime_dependency "pastel"
