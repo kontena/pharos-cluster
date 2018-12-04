@@ -17,6 +17,10 @@ pipeline:
     secrets: [ digitalocean_token ]
     commands:
       - ./e2e/drone_setup.sh
+  e2e:
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone.sh
   teardown-e2e:
     image: docker.io/hashicorp/terraform:0.11.10
     secrets: [ digitalocean_token ]
