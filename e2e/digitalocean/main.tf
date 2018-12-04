@@ -99,7 +99,7 @@ output "pharos_hosts" {
       private_address   = "${digitalocean_droplet.pharos_master.*.ipv4_address_private}"
       role              = "master"
       user              = "root"
-      container_runtime = "cri-o"
+      ssh_key_path      = "./ssh_key.pem"
 
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
@@ -112,7 +112,7 @@ output "pharos_hosts" {
       private_address   = "${digitalocean_droplet.pharos_worker.*.ipv4_address_private}"
       role              = "worker"
       user              = "root"
-      container_runtime = "cri-o"
+      ssh_key_path      = "./ssh_key.pem"
 
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
