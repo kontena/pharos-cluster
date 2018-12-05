@@ -1,0 +1,33 @@
+network:
+  provider: weave
+  pod_network_cidr: 172.31.0.0/16
+  service_cidr: 172.32.0.0/16
+  weave:
+    trusted_subnets:
+      - "10.133.0.0/16"
+telemetry:
+  enabled: false
+addons:
+  ingress-nginx:
+    enabled: true
+  helm:
+    enabled: true
+  kontena-lens:
+    enabled: true
+    name: pharos-drone
+    tls:
+      email: bxwqaumj@grr.la
+    persistence:
+      enabled: true
+  kontena-storage:
+    enabled: true
+    data_dir: /var/lib/kontena-storage
+    storage:
+      use_all_nodes: true
+      device_filter: ^sd[a-x]
+  cert-manager:
+    enabled: true
+    issuer:
+      name: letsencrypt-staging
+      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      email: bxwqaumj@grr.la
