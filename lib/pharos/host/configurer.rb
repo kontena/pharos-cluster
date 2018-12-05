@@ -163,6 +163,27 @@ module Pharos
         ssh.disconnect; ssh.connect # reconnect to reread env
       end
 
+      # @return [Boolean]
+      def fresh_crio_install?
+        @fresh_install ||= !ssh.file('/etc/crio/crio.conf').exist?
+      end
+
+      # @return [Boolean]
+      def can_pull?
+        return true if fresh_crio_install?
+
+        ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
+      end
+
+      def cleanup_crio!
+        ssh.exec!("sudo systemctl stop kubelet")
+        ssh.exec!("sudo crictl stopp $(crictl pods -q)")
+        ssh.exec!("sudo crictl rmp $(crictl pods -q)")
+        ssh.exec!("sudo crictl rmi $(crictl images -q)")
+      ensure
+        ssh.exec!("sudo systemctl start kubelet")
+      end
+
       class << self
         # @param component [Hash]
         def register_component(component)

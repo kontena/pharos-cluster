@@ -67,15 +67,6 @@ module Pharos
 
         false
       end
-
-      def cleanup_crio!
-        ssh.exec!("sudo systemctl stop kubelet")
-        ssh.exec!("sudo crictl stopp $(crictl pods -q)")
-        ssh.exec!("sudo crictl rmp $(crictl pods -q)")
-        ssh.exec!("sudo crictl rmi $(crictl images -q)")
-      ensure
-        ssh.exec!("sudo systemctl start kubelet")
-      end
     end
   end
 end

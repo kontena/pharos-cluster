@@ -44,7 +44,7 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
-          can_pull = ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
+          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
