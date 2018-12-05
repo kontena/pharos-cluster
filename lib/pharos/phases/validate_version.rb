@@ -68,7 +68,7 @@ module Pharos
         raise if !kube_client.transport.options[:ssl_verify_peer] # don't retry if ssl verify is false
 
         kube_client.transport.options[:ssl_verify_peer] = false
-        logger.debug { "Encountered #{ex.class.name} : #{ex.message} - retrying with ssl_verify_peer = false" }
+        logger.warn { "Encountered #{ex.class.name} : #{ex.message} - retrying with ssl verify peer disabled" }
         retry
       rescue K8s::Error::NotFound
         nil
