@@ -15,6 +15,12 @@ describe Pharos::Host::UbuntuXenial do
     allow(host).to receive(:ssh).and_return(ssh)
   end
 
+  describe '#docker_version' do
+    it 'returns correct version' do
+      expect(subject.docker_version).to eq(Pharos::Host::UbuntuXenial::DOCKER_VERSION)
+    end
+  end
+
   describe '#configure_container_runtime' do
     context 'docker' do
       it 'configures docker' do
