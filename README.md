@@ -14,4 +14,4 @@ Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/pharos-cluster.
+Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/pharos-cluster
