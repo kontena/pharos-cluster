@@ -41,7 +41,7 @@ else
 fi
 
 configure_container_runtime_proxy "crio"
-orig_version=$(/usr/local/bin/crio -v)
+orig_version=$(/usr/local/bin/crio -v || echo "-")
 yum_install_with_lock "cri-o" "$CRIO_VERSION"
 
 orig_config=$(cat /etc/crio/crio.conf)
