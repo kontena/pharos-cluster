@@ -3,6 +3,7 @@
 require 'net/ssh'
 require 'net/ssh/gateway'
 require 'shellwords'
+require 'monitor'
 
 module Pharos
   module SSH
@@ -18,9 +19,12 @@ module Pharos
     }.freeze
 
     class Client
+      include MonitorMixin
+
       attr_reader :session
 
       def initialize(host, user = nil, opts = {})
+        super()
         @host = host
         @user = user
         @opts = opts
@@ -38,21 +42,22 @@ module Pharos
       end
 
       def connect
-        logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
-        if bastion
-          gw_opts = {}
-          gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
-          gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-          @session = gateway.ssh(@host, @user, @opts)
-        else
-          @session = Net::SSH.start(@host, @user, @opts)
+        synchronize do
+          logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
+          if bastion
+            gw_opts = {}
+            gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
+            gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
+            @session = gateway.ssh(@host, @user, @opts)
+          else
+            @session = Net::SSH.start(@host, @user, @opts)
+          end
         end
       end
 
       # @return [Integer] local port number
       def gateway(host, port)
-        gateway = Net::SSH::Gateway.new(@host, @user, @opts)
-        gateway.open(host, port)
+        Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
       end
 
       # @example
@@ -69,14 +74,14 @@ module Pharos
       # @return [Pharos::SSH::Tempfile]
       # @yield [Pharos::SSH::Tempfile]
       def tempfile(prefix: "pharos", content: nil, &block)
-        Tempfile.new(self, prefix: prefix, content: content, &block)
+        synchronize { Tempfile.new(self, prefix: prefix, content: content, &block) }
       end
 
       # @param cmd [String] command to execute
       # @return [Pharos::Command::Result]
       def exec(cmd, **options)
         require_session!
-        RemoteCommand.new(self, cmd, **options).run
+        synchronize { RemoteCommand.new(self, cmd, **options).run }
       end
 
       # @param cmd [String] command to execute
@@ -84,7 +89,7 @@ module Pharos
       # @return [String] stdout
       def exec!(cmd, **options)
         require_session!
-        RemoteCommand.new(self, cmd, **options).run!.stdout
+        synchronize { RemoteCommand.new(self, cmd, **options).run!.stdout }
       end
 
       # @param script [String] name of script
@@ -112,21 +117,21 @@ module Pharos
       end
 
       def interactive_session
-        Pharos::SSH::InteractiveSession.new(self).run
+        synchronize { Pharos::SSH::InteractiveSession.new(self).run }
       end
 
       def connected?
-        @session && !@session.closed?
+        synchronize { @session && !@session.closed? }
       end
 
       def disconnect
-        @session.close if @session && !@session.closed?
+        synchronize { @session.close if @session && !@session.closed? }
       end
 
       private
 
       def require_session!
-        raise Error, "Connection not established" unless @session
+        raise Error, "Connection not established" if @session.nil? || @session.closed?
       end
     end
   end
