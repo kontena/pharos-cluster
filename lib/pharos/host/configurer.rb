@@ -165,7 +165,7 @@ module Pharos
 
       # @return [Boolean]
       def fresh_crio_install?
-        @fresh_install ||= !ssh.file('/etc/crio/crio.conf').exist?
+        @fresh_crio_install ||= !ssh.file('/etc/crio/crio.conf').exist?
       end
 
       # @return [Boolean]
