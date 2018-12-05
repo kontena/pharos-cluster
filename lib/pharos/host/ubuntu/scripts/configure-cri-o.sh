@@ -39,10 +39,10 @@ else
 fi
 
 configure_container_runtime_proxy "crio"
-
+orig_version=$(/usr/local/bin/crio -v || echo "0.0.0")
 export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold cri-o
-apt-get install -y --allow-downgrades cri-o="${CRIO_VERSION}"
+apt-get install -y --allow-downgrades -o "Dpkg::Options::=--force-confnew" cri-o="${CRIO_VERSION}"
 apt-mark hold cri-o
 
 orig_config=$(cat /etc/crio/crio.conf)
@@ -72,6 +72,11 @@ else
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
+        reload_systemd_daemon "crio"
+        exit 0
+    fi
+
+    if [ "$orig_version" != "$(/usr/local/bin/crio -v)" ]; then
         reload_systemd_daemon "crio"
         exit 0
     fi

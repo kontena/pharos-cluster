@@ -12,6 +12,7 @@ describe Pharos::Host::UbuntuXenial do
   let(:subject) { described_class.new(host) }
   before do
     allow(host).to receive(:config).and_return(cluster_config)
+    allow(host).to receive(:ssh).and_return(ssh)
   end
 
   describe '#configure_container_runtime' do
@@ -26,6 +27,8 @@ describe Pharos::Host::UbuntuXenial do
 
     context 'cri-o' do
       it 'configures cri-o' do
+        #allow(ssh).to receive(:exec).and_return(double(:result, success?: true))
+        allow(subject).to receive(:fresh_crio_install?).and_return(true)
         allow(subject).to receive(:config).and_return(cluster_config)
         allow(subject).to receive(:insecure_registries)
         allow(subject).to receive(:docker?).and_return(false)
