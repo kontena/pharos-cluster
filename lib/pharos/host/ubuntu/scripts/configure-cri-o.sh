@@ -39,7 +39,7 @@ else
 fi
 
 configure_container_runtime_proxy "crio"
-orig_version=$(/usr/local/bin/crio -v || echo "-")
+orig_version=$(/usr/local/bin/crio -v || echo "0.0.0")
 export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold cri-o
 apt-get install -y --allow-downgrades -o "Dpkg::Options::=--force-confnew" cri-o="${CRIO_VERSION}"
