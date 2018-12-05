@@ -57,7 +57,7 @@ module Pharos
 
       # @return [Integer] local port number
       def gateway(host, port)
-        synchronize { Net::SSH::Gateway.new(@host, @user, @opts).open(host, port) }
+        Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
       end
 
       # @example
@@ -103,13 +103,13 @@ module Pharos
         cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
         cmd.concat(%w(bash --norc --noprofile -x -s))
         logger.debug { "exec: #{cmd}" }
-        synchronize { exec!(cmd, stdin: script, source: name, **options) }
+        exec!(cmd, stdin: script, source: name, **options)
       end
 
       # @param cmd [String] command to execute
       # @return [Boolean]
       def exec?(cmd, **options)
-        synchronize { exec(cmd, **options).success? }
+        exec(cmd, **options).success?
       end
 
       def file(path)
