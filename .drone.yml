@@ -17,18 +17,23 @@ pipeline:
     secrets: [ digitalocean_token ]
     commands:
       - ./e2e/drone_setup.sh
+    when:
+      event: [ push ]
   e2e:
     image: ruby:2.5
     commands:
       - gem install bundler -Nf
       - bundle install --path bundler
       - ./e2e/drone.sh
+    when:
+      event: [ push ]
   teardown-e2e:
     image: docker.io/hashicorp/terraform:0.11.10
     secrets: [ digitalocean_token ]
     commands:
       - ./e2e/drone_teardown.sh
     when:
+      event: [ push ]
       status: [ failure, success ]
   create_gh_release:
     image: ubuntu:xenial
