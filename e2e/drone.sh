@@ -4,7 +4,6 @@ set -ue
 
 export PHAROS_NON_OSS=true
 
-bundle install
 gem build pharos-cluster.gemspec
 gem install pharos-cluster*.gem
 pharos-cluster

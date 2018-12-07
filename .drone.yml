@@ -22,8 +22,6 @@ pipeline:
   e2e:
     image: ruby:2.5
     commands:
-      - gem install bundler -Nf
-      - bundle install --path bundler
       - ./e2e/drone.sh
     when:
       event: [ push ]

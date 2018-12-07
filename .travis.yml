@@ -10,6 +10,9 @@ jobs:
   include:
     - stage: e2e
       name: "e2e: docker with weave"
+      install:
+        - gem build pharos-cluster.gemspec
+        - gem install pharos-cluster*.gem
       script: ./e2e/travis.sh
       rvm: 2.5
       dist: xenial
@@ -18,6 +21,9 @@ jobs:
         - NETWORK_PROVIDER=weave
     - stage: e2e
       name: "e2e: docker with calico"
+      install:
+        - gem build pharos-cluster.gemspec
+        - gem install pharos-cluster*.gem
       script: ./e2e/travis.sh
       rvm: 2.5
       dist: xenial
@@ -26,6 +32,9 @@ jobs:
         - NETWORK_PROVIDER=calico
     - stage: e2e
       name: "e2e: cri-o with weave"
+      install:
+        - gem build pharos-cluster.gemspec
+        - gem install pharos-cluster*.gem
       script: ./e2e/travis.sh
       rvm: 2.5
       dist: xenial
@@ -34,6 +43,9 @@ jobs:
         - NETWORK_PROVIDER=weave
     - stage: e2e
       name: "e2e: cri-o with calico"
+      install:
+        - gem build pharos-cluster.gemspec
+        - gem install pharos-cluster*.gem
       script: ./e2e/travis.sh
       rvm: 2.5
       dist: xenial
