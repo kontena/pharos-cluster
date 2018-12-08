@@ -82,6 +82,7 @@ spec:
           volumeMounts:
             - name: xtables-lock
               mountPath: /run/xtables.lock
+        <% if flying_shuttle_enabled %>
         - name: weave-flying-shuttle
           env:
             - name: HOSTNAME
@@ -93,6 +94,7 @@ spec:
           resources:
             requests:
               cpu: 10m
+        <% end %>
       hostNetwork: true
       hostPID: true
       restartPolicy: Always
