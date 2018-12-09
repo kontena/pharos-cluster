@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bcrypt'
+require 'json'
 
 Pharos.addon 'kontena-lens' do
   version '1.3.1'
@@ -32,6 +33,8 @@ Pharos.addon 'kontena-lens' do
   }
 
   install {
+    patch_old_resource
+
     host = config.host || "lens.#{gateway_node_ip}.nip.io"
     name = config.name || 'pharos-cluster'
     apply_resources(
@@ -56,6 +59,26 @@ Pharos.addon 'kontena-lens' do
     end
     post_install_message(message)
   }
+
+  def patch_old_resource
+    last_config_annotation = "kubectl.kubernetes.io/last-applied-configuration"
+
+    user_mgmt_deployment = kube_client.api('apps/v1').resource('deployments', namespace: 'kontena-lens').get('user-management')
+    last_applied_string = user_mgmt_deployment.dig('metadata', 'annotations', last_config_annotation)
+    return false unless last_applied_string
+    last_applied = JSON.parse(last_applied_string)
+    nested_replicas = last_applied.dig('spec', 'template', 'spec', 'replicas')
+    if nested_replicas
+      last_applied['spec']['template']['spec'].delete('replicas')
+      patch = { metadata: { annotations: {} } }
+      patch[:metadata][:annotations][last_config_annotation] = JSON.generate(last_applied)
+      kube_client.api('apps/v1').resource('deployments', namespace: 'kontena-lens').merge_patch('user-management', patch)
+      return true
+    end
+    false
+  rescue K8s::Error::NotFound
+    false
+  end
 
   # @return [Boolean]
   def admin_exists?
