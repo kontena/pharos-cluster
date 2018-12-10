@@ -1,0 +1,57 @@
+_pharos () {
+  local cur prev ret subcmd
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  subcmd="${COMP_WORDS[1]}"
+
+  if [ "$COMP_CWORD" = "1" ]; then
+    if [[ ${cur} == -* ]] ; then
+      COMPREPLY=( $(compgen -W "--help --version" -- ${cur}) )
+      return 0
+    fi
+
+    COMPREPLY=( $(compgen -W "<%= tree.keys.select { |k| k.size == 2 }.map(&:last).join(' ') %>" -- ${cur}) )
+  else
+    case "$subcmd" in
+      <%- tree.keys.select { |k| k.size == 3 }.map { |k| k.last(2) }.group_by(&:first).each do |cmd, subcmds| -%>
+      <%= cmd %>)
+        COMPREPLY=( $(compgen -W "<%= subcmds.map(&:last).join(' ') %>" -- ${cur}) )
+        return 0
+        ;;
+      <%- end -%>
+      <%- tree.select { |k, _| k.size == 2 }.each do |cmd, options| -%>
+      <%= cmd.last %>)
+        if [[ ${cur} == -* ]] ; then
+          COMPREPLY=( $(compgen -W "<%= options.map { |o| o[:switch] }.join(' ') %>" -- ${cur}) )
+          return 0
+        fi
+        <%- unless options.select { |o| o[:param] }.empty? -%>
+        case "$prev" in
+          <%- options.select { |o| o[:param] }.each do |option| -%>
+          <%= option[:switch] %>)
+            <%= case option[:param]
+                when 'YAML_FILE'
+                  "COMPREPLY+=( $( compgen -o plusdirs -f -X '!*.yml' -- ${cur} ))"
+                when 'JSON_FILE'
+                  "COMPREPLY+=( $( compgen -o plusdirs -f -X '!*.json' -- ${cur} ))"
+                when 'FILE'
+                  "COMPREPLY+=( $( compgen -o plusdirs -f -- ${cur} ))"
+                when /\[.+?\|.+?/
+                  "COMPREPLY=( $( compgen -W '#{ option[:param].tr('[]', '').split('|').join(' ') }' -- ${cur} ) )"
+                else
+                  "COMPREPLY=()"
+                end %>
+              return 0
+              ;;
+            <%- end -%>
+          esac
+          return 0
+          ;;
+          <%- end -%>
+      <%- end -%>
+    esac
+  fi
+}
+
+complete -o filenames -F _pharos <%= tree.keys.first.first %>
