@@ -6,9 +6,36 @@
 
 Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution) management tool. It handles cluster bootstrapping, upgrades and other maintenance tasks via SSH connection and Kubernetes API access.
 
+## Installation
+
+### chpharos
+The easiest way to install is to use the Kontena Pharos version switcher [chpharos](https://github.com/kontena/pharos-cluster).
+
+```
+$ chpharos install latest
+$ pharos --help
+```
+
+### Download binaries
+
+The binary packages are available on the Downloads section of your [Kontena Account](https://account.kontena.io/) page.
+
+### Build and install Ruby gem
+
+You need Ruby version 2.5
+
+```
+$ gem build pharos-cluster.gemspec
+$ gem install pharos-cluster*.gem
+$ pharos --help
+```
+
+## Usage
+
+See [documentation](https://pharos.sh/docs/).
+
 ## Further Information
 
-- [Documentation](https://pharos.sh/docs/)
 - [Slack](https://slack.kontena.io)
 - [Website](https://pharos.sh/)
 
