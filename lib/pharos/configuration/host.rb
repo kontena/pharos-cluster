@@ -94,7 +94,7 @@ module Pharos
       end
 
       def ssh?
-        @ssh && @ssh.session && !@ssh.session.closed?
+        @ssh && !@ssh.session.closed?
       end
 
       def api_address
