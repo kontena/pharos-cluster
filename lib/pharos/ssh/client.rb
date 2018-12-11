@@ -41,16 +41,16 @@ module Pharos
         @bastion ||= @opts.delete(:bastion)
       end
 
-      def connect
+      def connect(**options)
         synchronize do
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           if bastion
             gw_opts = {}
             gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
             gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-            @session = gateway.ssh(@host, @user, @opts)
+            @session = gateway.ssh(@host, @user, @opts.merge(options))
           else
-            @session = Net::SSH.start(@host, @user, @opts)
+            @session = Net::SSH.start(@host, @user, @opts.merge(options))
           end
         end
       end
