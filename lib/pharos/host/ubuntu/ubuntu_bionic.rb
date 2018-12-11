@@ -33,7 +33,7 @@ module Pharos
       # @return [Array<String>]
       def kubelet_args
         kubelet_args = super
-        kubelet_args << '--cgroup-driver=systemd' if crio? && fresh_install?
+        kubelet_args << '--cgroup-driver=systemd' if crio? && fresh_crio_install?
 
         kubelet_args
       end
