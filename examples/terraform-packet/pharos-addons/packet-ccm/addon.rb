@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Pharos.addon 'packet-ccm' do
   version '0.0.4'
   license 'Apache License 2.0'
