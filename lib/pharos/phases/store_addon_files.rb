@@ -28,7 +28,7 @@ module Pharos
             @config.addon_file_paths.map do |relative_path, real_path|
               tar.add_file_simple(
                 File.join('pharos-addons', relative_path),
-                File.stat(real_path).mode & 0777,
+                File.stat(real_path).mode & 0o777,
                 File.size(real_path)
               ) do |io|
                 logger.info { "Adding #{real_path} as addons.tar.gz:#{relative_path}" }
@@ -61,4 +61,3 @@ module Pharos
     end
   end
 end
-
