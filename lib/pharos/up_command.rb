@@ -109,6 +109,13 @@ module Pharos
         puts
       end
 
+      unless config.addon_file_paths.empty?
+        puts pastel.green("==> The following addon-files will be stored as secrets on cluster:")
+        config.addon_file_paths.each do |relative_path, real_path|
+          puts "- #{real_path}"
+        end
+      end
+
       confirm_yes!('Continue?', default: true)
     end
   end

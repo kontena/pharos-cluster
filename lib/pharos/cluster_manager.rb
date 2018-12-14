@@ -164,6 +164,7 @@ module Pharos
     def save_config
       master_host = config.master_host
       apply_phase(Phases::StoreClusterConfiguration, [master_host], master: master_host)
+      apply_phase(Phases::StoreAddonFiles, [master_host], master: master_host) unless config.addon_file_paths.empty?
     end
 
     def disconnect

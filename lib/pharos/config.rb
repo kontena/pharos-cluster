@@ -62,6 +62,15 @@ module Pharos
 
     attr_accessor :data
 
+    def addon_file_paths
+      @addon_file_paths ||= (addon_paths + %w(pharos-addons)).uniq.flat_map do |addon_path|
+        base_path = File.join(Dir.pwd, addon_path) + "/"
+        Dir.glob(File.join(base_path, '**', '*')).select(&File.method(:file?)).map do |path|
+          [path.delete_prefix(base_path), path]
+        end
+      end.to_h
+    end
+
     # @return [Integer]
     def dns_replicas
       return network.dns_replicas if network.dns_replicas
