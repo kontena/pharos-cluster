@@ -19,7 +19,7 @@ bundle exec bin/pharos-cluster ssh --role master -c cluster.yml -- kubectl get n
 while ! kubectl get nodes | grep " Ready "; do
     echo "waiting for node to be ready ..."
     sleep 5
-end
+done
 
 bundle exec bin/pharos-cluster up -d -y -c cluster.yml
 bundle exec bin/pharos-cluster reset -d -y -c cluster.yml
