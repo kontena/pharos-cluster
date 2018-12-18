@@ -1,0 +1,13 @@
+<% if config.persistence&.enabled %>
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: redis-pvc
+  namespace: kontena-lens
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+<% end %>

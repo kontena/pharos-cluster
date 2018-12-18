@@ -13,7 +13,17 @@ module Pharos
       'kube_proxy' => {},
       'kubelet' => {},
       'telemetry' => {},
-      'addon_paths' => []
+      'pod_security_policy' => {},
+      'addon_paths' => [],
+      'container_runtime' => {},
+      'audit' => {
+        'file' => {
+          'path' => '/var/log/kubernetes/audit.json',
+          'max_size' => 100, # Max 100M files
+          'max_age' => 30, # Max 30 days old audits
+          'max_backups' => 20 # Max 20 rolled files, each 100M
+        }
+      }
     }.freeze
 
     # @param data [Hash]
@@ -26,6 +36,14 @@ module Pharos
       result.to_h
     end
 
+    module CustomPredicates
+      include Dry::Logic::Predicates
+
+      predicate(:hostname_or_ip?) do |value|
+        value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
+      end
+    end
+
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Lint/NestedMethodDefinition
@@ -33,15 +51,22 @@ module Pharos
         configure do
           def self.messages
             super.merge(
-              en: { errors: { network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts" } }
+              en: {
+                errors: {
+                  network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
+                  hostname_or_ip?: "is invalid"
+                }
+              }
             )
           end
         end
+
         required(:hosts).filled(min_size?: 1) do
           each do
             schema do
-              required(:address).filled
-              optional(:private_address).filled
+              predicates(CustomPredicates)
+              required(:address).filled(:str?, :hostname_or_ip?)
+              optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
@@ -54,8 +79,14 @@ module Pharos
               end
               optional(:user).filled
               optional(:ssh_key_path).filled
-              optional(:container_runtime).filled(included_in?: ['docker', 'cri-o'])
-              optional(:http_proxy).filled(:str?)
+              optional(:ssh_proxy_command).filled
+              optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
+              optional(:environment).filled
+              optional(:bastion).schema do
+                required(:address).filled(:str?)
+                optional(:user).filled(:str?)
+                optional(:ssh_key_path).filled(:str?)
+              end
             end
           end
         end
@@ -104,7 +135,15 @@ module Pharos
           optional(:config).filled(:str?)
         end
         optional(:audit).schema do
-          required(:server).filled(:str?)
+          optional(:webhook).schema do
+            required(:server).filled(:str?)
+          end
+          optional(:file).schema do
+            required(:path).filled(:str?)
+            required(:max_age).filled(:int?, gt?: 0)
+            required(:max_size).filled(:int?, gt?: 0)
+            required(:max_backups).filled(:int?, gt?: 0)
+          end
         end
         optional(:kube_proxy).schema do
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
@@ -114,10 +153,27 @@ module Pharos
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
         end
+        optional(:control_plane).schema do
+          optional(:use_proxy).filled(:bool?)
+        end
         optional(:telemetry).schema do
           optional(:enabled).filled(:bool?)
         end
         optional(:image_repository).filled(:str?)
+        optional(:pod_security_policy).schema do
+          optional(:default_policy).filled(:str?)
+        end
+        optional(:admission_plugins).filled do
+          each do
+            schema do
+              required(:name).filled(:str?)
+              optional(:enabled).filled(:bool?)
+            end
+          end
+        end
+        optional(:container_runtime).schema do
+          optional(:insecure_registries).each(type?: String)
+        end
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]

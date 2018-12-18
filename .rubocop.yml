@@ -3,10 +3,11 @@ inherit_from: .rubocop.relaxed.yml
 AllCops:
   Exclude:
     - spec/**/*
+    - non-oss/spec/**/*
     - Gemfile
     - "*.gemspec"
     - bundler/**/*
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.5
 
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:

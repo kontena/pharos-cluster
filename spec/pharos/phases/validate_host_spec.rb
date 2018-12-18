@@ -13,23 +13,35 @@ describe Pharos::Phases::ValidateHost do
   ) }
   let(:host) { config.hosts[0] }
   let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(host, config: config, ssh: ssh) }
+  subject { described_class.new(host, config: config) }
+
+  before do
+    allow(host).to receive(:ssh).and_return(ssh)
+  end
 
   describe '#check_role' do
     let(:role) { 'worker' }
-    let(:host) { Pharos::Configuration::Host.new(
-      address: '192.0.2.1',
-      role: role
-    ) }
-    let(:checks) { {
+
+    let(:host) do
+      Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: role
+      )
+    end
+
+    let(:checks) do
+      {
       'ca_exists' => false,
       'api_healthy' => false,
       'kubelet_configured' => false
-    } }
-    before do
-      host.checks = checks
+      }
     end
-    subject { described_class.new(host, config: config, ssh: ssh) }
+
+    before do
+      allow(host).to receive(:checks).and_return(checks)
+    end
+
+    subject { described_class.new(host, config: config) }
 
     context 'for a worker node' do
       let(:role) { 'worker' }
@@ -244,6 +256,32 @@ describe Pharos::Phases::ValidateHost do
 
       it 'validates' do
         expect{subject.validate_routes}.to_not raise_error
+      end
+    end
+  end
+
+  describe '#validate_peer_address' do
+    context 'for master role' do
+      it "fails if peer_address is not found on host" do
+        expect(ssh).to receive(:exec!).with('sudo hostname --all-ip-addresses').and_return("1.1.1.1 2.2.2.2")
+        expect{subject.validate_peer_address}.to raise_error
+      end
+
+      it "does not fail if peer_address is found on host" do
+        expect(ssh).to receive(:exec!).with('sudo hostname --all-ip-addresses').and_return("1.1.1.1 192.0.2.1 2.2.2.2")
+        expect{subject.validate_peer_address}.not_to raise_error
+      end
+    end
+
+    context 'for worker role' do
+      let(:host) { Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: 'worker'
+      ) }
+
+      it 'does not verfiy peer_address' do
+        expect(ssh).not_to receive(:exec!)
+        expect{subject.validate_peer_address}.not_to raise_error
       end
     end
   end

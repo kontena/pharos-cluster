@@ -14,15 +14,15 @@ spec:
       containers:
       - name: maya-apiserver
         imagePullPolicy: IfNotPresent
-        image: docker.io/openebs/m-apiserver:<%= version %>
+        image: <%= image_repository %>/openebs-m-apiserver:<%= version %>
         ports:
         - containerPort: 5656
         env:
         - name: OPENEBS_IO_JIVA_CONTROLLER_IMAGE
-          value: "docker.io/openebs/jiva:<%= version %>"
+          value: "<%= image_repository %>/openebs-jiva:<%= version %>"
         - name: OPENEBS_IO_JIVA_REPLICA_IMAGE
-          value: "docker.io/openebs/jiva:<%= version %>"
+          value: "<%= image_repository %>/openebs-jiva:<%= version %>"
         - name: OPENEBS_IO_VOLUME_MONITOR_IMAGE
-          value: "docker.io/openebs/m-exporter:<%= version %>"
+          value: "<%= image_repository %>/openebs-m-exporter:<%= version %>"
         - name: OPENEBS_IO_JIVA_REPLICA_COUNT
           value: "<%= default_replicas %>"

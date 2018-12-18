@@ -1,3 +1,4 @@
+require "pharos/kube"
 require "pharos/phases/configure_dns"
 
 describe Pharos::Phases::ConfigureDNS do
@@ -159,7 +160,7 @@ describe Pharos::Phases::ConfigureDNS do
         expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions.map{|o| o.to_hash}).to match [
           { key: 'k8s-app', operator: 'In', values: ['kube-dns'] },
         ]
-        expect(res.spec.template.spec.containers[0].image).to include("coredns-#{master.cpu_arch.name}")
+        expect(res.spec.template.spec.containers).to be_nil
 
         resource
       end

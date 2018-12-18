@@ -23,14 +23,13 @@ module Pharos
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1alpha2',
           'kind' => 'MasterConfiguration',
-
           'nodeRegistration' => {
             'name' => @host.hostname
           },
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'imageRepository' => @config.image_repository,
           'api' => {
-            'advertiseAddress' => @host.peer_address,
+            'advertiseAddress' => advertise_address,
             'controlPlaneEndpoint' => 'localhost'
           },
           'apiServerCertSANs' => build_extra_sans,
@@ -53,10 +52,10 @@ module Pharos
         end
 
         if @config.cloud && @config.cloud.provider != 'external'
+          config['apiServerExtraArgs']['cloud-provider'] = @config.cloud.provider
+          config['controllerManagerExtraArgs']['cloud-provider'] = @config.cloud.provider
           if @config.cloud.config
-            config['apiServerExtraArgs']['cloud-provider'] = @config.cloud.provider
             config['apiServerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
-            config['controllerManagerExtraArgs']['cloud-provider'] = @config.cloud.provider
             config['controllerManagerExtraArgs']['cloud-config'] = CLOUD_CFG_FILE
           end
         end
@@ -87,9 +86,12 @@ module Pharos
         configure_token_webhook(config) if @config.authentication&.token_webhook
 
         # Configure audit related things if needed
-        configure_audit_webhook(config) if @config.audit&.server
+        configure_audit_webhook(config) if @config.audit&.webhook&.server
+        configure_audit_file(config) if @config.audit&.file
 
         configure_kube_proxy(config) if @config.kube_proxy
+
+        configure_admission_plugins(config)
 
         # Set secrets config location and mount it to api server
         config['apiServerExtraArgs']['experimental-encryption-provider-config'] = SECRETS_CFG_FILE
@@ -99,6 +101,11 @@ module Pharos
           'mountPath' => SECRETS_CFG_DIR
         }
         config
+      end
+
+      # @return [String]
+      def advertise_address
+        @config.regions.size == 1 ? @host.peer_address : @host.address
       end
 
       def master_taint?
@@ -124,7 +131,7 @@ module Pharos
         config['etcd'] = {
           'external' => {
             'endpoints' => @config.etcd_hosts.map { |h|
-              "https://#{h.peer_address}:2379"
+              "https://#{@config.etcd_peer_address(h)}:2379"
             },
             'certFile'  => '/etc/pharos/pki/etcd/client.pem',
             'caFile'    => '/etc/pharos/pki/ca.pem',
@@ -158,10 +165,10 @@ module Pharos
           "audit-webhook-config-file" => AUDIT_CFG_DIR + '/webhook.yml',
           "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
         )
-        config['apiServerExtraVolumes'] += volume_mounts_for_audit_webhook
+        config['apiServerExtraVolumes'] += volume_mounts_for_audit_config
       end
 
-      def volume_mounts_for_audit_webhook
+      def volume_mounts_for_audit_config
         volume_mounts = []
         volume_mount = {
           'name' => 'k8s-audit-webhook',
@@ -190,6 +197,24 @@ module Pharos
         }
         volume_mounts << volume_mount
         volume_mounts
+      end
+
+      def configure_audit_file(config)
+        config['apiServerExtraArgs'].merge!(
+          "audit-log-path" => @config.audit.file.path,
+          "audit-log-maxage" => @config.audit.file.max_age.to_s,
+          "audit-log-maxbackup" => @config.audit.file.max_backups.to_s,
+          "audit-log-maxsize" => @config.audit.file.max_size.to_s,
+          "audit-policy-file" => AUDIT_CFG_DIR + '/policy.yml'
+        )
+        base_dir = File.dirname(@config.audit.file.path)
+        config['apiServerExtraVolumes'] += [{
+          'name' => 'k8s-audit-file',
+          'hostPath' => base_dir,
+          'mountPath' => base_dir,
+          'writable' => true
+        }]
+        config['apiServerExtraVolumes'] += volume_mounts_for_audit_config
       end
 
       # @param config [Hash]
@@ -252,6 +277,16 @@ module Pharos
         end
 
         config
+      end
+
+      DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction).freeze
+
+      def configure_admission_plugins(config)
+        disabled_plugins = @config.admission_plugins&.reject(&:enabled)&.map(&:name) || []
+        enabled_plugins = DEFAULT_ADMISSION_PLUGINS.reject{ |p| disabled_plugins.include?(p) } + (@config.admission_plugins&.select(&:enabled)&.map(&:name) || [])
+
+        config['apiServerExtraArgs']['enable-admission-plugins'] = enabled_plugins.uniq.join(',') unless enabled_plugins.empty?
+        config['apiServerExtraArgs']['disable-admission-plugins'] = disabled_plugins.uniq.join(',') unless disabled_plugins.empty?
       end
     end
   end

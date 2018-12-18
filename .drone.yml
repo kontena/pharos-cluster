@@ -1,9 +1,40 @@
 pipeline:
-  test:
-    image: ruby:2.4
+  test-ruby:
+    image: ruby:2.5
     commands:
+      - gem install bundler -Nf
       - bundle install --path bundler
-      - bundle exec rspec spec/ && bundle exec rubocop --fail-level A -S --format c --parallel
+      - bundle exec rubocop --fail-level A -S --format c --parallel
+      - bundle exec rspec spec/
+      - PHAROS_NON_OSS=true bundle exec rspec non-oss/spec/
+  test-shellcheck:
+    image: koalaman/shellcheck-alpine:latest
+    commands:
+      - apk update && apk add bash
+      - bash -c 'shopt -s globstar; shellcheck **/*.sh'
+  setup-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
+    commands:
+      - ./e2e/drone_setup.sh
+    when:
+      event: [ push ]
+  e2e:
+    image: ruby:2.5
+    commands:
+      - gem install bundler -Nf
+      - bundle install --path bundler
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  teardown-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
   create_gh_release:
     image: ubuntu:xenial
     secrets: [ github_token ]
@@ -11,13 +42,13 @@ pipeline:
       - ./build/drone/create_release.sh
     when:
       event: tag
-  build_xenial:
+  build_ubuntu:
     image: ubuntu:xenial
-    secrets: [ github_token ]
     environment:
       - CPPFLAGS=-P
+      - PHAROS_NON_OSS=true
     commands:
-      - ./build/drone/ubuntu_xenial.sh
+      - ./build/drone/ubuntu.sh
     when:
       event: tag
   release_binary:
@@ -26,6 +57,23 @@ pipeline:
     bucket: pharos-cluster-binaries
     region: eu-west-1
     source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}"
+    target: /
+    when:
+      event: tag
+  build_ubuntu_oss:
+    image: ubuntu:xenial
+    environment:
+      - CPPFLAGS=-P
+    commands:
+      - ./build/drone/ubuntu_oss.sh
+    when:
+      event: tag
+  release_binary_oss:
+    image: plugins/s3
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    bucket: pharos-cluster-binaries
+    region: eu-west-1
+    source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}+oss"
     target: /
     when:
       event: tag

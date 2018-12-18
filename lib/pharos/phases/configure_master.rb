@@ -15,7 +15,7 @@ module Pharos
       end
 
       def install?
-        !@ssh.file("/etc/kubernetes/admin.conf").exist?
+        !ssh.file("/etc/kubernetes/admin.conf").exist?
       end
 
       def call
@@ -23,11 +23,13 @@ module Pharos
 
         logger.info { "Checking if Kubernetes control plane is already initialized ..." }
         if install?
-          logger.info { "Kubernetes control plane is not initialized" }
+          logger.info { "Kubernetes control plane is not initialized." }
           install
           install_kubeconfig
-        else
+        elsif !cluster_context['api_upgraded']
           reconfigure
+        else
+          logger.info { "Kubernetes control plane is up to date." }
         end
 
         cluster_context['master-certs'] = pull_kube_certs unless cluster_context['master-certs']
@@ -36,13 +38,14 @@ module Pharos
       def install
         cfg = kubeadm.generate_config
 
-        logger.info { "Initializing control plane ..." }
+        logger.info { "Initializing control plane (v#{Pharos::KUBE_VERSION}) ..." }
         logger.debug { cfg.to_yaml }
 
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-init.sh',
-            CONFIG: tmp_file
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
           )
         end
 
@@ -50,8 +53,8 @@ module Pharos
       end
 
       def install_kubeconfig
-        @ssh.exec!('install -m 0700 -d ~/.kube')
-        @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
+        ssh.exec!('install -m 0700 -d ~/.kube')
+        ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
 
       def reconfigure
@@ -59,24 +62,25 @@ module Pharos
 
         cfg = kubeadm.generate_config
 
-        logger.info { "Configuring control plane ..." }
+        logger.info { "Reconfiguring control plane (v#{Pharos::KUBE_VERSION})..." }
         logger.debug { cfg.to_yaml }
 
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-reconfigure.sh',
-            CONFIG: tmp_file
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
           )
         end
       end
 
       # @param certs [Hash] path => PEM data
       def push_kube_certs(certs)
-        @ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
+        ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
         certs.each do |file, contents|
           path = File.join(KUBE_DIR, 'pki', file)
-          @ssh.file(path).write(contents)
-          @ssh.exec!("sudo chmod 0400 #{path}")
+          ssh.file(path).write(contents)
+          ssh.exec!("sudo chmod 0400 #{path}")
         end
       end
 
@@ -85,7 +89,7 @@ module Pharos
         certs = {}
         SHARED_CERT_FILES.each do |file|
           path = File.join(KUBE_DIR, 'pki', file)
-          certs[file] = @ssh.file(path).read
+          certs[file] = ssh.file(path).read
         end
         certs
       end
@@ -93,7 +97,7 @@ module Pharos
       # @param path [String]
       # @return [OpenSSL::X509::Certificate, nil] nil if not exist
       def read_cert(path)
-        file = @ssh.file(path)
+        file = ssh.file(path)
 
         return nil unless file.exist?
 
@@ -144,16 +148,16 @@ module Pharos
           logger.debug { "apiserver cert is up to update: #{sans}" }
           return false
         else
-          logger.debug { "apisever cert is missing SANs: #{missing_sans} (extra: #{extra_sans})" }
+          logger.debug { "apiserver cert is missing SANs: #{missing_sans} (extra: #{extra_sans})" }
           return true
         end
       end
 
       def replace_cert
-        logger.info { "Replacing apisever cert" }
+        logger.info { "Replacing apiserver cert" }
 
-        @ssh.file(APISERVER_CERT).rm
-        @ssh.file(APISERVER_KEY).rm
+        ssh.file(APISERVER_CERT).rm
+        ssh.file(APISERVER_KEY).rm
       end
     end
   end

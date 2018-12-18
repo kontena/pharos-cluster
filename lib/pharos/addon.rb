@@ -62,6 +62,14 @@ module Pharos
         @addon_location || __dir__
       end
 
+      def priority(priority = nil)
+        if priority
+          @priority = priority
+        else
+          @priority.to_i
+        end
+      end
+
       def version(version = nil)
         if version
           @version = version
@@ -94,6 +102,14 @@ module Pharos
         !@config.nil?
       end
 
+      def enable!
+        @enabled = true
+      end
+
+      def enabled?
+        !!@enabled
+      end
+
       def custom_type(&block)
         Class.new(Pharos::Addons::Struct, &block)
       end
@@ -109,6 +125,14 @@ module Pharos
 
       def uninstall(&block)
         hooks[:uninstall] = block
+      end
+
+      def reset_host(&block)
+        hooks[:reset_host] = block
+      end
+
+      def modify_cluster_config(&block)
+        hooks[:modify_cluster_config] = block
       end
 
       def validation
@@ -180,6 +204,23 @@ module Pharos
       end
     end
 
+    # @param host [Pharos::Configuration::Host]
+    def apply_reset_host(host)
+      instance_exec(host, &hooks[:reset_host]) if hooks[:reset_host]
+    end
+
+    def apply_modify_cluster_config
+      instance_eval(&hooks[:modify_cluster_config]) if hooks[:modify_cluster_config]
+    end
+
+    def post_install_message(msg = nil)
+      if msg
+        @post_install_message = msg
+      else
+        @post_install_message
+      end
+    end
+
     # @param vars [Hash]
     # @return [Pharos::Kube::Stack]
     def kube_stack(**vars)
@@ -190,6 +231,7 @@ module Pharos
         version: self.class.version,
         config: config,
         arch: cpu_arch,
+        image_repository: cluster_config.image_repository,
         **vars
       )
     end

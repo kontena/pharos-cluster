@@ -29,7 +29,7 @@ spec:
               value: "1"
             <% if !trusted_subnets.empty? %>
             - name: EXTRA_ARGS
-              value: "--trusted-subnets <%= trusted_subnets.join(',') %>"
+              value: "--trusted-subnets <%= trusted_subnets.join(',') %><% if flying_shuttle_enabled %> --no-discovery<% end %>"
             <% end %>
             - name: IPALLOC_RANGE
               value: "<%= ipalloc_range %>"
@@ -38,7 +38,7 @@ spec:
                 secretKeyRef:
                   name: weave-passwd
                   key: weave-passwd
-          image: '<%= image_repository %>/weave-kube-<%= arch.name %>:<%= version %>'
+          image: '<%= image_repository %>/weave-kube:<%= version %>'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -73,7 +73,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: '<%= image_repository %>/weave-npc-<%= arch.name %>:<%= version %>'
+          image: '<%= image_repository %>/weave-npc:<%= version %>'
           resources:
             requests:
               cpu: 10m
@@ -82,12 +82,26 @@ spec:
           volumeMounts:
             - name: xtables-lock
               mountPath: /run/xtables.lock
+        <% if flying_shuttle_enabled %>
+        - name: weave-flying-shuttle
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          image: '<%= image_repository %>/weave-flying-shuttle:<%= flying_shuttle_version %>'
+          resources:
+            requests:
+              cpu: 10m
+        <% end %>
       hostNetwork: true
       hostPID: true
       restartPolicy: Always
       securityContext:
         seLinuxOptions: {}
       serviceAccountName: weave-net
+      priorityClassName: system-node-critical
       tolerations:
         - effect: NoSchedule
           operator: Exists

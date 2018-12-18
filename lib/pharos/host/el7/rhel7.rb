@@ -7,6 +7,7 @@ module Pharos
     class Rhel7 < El7
       register_config 'rhel', '7.4'
       register_config 'rhel', '7.5'
+      register_config 'rhel', '7.6'
 
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'
@@ -25,6 +26,10 @@ module Pharos
         name: 'cfssl', version: CFSSL_VERSION, license: 'MIT',
         enabled: proc { |c| !c.etcd&.endpoints }
       )
+
+      def docker_repo_name
+        'rhel-7-server-extras-rpms'
+      end
     end
   end
 end

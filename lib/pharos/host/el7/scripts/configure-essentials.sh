@@ -2,6 +2,7 @@
 
 set -e
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
 cat <<"EOF" >/usr/local/share/pharos/el7.sh
@@ -11,6 +12,9 @@ yum_install_with_lock() {
     version=$2
     linefromfile "^0:${package}-" $versionlock
     yum install -y "${package}-${version}"
+    if ! rpm -qi "${package}-${version}" > /dev/null ; then
+        yum downgrade -y "${package}-${version}"
+    fi
     lineinfile "^0:${package}-" "0:${package}-${version}-0.*" $versionlock
 }
 EOF
@@ -34,26 +38,21 @@ if ! rpm -qi iscsi-initiator-utils ; then
     yum install -y iscsi-initiator-utils
 fi
 
+if ! rpm -qi yum-utils ; then
+    yum install -y yum-utils
+fi
+
 env_file="/etc/environment"
 
-lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" $env_file
-lineinfile "^LANG=" "LANG=en_US.utf-8" $env_file
+lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" "$env_file"
+lineinfile "^LANG=" "LANG=en_US.utf-8" "$env_file"
 
-if ! grep -q "/usr/local/bin" $env_file ; then
-    echo "PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin" >> $env_file
+if [[ $PATH != *local/bin* ]] || [[ $PATH != *usr/sbin* ]]; then
+  PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
+  lineinfile "^PATH=" "PATH=$PATH" "$env_file"
 fi
 
-if [ "${SET_HTTP_PROXY}" = "true" ]; then
-    lineinfile "^http_proxy=" "http_proxy=${HTTP_PROXY}" $env_file
-    lineinfile "^HTTP_PROXY=" "HTTP_PROXY=${HTTP_PROXY}" $env_file
-    lineinfile "^HTTPS_PROXY=" "HTTPS_PROXY=${HTTP_PROXY}" $env_file
-else
-    linefromfile "^http_proxy=" $env_file
-    linefromfile "^HTTP_PROXY=" $env_file
-    linefromfile "^HTTPS_PROXY=" $env_file
-fi
-
-if [ ! "$(getenforce)" = "Disabled" ]; then
+if ! (getenforce | grep -q "Disabled"); then
     setenforce 0 || true
     lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
 fi

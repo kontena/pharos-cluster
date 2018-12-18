@@ -6,6 +6,11 @@ module Pharos
       title "Configure hosts"
 
       def call
+        unless @host.environment.nil? || @host.environment.empty?
+          logger.info { "Updating environment file ..." }
+          host_configurer.update_env_file
+        end
+
         logger.info { "Configuring script helpers ..." }
         host_configurer.configure_script_library
 
@@ -18,6 +23,10 @@ module Pharos
         logger.info { "Configuring netfilter ..." }
         host_configurer.configure_netfilter
 
+        configure_container_runtime
+      end
+
+      def configure_container_runtime
         logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
         host_configurer.configure_container_runtime
       end

@@ -26,25 +26,23 @@ module Pharos
       # @param vars [Hash]
       def self.load(name, path, **vars)
         path = Pathname.new(path).freeze
-        files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
+        files = Pathname.glob(path.join('*.{yml,yaml,yml.erb,yaml.erb}')).sort_by(&:to_s)
         resources = files.map do |file|
           K8s::Resource.new(Pharos::YamlFile.new(file).load(name: name, **vars))
+        end.select do |r|
+          # Take in only resources that are valid kube resources
+          r.kind && r.apiVersion
         end
 
         new(name, resources)
-      end
-
-      def initialize(name, resources = [])
-        super(name, resources, label: LABEL, checksum_annotation: CHECKSUM_ANNOTATION)
       end
     end
 
     # @param host [String]
     # @param config [Hash]
     # @return [K8s::Client]
-    def self.client(host, config)
-      @kube_client ||= {}
-      @kube_client[host] ||= K8s::Client.config(K8s::Config.new(config))
+    def self.client(host, config, port = 6443)
+      K8s::Client.config(K8s::Config.new(config), server: "https://#{host}:#{port}")
     end
 
     # @param name [String]

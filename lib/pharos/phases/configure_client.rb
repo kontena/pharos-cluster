@@ -18,28 +18,28 @@ module Pharos
         return if @optional && !kubeconfig?
 
         cluster_context['kubeconfig'] = kubeconfig
+        cluster_context['master-ssh'] = ssh
 
         client_prefetch unless @optional
       end
 
       # @return [String]
       def kubeconfig?
-        @ssh.file(REMOTE_FILE).exist?
+        ssh.file(REMOTE_FILE).exist?
       end
 
-      # @return [String]
+      # @return [K8s::Config]
       def read_kubeconfig
-        @ssh.file(REMOTE_FILE).read
+        ssh.file(REMOTE_FILE).read
       end
 
-      # @return [Hash]
+      # @return [K8s::Config]
       def kubeconfig
         logger.info { "Fetching kubectl config ..." }
-        config = Pharos::Kube::Config.new(read_kubeconfig)
-        config.update_server_address(@host.api_address)
+        config = YAML.safe_load(read_kubeconfig)
 
         logger.debug { "New config: #{config}" }
-        config.to_h
+        K8s::Config.new(config)
       end
 
       # prefetch client resources to warm up caches

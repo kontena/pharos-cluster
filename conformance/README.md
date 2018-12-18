@@ -6,20 +6,28 @@ Setup Kontena Pharos cluster as per the [Pharos documentation](https://www.pharo
 
 ## Run conformance tests
 
+Download latest version of Heptio Sonobuoy tool from [here](https://github.com/heptio/sonobuoy/releases/latest).
+
 Start the conformance tests on your Kontena Pharos cluster
 
 ```sh
-curl -L https://raw.githubusercontent.com/cncf/k8s-conformance/master/sonobuoy-conformance.yaml | kubectl apply -f -
+$ sonobuoy start
 ```
 
-You can monitor the conformance tests by tracking the sonobuoy logs. Wait for the line no-exit was specified, sonobuoy is now blocking, which signals the end of the testing.
+View status:
 
 ```sh
-kubectl logs -f sonobuoy -n sonobuoy
+$ sonobuoy status
 ```
 
-Upon completion of the tests you can obtain the results by copying them off the sonobuoy pod.
+View logs:
 
 ```sh
-kubectl cp sonobuoy/sonobuoy:/tmp/sonobuoy ./results
+$ sonobuoy logs
+```
+
+Once sonobuoy status shows the run as completed, copy the output directory from the main Sonobuoy pod to a local directory:
+
+```sh
+$ sonobuoy retrieve .
 ```

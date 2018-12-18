@@ -9,6 +9,29 @@ describe Pharos::Config do
   subject { described_class.load(data) }
 
   describe 'hosts' do
+    context 'invalid host address' do
+      let(:hosts) { [
+        { 'address' => ' 192.0.2.1', 'role' => 'master' },
+      ] }
+      it 'fails to load' do
+        expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
+          expect(exc.errors[:hosts][0][:address][0]).to eq "is invalid"
+        end
+      end
+    end
+
+    context 'invalid host private address' do
+      let(:hosts) { [
+        { 'address' => '192.0.2.1', 'private_address' => '"127.0.0.1"', 'role' => 'master' },
+      ] }
+      it 'fails to load' do
+        expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
+          expect(exc.errors[:hosts][0][:private_address][0]).to eq "is invalid"
+        end
+      end
+    end
+
+
     context 'without hosts' do
       let(:data) { {} }
 
@@ -99,6 +122,48 @@ describe Pharos::Config do
           end
         end
       end
+    end
+  end
+
+  describe '#master_hosts' do
+    let(:data) { {
+      'hosts' => [
+        { 'address' => '192.0.2.1', 'role' => 'master'},
+        { 'address' => '192.0.2.2', 'role' => 'master'},
+        { 'address' => '192.0.2.3', 'role' => 'worker'},
+      ]
+    } }
+
+    it 'returns hosts with role=master' do
+      expect(subject.master_hosts.size).to eq(2)
+      expect(subject.master_hosts.first.address).to eq('192.0.2.1')
+      expect(subject.master_hosts.last.address).to eq('192.0.2.2')
+    end
+
+    it 'sorts masters by score' do
+      subject.hosts[1].checks['api_healthy'] = true
+      expect(subject.master_hosts.first.address).to eq('192.0.2.2')
+    end
+  end
+
+  describe '#etcd_hosts' do
+    let(:data) { {
+      'hosts' => [
+        { 'address' => '192.0.2.1', 'role' => 'master'},
+        { 'address' => '192.0.2.2', 'role' => 'master'},
+        { 'address' => '192.0.2.3', 'role' => 'worker'},
+      ]
+    } }
+
+    it 'returns hosts with role=master' do
+      expect(subject.etcd_hosts.size).to eq(2)
+      expect(subject.etcd_hosts.first.address).to eq('192.0.2.1')
+      expect(subject.etcd_hosts.last.address).to eq('192.0.2.2')
+    end
+
+    it 'sorts etcd hosts by score' do
+      subject.hosts[1].checks['etcd_healthy'] = true
+      expect(subject.etcd_hosts.first.address).to eq('192.0.2.2')
     end
   end
 
@@ -256,6 +321,12 @@ describe Pharos::Config do
       it 'returns empty addons' do
         expect(subject.addons).to eq({})
       end
+    end
+  end
+
+  describe 'admission_plugins' do
+    it 'returns empty plugins by default' do
+      expect(subject.admission_plugins).to be_nil
     end
   end
 end

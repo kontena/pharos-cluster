@@ -1,0 +1,26 @@
+<% if host %>
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kontena-lens
+  namespace: kontena-lens
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  <%- if tls_enabled -%>
+  tls:
+    - hosts:
+      - <%= host %>
+      <% if email %>
+      secretName: kontena-lens-tls
+      <% end %>
+  <%- end -%>
+  rules:
+  - host: <%= host %>
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: dashboard
+          servicePort: 8889
+<% end %>

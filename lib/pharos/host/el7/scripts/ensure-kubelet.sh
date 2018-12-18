@@ -1,6 +1,8 @@
 #!/bin/sh
 
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
+# shellcheck disable=SC1091
 . /usr/local/share/pharos/el7.sh
 
 set -e
@@ -18,14 +20,9 @@ ExecStart=
 ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
 EOF
 
-yum_install_with_lock "kubelet" $KUBE_VERSION
+yum_install_with_lock "kubelet" "$KUBE_VERSION"
 
 if ! systemctl is-active --quiet kubelet; then
     systemctl enable kubelet
     systemctl start kubelet
-fi
-
-if needs-restarting -s | grep -q kubelet.service ; then
-    systemctl daemon-reload
-    systemctl restart kubelet
 fi

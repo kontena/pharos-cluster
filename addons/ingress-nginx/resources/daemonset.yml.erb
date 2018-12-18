@@ -25,19 +25,28 @@ spec:
       <%- end -%>
       serviceAccountName: nginx-ingress-serviceaccount
       hostNetwork: true
+      <%- unless config.tolerations.empty? -%>
+      tolerations:
+      <%- config.tolerations.each do |t| -%>
+        -
+          <%- t.each do |k,v| -%>
+          <%= k %>: <%= v %>
+          <%- end -%>
+      <%- end -%>
+      <%- end -%>
       initContainers:
       - command:
         - sh
         - -c
         - sysctl -w net.core.somaxconn=32768; sysctl -w net.ipv4.ip_local_port_range="1024 65535"
-        image: "docker.io/<%= arch.name == 'amd64' ? 'alpine' : 'arm64v8/alpine' %>:3.6"
+        image: "<%= image_repository %>/alpine:3.6"
         imagePullPolicy: IfNotPresent
         name: sysctl
         securityContext:
           privileged: true
       containers:
         - name: nginx-ingress-controller
-          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller-<%= arch.name %>:<%= version %>
+          image: <%= image_repository %>/nginx-ingress-controller:<%= version %>
           args:
             - /nginx-ingress-controller
             - --default-backend-service=$(POD_NAMESPACE)/default-http-backend
@@ -45,6 +54,10 @@ spec:
             - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
             - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
             - --annotations-prefix=nginx.ingress.kubernetes.io
+            - --sort-backends
+            <% config.extra_args.each do |arg| %>
+            - <%= arg %>
+            <% end %>
           securityContext:
             capabilities:
                 drop:

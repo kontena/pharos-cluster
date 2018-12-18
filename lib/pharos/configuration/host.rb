@@ -2,6 +2,10 @@
 
 require_relative 'os_release'
 require_relative 'cpu_arch'
+require_relative 'bastion'
+
+require 'net/ssh'
+require 'net/ssh/proxy/jump'
 
 module Pharos
   module Configuration
@@ -57,10 +61,12 @@ module Pharos
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
+      attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
-      attribute :http_proxy, Pharos::Types::Strict::String
+      attribute :environment, Pharos::Types::Strict::Hash
+      attribute :bastion, Pharos::Configuration::Bastion
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes, :config
 
       def to_s
         short_hostname || address
@@ -72,14 +78,59 @@ module Pharos
         hostname.split('.').first
       end
 
+      def ssh
+        return @ssh if @ssh
+
+        opts = {}
+        opts[:keys] = [ssh_key_path] if ssh_key_path
+        opts[:send_env] = [] # override default to not send LC_* envs
+        opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
+        opts[:bastion] = bastion if bastion
+        @ssh = Pharos::SSH::Client.new(address, user, opts).tap(&:connect)
+      end
+
       def api_address
         api_endpoint || address
       end
 
+      # @return [String]
       def peer_address
         private_address || private_interface_address || address
       end
 
+      # @param host [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_address_for(host)
+        if region == host.region
+          peer_address
+        else
+          address
+        end
+      end
+
+      # @return [String]
+      def region
+        labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
+      end
+
+      # @return [Hash]
+      def labels
+        labels = @attributes[:labels] || {}
+
+        labels['node-address.kontena.io/external-ip'] = address
+        labels['node-role.kubernetes.io/worker'] = '' if worker?
+
+        labels
+      end
+
+      # @return [Hash]
+      def checks
+        @checks ||= {}
+      end
+
+      # @param local_only [Boolean]
+      # @param cloud_provider [String, NilClass]
+      # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 
@@ -91,14 +142,13 @@ module Pharos
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
-          args << "--cadvisor-port=0"
           args << "--address=127.0.0.1"
         else
           args << "--node-ip=#{peer_address}" if cloud_provider.nil?
           args << "--hostname-override=#{hostname}"
         end
 
-        args += configurer(nil).kubelet_args
+        args += configurer.kubelet_args
 
         args
       end
@@ -109,6 +159,14 @@ module Pharos
 
       def docker?
         container_runtime == 'docker'
+      end
+
+      def custom_docker?
+        container_runtime == 'custom_docker'
+      end
+
+      def new?
+        !checks['kubelet_configured']
       end
 
       # @return [Integer]
@@ -147,10 +205,18 @@ module Pharos
         routes.select{ |route| route.overlaps? cidr }
       end
 
-      # @param ssh [Pharos::SSH::Client]
-      def configurer(ssh)
-        configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
-        configurer&.new(self, ssh)
+      # @return [NilClass,Pharos::Host::Configurer]
+      def configurer
+        return @configurer if @configurer
+        raise "Os release not set" unless os_release&.id
+        @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
+      end
+
+      # @param bastion [Pharos::Configuration::Bastion]
+      def configure_bastion(bastion)
+        return if self.bastion
+
+        attributes[:bastion] = bastion
       end
     end
   end

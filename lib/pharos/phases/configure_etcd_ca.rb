@@ -20,7 +20,7 @@ module Pharos
       def cache_ca_to_memory
         data = {}
         CA_FILES.each do |file|
-          data[file] = @ssh.file(File.join(CA_PATH, file)).read
+          data[file] = ssh.file(File.join(CA_PATH, file)).read
         end
         cluster_context['etcd-ca'] = data
       end

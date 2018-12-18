@@ -3,7 +3,7 @@
 set -e
 
 etcd_version_matches() {
-  grep -q "etcd-${ARCH}:${ETCD_VERSION}" /etc/kubernetes/manifests/pharos-etcd.yaml
+  grep -q "etcd:${ETCD_VERSION}" /etc/kubernetes/manifests/pharos-etcd.yaml
 }
 
 mkdir -p /etc/kubernetes/manifests
@@ -21,6 +21,7 @@ metadata:
   name: etcd
   namespace: kube-system
 spec:
+  priorityClassName: system-node-critical
   containers:
   - command:
     - etcd
@@ -42,7 +43,7 @@ spec:
     - --initial-cluster-token=pharos-etcd-token
     - --initial-cluster-state=${INITIAL_CLUSTER_STATE}
 
-    image: ${IMAGE_REPO}/etcd-${ARCH}:${ETCD_VERSION}
+    image: ${IMAGE_REPO}/etcd:${ETCD_VERSION}
     livenessProbe:
       exec:
         command:
