@@ -16,6 +16,7 @@ Pharos.addon 'metal-lb' do
           required(:name).filled(:str?)
           required(:protocol).filled(:str?)
           required(:addresses).each(:str?)
+          optional(:auto_assign).filled(:bool?)
         end
       end
     end
@@ -35,8 +36,7 @@ Pharos.addon 'metal-lb' do
   install {
     # Load the base stack
     stack = kube_stack({})
-    puts stack.inspect
-    stack.resources << K8s::Resource.new(build_config)
+    stack.resources << build_config
     stack.apply(kube_client)
   }
 
@@ -48,7 +48,29 @@ Pharos.addon 'metal-lb' do
   end
 
   def build_config
-    {
+    # cfg is using string keys to get the output yaml correct as it's used as plain string
+    cfg = {
+      'address-pools' => config.address_pools.map { |pool|
+        {
+          'name' => pool[:name],
+          'protocol' => pool[:protocol],
+          'addresses' => pool[:addresses]
+        }
+      },
+    }
+
+    if config.address_pools.count { |pool| pool.dig(:protocol) == 'bgp' }.positive?
+      cfg['peers'] = config.peers.map { |peer|
+        {
+          'peer-address' => peer[:peer_address],
+          'peer-asn' => peer[:peer_asn],
+          'my-asn' => peer[:my_asn],
+          'node-selectors' => peer[:node_selectors]
+        }
+      }
+    end
+
+    configmap = K8s::Resource.new({
       apiVersion: 'v1',
       kind: 'ConfigMap',
       metadata: {
@@ -56,25 +78,10 @@ Pharos.addon 'metal-lb' do
         name: 'config'
       },
       data: {
-        config: {
-          # This part is using string keys to get the output yaml correct as it's used as plain string
-          'address-pools' => config.address_pools.map { |pool|
-            {
-              'name' => pool[:name],
-              'protocol' => pool[:protocol],
-              'addresses' => pool[:addresses]
-            }
-          },
-          'peers' => config.peers.map { |peer|
-            {
-              'peer-address' => peer[:peer_address],
-              'peer-asn' => peer[:peer_asn],
-              'my-asn' => peer[:my_asn],
-              'node-selectors' => peer[:node_selectors]
-            }
-          }
-        }.to_yaml.gsub(/^---\n/, '')
+        config: cfg.to_yaml.gsub(/^---\n/, '')
       }
-    }
+    })
+
+    configmap
   end
 end
