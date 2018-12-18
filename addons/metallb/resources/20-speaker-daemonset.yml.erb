@@ -25,8 +25,8 @@ spec:
       hostNetwork: true
       containers:
       - name: speaker
-        image: metallb/speaker:master
-        imagePullPolicy: Always
+        image: <%= image_repository %>/metallb-speaker:v<%= version %>
+        imagePullPolicy: IfNotPresent
         args:
         - --port=7472
         - --config=config
@@ -42,7 +42,6 @@ spec:
           limits:
             cpu: 100m
             memory: 100Mi
-
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

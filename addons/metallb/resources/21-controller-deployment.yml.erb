@@ -28,8 +28,8 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: controller
-        image: metallb/controller:master
-        imagePullPolicy: Always
+        image: <%= image_repository %>/metallb-controller:v<%= version %>
+        imagePullPolicy: IfNotPresent
         args:
         - --port=7472
         - --config=config

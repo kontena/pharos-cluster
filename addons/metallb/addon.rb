@@ -35,7 +35,10 @@ Pharos.addon 'metal-lb' do
 
   install {
     # Load the base stack
-    stack = kube_stack({})
+    stack = kube_stack({
+      version: self.class.version,
+      image_repository: cluster_config.image_repository
+    })
     stack.resources << build_config
     stack.apply(kube_client)
   }
