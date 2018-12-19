@@ -35,7 +35,7 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{DOCKER_VERSION}",
+            DOCKER_VERSION: DOCKER_VERSION,
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
