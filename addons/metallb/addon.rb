@@ -35,10 +35,10 @@ Pharos.addon 'metal-lb' do
 
   install {
     # Load the base stack
-    stack = kube_stack({
+    stack = kube_stack(
       version: self.class.version,
       image_repository: cluster_config.image_repository
-    })
+    )
     stack.resources << build_config
     stack.apply(kube_client)
   }
@@ -59,7 +59,7 @@ Pharos.addon 'metal-lb' do
           'protocol' => pool[:protocol],
           'addresses' => pool[:addresses]
         }
-      },
+      }
     }
 
     if config.address_pools.count { |pool| pool.dig(:protocol) == 'bgp' }.positive?
@@ -73,7 +73,7 @@ Pharos.addon 'metal-lb' do
       }
     end
 
-    configmap = K8s::Resource.new({
+    configmap = K8s::Resource.new(
       apiVersion: 'v1',
       kind: 'ConfigMap',
       metadata: {
@@ -83,7 +83,7 @@ Pharos.addon 'metal-lb' do
       data: {
         config: cfg.to_yaml.gsub(/^---\n/, '')
       }
-    })
+    )
 
     configmap
   end
