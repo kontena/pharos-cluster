@@ -1,8 +1,8 @@
 require 'pharos/addon'
-require "./addons/metallb/addon"
+require 'pharos_pro/addons/kontena-network-lb/addon'
 
 
-describe Pharos::Addons::MetalLb do
+describe Pharos::Addons::KontenaNetworkLb do
   let(:cluster_config) { Pharos::Config.new(
     hosts: [Pharos::Configuration::Host.new(role: 'worker')],
     network: {},
