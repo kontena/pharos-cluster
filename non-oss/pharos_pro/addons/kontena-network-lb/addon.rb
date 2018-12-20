@@ -7,6 +7,8 @@ Pharos.addon 'kontena-network-lb' do
   config {
     attribute :address_pools, Pharos::Types::Array
     attribute :peers, Pharos::Types::Array
+    attribute :tolerations, Pharos::Types::Array.default([])
+    attribute :node_selector, Pharos::Types::Hash.default({})
   }
 
   config_schema {
@@ -27,17 +29,22 @@ Pharos.addon 'kontena-network-lb' do
           required(:peer_address).filled(:str?)
           required(:peer_asn).filled(:int?)
           required(:my_asn).filled(:int?)
-          optional(:node_selectors).each(:hash?)
+          optional(:node_selector).filled(:hash?)
         end
       end
     end
+
+    optional(:tolerations).each(:hash?)
+    optional(:node_selector).filled(:hash?)
   }
 
   install {
     # Load the base stack
     stack = kube_stack(
       version: self.class.version,
-      image_repository: cluster_config.image_repository
+      image_repository: cluster_config.image_repository,
+      tolerations: config.tolerations,
+      node_selector: config.node_selector
     )
     stack.resources << build_config
     stack.apply(kube_client)
@@ -77,7 +84,7 @@ Pharos.addon 'kontena-network-lb' do
       apiVersion: 'v1',
       kind: 'ConfigMap',
       metadata: {
-        namespace: 'metallb-system',
+        namespace: 'kontena-network-lb-system',
         name: 'config'
       },
       data: {

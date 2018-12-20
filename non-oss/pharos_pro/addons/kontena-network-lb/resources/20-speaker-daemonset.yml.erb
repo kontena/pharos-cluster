@@ -23,6 +23,21 @@ spec:
       serviceAccountName: speaker
       terminationGracePeriodSeconds: 0
       hostNetwork: true
+      <%- unless config.node_selector.empty? -%>
+      nodeSelector:
+      <%- node_selector.each do |key, value| -%>
+        <%= key %>: <%= value %>
+      <%- end -%>
+      <%- end -%>
+      <%- unless config.tolerations.empty? -%>
+      tolerations:
+      <%- config.tolerations.each do |t| -%>
+        -
+          <%- t.each do |k,v| -%>
+          <%= k %>: <%= v %>
+          <%- end -%>
+      <%- end -%>
+      <%- end -%>
       containers:
       - name: speaker
         image: <%= image_repository %>/metallb-speaker:v<%= version %>
