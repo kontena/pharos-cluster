@@ -51,7 +51,7 @@ module Pharos
       # @param client [Pharos::SSH::Client] ssh client instance
       # @param cmd [String,Array<String>] command to execute
       # @param stdin [String,IO] attach string or stream to command STDIN
-      # @param debug
+      # @param source [String]
       def initialize(client, cmd, stdin: nil, source: nil)
         @client = client
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
@@ -61,12 +61,15 @@ module Pharos
         freeze
       end
 
+      # @return [Result]
+      # @raises [ExecError] if result errors
       def run!
         result = run
         raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
         result
       end
 
+      # @return [Result]
       def run
         debug_cmd(@cmd, source: @source) if debug?
 
@@ -122,29 +125,40 @@ module Pharos
         end
       end
 
+      # @return [Boolean]
       def debug?
         @debug
       end
 
+      # @param cmd [String]
+      # @param source [String, NilClass]
+      # @return [Integer]
       def debug_cmd(cmd, source: nil)
-        $stdout.write(INDENT + pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : "")) + "\n")
+        $stdout.write("#{INDENT} #{pastel.cyan("#{@client.host}:")} #{pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : ""))}\n")
+
       end
 
+      # @param data [String]
+      # @return [String]
       def debug_stdout(data)
         data.each_line do |line|
-          $stdout.write(INDENT + pastel.dim(line.to_s))
+          $stdout.write("#{INDENT} #{pastel.dim("#{@client.host}:")} #{pastel.dim(line.to_s)}")
         end
       end
 
+      # @param data [String]
+      # @return [String]
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stdout.write(INDENT + pastel.red(line.to_s))
+          $stdout.write("#{INDENT} #{pastel.dim("#{@client.host}:")} #{pastel.red(line.to_s)}")
         end
       end
 
+      # @param exit_status [Integer]
+      # @return [Integer]
       def debug_exit(exit_status)
-        $stdout.write(INDENT + pastel.yellow("! #{exit_status}") + "\n")
+        $stdout.write("#{INDENT} #{pastel.dim("#{@client.host}:")} #{pastel.yellow("! #{exit_status}")}\n")
       end
     end
   end
