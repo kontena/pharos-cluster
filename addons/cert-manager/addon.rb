@@ -10,8 +10,13 @@ Pharos.addon 'cert-manager' do
     attribute :email, Pharos::Types::String
   }
 
+  ca_issuer = custom_type {
+    attribute :enabled, Pharos::Types::Bool.optional.default(true)
+  }
+
   config {
     attribute :issuer, issuer
+    attribute :ca_issuer, ca_issuer
   }
 
   config_schema {
@@ -19,6 +24,10 @@ Pharos.addon 'cert-manager' do
       required(:name).filled(:str?)
       required(:email).filled(:str?)
       optional(:server).filled(:str?)
+    }
+
+    optional(:ca_issuer).schema {
+      optional(:enabled).filled(:bool?)
     }
 
     # Register custom error for LE Acme v1 endpoint validation
@@ -38,7 +47,14 @@ Pharos.addon 'cert-manager' do
   }
 
   install {
-    apply_resources
+    stack = kube_stack
+
+    if config.ca_issuer&.enabled
+      stack.resources << create_ca_secret
+      stack.resources << create_ca_issuer
+    end
+
+    stack.apply(kube_client)
 
     migrate_le_acme_issuers
     migrate_le_acme_cluster_issuers
@@ -72,5 +88,40 @@ Pharos.addon 'cert-manager' do
       rc = kube_client.client_for_resource(issuer)
       rc.merge_patch(issuer.metadata.name, { spec: patch_spec }, strategic_merge: false)
     end
+  end
+
+  def create_ca_issuer
+    K8s::Resource.new(
+      apiVersion: "certmanager.k8s.io/v1alpha1",
+      kind: "ClusterIssuer",
+      metadata: {
+        name: 'ca-issuer'
+      },
+      spec: {
+        ca: {
+          secretName: 'ca-secret'
+        }
+      }
+    )
+  end
+
+  def create_ca_secret
+    K8s::Resource.new(
+      apiVersion: "v1",
+      kind: "Secret",
+      type: "kubernetes.io/tls",
+      metadata: {
+        name: "ca-secret",
+        namespace: "kube-system"
+      },
+      data: {
+        'tls.crt': Base64.strict_encode64(ssh.file('/etc/kubernetes/pki/ca.crt').read),
+        'tls.key': Base64.strict_encode64(ssh.file('/etc/kubernetes/pki/ca.key').read)
+      }
+    )
+  end
+
+  def ssh
+    @ssh ||= cluster_config.master_host.ssh
   end
 end
