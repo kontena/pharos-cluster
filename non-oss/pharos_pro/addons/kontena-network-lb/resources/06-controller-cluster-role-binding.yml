@@ -1,14 +1,14 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: metallb-system:speaker
+  name: kontena-network-lb-system:controller
   labels:
-    app: metallb
+    app: kontena-network-lb
 subjects:
 - kind: ServiceAccount
-  name: speaker
-  namespace: metallb-system
+  name: controller
+  namespace: kontena-network-lb-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: metallb-system:speaker
+  name: kontena-network-lb-system:controller

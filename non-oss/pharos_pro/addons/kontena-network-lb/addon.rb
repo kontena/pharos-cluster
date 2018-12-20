@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'metal-lb' do
+Pharos.addon 'kontena-network-lb' do
   version '0.7.3'
   license 'Apache License 2.0'
 

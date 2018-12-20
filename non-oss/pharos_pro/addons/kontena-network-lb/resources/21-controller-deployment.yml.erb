@@ -1,21 +1,21 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  namespace: metallb-system
+  namespace: kontena-network-lb-system
   name: controller
   labels:
-    app: metallb
+    app: kontena-network-lb
     component: controller
 spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: metallb
+      app: kontena-network-lb
       component: controller
   template:
     metadata:
       labels:
-        app: metallb
+        app: kontena-network-lb
         component: controller
       annotations:
         prometheus.io/scrape: "true"

@@ -1,9 +1,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: metallb-system:controller
+  name: kontena-network-lb-system:controller
   labels:
-    app: metallb
+    app: kontena-network-lb
 rules:
 - apiGroups: [""]
   resources: ["services"]

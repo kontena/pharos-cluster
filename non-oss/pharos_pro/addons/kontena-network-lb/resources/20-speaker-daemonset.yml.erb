@@ -1,20 +1,20 @@
 apiVersion: apps/v1beta2
 kind: DaemonSet
 metadata:
-  namespace: metallb-system
+  namespace: kontena-network-lb-system
   name: speaker
   labels:
-    app: metallb
+    app: kontena-network-lb
     component: speaker
 spec:
   selector:
     matchLabels:
-      app: metallb
+      app: kontena-network-lb
       component: speaker
   template:
     metadata:
       labels:
-        app: metallb
+        app: kontena-network-lb
         component: speaker
       annotations:
         prometheus.io/scrape: "true"
