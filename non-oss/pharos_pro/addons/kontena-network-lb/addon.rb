@@ -2,7 +2,7 @@
 
 Pharos.addon 'kontena-network-lb' do
   version '0.7.3'
-  license 'Apache License 2.0'
+  license 'Kontena License'
 
   config {
     attribute :address_pools, Pharos::Types::Array
