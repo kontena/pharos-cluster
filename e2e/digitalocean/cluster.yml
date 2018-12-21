@@ -5,6 +5,7 @@ network:
   weave:
     trusted_subnets:
       - "10.133.0.0/16"
+image_repository: registry-tuusula.pharos.sh/kontenapharos
 telemetry:
   enabled: false
 addons:

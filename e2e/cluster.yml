@@ -8,6 +8,7 @@ hosts:
     taints: []
 network:
   provider: $NETWORK_PROVIDER
+image_repository: registry-tuusula.pharos.sh/kontenapharos
 addons:
   ingress-nginx:
     enabled: true
