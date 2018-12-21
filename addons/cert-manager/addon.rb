@@ -11,12 +11,12 @@ Pharos.addon 'cert-manager' do
   }
 
   ca_issuer = custom_type {
-    attribute :enabled, Pharos::Types::Bool.optional.default(true)
+    attribute :enabled, Pharos::Types::Bool.default(true)
   }
 
   config {
     attribute :issuer, issuer
-    attribute :ca_issuer, ca_issuer
+    attribute :ca_issuer, ca_issuer.default(proc { ca_issuer.new(enabled: true) })
   }
 
   config_schema {
@@ -50,8 +50,8 @@ Pharos.addon 'cert-manager' do
     stack = kube_stack
 
     if config.ca_issuer&.enabled
-      stack.resources << create_ca_secret
-      stack.resources << create_ca_issuer
+      stack.resources << build_ca_secret
+      stack.resources << build_ca_issuer
     end
 
     stack.apply(kube_client)
@@ -90,28 +90,28 @@ Pharos.addon 'cert-manager' do
     end
   end
 
-  def create_ca_issuer
+  def build_ca_issuer
     K8s::Resource.new(
       apiVersion: "certmanager.k8s.io/v1alpha1",
       kind: "ClusterIssuer",
       metadata: {
-        name: 'ca-issuer'
+        name: 'kube-ca-issuer'
       },
       spec: {
         ca: {
-          secretName: 'ca-secret'
+          secretName: 'kube-ca-secret'
         }
       }
     )
   end
 
-  def create_ca_secret
+  def build_ca_secret
     K8s::Resource.new(
       apiVersion: "v1",
       kind: "Secret",
       type: "kubernetes.io/tls",
       metadata: {
-        name: "ca-secret",
+        name: "kube-ca-secret",
         namespace: "kube-system"
       },
       data: {
