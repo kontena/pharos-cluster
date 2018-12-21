@@ -21,8 +21,11 @@ module Pharos
     class Client
       include MonitorMixin
 
-      attr_reader :session
+      attr_reader :session, :host
 
+      # @param host [String]
+      # @param user [String, NilClass]
+      # @param opts [Hash]
       def initialize(host, user = nil, opts = {})
         super()
         @host = host
@@ -37,6 +40,7 @@ module Pharos
         end
       end
 
+      # @return [Hash,NilClass]
       def bastion
         @bastion ||= @opts.delete(:bastion)
       end
@@ -55,6 +59,8 @@ module Pharos
         end
       end
 
+      # @param host [String]
+      # @param port [Integer]
       # @return [Integer] local port number
       def gateway(host, port)
         Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
@@ -78,6 +84,7 @@ module Pharos
       end
 
       # @param cmd [String] command to execute
+      # @param options [Hash]
       # @return [Pharos::Command::Result]
       def exec(cmd, **options)
         require_session!
@@ -85,6 +92,7 @@ module Pharos
       end
 
       # @param cmd [String] command to execute
+      # @param options [Hash]
       # @raise [Pharos::SSH::RemoteCommand::ExecError]
       # @return [String] stdout
       def exec!(cmd, **options)
@@ -92,7 +100,8 @@ module Pharos
         synchronize { RemoteCommand.new(self, cmd, **options).run!.stdout }
       end
 
-      # @param script [String] name of script
+      # @param name [String] name of script
+      # @param env [Hash] environment variables hash
       # @param path [String] real path to file, defaults to script
       # @raise [Pharos::SSH::RemoteCommand::ExecError]
       # @return [String] stdout
@@ -107,11 +116,14 @@ module Pharos
       end
 
       # @param cmd [String] command to execute
+      # @param options [Hash]
       # @return [Boolean]
       def exec?(cmd, **options)
         exec(cmd, **options).success?
       end
 
+      # @param path [String]
+      # @return [Pharos::SSH::RemoteFile]
       def file(path)
         Pharos::SSH::RemoteFile.new(self, path)
       end
