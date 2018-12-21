@@ -55,8 +55,8 @@ module Pharos
     attribute :telemetry, Pharos::Configuration::Telemetry
     attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
     attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
-    attribute :addon_paths, Pharos::Types::Array.default([])
-    attribute :addons, Pharos::Types::Hash.default({})
+    attribute :addon_paths, Pharos::Types::Array.default(proc { Array.new })
+    attribute :addons, Pharos::Types::Hash.default(proc { Hash.new })
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
 
