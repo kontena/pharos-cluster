@@ -66,7 +66,7 @@ module Pharos
       attribute :environment, Pharos::Types::Strict::Hash
       attribute :bastion, Pharos::Configuration::Bastion
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes, :config
 
       def to_s
         short_hostname || address
@@ -93,16 +93,44 @@ module Pharos
         api_endpoint || address
       end
 
+      # @return [String]
       def peer_address
         private_address || private_interface_address || address
       end
 
-      def labels
-        return @attributes[:labels] unless worker?
-
-        @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
+      # @param host [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_address_for(host)
+        if region == host.region
+          peer_address
+        else
+          address
+        end
       end
 
+      # @return [String]
+      def region
+        labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
+      end
+
+      # @return [Hash]
+      def labels
+        labels = @attributes[:labels] || {}
+
+        labels['node-address.kontena.io/external-ip'] = address
+        labels['node-role.kubernetes.io/worker'] = '' if worker?
+
+        labels
+      end
+
+      # @return [Hash]
+      def checks
+        @checks ||= {}
+      end
+
+      # @param local_only [Boolean]
+      # @param cloud_provider [String, NilClass]
+      # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 
@@ -120,7 +148,7 @@ module Pharos
           args << "--hostname-override=#{hostname}"
         end
 
-        args += configurer(nil).kubelet_args
+        args += configurer.kubelet_args
 
         args
       end
@@ -177,10 +205,11 @@ module Pharos
         routes.select{ |route| route.overlaps? cidr }
       end
 
-      # @param ssh [Pharos::SSH::Client]
-      def configurer(ssh)
-        configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
-        configurer&.new(self, ssh)
+      # @return [NilClass,Pharos::Host::Configurer]
+      def configurer
+        return @configurer if @configurer
+        raise "Os release not set" unless os_release&.id
+        @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
       end
 
       # @param bastion [Pharos::Configuration::Bastion]

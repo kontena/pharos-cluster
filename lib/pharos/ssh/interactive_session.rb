@@ -8,6 +8,7 @@ module Pharos
     class InteractiveSession
       attr_reader :client
 
+      # @param client [Pharos::SSH::Client]
       def initialize(client)
         @client = client
       end

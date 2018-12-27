@@ -3,13 +3,35 @@
 module Pharos
   module Host
     class Configurer
-      attr_reader :host, :ssh
+      attr_reader :host
 
       SCRIPT_LIBRARY = File.join(__dir__, '..', 'scripts', 'pharos.sh').freeze
 
-      def initialize(host, ssh)
+      def self.load_configurers
+        Dir.glob(File.join(__dir__, '**', '*.rb')).each { |f| require(f) }
+      end
+
+      # @return [Array]
+      def self.configurers
+        @configurers ||= []
+      end
+
+      # @param [Pharos::Configuration::OsRelease]
+      # @return [Class<Configurer>, NilClass]
+      def self.for_os_release(os_release)
+        configurers.find { |configurer| configurer.supported_os?(os_release) }
+      end
+
+      def initialize(host)
         @host = host
-        @ssh = ssh
+      end
+
+      def config
+        host.config
+      end
+
+      def ssh
+        host.ssh
       end
 
       def install_essentials
@@ -63,7 +85,7 @@ module Pharos
       # @param path [Array]
       # @return [String]
       def script_path(*path)
-        File.join(__dir__, self.class.os_name, 'scripts', *path)
+        File.join(__dir__, host.os_release.id, 'scripts', *path)
       end
 
       # @return [String]
@@ -72,15 +94,15 @@ module Pharos
       end
 
       def configure_script_library
-        @ssh.exec("sudo mkdir -p #{script_library_install_path}")
-        @ssh.file("#{script_library_install_path}/util.sh").write(
+        ssh.exec("sudo mkdir -p #{script_library_install_path}")
+        ssh.file("#{script_library_install_path}/util.sh").write(
           File.read(SCRIPT_LIBRARY)
         )
       end
 
       # @param script [String] name of file under ../scripts/
       def exec_script(script, vars = {})
-        @ssh.exec_script!(
+        ssh.exec_script!(
           script,
           env: vars,
           path: script_path(script)
@@ -88,15 +110,15 @@ module Pharos
       end
 
       def crio?
-        @host.crio?
+        host.crio?
       end
 
       def docker?
-        @host.docker?
+        host.docker?
       end
 
       def custom_docker?
-        @host.custom_docker?
+        host.custom_docker?
       end
 
       # Return stringified json array(ish) for insecure registries properly escaped for safe
@@ -105,25 +127,20 @@ module Pharos
       # @return [String]
       def insecure_registries
         if crio?
-          cluster_config.container_runtime.insecure_registries.map(&:inspect).join(",").inspect
+          config.container_runtime.insecure_registries.map(&:inspect).join(",").inspect
         else
           # docker & custom docker
-          JSON.dump(cluster_config.container_runtime.insecure_registries).inspect
+          JSON.dump(config.container_runtime.insecure_registries).inspect
         end
-      end
-
-      # @return [Pharos::Config,NilClass]
-      def cluster_config
-        self.class.cluster_config
       end
 
       # @return [Pharos::SSH::File]
       def env_file
-        @ssh.file('/etc/environment')
+        ssh.file('/etc/environment')
       end
 
       def update_env_file
-        return if @host.environment.nil? || @host.environment.empty?
+        return if host.environment.nil? || host.environment.empty?
 
         host_env_file = env_file
         original_data = {}
@@ -137,51 +154,59 @@ module Pharos
           end
         end
 
-        new_content = @host.environment.merge(original_data) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
+        new_content = host.environment.merge(original_data) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
           "#{key}=#{val}"
         end.join("\n")
         new_content << "\n" unless new_content.end_with?("\n")
 
         host_env_file.write(new_content)
-        @ssh.disconnect; @ssh.connect # reconnect to reread env
+        ssh.disconnect; ssh.connect # reconnect to reread env
+      end
+
+      # @return [Boolean]
+      def fresh_crio_install?
+        @fresh_crio_install ||= !ssh.file('/etc/crio/crio.conf').exist?
+      end
+
+      # @return [Boolean]
+      def can_pull?
+        return true if fresh_crio_install?
+
+        ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
+      end
+
+      def cleanup_crio!
+        ssh.exec!("sudo systemctl stop kubelet")
+        ssh.exec!("sudo crictl stopp $(crictl pods -q)")
+        ssh.exec!("sudo crictl rmp $(crictl pods -q)")
+        ssh.exec!("sudo crictl rmi $(crictl images -q)")
+      ensure
+        ssh.exec!("sudo systemctl start kubelet")
       end
 
       class << self
-        attr_reader :os_name, :os_version
-        attr_accessor :cluster_config
-
         # @param component [Hash]
         def register_component(component)
-          component[:os_release] = Pharos::Configuration::OsRelease.new(id: os_name, version: os_version)
-          Pharos::Phases.register_component(component)
+          supported_os_releases.each do |os|
+            Pharos::Phases.register_component(component.merge(os_release: os))
+          end
         end
 
-        # @param name [String]
-        # @param version [String]
-        def register_config(name, version)
-          @os_name = name
-          @os_version = version
-          configs << Class.new(self) do
-            @os_name = name
-            @os_version = version
-          end
-          self
+        # @return [Array<Pharos::Configuration::OsRelease>]
+        def supported_os_releases
+          @supported_os_releases ||= []
         end
 
         # @param [Pharos::Configuration::OsRelease]
         # @return [Boolean]
         def supported_os?(os_release)
-          os_name == os_release.id && os_version == os_release.version
+          supported_os_releases.any? { |release| release.id == os_release.id && release.version == os_release.version }
         end
 
-        # @param [Pharos::Configuration::OsRelease]
-        # @return [Class<Configurer>, NilClass]
-        def config_for_os_release(os_release)
-          configs.find { |config| config.supported_os?(os_release) }
-        end
-
-        def configs
-          @@configs ||= [] # rubocop:disable Style/ClassVars
+        def register_config(name, version)
+          supported_os_releases << Pharos::Configuration::OsRelease.new(id: name, version: version)
+          Pharos::Host::Configurer.configurers << self
+          self
         end
       end
 

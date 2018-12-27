@@ -30,12 +30,20 @@ module Pharos
         exec_script('repos/update.sh')
       end
 
+      # @return [Array<String>]
+      def kubelet_args
+        kubelet_args = super
+        kubelet_args << '--cgroup-driver=systemd' if crio? && fresh_crio_install?
+
+        kubelet_args
+      end
+
       def configure_container_runtime
         if docker?
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1~18.04.1",
+            DOCKER_VERSION: DOCKER_VERSION,
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
@@ -44,33 +52,21 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
+          cgroup_manager = fresh_crio_install? ? 'systemd' : 'cgroupfs'
+          can_pull = can_pull? # needs to be checked before cconfigure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
+            CRIO_CGROUP_MANAGER: cgroup_manager,
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository,
+            IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
+          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
-      end
-
-      def configure_container_runtime_safe?
-        return true if custom_docker?
-
-        if docker?
-          result = ssh.exec("dpkg-query --show docker.io")
-          return true if result.error? # docker not installed
-          return true if result.stdout.split("\t")[1].to_s.start_with?(DOCKER_VERSION)
-        elsif crio?
-          result = ssh.exec("dpkg-query --show cri-o")
-          return true if result.error? # cri-o not installed
-          return true if result.stdout.split("\t")[1].to_s.start_with?(Pharos::CRIO_VERSION)
-        end
-
-        false
       end
     end
   end

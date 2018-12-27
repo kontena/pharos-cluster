@@ -10,7 +10,7 @@ module Pharos
   class RootCommand < Pharos::Command
     banner "#{File.basename($PROGRAM_NAME)} - Kontena Pharos cluster manager"
 
-    subcommand ["build", "up"], "initialize/upgrade cluster", UpCommand
+    subcommand "up", "initialize/upgrade cluster", UpCommand
     subcommand "kubeconfig", "fetch admin kubeconfig file", KubeconfigCommand
     subcommand "reset", "reset cluster", ResetCommand
     subcommand "ssh", "start an ssh session to a server in a pharos cluster", SSHCommand

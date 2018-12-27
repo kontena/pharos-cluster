@@ -31,6 +31,7 @@ sudo rm -rf /etc/kubernetes \
     /etc/systemd/system/crio.service \
     ~/.kube \
     /var/lib/kubelet \
+    /var/lib/containers \
     /opt/cni \
     /var/lib/etcd \
     /var/lib/weave \

@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require_relative 'mixins/psp'
+
 module Pharos
   module Phases
     class UpgradeMaster < Pharos::Phase
+      include Pharos::Phases::Mixins::PSP
       title "Upgrade master"
 
       def kubeadm
@@ -13,7 +16,7 @@ module Pharos
         file = ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
         return false unless file.exist?
 
-        match = file.read.match(/kube-apiserver:v(.+)/)
+        match = file.read.match(/kube-apiserver.*:v(.+)/)
         current_major_minor = parse_major_minor(match[1])
         new_major_minor = parse_major_minor(Pharos::KUBE_VERSION)
         return false if current_major_minor == new_major_minor
@@ -27,9 +30,18 @@ module Pharos
         version.split('.')[0...2].join('.')
       end
 
+      # @return [Boolean]
+      def pod_security_disabled?
+        api_manifest = ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
+        return false unless api_manifest.exist?
+
+        !api_manifest.read.match?(/--enable-admission-plugins=.*PodSecurityPolicy/)
+      end
+
       def call
         if upgrade?
           upgrade_kubeadm
+          apply_psp_stack if pod_security_disabled?
           upgrade
         else
           logger.info { "Kubernetes control plane is up-to-date." }
