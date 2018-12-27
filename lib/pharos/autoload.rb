@@ -18,6 +18,7 @@ module TTY
 end
 
 module Pharos
+  autoload :Retry, 'pharos/retry'
   autoload :Types, 'pharos/types'
   autoload :Config, 'pharos/config'
   autoload :ConfigSchema, 'pharos/config_schema'

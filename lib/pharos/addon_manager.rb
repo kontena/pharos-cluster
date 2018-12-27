@@ -101,28 +101,11 @@ module Pharos
         config = addon_class.validate(config_hash)
         addon = addon_class.new(config, enabled: true, **options)
         addon.validate
-        yield_addon_with_retry(addon, &block)
+        Retry.with(addon).perform(logger: logger, &block)
       end
 
       with_disabled_addons do |addon_class|
-        yield_addon_with_retry(addon_class.new(nil, enabled: false, **options), &block)
-      end
-    end
-
-    # @param addon [Pharos::Addon]
-    # @param retry_duration [Integer] in seconds, default 300 = 5 minutes
-    def yield_addon_with_retry(addon, retry_duration = 300)
-      start_time = Time.now
-      begin
-        yield addon
-      rescue *RETRY_ERRORS => exc
-        raise if Time.now - start_time > retry_duration
-
-        logger.error { "got error (#{exc.class.name}): #{exc.message.strip}" }
-        logger.debug { exc.backtrace.join("\n") }
-        logger.error { "retrying after 2 seconds ..." }
-        sleep 2
-        retry
+        Retry.with(addon_class.new(nil, enabled: false, **options)).perform(logger: logger, &block)
       end
     end
 
