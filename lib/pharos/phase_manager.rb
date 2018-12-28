@@ -30,7 +30,7 @@ module Pharos
     def run_parallel(phases, &block)
       threads = phases.map { |phase|
         Thread.new do
-          Retry.with(phase).perform(logger: logger, exceptions: RETRY_ERRORS, &block)
+          Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
         end
       }
       threads.map(&:value)
@@ -40,7 +40,7 @@ module Pharos
     # @return [Array<...>]
     def run_serial(phases, &block)
       phases.map do |phase|
-        Retry.with(phase).perform(logger: logger, exceptions: RETRY_ERRORS, &block)
+        Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
       end
     end
 

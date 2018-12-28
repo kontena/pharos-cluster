@@ -8,17 +8,6 @@ module Pharos
       K8s::Error
     ].freeze
 
-    # Proxy class for the Retry.with mechanism
-    class Performer
-      def initialize(obj)
-        @obj = obj
-      end
-
-      def perform(*args, **options, &block)
-        Retry.perform(*args, yield_object: @obj, **options, &block)
-      end
-    end
-
     # @param seconds [Integer] seconds for how long the block will be retried
     # @param yield_object [Object] object to yield into block
     # @param wait [Integer] duration to wait between retries
@@ -47,15 +36,6 @@ module Pharos
         end
         raise exc
       end
-    end
-
-    # @param yield_object [Object] object to yield into block
-    # @example
-    #   Retry.with(obj).perform do |obj|
-    #     puts obj.inspect
-    #   end
-    def self.with(yield_object)
-      Performer.new(yield_object)
     end
   end
 end

@@ -101,11 +101,11 @@ module Pharos
         config = addon_class.validate(config_hash)
         addon = addon_class.new(config, enabled: true, **options)
         addon.validate
-        Retry.with(addon).perform(logger: logger, &block)
+        Retry.perform(yield_object: addon, logger: logger, &block)
       end
 
       with_disabled_addons do |addon_class|
-        Retry.with(addon_class.new(nil, enabled: false, **options)).perform(logger: logger, &block)
+        Retry.perform(yield_object: addon_class.new(nil, enabled: false, **options), logger: logger, &block)
       end
     end
 
