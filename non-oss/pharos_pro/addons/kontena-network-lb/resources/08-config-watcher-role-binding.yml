@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: kontena-network-lb-system
+  name: config-watcher
+  labels:
+    app: kontena-network-lb
+subjects:
+- kind: ServiceAccount
+  name: controller
+- kind: ServiceAccount
+  name: speaker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: config-watcher
