@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
 Pharos.addon 'helm' do
-  version '2.11.0'
+  version '2.12.1'
   license 'Apache License 2.0'
 end
