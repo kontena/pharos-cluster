@@ -18,28 +18,16 @@ module Pharos
         @host = host
       end
 
-      # @return [Hash]
-      def generate_config
+      def generate_init_config
         config = {
-          'apiVersion' => 'kubeadm.k8s.io/v1alpha2',
-          'kind' => 'MasterConfiguration',
-          'nodeRegistration' => {
-            'name' => @host.hostname
-          },
-          'kubernetesVersion' => Pharos::KUBE_VERSION,
-          'imageRepository' => @config.image_repository,
-          'api' => {
+          'apiVersion' => 'kubeadm.k8s.io/v1alpha3',
+          'kind' => 'InitConfiguration',
+          'apiEndpoint' => {
             'advertiseAddress' => advertise_address,
             'controlPlaneEndpoint' => 'localhost'
           },
-          'apiServerCertSANs' => build_extra_sans,
-          'networking' => {
-            'serviceSubnet' => @config.network.service_cidr,
-            'podSubnet' => @config.network.pod_network_cidr
-          },
-          'apiServerExtraArgs' => {},
-          'controllerManagerExtraArgs' => {
-            'horizontal-pod-autoscaler-use-rest-clients' => 'true'
+          'nodeRegistration' => {
+            'name' => @host.hostname
           }
         }
 
@@ -50,6 +38,26 @@ module Pharos
         if @host.container_runtime == 'cri-o'
           config['nodeRegistration']['criSocket'] = '/var/run/crio/crio.sock'
         end
+
+        config
+      end
+
+      def generate_cluster_config
+        config = {
+          'apiVersion' => 'kubeadm.k8s.io/v1alpha3',
+          'kind' => 'ClusterConfiguration',
+          'kubernetesVersion' => Pharos::KUBE_VERSION,
+          'imageRepository' => @config.image_repository,
+          'apiServerCertSANs' => build_extra_sans,
+          'networking' => {
+            'serviceSubnet' => @config.network.service_cidr,
+            'podSubnet' => @config.network.pod_network_cidr
+          },
+          'apiServerExtraArgs' => {},
+          'controllerManagerExtraArgs' => {
+            'horizontal-pod-autoscaler-use-rest-clients' => 'true'
+          }
+        }
 
         if @config.cloud && @config.cloud.provider != 'external'
           config['apiServerExtraArgs']['cloud-provider'] = @config.cloud.provider
@@ -89,8 +97,6 @@ module Pharos
         configure_audit_webhook(config) if @config.audit&.webhook&.server
         configure_audit_file(config) if @config.audit&.file
 
-        configure_kube_proxy(config) if @config.kube_proxy
-
         configure_admission_plugins(config)
 
         # Set secrets config location and mount it to api server
@@ -100,7 +106,28 @@ module Pharos
           'hostPath' => SECRETS_CFG_DIR,
           'mountPath' => SECRETS_CFG_DIR
         }
+
         config
+      end
+
+      def generate_proxy_config
+        config = {
+          'apiVersion' => 'kubeproxy.config.k8s.io/v1alpha1',
+          'kind' => 'KubeProxyConfiguration',
+          'mode' => @config.kube_proxy.mode
+        }
+
+        config
+      end
+
+      # @return [Array<Hash>]
+      def generate_config
+        [generate_init_config, generate_cluster_config, generate_proxy_config]
+      end
+
+      # @return [String]
+      def generate_yaml_config
+        generate_config.map { |config| config.to_yaml }.join("\n")
       end
 
       # @return [String]
@@ -215,19 +242,6 @@ module Pharos
           'writable' => true
         }]
         config['apiServerExtraVolumes'] += volume_mounts_for_audit_config
-      end
-
-      # @param config [Hash]
-      def configure_kube_proxy(config)
-        config['kubeProxy'] = {
-          'config' => {}
-        }
-
-        if @config.kube_proxy.mode
-          config['kubeProxy']['config']['mode'] = @config.kube_proxy.mode
-        end
-
-        config
       end
 
       # Generate config contents for kube-apiserver --audit-webhook-config-file
