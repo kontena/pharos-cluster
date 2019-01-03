@@ -16,6 +16,15 @@ describe Pharos::Kubeadm::ConfigGenerator do
 
   subject { described_class.new(config, master) }
 
+  describe '#generate_yaml_config' do
+    it 'returns full yaml' do
+      yaml = subject.generate_yaml_config
+      configs = YAML.load_stream(yaml)
+      kinds = configs.map { |config| config['kind'] }
+      expect(kinds).to eq(%w(InitConfiguration ClusterConfiguration KubeProxyConfiguration))
+    end
+  end
+
   describe '#generate_authentication_token_webhook_config' do
     let(:webhook_config) do
       {
