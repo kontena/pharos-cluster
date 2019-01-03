@@ -27,7 +27,7 @@ module Pharos
           config['nodeRegistration']['taints'] = []
         end
 
-        if @host.container_runtime == 'cri-o'
+        if @host.crio?
           config['nodeRegistration']['criSocket'] = '/var/run/crio/crio.sock'
         end
 

@@ -28,7 +28,7 @@ module Pharos
 
       # @return [String]
       def generate_yaml_config
-        generate_config.map(&:to_yaml).join("\n")
+         YAML.dump_stream(*generate_config)
       end
 
       # Generate config contents for kube-apiserver --audit-webhook-config-file
