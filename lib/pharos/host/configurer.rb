@@ -149,18 +149,19 @@ module Pharos
             line.strip!
             next if line.start_with?('#')
             key, val = line.split('=', 2)
+            val&.delete_suffix!('"') if val&.delete_prefix!('"')
             val = nil if val.to_s.empty?
             original_data[key] = val
           end
         end
 
         new_content = host.environment.merge(original_data) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
-          "#{key}=#{val}"
-        end.join("\n")
-        new_content << "\n" unless new_content.end_with?("\n")
-
-        host_env_file.write(new_content)
-        ssh.disconnect; ssh.connect # reconnect to reread env
+          "#{key}=\"#{val.shellescape}\""
+        end
+        host_env_file.write(new_content.join("\n") + "\n")
+        new_content.each do |kv_pair|
+          ssh.exec!("export #{kv_pair}")
+        end
       end
 
       # @return [Boolean]

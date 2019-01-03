@@ -78,7 +78,9 @@ describe Pharos::Host::Configurer do
       let(:config_environment) { { 'TEST' => 'foo' } }
 
       it 'adds a line to /etc/environment' do
-        expect(file).to receive(:write).with("TEST=foo\nPATH=/bin:/usr/local/bin\n")
+        expect(file).to receive(:write).with("TEST=\"foo\"\nPATH=\"/bin:/usr/local/bin\"\n")
+        expect(ssh).to receive(:exec!).with("export TEST=\"foo\"")
+        expect(ssh).to receive(:exec!).with("export PATH=\"/bin:/usr/local/bin\"")
         subject.update_env_file
       end
     end
@@ -87,16 +89,19 @@ describe Pharos::Host::Configurer do
       let(:config_environment) { { 'PATH' => '/bin' } }
 
       it 'modifies a line in /etc/environment' do
-        expect(file).to receive(:write).with("PATH=/bin\n")
+        expect(file).to receive(:write).with("PATH=\"/bin\"\n")
+        expect(ssh).to receive(:exec!).with("export PATH=\"/bin\"")
         subject.update_env_file
       end
     end
 
     context 'delete keys' do
+      let(:host_env_content) { "PATH=/bin\nTEST=foo\n" }
       let(:config_environment) { { 'PATH' => nil } }
 
       it 'removes a line in /etc/environment' do
-        expect(file).to receive(:write).with("\n")
+        expect(ssh).to receive(:exec!).with("export TEST=\"foo\"")
+        expect(file).to receive(:write).with("TEST=\"foo\"\n")
         subject.update_env_file
       end
     end
