@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# frozen_stritiong_literal: true
-
 module Pharos
   module Phases
     class AuthenticateSSH < Pharos::Phase
