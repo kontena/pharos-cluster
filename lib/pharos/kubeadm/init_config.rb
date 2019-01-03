@@ -16,8 +16,7 @@ module Pharos
           'apiVersion' => 'kubeadm.k8s.io/v1alpha3',
           'kind' => 'InitConfiguration',
           'apiEndpoint' => {
-            'advertiseAddress' => advertise_address,
-            'controlPlaneEndpoint' => 'localhost'
+            'advertiseAddress' => advertise_address
           },
           'nodeRegistration' => {
             'name' => @host.hostname
