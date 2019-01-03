@@ -36,12 +36,12 @@ module Pharos
       end
 
       def install
-        cfg = kubeadm.generate_config
+        cfg = kubeadm.generate_yaml_config
 
         logger.info { "Initializing control plane (v#{Pharos::KUBE_VERSION}) ..." }
-        logger.debug { cfg.to_yaml }
+        logger.debug { cfg }
 
-        ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-init.sh',
             CONFIG: tmp_file,
@@ -60,12 +60,20 @@ module Pharos
       def reconfigure
         replace_cert if replace_cert?
 
-        cfg = kubeadm.generate_config
+        logger.info { "Renewing control plane certificates ..." }
+        ssh.tempfile(content: kubeadm.cluster_config.generate.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+          exec_script(
+            'kubeadm-renew-certs.sh',
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
+          )
+        end
 
+        cfg = kubeadm.generate_yaml_config
         logger.info { "Reconfiguring control plane (v#{Pharos::KUBE_VERSION})..." }
-        logger.debug { cfg.to_yaml }
+        logger.debug { cfg }
 
-        ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-reconfigure.sh',
             CONFIG: tmp_file,
@@ -141,8 +149,8 @@ module Pharos
 
         sans = read_cert_sans(cert)
 
-        missing_sans = kubeadm.build_extra_sans - sans
-        extra_sans = sans - kubeadm.build_extra_sans
+        missing_sans = kubeadm.cluster_config.build_extra_sans - sans
+        extra_sans = sans - kubeadm.cluster_config.build_extra_sans
 
         if missing_sans.empty?
           logger.debug { "apiserver cert is up to update: #{sans}" }
