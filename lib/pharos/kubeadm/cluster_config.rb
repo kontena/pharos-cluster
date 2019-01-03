@@ -31,7 +31,7 @@ module Pharos
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr
           },
-          'controlPlaneEndpoint' => 'localhost:6443',
+          'controlPlaneEndpoint' => 'localhost:6443', # client-side loadbalanced kubelets
           'apiServerExtraArgs' => {},
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true'

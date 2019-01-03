@@ -34,6 +34,8 @@ module Pharos
         config
       end
 
+      # Used for internal k8s api access (aka address that works without cni/overlay)
+      #
       # @return [String]
       def advertise_address
         @config.regions.size == 1 ? @host.peer_address : @host.address
