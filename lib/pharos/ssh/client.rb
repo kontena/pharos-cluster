@@ -41,6 +41,7 @@ module Pharos
         @bastion ||= @opts.delete(:bastion)
       end
 
+      # @param options [Hash] see Net::SSH#start
       def connect(**options)
         synchronize do
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
