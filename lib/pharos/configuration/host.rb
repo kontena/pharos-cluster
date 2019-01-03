@@ -88,7 +88,7 @@ module Pharos
         opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
         opts[:bastion] = bastion if bastion
         @ssh = Pharos::SSH::Client.new(address, user, opts.merge(options)).tap(&:connect)
-      rescue StadardError
+      rescue StandardError
         @ssh = nil
         raise
       end
