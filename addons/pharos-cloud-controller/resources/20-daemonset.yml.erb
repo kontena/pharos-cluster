@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: pharos-cloud-controller
+  name: pharos-cloud-controller
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: pharos-cloud-controller
+  template:
+    metadata:
+      labels:
+        k8s-app: pharos-cloud-controller
+    spec:
+      serviceAccountName: cloud-controller-manager
+      hostNetwork: true
+      containers:
+      - name: pharos-cloud-controller
+        # for in-tree providers we use k8s.gcr.io/cloud-controller-manager
+        # this can be replaced with any other image for out-of-tree providers
+        image: docker.io/jnummelin/pharos-cloud-controller:dev
+        imagePullPolicy: Always
+        #image: <%= image_repository %>/pharos-cloud-controller:v<%= version %>
+        command:
+        - /usr/local/bin/pharos-cloud-controller
+        - --cloud-provider=pharos
+        - --allow-untagged-cloud
+        - --leader-elect=true
+        - --use-service-account-credentials
+      tolerations:
+      # this is required so CCM can bootstrap itself
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+        effect: NoSchedule
+      # this is to have the daemonset runnable on master nodes
+      # the taint may vary depending on your cluster setup
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      # this is to restrict CCM to only run on master nodes
+      # the node selector may vary depending on your cluster setup
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+  updateStrategy:
+    type: RollingUpdate

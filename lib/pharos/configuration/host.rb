@@ -82,6 +82,8 @@ module Pharos
         labels = @attributes[:labels] || {}
 
         labels['node-address.kontena.io/external-ip'] = address
+        labels['node-address.kontena.io/internal-ip'] = peer_address
+
         labels['node-role.kubernetes.io/worker'] = '' if worker? && !labels.find{ |k, _| k.to_s.start_with?("node-role.kubernetes.io") }
 
         labels
