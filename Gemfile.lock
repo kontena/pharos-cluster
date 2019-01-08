@@ -11,7 +11,7 @@ PATH
       ed25519 (= 1.2.4)
       excon (~> 0.62.0)
       fugit (~> 1.1.2)
-      k8s-client (~> 0.7.0)
+      k8s-client (~> 0.8.0)
       net-ssh (= 5.1.0)
       net-ssh-gateway (= 2.0.0)
       pastel
@@ -32,7 +32,6 @@ GEM
     bcrypt_pbkdf (1.0.0)
     clamp (1.2.1)
     concurrent-ruby (1.1.4)
-    deep_merge (1.2.1)
     diff-lcs (1.3)
     dry-configurable (0.7.0)
       concurrent-ruby (~> 1.0)
@@ -78,11 +77,10 @@ GEM
     hashdiff (0.3.8)
     ice_nine (0.11.2)
     jaro_winkler (1.5.1)
-    jsonpath (0.9.8)
+    jsonpath (0.9.9)
       multi_json
       to_regexp (~> 0.2.1)
-    k8s-client (0.7.0)
-      deep_merge (~> 1.2.1)
+    k8s-client (0.8.0)
       dry-struct (~> 0.5.0)
       excon (~> 0.62.0)
       hashdiff (~> 0.3.7)
@@ -155,7 +153,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.15)
+  bundler
   clamp-completer!
   fakefs (~> 0.13)
   pharos-cluster!
