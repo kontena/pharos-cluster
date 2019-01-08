@@ -1,0 +1,94 @@
+#compdef <%= progname %>
+
+<%- iterator.recurse do |invocation_path, command_class| -%>
+<%- if command_class.has_subcommands? -%>
+_<%= invocation_path.join('_') %>_subcommands() {
+  local subcommands=( <%= command_class.recognised_subcommands.map { |sc| "'#{sc.names.first}:#{sc.description.gsub(/'\$\\/, '\\\1') }'" }.join(' ') %> )
+  _describe 'subcommands' subcommands && return 0
+  return 1
+}
+
+<%- else -%>
+_<%= invocation_path.join('_') %>_subcommands() {
+  return 1
+}
+
+<%- end -%>
+
+_<%= invocation_path.join('_') %>() {
+  local curcontext="$curcontext" state state_descr line expl
+  local ret=1
+
+  _arguments -C : \
+    '1:subcommands:_<%= invocation_path.join('_') %>_subcommands' \
+    <%- command_class.recognised_options.each do |opt| -%>
+      <%- if opt.type == :flag -%>
+        <%- if opt.long_switch.include?('[no-]') -%>
+          '<%= opt.long_switch.gsub('[no-]', 'no-') %>[(disable) <%= opt.description.gsub(/\[|\]|:/, '\\\1') %>]' \
+          '<%= opt.long_switch.gsub('[no-]', '') %>[(enable) <%= opt.description.gsub(/\[|\]|:/, '\\\1') %>]' \
+        <%- else -%>
+          '<%= opt.long_switch %>[<%= opt.description.gsub(/\[|\]|:/, '\\\1') %>]' \
+        <%- end -%>
+      <%- else
+            instance = command_class.new(invocation_path)
+            if instance.respond_to?("complete_#{opt.attribute_name}")
+              reply = instance.send("complete_#{opt.attribute_name}")
+            else
+              cleaned_type = "complete_#{opt.type.downcase.delete_prefix('[').split(' ').first}"
+              if instance.respond_to?(cleaned_type)
+                reply = instance.send(cleaned_type)
+              end
+            end
+            result=[]
+            [reply].compact.each do |reply|
+            case reply
+            when String
+              result << "(#{reply})"
+            when Symbol
+              case reply
+              when :dirs
+                result << "_path_files -/"
+              when :hosts
+              when :files
+                result << "_path_files -f"
+              end
+            when Hash
+              case reply.first.first
+              when :glob
+                result << "_path_files -f -g \"#{reply.first.last}\""
+              when :command
+                result << "(${(k)commands})"
+              end
+            else
+            end
+        -%>
+        <%- if opt.long_switch.include?('[no-]') -%>
+          '<%= opt.long_switch.gsub('[no-]', 'no-') %>:(disable) <%= opt.description.gsub(/\[|\]|:/, '\\\1') %>:<%= result.first %>' \
+          '<%= opt.long_switch.gsub('[no-]', '') %>:(enable) <%= opt.description.gsub(/\[|\]|:/, '\\\1') %>:<%= result.first %>' \
+        <%- else -%>
+          '<%= opt.long_switch %>:<%= opt.description.gsub(/\[|\]|:/, '\\\1') %>:<%= result.first %>' \
+        <%- end -%>
+        <%- end -%>
+        <%- end -%>
+        <%- end -%>
+    '*::options:->options' && return 0
+
+  case "$state" in
+    command) _<%= invocation_path.join('_') %>_subcommands && return 0 ;;
+    options)
+      local command="${line[1]}"
+      curcontext="${curcontext%:*:*}:<%= invocation_path.join('-') %>-${command}"
+
+      line=(${line:1})
+      local completion_func="_<%= invocation_path.join('_') %>_${command//-/_}"
+      _call_function ret "${completion_func}" && return ret
+
+      _message "a completion function is not defined for ${command}"
+      return 1
+    ;;
+  esac
+}
+
+<%- end -%>
+
+compdef _<%= progname %> <%= progname %>

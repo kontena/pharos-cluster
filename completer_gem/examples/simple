@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+
+require 'clamp'
+require 'clamp/completer'
+
+Clamp do
+  option %w(-d --debug), :flag, "set debug on"
+  option '--[no-]yesno', :flag, "test option 3"
+
+  subcommand "foo", "do foo stuff" do
+    subcommand "bar", "do foo stuff" do
+      option '--test', :flag, "test flag"
+      option '--opt', 'OPT', "test option", attribute_name: :some_attr
+      option '--cmd', 'cmd', "test option 2"
+      option '--[no-]yesno', :flag, "test option 3"
+
+      def complete_cmd
+        { command: 'echo foo bar buz' }
+      end
+
+      def complete_some_attr
+        { glob: '*.y*ml' }
+      end
+
+      def execute
+        puts "--test given? : #{test?}"
+      end
+    end
+  end
+
+  subcommand "complete", "shell autocompletions", Clamp::Completer.new(self)
+end

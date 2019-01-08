@@ -1,0 +1,92 @@
+_clamp_completer_<%= progname %>_current_subcommand() {
+  local ret="_${COMP_WORDS[0]}"
+  for ((i=1; i<$COMP_CWORD; i++)); do
+    if [[ ! $COMP_WORDS[$i] == -* ]]; then
+      declare -fF -- "${ret}_${COMP_WORDS[$i]}" >/dev/null && ret="${ret}_${COMP_WORDS[$i]}"
+    fi
+  done
+
+  if [ -n "$ret" ]; then
+    RET="${ret}"
+    return 0
+  else
+    return 1
+  fi
+}
+
+_clamp_completer_<%= progname %>_nospace() {
+  command -v compopt &> /dev/null && compopt -o nospace
+}
+
+<%- iterator.recurse do |invocation_path, command_class| -%>
+_<%= invocation_path.join('_') %>() {
+  local cur prev subcmd
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  _clamp_completer_<%= progname %>_current_subcommand && subcmd="$RET"
+
+  if [ "$subcmd" = "${FUNCNAME[0]}${funcstack[1]}" ]; then
+    <%- visible_opts = command_class.recognised_options.reject(&:hidden?) -%>
+    if [[ ${cur} == -* ]] ; then
+      COMPREPLY=( $(compgen -W "<%= visible_opts.map(&:long_switch).join(' ') %>" -- ${cur}) )
+      return 0
+    fi
+
+    <%- visible_non_flag_opts = visible_opts.reject { |o| o.type == :flag } -%>
+    <%- unless visible_non_flag_opts.empty? -%>
+    <%- instance = command_class.new(invocation_path) -%>
+    case "$prev" in
+      <%- visible_non_flag_opts.each do |option| -%>
+      <%= option.switches.join('|') %>)
+       COMPREPLY=()
+        <%- if instance.respond_to?("complete_#{option.attribute_name}")
+              reply = instance.send("complete_#{option.attribute_name}")
+            else
+              cleaned_type = "complete_#{option.type.downcase.delete_prefix('[').split(' ').first}"
+              if instance.respond_to?(cleaned_type)
+                reply = instance.send(cleaned_type)
+              end
+            end -%>
+       <%- [reply].compact.each do |reply| -%>
+       <%= case reply
+          when String
+            "COMPREPLY+=( $(compgen -W \"#{reply}\" -- \"${cur}\") );"
+          when Symbol
+            case reply
+            when :dirs
+              "COMPREPLY+=( $(compgen -o nospace -d -S \"/\"  -- \"${cur}\") ); _clamp_completer_#{ progname }_nospace;"
+            when :hosts
+              "COMPREPLY+=( $(compgen -A hostname -- \"${cur}\") );"
+            when :files
+              "COMPREPLY+=( $(compgen -o filenames -f -- \"${cur}\") );"
+            end
+          when Hash
+            case reply.first.first
+            when :glob
+              "COMPREPLY+=( $(compgen -o filenames -f -G \"#{reply.first.last}\" -- \"${cur}\") );"
+            when :command
+              "COMPREPLY+=( $(compgen -C \"#{reply.first.last}\" -- \"${cur}\") );"
+            end
+          else
+            "COMPREPLY+=( $(compgen -o bashdefault -- \"${cur}\") );"
+          end %>
+        <%- end -%>
+        return 0
+        ;;
+      <%- end -%>
+    esac
+    <%- end -%>
+
+    <%- if command_class.has_subcommands? -%>
+    COMPREPLY=( $(compgen -W "<%= command_class.recognised_subcommands.flat_map(&:names).join(' ') %>" -- ${cur}) )
+    <%- else -%>
+    COMPREPLY=()
+    <%- end -%>
+  elif [ -n "$subcmd" ]; then
+    eval "$subcmd"
+  fi
+}
+
+<%- end -%>
+complete -F _<%= progname %> <%= progname %>
