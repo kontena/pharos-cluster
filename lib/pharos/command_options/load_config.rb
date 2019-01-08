@@ -19,6 +19,14 @@ module Pharos
       end
 
       module InstanceMethods
+        def complete_config_yaml
+          { glob: "*.y*ml" }
+        end
+
+        def complete_tf_json
+          { glob: "*.json" }
+        end
+
         private
 
         # @return [Pharos::YamlFile]

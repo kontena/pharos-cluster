@@ -18,6 +18,10 @@ module Pharos
       end
 
       module InstanceMethods
+        def complete_role
+          "master worker"
+        end
+
         private
 
         def filtered_hosts

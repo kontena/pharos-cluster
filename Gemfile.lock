@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pharos-cluster (2.2.0.alpha.0)
+    pharos-cluster (2.2.0.alpha.1)
       bcrypt
       bcrypt_pbkdf (>= 1.0, < 2.0)
       clamp (= 1.2.1)
@@ -17,6 +17,12 @@ PATH
       pastel
       rouge (~> 3.1)
       tty-prompt (~> 0.16)
+
+PATH
+  remote: completer_gem
+  specs:
+    clamp-completer (0.1.0)
+      clamp
 
 GEM
   remote: https://rubygems.org/
@@ -150,6 +156,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.15)
+  clamp-completer!
   fakefs (~> 0.13)
   pharos-cluster!
   rake (~> 10.0)
@@ -157,4 +164,4 @@ DEPENDENCIES
   rubocop (~> 0.57)
 
 BUNDLED WITH
-   1.16.3
+   1.17.2
