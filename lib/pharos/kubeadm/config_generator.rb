@@ -3,13 +3,24 @@
 require_relative 'init_config'
 require_relative 'cluster_config'
 require_relative 'kubeproxy_config'
+require_relative 'kubelet_config'
 
 module Pharos
   module Kubeadm
     class ConfigGenerator
       PHAROS_DIR = Pharos::Kubeadm::PHAROS_DIR
 
-      attr_reader :init_config, :cluster_config, :kubeproxy_config
+      # @return [InitConfig]
+      attr_reader :init_config
+
+      # @return [ClusterConfig]
+      attr_reader :cluster_config
+
+      # @return [KubeProxyConfig]
+      attr_reader :kubeproxy_config
+
+      # @return [KubeletConfig]
+      attr_reader :kubelet_config
 
       # @param config [Pharos::Config] cluster config
       # @param host [Pharos::Configuration::Host] master host-specific config
@@ -19,11 +30,17 @@ module Pharos
         @init_config = InitConfig.new(config, host)
         @cluster_config = ClusterConfig.new(config, host)
         @kubeproxy_config = KubeProxyConfig.new(config, host)
+        @kubelet_config = KubeletConfig.new(config, host)
       end
 
       # @return [Array<Hash>]
       def generate_config
-        [init_config.generate, cluster_config.generate, kubeproxy_config.generate]
+        [
+          init_config.generate,
+          cluster_config.generate,
+          kubeproxy_config.generate,
+          kubelet_config.generate
+        ]
       end
 
       # @return [String]

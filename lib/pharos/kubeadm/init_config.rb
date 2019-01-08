@@ -41,6 +41,7 @@ module Pharos
         @config.regions.size == 1 ? @host.peer_address : @host.address
       end
 
+      # @return [Boolean]
       def master_taint?
         return true unless @host.taints
 
