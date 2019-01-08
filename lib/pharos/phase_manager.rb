@@ -30,6 +30,7 @@ module Pharos
     def run_parallel(phases, &block)
       threads = phases.map { |phase|
         Thread.new do
+          Thread.current.report_on_exception = false
           Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
         end
       }
