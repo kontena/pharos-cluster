@@ -52,7 +52,8 @@ module Pharos
           ipip_mode: @config.network.calico&.ipip_mode || 'Always',
           ipip_enabled: @config.network.calico&.ipip_mode != 'Never',
           master_ip: @config.master_host.peer_address,
-          version: CALICO_VERSION
+          version: CALICO_VERSION,
+          nat_outgoing: @config.network.calico&.nat_outgoing || 'true'
         )
       end
     end
