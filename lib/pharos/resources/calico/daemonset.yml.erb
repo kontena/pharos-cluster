@@ -84,8 +84,9 @@ spec:
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "<%= ipip_mode %>"
+            # Enable or disable NAT
             - name: CALICO_IPV4POOL_NAT_OUTGOING
-              value: "<%= nat_outgoing ? 'true' : 'false' %>"
+              value: "<%= nat_outgoing %>"
             # Enable IP-in-IP within Felix.
             - name: FELIX_IPINIPENABLED
               value: "<%= ipip_enabled ? 'true' : 'false' %>"
