@@ -35,5 +35,9 @@ EOF
 export DEBIAN_FRONTEND=noninteractive
 
 apt-mark unhold "$DOCKER_PACKAGE" || echo "Nothing to unhold"
-apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION"
+if dpkg -l docker.io ; then
+    apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION*" || echo "Cannot install specific version, keeping the current one"
+else
+    apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION*"
+fi
 apt-mark hold "$DOCKER_PACKAGE"

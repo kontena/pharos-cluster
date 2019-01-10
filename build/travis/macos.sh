@@ -3,6 +3,7 @@
 set -ue
 
 export PHAROS_NON_OSS=true
+export HOMEBREW_NO_AUTO_UPDATE=1
 
 brew install squashfs
 brew install openssl || brew upgrade openssl || true

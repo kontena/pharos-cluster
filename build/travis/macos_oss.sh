@@ -2,6 +2,8 @@
 
 set -ue
 
+export HOMEBREW_NO_AUTO_UPDATE=1
+
 brew install squashfs
 brew install openssl || brew upgrade openssl || true
 

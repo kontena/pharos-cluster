@@ -6,6 +6,7 @@ module Pharos
       title "Configure hosts"
 
       def configure_container_runtime
+        Thread.current.abort_on_exception = true
         if @host.new? || host_configurer.configure_container_runtime_safe?
           logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
           host_configurer.configure_container_runtime
