@@ -11,7 +11,7 @@ PATH
       ed25519 (= 1.2.4)
       excon (~> 0.62.0)
       fugit (~> 1.1.2)
-      k8s-client (~> 0.8.0)
+      k8s-client (~> 0.8.1)
       net-ssh (= 5.1.0)
       net-ssh-gateway (= 2.0.0)
       pastel
@@ -74,7 +74,7 @@ GEM
     jsonpath (0.9.9)
       multi_json
       to_regexp (~> 0.2.1)
-    k8s-client (0.8.0)
+    k8s-client (0.8.1)
       dry-struct (~> 0.5.0)
       excon (~> 0.62.0)
       hashdiff (~> 0.3.7)
