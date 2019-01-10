@@ -94,7 +94,7 @@ module Pharos
           optional(:endpoint).filled(:str?)
         end
         optional(:network).schema do
-          optional(:provider).filled(included_in?: %(weave calico))
+          optional(:provider).filled(included_in?: %(weave calico custom))
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
@@ -105,6 +105,10 @@ module Pharos
           end
           optional(:calico).schema do
             optional(:ipip_mode).filled(included_in?: %(Always, CrossSubnet, Never))
+          end
+          optional(:custom).schema do
+            required(:manifest_path).filled(:str?)
+            optional(:options).filled(:hash?)
           end
         end
         optional(:etcd).schema do
