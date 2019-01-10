@@ -33,9 +33,9 @@ module Pharos
         attribute :manifest_path, Pharos::Types::String
         attribute :options, Pharos::Types::Hash
 
-        # @param routes [Array<Pharos::Configuration::Host::Routes>]
+        # @param _routes [Array<Pharos::Configuration::Host::Routes>]
         # @return [Array<Pharos::Configuration::Host::Routes>]
-        def self.filter_host_routes(routes)
+        def self.filter_host_routes(_routes)
           # There's no way to validate routes for a custom CNI setup
           []
         end
