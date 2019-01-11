@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-resource-applier
+  namespace: kontena-lens
+  labels:
+    app: k8s-resource-applier
+spec:
+  selector:
+    matchLabels:
+      app: k8s-resource-applier
+  template:
+    metadata:
+      labels:
+        app: k8s-resource-applier
+    spec:
+      restartPolicy: Always
+      containers:
+        - image: <%= image_repository %>/k8s-resource-applier:<%= version %>
+          name: api
+          resources:
+            requests:
+              memory: "48Mi"
+              cpu: "1"
+            limits:
+              memory: "128Mi"
+              cpu: "1"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9393
+              scheme: HTTP
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9393
+              scheme: HTTP
+            timeoutSeconds: 5
