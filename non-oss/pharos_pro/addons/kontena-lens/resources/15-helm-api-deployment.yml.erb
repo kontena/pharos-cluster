@@ -21,10 +21,9 @@ spec:
           resources:
             requests:
               memory: "256Mi"
-              cpu: "1"
+              cpu: "0.1"
             limits:
               memory: "512Mi"
-              cpu: "1"
           readinessProbe:
             httpGet:
               path: /
