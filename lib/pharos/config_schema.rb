@@ -105,6 +105,7 @@ module Pharos
           end
           optional(:calico).schema do
             optional(:ipip_mode).filled(included_in?: %(Always, CrossSubnet, Never))
+            optional(:nat_outgoing).filled(:bool?)
           end
           optional(:custom).schema do
             required(:manifest_path).filled(:str?)
