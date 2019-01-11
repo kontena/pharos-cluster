@@ -42,6 +42,7 @@ spec:
     - --initial-cluster=${INITIAL_CLUSTER}
     - --initial-cluster-token=pharos-etcd-token
     - --initial-cluster-state=${INITIAL_CLUSTER_STATE}
+    - --auto-compaction-retention=1
 
     image: ${IMAGE_REPO}/etcd:${ETCD_VERSION}
     livenessProbe:
