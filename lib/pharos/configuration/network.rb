@@ -20,6 +20,7 @@ module Pharos
       class Calico < Pharos::Configuration::Struct
         attribute :ipip_mode, Pharos::Types::String.default('Always')
         attribute :nat_outgoing, Pharos::Types::Strict::Bool.default(true)
+
         # @param routes [Array<Pharos::Configuration::Host::Routes>]
         # @return [Array<Pharos::Configuration::Host::Routes>]
         def self.filter_host_routes(routes)
