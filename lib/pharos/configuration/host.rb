@@ -145,7 +145,7 @@ module Pharos
         if crio?
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=/var/run/crio/crio.sock'
+          args << '--container-runtime-endpoint=/var/run/crio/crio.sock' # see: https://github.com/kubernetes/kubernetes/issues/71712
         end
 
         if local_only
