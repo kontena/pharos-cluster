@@ -2,7 +2,7 @@
 
 module Pharos
   module Kubeadm
-    class KubeProxyConfig
+    class KubeletConfig
       # @param config [Pharos::Config] cluster config
       # @param host [Pharos::Configuration::Host] master host-specific config
       def initialize(config, host)
@@ -13,10 +13,18 @@ module Pharos
       # @return [Hash]
       def generate
         config = {
-          'apiVersion' => 'kubeproxy.config.k8s.io/v1alpha1',
-          'kind' => 'KubeProxyConfiguration',
-          'mode' => @config.kube_proxy&.mode || 'iptables'
+          'apiVersion' => 'kubelet.config.k8s.io/v1beta1',
+          'kind' => 'KubeletConfiguration',
+          'staticPodPath' => '/etc/kubernetes/manifests',
+          'authentication' => {
+            'webhook' => {
+              'enabled' => true
+            }
+          }
         }
+        if @config.kubelet&.read_only_port
+          config['readOnlyPort'] = '10255'
+        end
 
         config
       end

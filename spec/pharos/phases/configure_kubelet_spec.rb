@@ -54,7 +54,7 @@ describe Pharos::Phases::ConfigureKubelet do
       it "returns a systemd unit" do
         expect(subject.build_systemd_dropin).to eq <<~EOM
           [Service]
-          Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+          Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
           ExecStartPre=-/sbin/swapoff -a
         EOM
       end
@@ -69,7 +69,7 @@ describe Pharos::Phases::ConfigureKubelet do
         it "returns a systemd unit" do
           expect(subject.build_systemd_dropin).to eq <<~EOM
             [Service]
-            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
             Environment='http_proxy=proxy.example.com'
             Environment='NO_PROXY=127.0.0.1'
             ExecStartPre=-/sbin/swapoff -a
@@ -81,7 +81,7 @@ describe Pharos::Phases::ConfigureKubelet do
         it "returns a systemd unit" do
           expect(subject.build_systemd_dropin).to eq <<~EOM
             [Service]
-            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --authentication-token-webhook=true --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
             ExecStartPre=-/sbin/swapoff -a
           EOM
         end
@@ -94,31 +94,8 @@ describe Pharos::Phases::ConfigureKubelet do
     it 'returns extra args array' do
       expect(subject.kubelet_extra_args).to include(
         '--node-ip=192.168.42.1',
-        '--hostname-override=',
-        '--authentication-token-webhook=true'
+        '--hostname-override='
       )
-    end
-
-    context 'with kubelet config' do
-      let(:config) { Pharos::Config.new(
-        hosts: [host],
-        network: {
-          service_cidr: '172.255.0.0/16',
-        },
-        cloud: {
-          provider: 'aws',
-          config: './cloud-config'
-        },
-        addons: {},
-        etcd: {},
-        kubelet: { read_only_port: true}
-      ) }
-
-      it 'enables read only port' do
-        expect(subject.kubelet_extra_args).to include(
-          '--read-only-port=10255'
-        )
-      end
     end
 
     context 'with cloud provider' do

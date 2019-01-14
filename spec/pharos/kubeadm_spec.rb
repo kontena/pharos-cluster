@@ -21,7 +21,7 @@ describe Pharos::Kubeadm::ConfigGenerator do
       yaml = subject.generate_yaml_config
       configs = YAML.load_stream(yaml)
       kinds = configs.map { |config| config['kind'] }
-      expect(kinds).to eq(%w(InitConfiguration ClusterConfiguration KubeProxyConfiguration))
+      expect(kinds).to eq(%w(InitConfiguration ClusterConfiguration KubeProxyConfiguration KubeletConfiguration))
     end
   end
 
