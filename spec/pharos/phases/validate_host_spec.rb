@@ -21,18 +21,26 @@ describe Pharos::Phases::ValidateHost do
 
   describe '#check_role' do
     let(:role) { 'worker' }
-    let(:host) { Pharos::Configuration::Host.new(
-      address: '192.0.2.1',
-      role: role
-    ) }
-    let(:checks) { {
+
+    let(:host) do
+      Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: role
+      )
+    end
+
+    let(:checks) do
+      {
       'ca_exists' => false,
       'api_healthy' => false,
       'kubelet_configured' => false
-    } }
-    before do
-      host.checks = checks
+      }
     end
+
+    before do
+      allow(host).to receive(:checks).and_return(checks)
+    end
+
     subject { described_class.new(host, config: config) }
 
     context 'for a worker node' do

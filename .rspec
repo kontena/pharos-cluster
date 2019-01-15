@@ -1,1 +1,5 @@
 --require spec_helper
+--order rand
+--format d
+--backtrace
+--profile

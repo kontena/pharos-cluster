@@ -66,7 +66,7 @@ module Pharos
       attribute :environment, Pharos::Types::Strict::Hash
       attribute :bastion, Pharos::Configuration::Bastion
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes, :config
 
       def to_s
         short_hostname || address
@@ -78,7 +78,8 @@ module Pharos
         hostname.split('.').first
       end
 
-      def ssh
+      # param options [Hash] extra options for the SSH client, see Net::SSH#start
+      def ssh(**options)
         return @ssh if @ssh
 
         opts = {}
@@ -86,42 +87,76 @@ module Pharos
         opts[:send_env] = [] # override default to not send LC_* envs
         opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
         opts[:bastion] = bastion if bastion
-        @ssh = Pharos::SSH::Client.new(address, user, opts).tap(&:connect)
+        @ssh = Pharos::SSH::Client.new(address, user, opts.merge(options)).tap(&:connect)
+      rescue StandardError
+        @ssh = nil
+        raise
+      end
+
+      def ssh?
+        @ssh && !@ssh.session.closed?
       end
 
       def api_address
         api_endpoint || address
       end
 
+      # @return [String]
       def peer_address
         private_address || private_interface_address || address
       end
 
-      def labels
-        return @attributes[:labels] unless worker?
-
-        @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
+      # @param host [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_address_for(host)
+        if region == host.region
+          peer_address
+        else
+          address
+        end
       end
 
+      # @return [String]
+      def region
+        labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
+      end
+
+      # @return [Hash]
+      def labels
+        labels = @attributes[:labels] || {}
+
+        labels['node-address.kontena.io/external-ip'] = address
+        labels['node-role.kubernetes.io/worker'] = '' if worker?
+
+        labels
+      end
+
+      # @return [Hash]
+      def checks
+        @checks ||= {}
+      end
+
+      # @param local_only [Boolean]
+      # @param cloud_provider [String, NilClass]
+      # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 
         if crio?
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=unix:///var/run/crio/crio.sock'
+          args << '--container-runtime-endpoint=/var/run/crio/crio.sock' # see: https://github.com/kubernetes/kubernetes/issues/71712
         end
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
-          args << "--cadvisor-port=0"
           args << "--address=127.0.0.1"
         else
           args << "--node-ip=#{peer_address}" if cloud_provider.nil?
           args << "--hostname-override=#{hostname}"
         end
 
-        args += configurer(nil).kubelet_args
+        args += configurer.kubelet_args
 
         args
       end
@@ -178,10 +213,11 @@ module Pharos
         routes.select{ |route| route.overlaps? cidr }
       end
 
-      # @param ssh [Pharos::SSH::Client]
-      def configurer(ssh)
-        configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
-        configurer&.new(self, ssh)
+      # @return [NilClass,Pharos::Host::Configurer]
+      def configurer
+        return @configurer if @configurer
+        raise "Os release not set" unless os_release&.id
+        @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
       end
 
       # @param bastion [Pharos::Configuration::Bastion]

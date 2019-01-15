@@ -9,6 +9,29 @@ describe Pharos::Config do
   subject { described_class.load(data) }
 
   describe 'hosts' do
+    context 'invalid host address' do
+      let(:hosts) { [
+        { 'address' => ' 192.0.2.1', 'role' => 'master' },
+      ] }
+      it 'fails to load' do
+        expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
+          expect(exc.errors[:hosts][0][:address][0]).to eq "is invalid"
+        end
+      end
+    end
+
+    context 'invalid host private address' do
+      let(:hosts) { [
+        { 'address' => '192.0.2.1', 'private_address' => '"127.0.0.1"', 'role' => 'master' },
+      ] }
+      it 'fails to load' do
+        expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
+          expect(exc.errors[:hosts][0][:private_address][0]).to eq "is invalid"
+        end
+      end
+    end
+
+
     context 'without hosts' do
       let(:data) { {} }
 
@@ -99,6 +122,80 @@ describe Pharos::Config do
           end
         end
       end
+    end
+
+    context 'kube_client' do
+      let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'role' => 'master' } ] } }
+      let(:kubeconfig) { {}  }
+
+      it 'creates a kube client' do
+        expect(Pharos::Kube).to receive(:client).with('192.0.2.1',kubeconfig, 6443)
+        subject.kube_client(kubeconfig)
+      end
+
+      context 'with bastion host' do
+        let(:master) { Pharos::Configuration::Host.new('address' => '192.0.2.1', 'role' => 'master', 'bastion' => { 'address' => '192.0.2.2', 'user' => 'bastion' }) }
+        let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'role' => 'master', 'bastion' => { 'address' => '192.0.2.2', 'user' => 'bastion' } } ] } }
+        let(:bastion) { Pharos::Configuration::Bastion.new('address' => '192.0.2.2', 'user' => 'bastion') }
+        let(:bastion_host) { instance_double(Pharos::Configuration::Host) }
+        let(:ssh) { instance_double(Pharos::SSH::Client) }
+
+        before do
+          allow(subject).to receive(:master_host).and_return(master)
+          allow(master).to receive(:bastion).and_return(bastion)
+          allow(bastion).to receive(:host).and_return(bastion_host)
+          allow(bastion_host).to receive(:ssh).and_return(ssh)
+          allow(master).to receive(:api_address).and_return('api.example.com')
+        end
+
+        it 'creates a kube client through ssh' do
+          expect(Pharos::Kube).to receive(:client).with('localhost', kubeconfig, 9999)
+          expect(ssh).to receive(:gateway).with('api.example.com', 6443).and_return(9999)
+          subject.kube_client(kubeconfig)
+        end
+      end
+    end
+  end
+
+  describe '#master_hosts' do
+    let(:data) { {
+      'hosts' => [
+        { 'address' => '192.0.2.1', 'role' => 'master'},
+        { 'address' => '192.0.2.2', 'role' => 'master'},
+        { 'address' => '192.0.2.3', 'role' => 'worker'},
+      ]
+    } }
+
+    it 'returns hosts with role=master' do
+      expect(subject.master_hosts.size).to eq(2)
+      expect(subject.master_hosts.first.address).to eq('192.0.2.1')
+      expect(subject.master_hosts.last.address).to eq('192.0.2.2')
+    end
+
+    it 'sorts masters by score' do
+      subject.hosts[1].checks['api_healthy'] = true
+      expect(subject.master_hosts.first.address).to eq('192.0.2.2')
+    end
+  end
+
+  describe '#etcd_hosts' do
+    let(:data) { {
+      'hosts' => [
+        { 'address' => '192.0.2.1', 'role' => 'master'},
+        { 'address' => '192.0.2.2', 'role' => 'master'},
+        { 'address' => '192.0.2.3', 'role' => 'worker'},
+      ]
+    } }
+
+    it 'returns hosts with role=master' do
+      expect(subject.etcd_hosts.size).to eq(2)
+      expect(subject.etcd_hosts.first.address).to eq('192.0.2.1')
+      expect(subject.etcd_hosts.last.address).to eq('192.0.2.2')
+    end
+
+    it 'sorts etcd hosts by score' do
+      subject.hosts[1].checks['etcd_healthy'] = true
+      expect(subject.etcd_hosts.first.address).to eq('192.0.2.2')
     end
   end
 

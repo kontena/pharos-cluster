@@ -127,6 +127,10 @@ module Pharos
         hooks[:uninstall] = block
       end
 
+      def reset_host(&block)
+        hooks[:reset_host] = block
+      end
+
       def modify_cluster_config(&block)
         hooks[:modify_cluster_config] = block
       end
@@ -198,6 +202,11 @@ module Pharos
       else
         delete_resources
       end
+    end
+
+    # @param host [Pharos::Configuration::Host]
+    def apply_reset_host(host)
+      instance_exec(host, &hooks[:reset_host]) if hooks[:reset_host]
     end
 
     def apply_modify_cluster_config

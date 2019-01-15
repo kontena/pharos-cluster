@@ -1,13 +1,41 @@
 # Pharos Cluster
 
 [![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/pharos-cluster/status.svg)](https://cloud-drone-07.kontena.io/kontena/pharos-cluster)
-[![Join the chat at https://slack.kontena.io](https://slack.kontena.io/badge.svg)](https://slack.kontena.io)
+[![Build Status](https://travis-ci.org/kontena/pharos-cluster.svg?branch=master)](https://travis-ci.org/kontena/pharos-cluster)
+[![Join the chat at https://slack.kontena.io](https://img.shields.io/badge/chat-on%20slack-green.svg?logo=slack&longCache=true&style=flat-square)](https://slack.kontena.io)
 
 Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution) management tool. It handles cluster bootstrapping, upgrades and other maintenance tasks via SSH connection and Kubernetes API access.
 
+## Installation
+
+### chpharos
+The easiest way to install is to use the Kontena Pharos version switcher [chpharos](https://github.com/kontena/pharos-cluster).
+
+```
+$ chpharos install latest
+$ pharos --help
+```
+
+### Download binaries
+
+The binary packages are available on the Downloads section of your [Kontena Account](https://account.kontena.io/) page.
+
+### Build and install Ruby gem
+
+You need Ruby version 2.5
+
+```
+$ gem build pharos-cluster.gemspec
+$ gem install pharos-cluster*.gem
+$ pharos --help
+```
+
+## Usage
+
+See [documentation](https://pharos.sh/docs/).
+
 ## Further Information
 
-- [Documentation](https://pharos.sh/docs/)
 - [Slack](https://slack.kontena.io)
 - [Website](https://pharos.sh/)
 

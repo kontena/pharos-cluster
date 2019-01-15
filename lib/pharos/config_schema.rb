@@ -36,6 +36,14 @@ module Pharos
       result.to_h
     end
 
+    module CustomPredicates
+      include Dry::Logic::Predicates
+
+      predicate(:hostname_or_ip?) do |value|
+        value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
+      end
+    end
+
     # @return [Dry::Validation::Schema]
     def self.build
       # rubocop:disable Lint/NestedMethodDefinition
@@ -43,15 +51,22 @@ module Pharos
         configure do
           def self.messages
             super.merge(
-              en: { errors: { network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts" } }
+              en: {
+                errors: {
+                  network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
+                  hostname_or_ip?: "is invalid"
+                }
+              }
             )
           end
         end
+
         required(:hosts).filled(min_size?: 1) do
           each do
             schema do
-              required(:address).filled
-              optional(:private_address).filled
+              predicates(CustomPredicates)
+              required(:address).filled(:str?, :hostname_or_ip?)
+              optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
               optional(:labels).filled
@@ -79,7 +94,7 @@ module Pharos
           optional(:endpoint).filled(:str?)
         end
         optional(:network).schema do
-          optional(:provider).filled(included_in?: %(weave calico))
+          optional(:provider).filled(included_in?: %(weave calico custom))
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
@@ -90,6 +105,11 @@ module Pharos
           end
           optional(:calico).schema do
             optional(:ipip_mode).filled(included_in?: %(Always, CrossSubnet, Never))
+            optional(:nat_outgoing).filled(:bool?)
+          end
+          optional(:custom).schema do
+            required(:manifest_path).filled(:str?)
+            optional(:options).filled(:hash?)
           end
         end
         optional(:etcd).schema do
@@ -137,6 +157,9 @@ module Pharos
         optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
+        end
+        optional(:control_plane).schema do
+          optional(:use_proxy).filled(:bool?)
         end
         optional(:telemetry).schema do
           optional(:enabled).filled(:bool?)

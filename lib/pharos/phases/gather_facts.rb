@@ -28,7 +28,7 @@ module Pharos
         @host.os_release = os_release
         @host.cpu_arch = cpu_arch
         @host.hostname = hostname
-        @host.checks = host_checks
+        @host.checks.replace(host_checks)
         @host.private_interface_address = private_interface_address(@host.private_interface) if @host.private_interface
         @host.resolvconf = read_resolvconf
         @host.routes = read_routes
@@ -129,11 +129,9 @@ module Pharos
       def read_routes
         routes = []
         ssh.exec!("sudo ip route").each_line do |line|
-          begin
-            routes << Pharos::Configuration::Host::Route.parse(line)
-          rescue RuntimeError => exc
-            logger.warn { exc }
-          end
+          routes << Pharos::Configuration::Host::Route.parse(line)
+        rescue RuntimeError => exc
+          logger.warn { exc }
         end
 
         routes

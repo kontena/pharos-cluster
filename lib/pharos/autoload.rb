@@ -18,6 +18,7 @@ module TTY
 end
 
 module Pharos
+  autoload :Retry, 'pharos/retry'
   autoload :Types, 'pharos/types'
   autoload :Config, 'pharos/config'
   autoload :ConfigSchema, 'pharos/config_schema'
@@ -31,7 +32,6 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
-  autoload :HostConfigManager, 'pharos/host_config_manager'
 
   module CommandOptions
     autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'

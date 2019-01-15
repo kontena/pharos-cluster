@@ -1,0 +1,67 @@
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  namespace: kontena-network-lb-system
+  name: speaker
+  labels:
+    app: kontena-network-lb
+    component: speaker
+spec:
+  selector:
+    matchLabels:
+      app: kontena-network-lb
+      component: speaker
+  template:
+    metadata:
+      labels:
+        app: kontena-network-lb
+        component: speaker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "7472"
+    spec:
+      serviceAccountName: speaker
+      terminationGracePeriodSeconds: 0
+      hostNetwork: true
+      <%- unless config.node_selector.empty? -%>
+      nodeSelector:
+      <%- node_selector.each do |key, value| -%>
+        <%= key %>: <%= value %>
+      <%- end -%>
+      <%- end -%>
+      <%- unless config.tolerations.empty? -%>
+      tolerations:
+      <%- config.tolerations.each do |t| -%>
+        -
+          <%- t.each do |k,v| -%>
+          <%= k %>: <%= v %>
+          <%- end -%>
+      <%- end -%>
+      <%- end -%>
+      containers:
+      - name: speaker
+        image: <%= image_repository %>/metallb-speaker:v<%= version %>
+        imagePullPolicy: IfNotPresent
+        args:
+        - --port=7472
+        - --config=config
+        env:
+        - name: METALLB_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        ports:
+        - name: monitoring
+          containerPort: 7472
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - all
+            add:
+            - net_raw

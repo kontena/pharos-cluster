@@ -49,7 +49,7 @@ module Pharos
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository,
+            IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
         else
@@ -61,7 +61,7 @@ module Pharos
         return true if custom_docker?
 
         if docker?
-          result = ssh.exec("dpkg-query --show docker.io")
+          result = ssh.exec("dpkg-query --show docker-ce")
           return true if result.error? # docker not installed
           return true if result.stdout.split("\t")[1].to_s.start_with?(DOCKER_VERSION)
         elsif crio?

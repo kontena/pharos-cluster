@@ -5,7 +5,7 @@ module Pharos
     class ConfigureCalico < Pharos::Phase
       title "Configure Calico network"
 
-      CALICO_VERSION = '3.1.3'
+      CALICO_VERSION = '3.2.4'
 
       register_component(
         name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
@@ -52,7 +52,8 @@ module Pharos
           ipip_mode: @config.network.calico&.ipip_mode || 'Always',
           ipip_enabled: @config.network.calico&.ipip_mode != 'Never',
           master_ip: @config.master_host.peer_address,
-          version: CALICO_VERSION
+          version: CALICO_VERSION,
+          nat_outgoing: @config.network.calico&.nat_outgoing
         )
       end
     end

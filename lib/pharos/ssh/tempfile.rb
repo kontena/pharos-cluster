@@ -29,6 +29,9 @@ module Pharos
         run(&block) if block_given?
       end
 
+      # @param content [String]
+      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError]
       def write(content)
         @client.exec!(
           "cat > #{escaped_path}",

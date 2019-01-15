@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-api
+  namespace: kontena-lens
+  labels:
+    app: helm-api
+spec:
+  selector:
+    matchLabels:
+      app: helm-api
+  template:
+    metadata:
+      labels:
+        app: helm-api
+    spec:
+      restartPolicy: Always
+      containers:
+        - image: <%= image_repository %>/helm-api:<%= version %>
+          name: api
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "0.1"
+            limits:
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9292
+              scheme: HTTP
+            timeoutSeconds: 5

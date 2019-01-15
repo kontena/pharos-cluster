@@ -56,14 +56,16 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
+          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository,
+            IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
+          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
@@ -76,7 +78,8 @@ module Pharos
           return true if ssh.exec("rpm -qi docker").error? # docker not installed
           return true if ssh.exec("rpm -qi docker-#{DOCKER_VERSION}").success?
         elsif crio?
-          return true if ssh.exec("rpm -qi cri-o").error? # cri-o not installed
+          bin_exist = ssh.file('/usr/local/bin/crio').exist?
+          return true if ssh.exec("rpm -qi cri-o").error? && !bin_exist # cri-o not installed
           return true if ssh.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
         end
 

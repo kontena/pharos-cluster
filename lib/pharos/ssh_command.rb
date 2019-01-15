@@ -41,16 +41,14 @@ module Pharos
     def run_parallel
       threads = filtered_hosts.map do |host|
         Thread.new do
-          begin
-            [host, host.ssh.exec(command_list)]
-          rescue StandardError => ex
-            [
-              host,
-              Pharos::SSH::RemoteCommand::Result.new.tap do |r|
-                r.output << ex.message
-              end
-            ]
-          end
+          [host, host.ssh.exec(command_list)]
+        rescue StandardError => ex
+          [
+            host,
+            Pharos::SSH::RemoteCommand::Result.new.tap do |r|
+              r.output << ex.message
+            end
+          ]
         end
       end
       results = threads.map(&:value)
