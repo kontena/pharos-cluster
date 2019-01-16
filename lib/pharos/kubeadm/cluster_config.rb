@@ -149,7 +149,7 @@ module Pharos
       def configure_oidc(config)
         config['apiServerExtraArgs'].merge!(
           'oidc-issuer-url' => @config.authentication.oidc.issuer_url,
-          'oidc-client-id' => @config.authentication.oidc.client_id,
+          'oidc-client-id' => @config.authentication.oidc.client_id
         )
         # These are optional in config, so set conditionally
         config['apiServerExtraArgs']['oidc-username-claim'] = @config.authentication.oidc.username_claim if @config.authentication.oidc.username_claim
