@@ -196,6 +196,13 @@ hooks_dir_path = "/usr/share/containers/oci/hooks.d"
       expect(subject.current_crio_cgroup_manager).to be_nil
     end
 
+    it 'returns nil if config exists but cgroup_manager is not set' do
+      expect(file).to receive(:exist?).and_return(true)
+      expect(file).to receive(:read).and_return(config.gsub('cgroup_manager', '#cgroup_manager'))
+
+      expect(subject.current_crio_cgroup_manager).to be_nil
+    end
+
     it 'returns configured cgroup managed if config exists' do
       expect(file).to receive(:exist?).and_return(true)
       expect(file).to receive(:read).and_return(config)
