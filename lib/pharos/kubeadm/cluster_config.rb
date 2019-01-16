@@ -5,6 +5,7 @@ module Pharos
     class ClusterConfig
       PHAROS_DIR = Pharos::Kubeadm::PHAROS_DIR
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
+      OIDC_CONFIG_DIR = '/etc/kubernetes/authentication'
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
       SECRETS_CFG_DIR = (PHAROS_DIR + '/secrets-encryption').freeze
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
@@ -71,6 +72,8 @@ module Pharos
 
         # Only if authentication token webhook option are given
         configure_token_webhook(config) if @config.authentication&.token_webhook
+        # Only if authentication oidc options are given
+        configure_oidc(config) if @config.authentication&.oidc
 
         # Configure audit related things if needed
         configure_audit_webhook(config) if @config.audit&.webhook&.server
@@ -142,6 +145,22 @@ module Pharos
         config['apiServerExtraVolumes'] += volume_mounts_for_audit_config
       end
 
+      # @param config [Hash]
+      def configure_oidc(config)
+        config['apiServerExtraArgs'].merge!(
+          'oidc-issuer-url' => @config.authentication.oidc.issuer_url,
+          'oidc-client-id' => @config.authentication.oidc.client_id,
+        )
+        # These are optional in config, so set conditionally
+        config['apiServerExtraArgs']['oidc-username-claim'] = @config.authentication.oidc.username_claim if @config.authentication.oidc.username_claim
+        config['apiServerExtraArgs']['oidc-username-prefix'] = @config.authentication.oidc.username_prefix if @config.authentication.oidc.username_prefix
+        config['apiServerExtraArgs']['oidc-groups-claim'] = @config.authentication.oidc.groups_claim if @config.authentication.oidc.groups_claim
+        config['apiServerExtraArgs']['oidc-groups-prefix'] = @config.authentication.oidc.groups_prefix if @config.authentication.oidc.groups_prefix
+        config['apiServerExtraArgs']['oidc-ca-file'] = OIDC_CONFIG_DIR + '/oidc_ca.crt' if @config.authentication.oidc.ca_file
+
+        config['apiServerExtraVolumes'] += volume_mounts_for_authentication_oidc if @config.authentication.oidc.ca_file
+      end
+
       # @return [Array<Hash>]
       def volume_mounts_for_audit_config
         volume_mounts = []
@@ -171,6 +190,17 @@ module Pharos
           'name' => 'k8s-auth-token-webhook',
           'hostPath' => AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR,
           'mountPath' => AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR
+        }
+        volume_mounts << volume_mount
+        volume_mounts
+      end
+
+      def volume_mounts_for_authentication_oidc
+        volume_mounts = []
+        volume_mount = {
+          'name' => 'k8s-auth-oidc',
+          'hostPath' => OIDC_CONFIG_DIR,
+          'mountPath' => OIDC_CONFIG_DIR
         }
         volume_mounts << volume_mount
         volume_mounts

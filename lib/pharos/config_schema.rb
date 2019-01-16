@@ -134,6 +134,15 @@ module Pharos
             end
             optional(:cache_ttl).filled
           end
+          optional(:oidc).schema do
+            required(:issuer_url).filled(:str?)
+            required(:client_id).filled(:str?)
+            optional(:username_claim).filled(:str?)
+            optional(:username_prefix).filled(:str?)
+            optional(:groups_claim).filled(:str?)
+            optional(:groups_prefix).filled(:str?)
+            optional(:ca_file).filled(:str?)
+          end
         end
         optional(:cloud).schema do
           required(:provider).filled(:str?)
