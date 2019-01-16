@@ -164,14 +164,20 @@ module Pharos
         end
       end
 
-      # @return [Boolean]
-      def fresh_crio_install?
-        @fresh_crio_install ||= !ssh.file('/etc/crio/crio.conf').exist?
+      # @return [String, NilClass]
+      def current_crio_cgroup_manager
+        file = ssh.file('/etc/crio/crio.conf')
+        return unless file.exist?
+
+        match = file.read.match(/^cgroup_manager = "(.+)"/)
+        return unless match
+
+        match[1]
       end
 
       # @return [Boolean]
       def can_pull?
-        return true if fresh_crio_install?
+        return true if current_crio_cgroup_manager.nil?
 
         ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
       end
