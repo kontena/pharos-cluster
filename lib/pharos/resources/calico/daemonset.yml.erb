@@ -93,6 +93,9 @@ spec:
             # Typha support: controlled by the ConfigMap.
             - name: FELIX_TYPHAK8SSERVICENAME
               value: "none"
+            # Enable prometheus endpoint on port 9091
+            - name: FELIX_PROMETHEUSMETRICSENABLED
+              value: "true"
             # Set based on the k8s node name.
             - name: NODENAME
               valueFrom:
