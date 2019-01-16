@@ -1,0 +1,84 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: drone-server
+  namespace: drone-ci
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: drone-server
+    spec:
+      containers:
+      - image: docker.io/drone/drone:<%= drone_version %>
+        name: drone-server
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+        - containerPort: 9000
+          protocol: TCP
+        volumeMounts:
+          - name: data
+            mountPath: /var/lib/drone
+        resources:
+          requests:
+            cpu: 40m
+            memory: 32Mi
+          limits:
+            cpu: 1000m
+            memory: 256Mi
+        env:
+        - name: DRONE_HOST
+          value: "https://<%= config.ingress.host %>"
+        - name: DRONE_DATABASE_DATASOURCE
+          value: "/var/lib/drone/drone.sqlite"
+        - name: DRONE_DATABASE_DRIVER
+          value: "sqlite3"
+        - name: DRONE_OPEN
+          value: "true"
+        - name: DRONE_ORGS
+          value: "<%= config.organizations.join(',') %>"
+        - name: DRONE_ADMIN
+          value: "<%= config.admins.join(',') %>"
+        - name: DRONE_DEBUG
+          value: "false"
+        <% if remote_config.github %>
+        - name: DRONE_GITHUB
+          value: "true"
+        - name: DRONE_GITHUB_CLIENT
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: server.remote.github.client
+        - name: DRONE_GITHUB_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: server.remote.github.secret
+        <% end %>
+        <% if remote_config.gitlab %>
+        - name: DRONE_GITLAB
+          value: "true"
+        - name: DRONE_GITLAB_URL
+          value: "<%= remote_config.gitlab.url %>"
+        - name: DRONE_GITLAB_CLIENT
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: server.remote.gitlab.client
+        - name: DRONE_GITLAB_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: server.remote.gitlab.secret
+        <% end %>
+        - name: DRONE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: server.secret
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: drone-server

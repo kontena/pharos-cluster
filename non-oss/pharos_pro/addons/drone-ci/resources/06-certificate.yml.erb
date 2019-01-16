@@ -1,0 +1,18 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: drone-server
+  namespace: drone-ci
+spec:
+  secretName: drone-server-tls
+  issuerRef:
+    name: letsencrypt
+  commonName: <%= config.ingress.host %>
+  dnsNames:
+  - <%= config.ingress.host %>
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - <%= config.ingress.host %>

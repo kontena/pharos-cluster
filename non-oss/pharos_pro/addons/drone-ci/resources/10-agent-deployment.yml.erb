@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: drone-agent
+  namespace: drone-ci
+  labels:
+    app: drone-agent
+spec:
+  selector:
+    matchLabels:
+      app: drone-agent
+  template:
+    metadata:
+      labels:
+        app: drone-agent
+    spec:
+      containers:
+      - name: drone-agent
+        image: "docker.io/drone/agent:<%= drone_version %>"
+        env:
+        - name: DRONE_SERVER
+          value: drone-server:9000
+        - name: DRONE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: server.secret
+        - name: DOCKER_HOST
+          value: tcp://localhost:2375
+        - name: DRONE_DEBUG
+          value: "true"
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 50m
+      - name: drone-dind
+        image: "docker.io/library/docker:18.06.1-ce-dind"
+        env:
+        - name: DOCKER_DRIVER
+          value: overlay2
+        - name: DRONE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: server.secret
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 100m
+        volumeMounts:
+          - name: docker-graph-storage
+            mountPath: /var/lib/docker
+      volumes:
+      - name: docker-graph-storage
+        emptyDir: {}

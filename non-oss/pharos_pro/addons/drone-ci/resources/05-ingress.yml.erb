@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: drone-server
+  namespace: drone-ci
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+    - hosts:
+      - <%= config.ingress.host %>
+      secretName: drone-server-tls
+  rules:
+  - host: <%= config.ingress.host %>
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: drone-server
+          servicePort: 80
