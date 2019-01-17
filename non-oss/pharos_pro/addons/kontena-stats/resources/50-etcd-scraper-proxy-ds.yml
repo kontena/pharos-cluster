@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: etcd-scraper-proxy
+  namespace: kube-system
+  labels:
+    component: etcd-scraper-proxy
+spec:
+  selector:
+    matchLabels:
+      component: etcd-scraper-proxy
+  template:
+    metadata:
+      labels:
+        component: etcd-scraper-proxy
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '80'
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+        - name: scraper-proxy-etcd
+          image: docker.io/jnummelin/scaper-proxy:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: NODE_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: BACKEND_ADDRESS
+              value: "https://$(NODE_ADDRESS):2379/metrics"
+          volumeMounts:
+            - mountPath: /etc/nginx/client.pem
+              name: etcd-client-cert
+            - mountPath: /etc/nginx/client.key
+              name: etcd-client-key
+          imagePullPolicy: Always
+      volumes:
+        - name: etcd-client-cert
+          hostPath:
+            # directory location on host
+            path: /etc/pharos/pki/etcd/client.pem
+            # this field is optional
+            type: File
+        - name: etcd-client-key
+          hostPath:
+            # directory location on host
+            path: /etc/pharos/pki/etcd/client-key.pem
+            # this field is optional
+            type: File

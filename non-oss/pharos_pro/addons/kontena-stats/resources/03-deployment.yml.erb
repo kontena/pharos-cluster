@@ -4,7 +4,7 @@ metadata:
   name: prometheus
   namespace: kontena-stats
 spec:
-  replicas: 1
+  replicas: <%= config.replicas %>
   selector:
     matchLabels:
       name: prometheus
@@ -12,14 +12,22 @@ spec:
     metadata:
       labels:
         name: prometheus
-      annotations:
-        seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
     spec:
+      <%- unless config.node_selector.empty? -%>
       nodeSelector:
-        node-role.kubernetes.io/master: ''
+      <%- node_selector.each do |key, value| -%>
+        <%= key %>: <%= value %>
+      <%- end -%>
+      <%- end -%>
+      <%- unless config.tolerations.empty? -%>
       tolerations:
-        - effect: NoSchedule
-          operator: Exists
+      <%- config.tolerations.each do |t| -%>
+        -
+          <%- t.each do |k,v| -%>
+          <%= k %>: <%= v %>
+          <%- end -%>
+      <%- end -%>
+      <%- end -%>
       serviceAccountName: prometheus
       containers:
         - name: prometheus

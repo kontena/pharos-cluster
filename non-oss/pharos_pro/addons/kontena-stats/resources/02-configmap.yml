@@ -91,21 +91,20 @@ data:
         regex: __meta_kubernetes_node_label_(.+)
 
 
-    # Scrap etcd metrics from controllers via listen-metrics-urls
+    # Scrap etcd metrics from masters via etcd-scraper-proxy
     - job_name: 'etcd'
       kubernetes_sd_configs:
-      - role: node
+      - role: pod
       scheme: http
       relabel_configs:
-        - source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_controller]
+        - source_labels: [__meta_kubernetes_namespace]
           action: keep
-          regex: 'true'
+          regex: 'kube-system'
+        - source_labels: [__meta_kubernetes_pod_label_component]
+          action: keep
+          regex: 'etcd-scraper-proxy'
         - action: labelmap
-          regex: __meta_kubernetes_node_label_(.+)
-        - source_labels: [__meta_kubernetes_node_address_InternalIP]
-          action: replace
-          target_label: __address__
-          replacement: '${1}:2381'
+          regex: __meta_kubernetes_pod_label_(.+)
 
     # Scrape config for service endpoints.
     #
