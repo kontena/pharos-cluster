@@ -26,7 +26,7 @@ module Pharos
     # @return [Array<Class<Pharos::Addon>>]
     def self.load_addons(*dirs)
       dirs.each do |dir|
-        Dir.glob(File.join(dir, '**', 'addon.rb')).each { |f| require(f) }
+        Dir.glob(File.join(dir, '*/**', 'addon.rb')).each { |f| require(f) }
       end
 
       addons
