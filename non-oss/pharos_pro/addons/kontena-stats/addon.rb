@@ -16,4 +16,10 @@ Pharos.addon('kontena-stats') do
     optional(:tolerations).each(:hash?)
     optional(:node_selector).filled(:hash?)
   }
+
+  install {
+    apply_resources(
+      prometheus_version: prometheus_version
+    )
+  }
 end
