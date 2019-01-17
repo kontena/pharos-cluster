@@ -33,8 +33,7 @@ describe Pharos::Host::UbuntuXenial do
 
     context 'cri-o' do
       it 'configures cri-o' do
-        #allow(ssh).to receive(:exec).and_return(double(:result, success?: true))
-        allow(subject).to receive(:fresh_crio_install?).and_return(true)
+        allow(subject).to receive(:can_pull?).and_return(true)
         allow(subject).to receive(:config).and_return(cluster_config)
         allow(subject).to receive(:insecure_registries)
         allow(subject).to receive(:docker?).and_return(false)

@@ -170,4 +170,44 @@ describe Pharos::Host::Configurer do
       end
     end
   end
+
+  describe '#current_crio_cgroup_manager' do
+    let(:ssh) { double(:ssh) }
+    let(:file) { double(:file) }
+    let(:config) {
+      %{
+# cgroup_manager is the cgroup management implementation to be used
+# for the runtime.
+cgroup_manager = "foobar"
+
+# hooks_dir_path is the oci hooks directory for automatically executed hooks
+hooks_dir_path = "/usr/share/containers/oci/hooks.d"
+      }
+    }
+
+    before(:each) do
+      allow(host).to receive(:ssh).and_return(ssh)
+      allow(ssh).to receive(:file).and_return(file)
+    end
+
+    it 'returns nil by default' do
+      expect(file).to receive(:exist?).and_return(false)
+
+      expect(subject.current_crio_cgroup_manager).to be_nil
+    end
+
+    it 'returns nil if config exists but cgroup_manager is not set' do
+      expect(file).to receive(:exist?).and_return(true)
+      expect(file).to receive(:read).and_return(config.gsub('cgroup_manager', '#cgroup_manager'))
+
+      expect(subject.current_crio_cgroup_manager).to be_nil
+    end
+
+    it 'returns configured cgroup managed if config exists' do
+      expect(file).to receive(:exist?).and_return(true)
+      expect(file).to receive(:read).and_return(config)
+
+      expect(subject.current_crio_cgroup_manager).to eq('foobar')
+    end
+  end
 end

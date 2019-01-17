@@ -33,9 +33,14 @@ module Pharos
       # @return [Array<String>]
       def kubelet_args
         kubelet_args = super
-        kubelet_args << '--cgroup-driver=systemd' if crio? && fresh_crio_install?
+        kubelet_args << "--cgroup-driver=#{crio_cgroup_manager}" if crio?
 
         kubelet_args
+      end
+
+      # @return [String]
+      def crio_cgroup_manager
+        current_crio_cgroup_manager || 'systemd'
       end
 
       def configure_container_runtime
@@ -52,13 +57,12 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
-          cgroup_manager = fresh_crio_install? ? 'systemd' : 'cgroupfs'
-          can_pull = can_pull? # needs to be checked before cconfigure
+          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
-            CRIO_CGROUP_MANAGER: cgroup_manager,
+            CRIO_CGROUP_MANAGER: crio_cgroup_manager,
             CPU_ARCH: host.cpu_arch.name,
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
