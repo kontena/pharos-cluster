@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: prometheus-rules
-  namespace: kontena-metrics
+  namespace: kontena-stats
 data:
   alertmanager.rules.yaml: |
     groups:
