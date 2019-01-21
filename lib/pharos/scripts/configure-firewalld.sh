@@ -5,16 +5,16 @@ set -e
 add_port() {
     local port=$1
     local zone=$2
-    if ! firewall-cmd --query-port $port --zone $zone ; then
-        firewall-cmd --permanent --add-port $port --zone $zone
+    if ! firewall-cmd --query-port "$port" --zone "$zone" ; then
+        firewall-cmd --permanent --add-port "$port" --zone "$zone"
     fi
 }
 
 add_source() {
     local source=$1
     local zone=$2
-    if ! firewall-cmd --query-source $source --zone $zone ; then
-        firewall-cmd --permanent --add-source $source --zone $zone
+    if ! firewall-cmd --query-source "$source" --zone "$zone" ; then
+        firewall-cmd --permanent --add-source "$source" --zone "$zone"
     fi
 }
 
@@ -33,7 +33,7 @@ if [ "$ROLE" = "master" ]; then
 fi
 
 for peer in $PEER_ADDRESSES ; do
-    add_source $peer "trusted"
+    add_source "$peer" "trusted"
 done
 
 firewall-cmd --reload
