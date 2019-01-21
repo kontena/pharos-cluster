@@ -10,6 +10,13 @@ Pharos.addon 'kontena-lens' do
 
   config_schema {
     optional(:name).filled(:str?)
+    optional(:ingress).schema do
+      optional(:host).filled(:str?)
+      optional(:tls).schema do
+        optional(:enabled).filled(:bool?)
+        optional(:email).filled(:str?)
+      end
+    end
     optional(:host).filled(:str?)
     optional(:tls).schema do
       optional(:enabled).filled(:bool?)
@@ -44,14 +51,15 @@ Pharos.addon 'kontena-lens' do
   install {
     patch_old_resource
 
-    host = config.host || "lens.#{gateway_node_ip}.nip.io"
+    host = config.ingress&.host || config.host || "lens.#{gateway_node_ip}.nip.io"
+    tls_email = config.ingress&.tls&.email || config.tls&.email
     name = config.name || 'pharos-cluster'
     helm_repositories = config.charts&.repositories || [stable_helm_repo]
     tiller_version = '2.12.2'
 
     apply_resources(
       host: host,
-      email: config.tls&.email,
+      email: tls_email,
       tls_enabled: tls_enabled?,
       user_management: user_management_enabled?,
       tiller_version: tiller_version,
@@ -71,6 +79,8 @@ Pharos.addon 'kontena-lens' do
       message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
       message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
     end
+    message << "\nWarning: `config.host` option is depraceted in favor of `config.ingress.host` option and will be removed in future." if config.host
+    message << "\nWarning: `config.tls` option is depraceted in favor of `config.ingress.tls` option and will be removed in future." if config.tls
     post_install_message(message)
   }
 
@@ -162,7 +172,7 @@ Pharos.addon 'kontena-lens' do
   end
 
   def tls_enabled?
-    config.tls&.enabled != false
+    config.ingress&.tls&.enabled != false && config.tls&.enabled != false
   end
 
   def user_management_enabled?
