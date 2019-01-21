@@ -46,7 +46,7 @@ Pharos.addon 'kontena-lens' do
 
     host = config.host || "lens.#{gateway_node_ip}.nip.io"
     name = config.name || 'pharos-cluster'
-    helm_repositories = config.charts&.repositories || [ stable_helm_repo ]
+    helm_repositories = config.charts&.repositories || [stable_helm_repo]
     tiller_version = '2.12.2'
 
     apply_resources(
@@ -55,7 +55,7 @@ Pharos.addon 'kontena-lens' do
       tls_enabled: tls_enabled?,
       user_management: user_management_enabled?,
       tiller_version: tiller_version,
-      helm_repositories: helm_repositories.map{|repo| "#{repo[:name]}=#{repo[:url]}"}.join('=')
+      helm_repositories: helm_repositories.map{ |repo| "#{repo[:name]}=#{repo[:url]}" }.join('=')
     )
     protocol = tls_enabled? ? 'https' : 'http'
     message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
@@ -80,6 +80,7 @@ Pharos.addon 'kontena-lens' do
     user_mgmt_deployment = kube_client.api('apps/v1').resource('deployments', namespace: 'kontena-lens').get('user-management')
     last_applied_string = user_mgmt_deployment.dig('metadata', 'annotations', last_config_annotation)
     return false unless last_applied_string
+
     last_applied = JSON.parse(last_applied_string)
     nested_replicas = last_applied.dig('spec', 'template', 'spec', 'replicas')
     if nested_replicas
