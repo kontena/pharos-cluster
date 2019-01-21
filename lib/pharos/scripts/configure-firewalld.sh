@@ -26,6 +26,7 @@ fi
 add_port "22/tcp" "public"
 add_port "80/tcp" "public"
 add_port "443/tcp" "public"
+add_port "30000-32767/tcp" "public"
 
 if [ "$ROLE" = "master" ]; then
     add_port "6334/tcp" "public"
