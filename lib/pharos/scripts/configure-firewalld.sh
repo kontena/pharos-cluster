@@ -33,7 +33,7 @@ if [ "$ROLE" = "master" ]; then
 fi
 
 for peer in $PEER_ADDRESSES ; do
-    add_source $peer "trusted"
+    add_source "$peer" "trusted"
 done
 
 firewall-cmd --reload
