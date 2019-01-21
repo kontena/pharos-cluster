@@ -13,7 +13,7 @@ add_port() {
 add_source() {
     local source=$1
     local zone=$2
-    if ! firewall-cmd --query-source $source --zone $zone ; then
+    if ! firewall-cmd --query-source "$source" --zone "$zone" ; then
         firewall-cmd --permanent --add-source $source --zone $zone
     fi
 }
