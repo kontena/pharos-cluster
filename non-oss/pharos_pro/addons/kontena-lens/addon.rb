@@ -80,7 +80,7 @@ Pharos.addon 'kontena-lens' do
       message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
     end
     message << "\nWarning: `config.host` option is deprecated in favor of `config.ingress.host` option and will be removed in future." if config.host
-    message << "\nWarning: `config.tls` option is depraceted in favor of `config.ingress.tls` option and will be removed in future." if config.tls
+    message << "\nWarning: `config.tls` option is deprecated in favor of `config.ingress.tls` option and will be removed in future." if config.tls
     post_install_message(message)
   }
 
