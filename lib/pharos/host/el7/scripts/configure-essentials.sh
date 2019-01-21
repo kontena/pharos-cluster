@@ -42,6 +42,10 @@ if ! rpm -qi yum-utils ; then
     yum install -y yum-utils
 fi
 
+if ! rpm -qi firewalld ; then
+    yum install -y firewalld
+fi
+
 env_file="/etc/environment"
 
 lineinfile "^LC_ALL=" "LC_ALL=en_US.utf-8" "$env_file"
@@ -55,9 +59,4 @@ fi
 if ! (getenforce | grep -q "Disabled"); then
     setenforce 0 || true
     lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"
-fi
-
-if systemctl is-active --quiet firewalld; then
-    systemctl stop firewalld
-    systemctl disable firewalld
 fi
