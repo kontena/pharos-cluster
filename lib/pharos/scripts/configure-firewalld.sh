@@ -5,7 +5,7 @@ set -e
 add_port() {
     local port=$1
     local zone=$2
-    if ! firewall-cmd --query-port $port --zone $zone ; then
+    if ! firewall-cmd --query-port "$port" --zone "$zone" ; then
         firewall-cmd --permanent --add-port $port --zone $zone
     fi
 }
