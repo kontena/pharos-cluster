@@ -4,7 +4,7 @@ set -ue
 
 # build binary
 apt-get update -y
-apt-get install -y -q squashfs-tools build-essential ruby bison ruby-dev git-core texinfo curl openssl
+apt-get install -y -q squashfs-tools build-essential ruby bison ruby-dev git-core texinfo curl openssl tzdata
 
 update-ca-certificates
 
