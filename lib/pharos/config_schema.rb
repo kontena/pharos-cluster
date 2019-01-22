@@ -109,6 +109,7 @@ module Pharos
                 end
               end
             end
+            optional(:trusted_subnets).each(:str?)
           end
           optional(:weave).schema do
             optional(:trusted_subnets).each(type?: String)
