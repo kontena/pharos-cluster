@@ -44,7 +44,7 @@ module Pharos
           [host.address, host.private_address, host.private_interface_address].compact.uniq
         }
         addresses += [@config.network.pod_network_cidr, @config.network.service_cidr]
-        addresses += @config.network.firewalld.trusted_subnets if @config.network.firewalld&.trusted_subnets
+        addresses + @config.network.firewalld.trusted_subnets if @config.network.firewalld&.trusted_subnets
       end
 
       # @param role [String]

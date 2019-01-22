@@ -54,7 +54,7 @@ module Pharos
           master_ip: @config.master_host.peer_address,
           version: CALICO_VERSION,
           nat_outgoing: @config.network.calico&.nat_outgoing,
-          firewalld_enabled: !!@config.network&.firewalld&.enabled,
+          firewalld_enabled: !!@config.network&.firewalld&.enabled
         )
       end
     end

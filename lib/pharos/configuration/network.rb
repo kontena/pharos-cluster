@@ -43,7 +43,6 @@ module Pharos
       end
 
       class Firewalld < Pharos::Configuration::Struct
-
         class Port < Pharos::Configuration::Struct
           attribute :port, Pharos::Types::String
           attribute :protocol, Pharos::Types::String
@@ -51,15 +50,16 @@ module Pharos
         end
 
         attribute :enabled, Pharos::Types::Bool.default(false)
-        attribute :open_ports, Pharos::Types::Array.of(Port).default([
-          Port.new(port: '22', protocol: 'tcp', roles: ['*']),
-          Port.new(port: '80', protocol: 'tcp', roles: ['worker']),
-          Port.new(port: '443', protocol: 'tcp', roles: ['worker']),
-          Port.new(port: '6443', protocol: 'tcp', roles: ['master']),
-          Port.new(port: '30000-32767', protocol: 'tcp', roles: ['*']),
-          Port.new(port: '30000-32767', protocol: 'udp', roles: ['*'])
-
-        ])
+        attribute :open_ports, Pharos::Types::Array.of(Port).default(
+          [
+            Port.new(port: '22', protocol: 'tcp', roles: ['*']),
+            Port.new(port: '80', protocol: 'tcp', roles: ['worker']),
+            Port.new(port: '443', protocol: 'tcp', roles: ['worker']),
+            Port.new(port: '6443', protocol: 'tcp', roles: ['master']),
+            Port.new(port: '30000-32767', protocol: 'tcp', roles: ['*']),
+            Port.new(port: '30000-32767', protocol: 'udp', roles: ['*'])
+          ]
+        )
         attribute :trusted_subnets, Pharos::Types::Array.of(Pharos::Types::String)
       end
 
