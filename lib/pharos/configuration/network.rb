@@ -42,10 +42,15 @@ module Pharos
         end
       end
 
+      class Firewalld < Pharos::Configuration::Struct
+        attribute :enabled, Pharos::Types::Bool.default(false)
+      end
+
       attribute :provider, Pharos::Types::String.default('weave')
       attribute :dns_replicas, Pharos::Types::Integer
       attribute :service_cidr, Pharos::Types::String.default('10.96.0.0/12')
       attribute :pod_network_cidr, Pharos::Types::String.default('10.32.0.0/12')
+      attribute :firewalld, Firewalld
       attribute :weave, Weave
       attribute :calico, Calico
       attribute :custom, Custom

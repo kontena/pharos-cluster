@@ -6,16 +6,30 @@ module Pharos
       title "Configure firewalld"
 
       def call
-        logger.info { 'Configuring firewalld rules ...' }
+        if @config.network&.firewalld&.enabled
+          configure_firewalld
+        else
+          disable_firewalld
+        end
+      end
 
+      def configure_firewalld
+        logger.info { 'Configuring firewalld packages ...' }
+        @host.configurer.configure_firewalld
+
+        logger.info { 'Configuring firewalld rules ...' }
         write_config('services/pharos-master.xml', pharos_master_service) if @host.master?
         write_config('services/pharos-worker.xml', pharos_worker_service)
         write_config('ipsets/pharos.xml', pharos_ipset)
-
         exec_script(
           'configure-firewalld.sh',
           ROLE: @host.role
         )
+      end
+
+      def disable_firewalld
+        logger.info { 'Firewalld not enabled, disabling ...' }
+        exec_script('disable-firewalld.sh')
       end
 
       # @param file [String]
@@ -26,9 +40,10 @@ module Pharos
 
       # @return [Array<String>]
       def trusted_addresses
-        @config.hosts.flat_map { |host|
+        addresses = @config.hosts.flat_map { |host|
           [host.address, host.private_address, host.private_interface_address].compact.uniq
         }
+        addresses += [@config.network.pod_network_cidr, @config.network.service_cidr]
       end
 
       # @return [String]

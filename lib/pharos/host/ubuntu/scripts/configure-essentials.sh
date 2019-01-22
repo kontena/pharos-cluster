@@ -11,12 +11,6 @@ if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
     apt-get install -y apt-transport-https software-properties-common
 fi
 
-if ! dpkg -l firewalld > /dev/null; then
-    export DEBIAN_FRONTEND=noninteractive
-    systemctl mask ebtables
-    apt-get install -y firewalld ipset
-fi
-
 autoupgrade_file="/etc/apt/apt.conf.d/20auto-upgrades"
 if [ ! -f $autoupgrade_file ]; then
     touch $autoupgrade_file

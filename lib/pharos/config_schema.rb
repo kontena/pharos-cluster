@@ -98,8 +98,9 @@ module Pharos
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
-          optional(:trusted_subnets).value(:none?)
-
+          optional(:firewalld).schema do
+            required(:enabled).filled(:bool?)
+          end
           optional(:weave).schema do
             optional(:trusted_subnets).each(type?: String)
           end
