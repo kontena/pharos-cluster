@@ -100,6 +100,15 @@ module Pharos
           optional(:pod_network_cidr).filled(:str?)
           optional(:firewalld).schema do
             required(:enabled).filled(:bool?)
+            optional(:open_ports).filled do
+              each do
+                schema do
+                  required(:port).filled(:str?)
+                  required(:protocol).filled(included_in?: %(tcp udp))
+                  required(:roles).filled(included_in?: %(master worker *))
+                end
+              end
+            end
           end
           optional(:weave).schema do
             optional(:trusted_subnets).each(type?: String)

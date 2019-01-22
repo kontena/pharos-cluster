@@ -46,16 +46,21 @@ module Pharos
         addresses += [@config.network.pod_network_cidr, @config.network.service_cidr]
       end
 
+      # @param role [String]
+      # @return [Array<Pharos::Configuration::Network::Firewall::Port]
+      def open_ports(role)
+        @config.network.firewalld.open_ports.select { |port|
+          port.roles.include?('*') || port.roles.include?(role)
+        }
+      end
+
       # @return [String]
       def pharos_master_service
         parse_resource_file(
           'firewalld/service.xml.erb',
           name: 'pharos-master',
           description: 'Kontena Pharos master host service',
-          ports: [
-            { port: 6443, protocol: 'tcp' },
-            { port: 22, protocol: 'tcp' }
-          ]
+          ports: open_ports('master').map(&:to_h)
         )
       end
 
@@ -65,10 +70,7 @@ module Pharos
           'firewalld/service.xml.erb',
           name: 'pharos-worker',
           description: 'Kontena Pharos worker host service',
-          ports: [
-            { port: 80, protocol: 'tcp' },
-            { port: 443, protocol: 'tcp' }
-          ]
+          ports: open_ports('worker').map(&:to_h)
         )
       end
 
