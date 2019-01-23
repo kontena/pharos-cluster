@@ -9,7 +9,7 @@ module Pharos
         logger.info { "Pulling control plane images ..." }
         cfg = kubeadm.generate_yaml_config
         ssh.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
-          @host.ssh.exec!("sudo kubeadm config images pull --config #{tmp_file}")
+          ssh.exec!("sudo kubeadm config images pull --config #{tmp_file}")
         end
       end
 
