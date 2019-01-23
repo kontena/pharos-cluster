@@ -55,7 +55,7 @@ Pharos.addon 'kontena-lens' do
       tls_enabled: tls_enabled?,
       user_management: user_management_enabled?,
       tiller_version: tiller_version,
-      helm_repositories: helm_repositories.map{ |repo| "#{repo[:name]}=#{repo[:url]}" }.join('=')
+      helm_repositories: helm_repositories.map{ |repo| "#{repo[:name]}=#{repo[:url]}" }.join(',')
     )
     protocol = tls_enabled? ? 'https' : 'http'
     message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
