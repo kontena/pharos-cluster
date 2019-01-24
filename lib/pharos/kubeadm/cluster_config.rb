@@ -10,7 +10,9 @@ module Pharos
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
       CLOUD_CFG_DIR = (PHAROS_DIR + '/cloud').freeze
       CLOUD_CFG_FILE = (CLOUD_CFG_DIR + '/cloud-config').freeze
-      DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction).freeze
+      DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction AlwaysPullImages DenyEscalatingExec SecurityContextDeny NamespaceLifecycle ServiceAccount).freeze
+      # CIS compliat TLS ciphers
+      TLS_CIPHERS = 'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256'.freeze
 
       # @param config [Pharos::Config] cluster config
       # @param host [Pharos::Configuration::Host] master host-specific config
@@ -32,9 +34,19 @@ module Pharos
             'podSubnet' => @config.network.pod_network_cidr
           },
           'controlPlaneEndpoint' => 'localhost:6443', # client-side loadbalanced kubelets
-          'apiServerExtraArgs' => {},
+          'apiServerExtraArgs' => {
+            #'anonymous-auth' => 'false', # CIS 1.1.1, cannot be set as it breaks apiserver probe :(
+            'profiling' => 'false', # CIS 1.1.8
+            'repair-malformed-updates' => 'false', # CIS 1.1.9
+            'tls-cipher-suites' => TLS_CIPHERS, # CIS 1.1.30
+          },
           'controllerManagerExtraArgs' => {
-            'horizontal-pod-autoscaler-use-rest-clients' => 'true'
+            'horizontal-pod-autoscaler-use-rest-clients' => 'true',
+            'profiling' => 'false', # CIS 1.2.1
+            'terminated-pod-gc-threshold' => '1000' # CIS 1.3.1
+          },
+          'schedulerExtraArgs' => {
+            'profiling' => 'false' # CIS 1.3.2
           }
         }
 
