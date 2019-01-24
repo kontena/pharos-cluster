@@ -140,7 +140,7 @@ module Pharos
       # @param cloud_provider [String, NilClass]
       # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
-        args = []
+        args = ['--protect-kernel-defaults'] # CIS 2.1.7
 
         if crio?
           args << '--container-runtime=remote'
