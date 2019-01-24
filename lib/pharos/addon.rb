@@ -135,6 +135,10 @@ module Pharos
         hooks[:modify_cluster_config] = block
       end
 
+      def validate_configuration_changes(&block)
+        hooks[:validate_configuration_changes] = block
+      end
+
       def validation
         Dry::Validation.Params(Schema) { yield }
       end

@@ -61,12 +61,14 @@ module Pharos
       apply_phase(Phases::AuthenticateSSH, config.hosts.reject(&:ssh?), parallel: false)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureClient, [config.master_host], master: config.master_host, parallel: false, optional: true)
+      apply_phase(Phases::LoadClusterConfiguration, [config.master_host], master: config.master_host) if config.master_host.master_sort_score.zero?
     end
 
     def validate
       apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
+      apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
       apply_phase(Phases::ValidateVersion, [config.master_host], master: config.master_host, parallel: false)
     end
@@ -97,7 +99,6 @@ module Pharos
       apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false)
 
       # master is now configured and can be used
-      apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
       # configure essential services
       apply_phase(Phases::ConfigurePSP, [master_hosts.first], master: master_hosts.first)
       apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)

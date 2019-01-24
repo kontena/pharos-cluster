@@ -78,6 +78,10 @@ module Pharos
           raise InvalidConfig, error_msg
         end
       end
+
+      with_disabled_addons do |addon_class, prev_config, config|
+        addon_class.hooks[:validate_configuration_changes]&.call(prev_config, config)
+      end
     end
 
     # @return [K8s::Client]
@@ -104,7 +108,7 @@ module Pharos
         Retry.perform(yield_object: addon, logger: logger, &block)
       end
 
-      with_disabled_addons do |addon_class|
+      with_disabled_addons do |addon_class, _, _|
         Retry.perform(yield_object: addon_class.new(nil, enabled: false, **options), logger: logger, &block)
       end
     end
@@ -124,7 +128,7 @@ module Pharos
         config = configs[addon_class.addon_name]
         prev_config && prev_config["enabled"] && (config.nil? || !config["enabled"])
       }.each do |addon_class|
-        yield(addon_class)
+        yield(addon_class, prev_config, config)
       end
     end
   end
