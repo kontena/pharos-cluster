@@ -9,7 +9,7 @@ spec:
       containers:
       - name: kube-bench
         image: aquasec/kube-bench:latest
-        command: ["kube-bench","node", "--version", "1.11"]
+        command: ["kube-bench","node", "--noremediations", "--version", "1.11"]
         volumeMounts:
         - name: var-lib-kubelet
           mountPath: /var/lib/kubelet

@@ -32,7 +32,7 @@ kubectl wait --for=condition=complete --timeout=60s job/kube-bench-${role}
 
 pod=$(kubectl get pods --selector=job-name=kube-bench-${role} --output=jsonpath={.items..metadata.name})
 logs $pod
-
+sleep 1
 # Grab the exit code of the pod. Not that it currently matters though as kube-bench seems to exit with 0 every time
 exit_code=$(kubectl get pod $pod --output=jsonpath={.status.containerStatuses[0].state.terminated.exitCode})
 echo "Pod exit code: $exit_code"
