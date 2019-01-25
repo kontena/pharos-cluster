@@ -5,7 +5,7 @@ module Pharos
     class ValidateConfigurationChanges < Pharos::Phase
       title "Validate configuration changes"
 
-      DEFAULT_PROC = proc { |key, old_val, new_val| raise Pharos::ConfigError, { key => "can't change #{key} from #{old_val} to #{new_val}"} }
+      DEFAULT_PROC = proc { |key, old_val, new_val| raise Pharos::ConfigError, key => "can't change #{key} from #{old_val} to #{new_val}" }
 
       def call
         changed?('network.provider', &DEFAULT_PROC)
@@ -16,6 +16,7 @@ module Pharos
         new_value = string_dig(config_key_path, @config)
         return false if old_value == new_value
         return true unless block_given?
+
         yield config_key_path, old_value, new_value
       end
 
@@ -29,4 +30,3 @@ module Pharos
     end
   end
 end
-
