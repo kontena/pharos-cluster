@@ -77,6 +77,7 @@ module Pharos
           error_msg = "#{addon_class.addon_name} => " + outcome.errors.map { |key, value| "#{key} #{value.join(',')}" }.flatten.join(', ')
           raise InvalidConfig, error_msg
         end
+        addon_class.hooks[:validate_configuration_changes]&.call(prev_config, config)
       end
 
       with_disabled_addons do |addon_class, prev_config, config|
