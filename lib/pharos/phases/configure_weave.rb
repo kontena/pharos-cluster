@@ -52,6 +52,7 @@ module Pharos
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,
           version: WEAVE_VERSION,
+          firewalld_enabled: !!@config.network&.firewalld&.enabled,
           flying_shuttle_enabled: @config.regions.size > 1,
           flying_shuttle_version: WEAVE_FLYING_SHUTTLE_VERSION
         )
