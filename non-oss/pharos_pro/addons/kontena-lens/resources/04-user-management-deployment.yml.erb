@@ -1,3 +1,4 @@
+<%- if user_management -%>
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,3 +40,4 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 180
             timeoutSeconds: 5
+<%- end -%>
