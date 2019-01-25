@@ -21,4 +21,79 @@ describe Pharos::AddonManager do
       described_class.load_addons(tmpdir_1)
     end
   end
+
+  describe '#validate' do
+    let(:hosts) { [{ address: '192.168.0.0', role: 'master' }] }
+    let(:enabled_addon) do
+      Class.new(Pharos::Addon) do
+        version '1'
+        self.addon_name = 'enabled_addon'
+
+        config_schema do
+          optional(:top).schema do
+            required(:nested).filled(:str?)
+          end
+        end
+      end
+    end
+
+    before do
+      allow(subject).to receive_message_chain('addon_classes.find').and_return(enabled_addon)
+    end
+
+    subject { described_class.new(config, {}) }
+
+    context 'success' do
+      let(:config) do
+        Pharos::Config.new(
+          hosts: hosts,
+          addons: {
+            'enabled_addon' => {
+              enabled: true,
+              top: {
+                nested: 'test'
+              }
+            }
+          }
+        )
+      end
+
+      it 'passes' do
+        expect(enabled_addon).to receive(:validate).and_call_original
+        expect(subject.validate).to be_truthy
+      end
+    end
+
+    context 'failure' do
+      let(:config) do
+        Pharos::Config.new(
+          hosts: hosts,
+          addons: {
+            'enabled_addon' => {
+              enabled: true,
+              top: {
+                nested: 123
+              }
+            }
+          }
+        )
+      end
+
+      it 'fails' do
+        expect{subject.validate}.to raise_error do |error|
+          expect(error).to be_a Pharos::AddonManager::InvalidConfig
+          message = YAML.safe_load(error.message)
+          expect(message).to match hash_including(
+            "enabled_addon" => {
+              "top" => {
+                "nested" => [
+                  "must be a string"
+                ]
+              }
+            }
+          )
+        end
+      end
+    end
+  end
 end
