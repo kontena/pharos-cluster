@@ -7,6 +7,7 @@ require_relative 'kube'
 module Pharos
   class AddonManager
     include Pharos::Logging
+    using Pharos::CoreExt::DeepTransformKeys
 
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
@@ -70,12 +71,12 @@ module Pharos
       self.class.addons
     end
 
+
     def validate
       with_enabled_addons do |addon_class, config|
         outcome = addon_class.validate(config)
         unless outcome.success?
-          error_msg = "#{addon_class.addon_name} => " + outcome.errors.map { |key, value| "#{key} #{value.join(',')}" }.flatten.join(', ')
-          raise InvalidConfig, error_msg
+          raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).gsub(/^---$/, '')
         end
       end
     end
