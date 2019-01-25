@@ -60,7 +60,7 @@ Pharos.addon 'kontena-lens' do
     protocol = tls_enabled? ? 'https' : 'http'
     message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
     message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
-    if configmap_exists?
+    if config_exists?
       update_lens_name(name) if configmap.data.clusterName != name
     else
       create_config(name, "https://#{master_host_ip}:6443")
@@ -184,7 +184,7 @@ Pharos.addon 'kontena-lens' do
     @admin_password ||= SecureRandom.hex(8)
   end
 
-  def configmap_exists?
+  def config_exists?
     !configmap.nil?
   end
 
