@@ -71,7 +71,6 @@ module Pharos
       self.class.addons
     end
 
-
     def validate
       with_enabled_addons do |addon_class, config|
         outcome = addon_class.validate(config)
