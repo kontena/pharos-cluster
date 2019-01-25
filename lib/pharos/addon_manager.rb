@@ -53,6 +53,7 @@ module Pharos
       @configs ||= @config.addons.sort_by { |name, _config|
         addon_class = addon_classes.find { |a| a.addon_name == name }
         raise UnknownAddon, "unknown addon: #{name}" if addon_class.nil?
+
         addon_class.priority
       }.to_h
     end
@@ -77,7 +78,10 @@ module Pharos
           error_msg = "#{addon_class.addon_name} => " + outcome.errors.map { |key, value| "#{key} #{value.join(',')}" }.flatten.join(', ')
           raise InvalidConfig, error_msg
         end
-        addon_class.hooks[:validate_configuration_changes]&.call(prev_config, config)
+        prev_config = prev_configs[addon_class.addon_name]
+        if prev_config
+          addon_class.hooks[:validate_configuration_changes]&.call(prev_config, config)
+        end
       end
 
       with_disabled_addons do |addon_class, prev_config, config|
