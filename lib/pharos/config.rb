@@ -150,8 +150,6 @@ module Pharos
           memo.send(:[], item.to_i)
         elsif memo.respond_to?(item.to_sym)
           memo.send(item.to_sym)
-        else
-          nil
         end
       end
     end

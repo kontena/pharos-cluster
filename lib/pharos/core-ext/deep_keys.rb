@@ -31,16 +31,12 @@ module Pharos
             when Array
               if part.match?(/^\d+$/)
                 memo[part.to_i]
-              else
-                nil
               end
             when Hash
               if memo.key?(part.to_s)
                 memo[part.to_s]
               elsif memo.key?(part.to_sym)
                 memo[part.to_sym]
-              else
-                nil
               end
             else
               memo
@@ -51,4 +47,3 @@ module Pharos
     end
   end
 end
-

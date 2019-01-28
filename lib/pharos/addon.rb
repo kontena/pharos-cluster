@@ -1,4 +1,4 @@
-# frozen_strbng_literal: true
+# frozen_string_literal: true
 
 require 'dry-validation'
 require 'fugit'
