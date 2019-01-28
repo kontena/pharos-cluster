@@ -9,6 +9,8 @@ module Pharos
 
       def call
         changed?('network.provider', &DEFAULT_PROC)
+        changed?('network.service_cidr', &DEFAULT_PROC)
+        changed?('network.pod_network_cidr', &DEFAULT_PROC)
       end
 
       def changed?(config_key_path)
