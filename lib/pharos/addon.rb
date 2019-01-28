@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_strbng_literal: true
 
 require 'dry-validation'
 require 'fugit'
@@ -23,6 +23,7 @@ module Pharos
 
   class Addon
     include Pharos::Logging
+    using Pharos::CoreExt::DeepKeys
 
     # return class for use as superclass in Dry::Validation.Params
     Schema = Dry::Validation.Schema(build: false) do
@@ -135,8 +136,28 @@ module Pharos
         hooks[:modify_cluster_config] = block
       end
 
-      def validate_configuration_changes(&block)
-        hooks[:validate_configuration_changes] = block
+      def validate_configuration(&block)
+        hooks[:validate_configuration] = block
+      end
+
+      def apply_validate_configuration(old_config, new_config)
+        hook = hooks[:validate_configuration]
+        return unless hook
+
+        case hook.arity
+        when 1
+          hook.call(new_config)
+        when 2
+          hook.call(old_config, new_config)
+        when 3
+          (new_config.to_h.deep_keys | old_config.to_h.deep_keys).each do |deep_key|
+            old_val = old_config.deep_get(deep_key)
+            new_val = new_config.deep_get(deep_key)
+            unless old_val == new_val
+              hook.call(deep_key, old_val, new_val)
+            end
+          end
+        end
       end
 
       def validation

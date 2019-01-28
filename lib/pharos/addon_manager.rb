@@ -79,13 +79,11 @@ module Pharos
           raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).gsub(/^---$/, '')
         end
         prev_config = prev_configs[addon_class.addon_name]
-        if prev_config
-          addon_class.hooks[:validate_configuration_changes]&.call(prev_config, config)
-        end
+        addon_class.apply_validate_configuration(prev_config, config)
       end
 
       with_disabled_addons do |addon_class, prev_config, config|
-        addon_class.hooks[:validate_configuration_changes]&.call(prev_config, config)
+        addon_class.apply_validate_configuration(prev_config, config)
       end
     end
 
@@ -128,11 +126,11 @@ module Pharos
     end
 
     def with_disabled_addons
-      addon_classes.select { |addon_class|
+      addon_classes.each do |addon_class|
         prev_config = prev_configs[addon_class.addon_name]
         config = configs[addon_class.addon_name]
-        prev_config && prev_config['enabled'] && (config.nil? || !config['enabled'])
-      }.each do |addon_class|
+        next unless prev_config && prev_config['enabled'] && (config.nil? || !config['enabled'])
+
         yield(addon_class, prev_config, config)
       end
     end
