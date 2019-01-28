@@ -4,7 +4,7 @@ require 'bcrypt'
 require 'json'
 
 Pharos.addon 'kontena-lens' do
-  version '1.4.0-beta.1'
+  version '1.4.0-rc.1'
   license 'Kontena License'
   priority 10
 
@@ -59,16 +59,14 @@ Pharos.addon 'kontena-lens' do
     )
     protocol = tls_enabled? ? 'https' : 'http'
     message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
-    if lens_configured?
+    message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
+    if config_exists?
       update_lens_name(name) if configmap.data.clusterName != name
     else
-      unless admin_exists?
-        create_admin_user(admin_password)
-      end
-      unless config_exists?
-        create_config(name, "https://#{master_host_ip}:6443")
-      end
-      message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
+      create_config(name, "https://#{master_host_ip}:6443")
+    end
+    if user_management_enabled? && !admin_exists?
+      create_admin_user(admin_password)
       message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
     end
     post_install_message(message)
@@ -118,14 +116,6 @@ Pharos.addon 'kontena-lens' do
       }
     )
     kube_client.api('beta.kontena.io/v1').resource('users').create_resource(admin)
-  end
-
-  # @return [Boolean]
-  def config_exists?
-    kube_client.api('v1').resource('configmaps').get('config', namespace: 'kontena-lens')
-    true
-  rescue K8s::Error::NotFound
-    false
   end
 
   # @param name [String]
@@ -194,7 +184,7 @@ Pharos.addon 'kontena-lens' do
     @admin_password ||= SecureRandom.hex(8)
   end
 
-  def lens_configured?
+  def config_exists?
     !configmap.nil?
   end
 

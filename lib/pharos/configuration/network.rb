@@ -42,10 +42,32 @@ module Pharos
         end
       end
 
+      class Firewalld < Pharos::Configuration::Struct
+        class Port < Pharos::Configuration::Struct
+          attribute :port, Pharos::Types::String
+          attribute :protocol, Pharos::Types::String
+          attribute :roles, Pharos::Types::Array.of(Pharos::Types::String)
+        end
+
+        attribute :enabled, Pharos::Types::Bool.default(false)
+        attribute :open_ports, Pharos::Types::Array.of(Port).default(
+          [
+            Port.new(port: '22', protocol: 'tcp', roles: ['*']),
+            Port.new(port: '80', protocol: 'tcp', roles: ['worker']),
+            Port.new(port: '443', protocol: 'tcp', roles: ['worker']),
+            Port.new(port: '6443', protocol: 'tcp', roles: ['master']),
+            Port.new(port: '30000-32767', protocol: 'tcp', roles: ['*']),
+            Port.new(port: '30000-32767', protocol: 'udp', roles: ['*'])
+          ]
+        )
+        attribute :trusted_subnets, Pharos::Types::Array.of(Pharos::Types::String)
+      end
+
       attribute :provider, Pharos::Types::String.default('weave')
       attribute :dns_replicas, Pharos::Types::Integer
       attribute :service_cidr, Pharos::Types::String.default('10.96.0.0/12')
       attribute :pod_network_cidr, Pharos::Types::String.default('10.32.0.0/12')
+      attribute :firewalld, Firewalld
       attribute :weave, Weave
       attribute :calico, Calico
       attribute :custom, Custom

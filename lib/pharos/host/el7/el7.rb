@@ -108,6 +108,10 @@ module Pharos
         )
       end
 
+      def configure_firewalld
+        exec_script("configure-firewalld.sh")
+      end
+
       def reset
         exec_script("reset.sh")
       end

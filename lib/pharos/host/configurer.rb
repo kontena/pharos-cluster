@@ -78,6 +78,10 @@ module Pharos
         abstract_method!
       end
 
+      def configure_firewalld
+        abstract_method!
+      end
+
       def reset
         abstract_method!
       end

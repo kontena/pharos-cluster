@@ -26,6 +26,7 @@ spec:
         # priority scheduling and that its resources are reserved
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
+        kontena.io/firewalld: "<%= firewalld_enabled %>"
     spec:
       hostNetwork: true
       tolerations:

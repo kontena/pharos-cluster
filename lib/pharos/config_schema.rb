@@ -98,8 +98,19 @@ module Pharos
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
-          optional(:trusted_subnets).value(:none?)
-
+          optional(:firewalld).schema do
+            required(:enabled).filled(:bool?)
+            optional(:open_ports).filled do
+              each do
+                schema do
+                  required(:port).filled(:str?)
+                  required(:protocol).filled(included_in?: %(tcp udp))
+                  required(:roles).filled(included_in?: %(master worker *))
+                end
+              end
+            end
+            optional(:trusted_subnets).each(:str?)
+          end
           optional(:weave).schema do
             optional(:trusted_subnets).each(type?: String)
           end

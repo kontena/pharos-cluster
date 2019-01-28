@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         name: weave-net
+      annotations:
+        kontena.io/firewalld: "<%= firewalld_enabled %>"
     spec:
       containers:
         - name: weave
