@@ -140,5 +140,20 @@ module Pharos
     def to_yaml
       YAML.dump(to_h.deep_stringify_keys)
     end
+
+    # @example deep get network provider
+    #   config.deep_get("network.provider")
+    # @param key [String] a dot separated key, such as network.provider
+    def deep_get(key)
+      key.to_s.split('.').inject(self) do |memo, item|
+        if memo.is_a?(Array) && item.match?(/^\d+$/)
+          memo.send(:[], item.to_i)
+        elsif memo.respond_to?(item.to_sym)
+          memo.send(item.to_sym)
+        else
+          nil
+        end
+      end
+    end
   end
 end

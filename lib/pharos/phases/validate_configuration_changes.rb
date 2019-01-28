@@ -13,17 +13,13 @@ module Pharos
         changed?('network.pod_network_cidr', &DEFAULT_PROC)
       end
 
-      def changed?(config_key_path)
-        old_value = string_dig(config_key_path, previous_config)
-        new_value = string_dig(config_key_path, @config)
+      def changed?(config_key)
+        old_value = previous_config&.deep_get(config_key)
+        new_value = @config&.deep_get(config_key)
         return false if old_value == new_value
         return true unless block_given?
 
-        yield config_key_path, old_value, new_value
-      end
-
-      def string_dig(string, source)
-        string.to_s.split('.').inject(source) { |memo, item| memo.send(item.to_sym) if memo.respond_to?(item.to_sym) }
+        yield config_key, old_value, new_value
       end
 
       def previous_config
