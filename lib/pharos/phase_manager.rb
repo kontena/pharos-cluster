@@ -70,7 +70,7 @@ module Pharos
 
         phase.call
 
-        logger.info { "[#{phase.host}] Completed phase in #{'%.2fs' % [Time.now - start]}" }
+        phase.logger.info 'Completed phase in %<duration>.2fs' % { duration: Time.now - start }
       end
     end
   end
