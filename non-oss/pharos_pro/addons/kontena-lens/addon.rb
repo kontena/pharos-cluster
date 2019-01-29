@@ -26,6 +26,7 @@ Pharos.addon 'kontena-lens' do
       optional(:skip_refresh).filled(:bool?)
     end
     optional(:charts).schema do
+      optional(:enabled).filled(:bool?)
       optional(:repositories).each do
         schema do
           required(:name).filled(:str?)
@@ -46,13 +47,14 @@ Pharos.addon 'kontena-lens' do
 
     host = config.host || "lens.#{gateway_node_ip}.nip.io"
     name = config.name || 'pharos-cluster'
+    charts_enabled = config.charts&.enabled != false
     helm_repositories = config.charts&.repositories || [stable_helm_repo]
     tiller_version = '2.12.2'
-
     apply_resources(
       host: host,
       email: config.tls&.email,
       tls_enabled: tls_enabled?,
+      charts_enabled: charts_enabled,
       user_management: user_management_enabled?,
       tiller_version: tiller_version,
       helm_repositories: helm_repositories.map{ |repo| "#{repo[:name]}=#{repo[:url]}" }.join(',')
