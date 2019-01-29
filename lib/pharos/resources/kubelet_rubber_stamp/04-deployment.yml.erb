@@ -23,9 +23,6 @@ spec:
       containers:
         - name: rubber-stamp
           image: <%= image_repository %>/kubelet-rubber-stamp:<%= version %>
-          # ports:
-          # - containerPort: 60000
-          #   name: metrics
           env:
             - name: WATCH_NAMESPACE
               value: ""
