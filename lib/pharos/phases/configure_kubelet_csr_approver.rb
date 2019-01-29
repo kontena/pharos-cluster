@@ -12,7 +12,11 @@ module Pharos
       )
 
       def call
-        apply_stack("kubelet_rubber_stamp")
+        apply_stack(
+          "kubelet_rubber_stamp",
+          version: RUBBER_STAMP_VERSION,
+          image_repository: @config.image_repository
+        )
       end
     end
   end

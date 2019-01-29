@@ -22,11 +22,10 @@ spec:
         node-role.kubernetes.io/master: ""
       containers:
         - name: rubber-stamp
-          image: docker.io/jnummelin/csr-approver:latest
+          image: <%= image_repository %>/kubelet-rubber-stamp:<%= version %>
           # ports:
           # - containerPort: 60000
           #   name: metrics
-          imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
               value: ""
