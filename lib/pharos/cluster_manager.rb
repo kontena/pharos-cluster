@@ -107,7 +107,6 @@ module Pharos
       apply_phase(Phases::ConfigureCustomNetwork, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'custom'
       apply_phase(Phases::ConfigureKubeletCsrApprover, [master_hosts.first])
 
-
       apply_phase(Phases::ConfigureBootstrap, [master_hosts.first]) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
