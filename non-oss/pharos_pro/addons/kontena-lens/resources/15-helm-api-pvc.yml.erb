@@ -1,4 +1,4 @@
-<% if config.persistence&.enabled %>
+<%- if charts_enabled && config.persistence&.enabled -%>
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -10,4 +10,4 @@ spec:
   resources:
     requests:
       storage: 1Gi
-<% end %>
+<%- end -%>

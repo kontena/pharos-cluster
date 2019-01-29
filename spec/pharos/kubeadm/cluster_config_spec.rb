@@ -245,6 +245,46 @@ describe Pharos::Kubeadm::ClusterConfig do
       end
     end
 
+    context 'with authentication oidc configuration' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        authentication: {
+          oidc: {
+            issuer_url: "https://accounts.google.com",
+            client_id: "foobar",
+            username_claim: 'email',
+            ca_file: '/path/to/oidc.ca.crt'
+          }
+        }
+      ) }
+
+      it 'comes with proper oidc flags for api-server' do
+        config = subject.generate
+        expect(config['apiServerExtraArgs']['oidc-issuer-url'])
+          .to eq('https://accounts.google.com')
+          expect(config['apiServerExtraArgs']['oidc-client-id'])
+          .to eq('foobar')
+          expect(config['apiServerExtraArgs']['oidc-username-claim'])
+          .to eq('email')
+      end
+
+      it 'comes with proper volume mounts' do
+        valid_volume_mounts =  [
+          {
+            'name' => 'k8s-auth-oidc',
+            'hostPath' => '/etc/kubernetes/authentication',
+            'mountPath' => '/etc/kubernetes/authentication'
+          }
+        ]
+        config = subject.generate
+        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0])
+        expect(config['apiServerExtraArgs']['oidc-ca-file'])
+          .to eq('/etc/kubernetes/authentication/oidc_ca.crt')
+      end
+    end
+
     context 'with admission plugins' do
       context 'with proper config' do
         let(:config) { Pharos::Config.new(
