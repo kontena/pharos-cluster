@@ -1,10 +1,11 @@
 PATH
   remote: .
   specs:
-    pharos-cluster (2.2.0.alpha.1)
+    pharos-cluster (2.2.0.rc.1)
       bcrypt
       bcrypt_pbkdf (>= 1.0, < 2.0)
       clamp (= 1.2.1)
+      dry-logic (= 0.4.2)
       dry-struct (= 0.5.0)
       dry-types (= 0.13.2)
       dry-validation (= 0.12.1)
@@ -17,6 +18,7 @@ PATH
       pastel
       rouge (~> 3.1)
       tty-prompt (~> 0.16)
+      yaml-safe_load_stream (~> 0.1)
 
 GEM
   remote: https://rubygems.org/
@@ -61,12 +63,12 @@ GEM
       dry-types (~> 0.13.1)
     ed25519 (1.2.4)
     equatable (0.5.0)
-    et-orbi (1.1.6)
+    et-orbi (1.1.7)
       tzinfo
     excon (0.62.0)
     fakefs (0.18.0)
-    fugit (1.1.6)
-      et-orbi (~> 1.1, >= 1.1.6)
+    fugit (1.1.8)
+      et-orbi (~> 1.1, >= 1.1.7)
       raabro (~> 1.1)
     hashdiff (0.3.8)
     ice_nine (0.11.2)
@@ -74,7 +76,7 @@ GEM
     jsonpath (0.9.9)
       multi_json
       to_regexp (~> 0.2.1)
-    k8s-client (0.8.1)
+    k8s-client (0.8.2)
       dry-struct (~> 0.5.0)
       excon (~> 0.62.0)
       hashdiff (~> 0.3.7)
@@ -121,7 +123,7 @@ GEM
       ruby-progressbar (~> 1.7)
       unicode-display_width (~> 1.0, >= 1.0.1)
     ruby-progressbar (1.10.0)
-    timers (4.2.0)
+    timers (4.3.0)
     to_regexp (0.2.1)
     tty-color (0.4.3)
     tty-cursor (0.6.0)
