@@ -13,6 +13,7 @@ spec:
       labels:
         app: cephfs-provisioner
     spec:
+      priorityClassName: system-cluster-critical
       containers:
       - name: cephfs-provisioner
         image: "<%= image_repository %>/cephfs-provisioner:v2.1.0-k8s1.11"
