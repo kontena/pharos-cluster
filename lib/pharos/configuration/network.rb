@@ -7,6 +7,7 @@ module Pharos
     class Network < Pharos::Configuration::Struct
       class Weave < Pharos::Configuration::Struct
         attribute :trusted_subnets, Pharos::Types::Array.of(Pharos::Types::String)
+        attribute :no_masq_local, Pharos::Types::Strict::Bool.default(false)
 
         # @param routes [Array<Pharos::Configuration::Host::Routes>]
         # @return [Array<Pharos::Configuration::Host::Routes>]
