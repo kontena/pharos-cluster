@@ -11,7 +11,6 @@ spec:
         app: cert-manager
     spec:
       serviceAccountName: cert-manager
-      priorityClassName: pharos-cluster-critical
       containers:
         - name: cert-manager
           image: "<%= image_repository %>/cert-manager-controller:v<%= version %>"
