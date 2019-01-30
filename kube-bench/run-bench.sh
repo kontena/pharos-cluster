@@ -8,9 +8,9 @@ YELLOW='\033[0;33m'
 RESET='\033[0m'
 
 function logs() {
-    kubectl logs $1 | sed ''/PASS/s//$(printf "${GREEN}PASS${RESET}")/'' | sed ''/WARN/s//$(printf "${YELLOW}WARN${RESET}")/'' | sed ''/FAIL/s//$(printf "${RED}FAIL${RESET}")/''
+    # shellcheck disable=SC2059
+    kubectl logs "$1" | sed ''/PASS/s//"$(printf "${GREEN}PASS${RESET}")"/'' | sed ''/WARN/s//"$(printf "${YELLOW}WARN${RESET}")"/'' | sed ''/FAIL/s//"$(printf "${RED}FAIL${RESET}")"/''
 }
-
 
 if [ -z "$1" ]
   then
@@ -26,17 +26,17 @@ fi
 role=$1
 
 # Create job for defined role
-kubectl create -f job-${role}.yml
+kubectl create -f job-"${role}".yml
 echo "Waiting for benchmarking pod(s) to complete..."
-kubectl wait --for=condition=complete --timeout=60s job/kube-bench-${role}
+kubectl wait --for=condition=complete --timeout=60s job/kube-bench-"${role}"
 
-pod=$(kubectl get pods --selector=job-name=kube-bench-${role} --output=jsonpath={.items..metadata.name})
-logs $pod
+pod=$(kubectl get pods --selector=job-name=kube-bench-"${role}" --output=jsonpath={.items..metadata.name})
+logs "$pod"
 sleep 1
 # Grab the exit code of the pod. Not that it currently matters though as kube-bench seems to exit with 0 every time
-exit_code=$(kubectl get pod $pod --output=jsonpath={.status.containerStatuses[0].state.terminated.exitCode})
+exit_code=$(kubectl get pod "$pod" --output=jsonpath="{.status.containerStatuses[0].state.terminated.exitCode}")
 echo "Pod exit code: $exit_code"
-kubectl delete -f job-${role}.yml
+kubectl delete -f job-"${role}".yml
 
-exit $exit_code
+exit "$exit_code"
 
