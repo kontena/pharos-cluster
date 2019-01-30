@@ -24,7 +24,6 @@ spec:
       <%- end -%>
       <%- end -%>
       serviceAccountName: nginx-ingress-serviceaccount
-      priorityClassName: system-cluster-critical
       hostNetwork: true
       <%- unless config.tolerations.empty? -%>
       tolerations:
