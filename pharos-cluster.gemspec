@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "dry-types", "0.13.2"
   spec.add_runtime_dependency "dry-validation", "0.12.1"
   spec.add_runtime_dependency "dry-struct", "0.5.0"
+  spec.add_runtime_dependency "dry-logic", "0.4.2"
   spec.add_runtime_dependency "fugit", "~> 1.1.2"
   spec.add_runtime_dependency "rouge", "~> 3.1"
   spec.add_runtime_dependency "tty-prompt", "~> 0.16"
