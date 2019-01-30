@@ -101,7 +101,7 @@ module Pharos
       # master is now configured and can be used
       apply_phase(Phases::LoadClusterConfiguration, master_only)
       # configure essential services
-
+      apply_phase(Phases::ConfigurePriorityClasses, master_only)
       apply_phase(Phases::ConfigurePSP, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
       apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
