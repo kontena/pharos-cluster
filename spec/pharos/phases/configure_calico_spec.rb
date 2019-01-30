@@ -11,7 +11,7 @@ describe Pharos::Phases::ConfigureCalico do
       kubelet: {read_only_port: false}
   ) }
 
-  subject { described_class.new(host, config: config, master: host) }
+  subject { described_class.new(host, config: config) }
 
   describe '#get_ippool' do
     let(:kube_client) { instance_double(K8s::Client) }
