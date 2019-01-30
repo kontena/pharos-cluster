@@ -113,6 +113,7 @@ module Pharos
           end
           optional(:weave).schema do
             optional(:trusted_subnets).each(type?: String)
+            optional(:no_masq_local).filled(:bool?)
           end
           optional(:calico).schema do
             optional(:ipip_mode).filled(included_in?: %(Always, CrossSubnet, Never))

@@ -20,7 +20,8 @@ module Pharos
             'webhook' => {
               'enabled' => true
             }
-          }
+          },
+          'serverTLSBootstrap' => true
         }
         if @config.kubelet&.read_only_port
           config['readOnlyPort'] = '10255'

@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubelet-rubber-stamp
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: kubelet-rubber-stamp
+  template:
+    metadata:
+      labels:
+        name: kubelet-rubber-stamp
+    spec:
+      serviceAccountName: kubelet-rubber-stamp
+      priorityClassName: system-cluster-critical
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+        - name: rubber-stamp
+          image: <%= image_repository %>/kubelet-rubber-stamp:<%= version %>
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "kubelet-rubber-stamp"
