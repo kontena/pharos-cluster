@@ -54,7 +54,8 @@ module Pharos
           version: WEAVE_VERSION,
           firewalld_enabled: !!@config.network&.firewalld&.enabled,
           flying_shuttle_enabled: @config.regions.size > 1,
-          flying_shuttle_version: WEAVE_FLYING_SHUTTLE_VERSION
+          flying_shuttle_version: WEAVE_FLYING_SHUTTLE_VERSION,
+          no_masq_local: @config.network.weave&.no_masq_local || false
         )
       end
 
