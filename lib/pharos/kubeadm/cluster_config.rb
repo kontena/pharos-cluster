@@ -14,7 +14,7 @@ module Pharos
       CLOUD_CFG_FILE = (CLOUD_CFG_DIR + '/cloud-config').freeze
       DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction AlwaysPullImages DenyEscalatingExec NamespaceLifecycle ServiceAccount).freeze
       # CIS compliat TLS ciphers
-      TLS_CIPHERS = 'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256'.freeze
+      TLS_CIPHERS = 'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256'
 
       # @param config [Pharos::Config] cluster config
       # @param host [Pharos::Configuration::Host] master host-specific config
@@ -37,7 +37,6 @@ module Pharos
           },
           'controlPlaneEndpoint' => 'localhost:6443', # client-side loadbalanced kubelets
           'apiServerExtraArgs' => {
-            #'anonymous-auth' => 'false', # CIS 1.1.1, cannot be set as it breaks apiserver probe :(
             'profiling' => 'false', # CIS 1.1.8
             'kubelet-certificate-authority' => CA_FILE,
             'repair-malformed-updates' => 'false', # CIS 1.1.9
