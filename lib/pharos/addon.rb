@@ -140,6 +140,9 @@ module Pharos
         hooks[:validate_configuration] = block
       end
 
+      # @param old_config [Hash,Pharos::Configuration]
+      # @param new_config [Hash,Pharos::Configuration]
+      # @return [nil]
       def apply_validate_configuration(old_config, new_config)
         hook = hooks[:validate_configuration]
         return unless hook
@@ -161,6 +164,7 @@ module Pharos
             end
           end
         end
+        nil
       end
 
       def validation
