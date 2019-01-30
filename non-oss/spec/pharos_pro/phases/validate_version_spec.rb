@@ -28,6 +28,11 @@ describe Pharos::Phases::ValidateVersion do
       expect{subject.validate_version('2.0.0')}.not_to raise_error
     end
 
+    it 'allows upgrade from oss to non-oss' do
+      stub_const('Pharos::VERSION', '2.0.1-alpha.1')
+      expect{subject.validate_version('2.0.1-alpha.1+oss')}.not_to raise_error
+    end
+
     it 'does not allow downgrade on development releases' do
       stub_const('Pharos::VERSION', '2.0.0-alpha.1')
       expect{subject.validate_version('2.0.0-alpha.2')}.to raise_error(RuntimeError, "Downgrade not supported")

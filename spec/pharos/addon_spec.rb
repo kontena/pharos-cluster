@@ -2,7 +2,10 @@ require "pharos/addon"
 
 describe Pharos::Addon do
   let(:test_addon) do
-    Pharos.addon 'test-addon' do
+    Class.new(Pharos::Addon) do
+      self.addon_name = 'test-addon'
+      self.addon_location = File.expand_path(File.join(__dir__, '..', 'fixtures', 'stacks', 'multidoc'))
+
       version "0.2.2"
       license "MIT"
 
@@ -111,7 +114,9 @@ describe Pharos::Addon do
 
   describe ".install" do
     subject do
-      Pharos.addon 'test-addon-install' do
+      Class.new(Pharos::Addon) do
+        self.addon_name = 'test-addon-install'
+
         version "0.2.2"
         license "MIT"
 
@@ -143,6 +148,12 @@ describe Pharos::Addon do
     it "returns kube stack" do
       stack = subject.kube_stack
       expect(stack).to be_instance_of(Pharos::Kube::Stack)
+    end
+
+    it 'loads multiple documents from a single yaml' do
+      stack = subject.kube_stack
+      expect(stack.resources.first.data.doc).to eq 1
+      expect(stack.resources.last.data.doc).to eq 2
     end
   end
 

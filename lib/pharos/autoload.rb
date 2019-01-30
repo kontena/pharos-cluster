@@ -33,6 +33,11 @@ module Pharos
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
 
+  module Kube
+    autoload :Stack, 'pharos/kube/stack'
+    autoload :Config, 'pharos/kube/config'
+  end
+
   module CommandOptions
     autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'
     autoload :LoadConfig, 'pharos/command_options/load_config'

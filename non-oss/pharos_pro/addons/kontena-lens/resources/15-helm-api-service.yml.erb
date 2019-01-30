@@ -1,3 +1,4 @@
+<%- if charts_enabled -%>
 apiVersion: v1
 kind: Service
 metadata:
@@ -11,3 +12,4 @@ spec:
   selector:
     app: helm-api
   type: ClusterIP
+<%- end -%>
