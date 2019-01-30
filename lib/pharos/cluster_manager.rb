@@ -73,10 +73,11 @@ module Pharos
 
     def apply_phases
       master_hosts = config.master_hosts
+      master_only = [config.master_host]
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], parallel: false, optional: true)
+      apply_phase(Phases::ConfigureClient, master_only, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints
         etcd_hosts = config.etcd_hosts
@@ -95,25 +96,25 @@ module Pharos
 
       apply_phase(Phases::PullMasterImages, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], parallel: false)
+      apply_phase(Phases::ConfigureClient, master_only, parallel: false)
 
       # master is now configured and can be used
-      apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first])
+      apply_phase(Phases::LoadClusterConfiguration, master_only)
       # configure essential services
-      apply_phase(Phases::ConfigurePSP, [master_hosts.first])
-      apply_phase(Phases::ConfigureDNS, [master_hosts.first])
-      apply_phase(Phases::ConfigureWeave, [master_hosts.first]) if config.network.provider == 'weave'
-      apply_phase(Phases::ConfigureCalico, [master_hosts.first]) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureCustomNetwork, [master_hosts.first]) if config.network.provider == 'custom'
+      apply_phase(Phases::ConfigurePSP, master_only)
+      apply_phase(Phases::ConfigureDNS, master_only)
+      apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
+      apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'
+      apply_phase(Phases::ConfigureCustomNetwork, master_only) if config.network.provider == 'custom'
 
-      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first]) # using `kubeadm token`, not the kube API
+      apply_phase(Phases::ConfigureBootstrap, master_only) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
       apply_phase(Phases::LabelNode, config.hosts, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
 
       # configure services that need workers
-      apply_phase(Phases::ConfigureMetrics, [master_hosts.first])
-      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first])
+      apply_phase(Phases::ConfigureMetrics, master_only)
+      apply_phase(Phases::ConfigureTelemetry, master_only)
     end
 
     # @param hosts [Array<Pharos::Configuration::Host>]
