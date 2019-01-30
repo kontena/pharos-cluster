@@ -7,6 +7,7 @@ require_relative 'kube'
 module Pharos
   class AddonManager
     include Pharos::Logging
+    using Pharos::CoreExt::DeepTransformKeys
 
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
@@ -54,7 +55,7 @@ module Pharos
         addon_class = addon_classes.find { |a| a.addon_name == name }
         raise UnknownAddon, "unknown addon: #{name}" if addon_class.nil?
         addon_class.priority
-      }.to_h
+      }.to_h.deep_stringify_keys
     end
 
     def prev_configs
@@ -74,8 +75,7 @@ module Pharos
       with_enabled_addons do |addon_class, config|
         outcome = addon_class.validate(config)
         unless outcome.success?
-          error_msg = "#{addon_class.addon_name} => " + outcome.errors.map { |key, value| "#{key} #{value.join(',')}" }.flatten.join(', ')
-          raise InvalidConfig, error_msg
+          raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).gsub(/^---$/, '')
         end
       end
     end
@@ -112,7 +112,7 @@ module Pharos
     def with_enabled_addons
       configs.each do |name, config|
         klass = addon_classes.find { |a| a.addon_name == name }
-        if klass && config["enabled"]
+        if klass && config['enabled']
           yield(klass, config)
         end
       end
@@ -122,7 +122,7 @@ module Pharos
       addon_classes.select { |addon_class|
         prev_config = prev_configs[addon_class.addon_name]
         config = configs[addon_class.addon_name]
-        prev_config && prev_config["enabled"] && (config.nil? || !config["enabled"])
+        prev_config && prev_config['enabled'] && (config.nil? || !config['enabled'])
       }.each do |addon_class|
         yield(addon_class)
       end

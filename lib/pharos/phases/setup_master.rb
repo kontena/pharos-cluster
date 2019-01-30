@@ -14,6 +14,7 @@ module Pharos
         push_audit_policy if @config.audit
         push_audit_config if @config.audit&.webhook&.server
         push_authentication_token_webhook_config if @config.authentication&.token_webhook
+        push_oidc_certs if @config.authentication&.oidc&.ca_file
         push_cloud_config if @config.cloud&.config
       end
 
@@ -66,6 +67,12 @@ module Pharos
         logger.info { "Pushing cloud-config to master ..." }
         ssh.exec!('sudo mkdir -p /etc/pharos/cloud')
         ssh.file('/etc/pharos/cloud/cloud-config').write(File.open(File.expand_path(@config.cloud.config)))
+      end
+
+      def push_oidc_certs
+        logger.info { "Pushing OIDC certificates to master ..." }
+        ssh.exec!('sudo mkdir -p /etc/kubernetes/authentication')
+        ssh.file('/etc/kubernetes/authentication/oidc_ca.crt').write(File.open(File.expand_path(@config.authentication.oidc.ca_file)))
       end
     end
   end
