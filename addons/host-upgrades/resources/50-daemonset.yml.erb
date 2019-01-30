@@ -14,6 +14,7 @@ spec:
         app: host-upgrades
     spec:
       serviceAccountName: host-upgrades
+      priorityClassName: pharos-cluster-critical
       containers:
         - name: host-upgrades
           image: "<%= image_repository %>/pharos-host-upgrades:<%= version %>"
