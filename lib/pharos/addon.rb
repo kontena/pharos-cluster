@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'hashdiff'
 require 'dry-validation'
 require 'fugit'
 
@@ -23,7 +24,6 @@ module Pharos
 
   class Addon
     include Pharos::Logging
-    using Pharos::CoreExt::DeepKeys
 
     # return class for use as superclass in Dry::Validation.Params
     Schema = Dry::Validation.Schema(build: false) do
@@ -150,11 +150,14 @@ module Pharos
         when 2
           hook.call(old_config, new_config)
         when 3
-          (new_config.to_h.deep_keys | old_config.to_h.deep_keys).each do |deep_key|
-            old_val = old_config.deep_get(deep_key)
-            new_val = new_config.deep_get(deep_key)
-            unless old_val == new_val
-              hook.call(deep_key, old_val, new_val)
+          HashDiff.diff(old_config, new_config).each do |changeset|
+            case changeset.first
+            when '-'
+              hook.call(changeset[1], changeset[2], nil)
+            when '+'
+              hook.call(changeset[1], nil, changeset[2])
+            when '~'
+              hook.call(changeset[1], changeset[2], changeset[3])
             end
           end
         end
