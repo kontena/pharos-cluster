@@ -21,7 +21,7 @@ spec:
         prometheus.io/port: "7472"
     spec:
       serviceAccountName: speaker
-      priorityClassName: system-node-critical
+      priorityClassName: pharos-cluster-critical
       terminationGracePeriodSeconds: 0
       hostNetwork: true
       <%- unless config.node_selector.empty? -%>

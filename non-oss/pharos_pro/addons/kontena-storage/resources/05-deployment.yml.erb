@@ -15,7 +15,6 @@ spec:
         app: kontena-storage-operator
     spec:
       serviceAccountName: kontena-storage-system
-      priorityClassName: system-cluster-critical
       containers:
       - name: rook-ceph-operator
         image: <%= image_repository %>/rook-ceph:v<%= rook_version %>
