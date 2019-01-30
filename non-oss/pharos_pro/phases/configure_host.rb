@@ -41,12 +41,8 @@ module Pharos
         master_ssh.exec!("kubectl drain --force --grace-period=0 --ignore-daemonsets --delete-local-data #{@host.hostname}")
       end
 
-      def master_ssh
-        @master.ssh
-      end
-
       def master_healthy?
-        @master.master_sort_score.zero?
+        @config.master_host.master_sort_score.zero?
       end
     end
   end
