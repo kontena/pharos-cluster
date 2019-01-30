@@ -4,6 +4,7 @@ module Pharos
   module Kubeadm
     class ClusterConfig
       PHAROS_DIR = Pharos::Kubeadm::PHAROS_DIR
+      CA_FILE = '/etc/kubernetes/pki/ca.crt'
       AUTHENTICATION_TOKEN_WEBHOOK_CONFIG_DIR = '/etc/kubernetes/authentication'
       OIDC_CONFIG_DIR = '/etc/kubernetes/authentication'
       AUDIT_CFG_DIR = (PHAROS_DIR + '/audit').freeze
@@ -33,7 +34,9 @@ module Pharos
             'podSubnet' => @config.network.pod_network_cidr
           },
           'controlPlaneEndpoint' => 'localhost:6443', # client-side loadbalanced kubelets
-          'apiServerExtraArgs' => {},
+          'apiServerExtraArgs' => {
+            'kubelet-certificate-authority' => CA_FILE
+          },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true'
           }

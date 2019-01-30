@@ -101,12 +101,13 @@ module Pharos
       # master is now configured and can be used
       apply_phase(Phases::LoadClusterConfiguration, master_only)
       # configure essential services
+
       apply_phase(Phases::ConfigurePSP, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
       apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'
       apply_phase(Phases::ConfigureCustomNetwork, master_only) if config.network.provider == 'custom'
-
+      apply_phase(Phases::ConfigureKubeletCsrApprover, master_only)
       apply_phase(Phases::ConfigureBootstrap, master_only) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
