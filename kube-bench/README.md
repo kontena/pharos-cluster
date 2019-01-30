@@ -17,3 +17,9 @@ For a master node run:
 ```sh
 ./run-bench.sh master
 ```
+
+## Benchmarking results
+
+There's a separate document to track and give explanations on all of the tests flagged as failed. Most of them are actually false positives as the CIS specification is made to check only flags of running components and on recent Kubernetes many of those are actually configured through config files.
+
+See [results](results.md) for more details.

@@ -12,7 +12,7 @@ module Pharos
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
       CLOUD_CFG_DIR = (PHAROS_DIR + '/cloud').freeze
       CLOUD_CFG_FILE = (CLOUD_CFG_DIR + '/cloud-config').freeze
-      DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction AlwaysPullImages DenyEscalatingExec SecurityContextDeny NamespaceLifecycle ServiceAccount).freeze
+      DEFAULT_ADMISSION_PLUGINS = %w(PodSecurityPolicy NodeRestriction AlwaysPullImages DenyEscalatingExec NamespaceLifecycle ServiceAccount).freeze
       # CIS compliat TLS ciphers
       TLS_CIPHERS = 'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256'.freeze
 
@@ -42,6 +42,7 @@ module Pharos
             'kubelet-certificate-authority' => CA_FILE,
             'repair-malformed-updates' => 'false', # CIS 1.1.9
             'tls-cipher-suites' => TLS_CIPHERS, # CIS 1.1.30
+            'service-account-lookup' => 'true', # CIS 1.1.23
           },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true',
