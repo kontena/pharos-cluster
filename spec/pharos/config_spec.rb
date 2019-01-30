@@ -8,6 +8,21 @@ describe Pharos::Config do
 
   subject { described_class.load(data) }
 
+  describe '#dig' do
+    let(:data) do
+      {
+        'hosts' => hosts,
+        'network' => { 'provider' => 'calico' }
+      }
+    end
+
+    it 'works like hash dig' do
+      expect(subject.dig(:hosts, 0, :address)).to eq '192.0.2.1'
+      expect(subject.dig('network', 'provider')).to eq 'calico'
+      expect(subject.dig('network', 'firewall', 'enabled')).to be_nil
+    end
+  end
+
   describe 'hosts' do
     context 'invalid host address' do
       let(:hosts) { [

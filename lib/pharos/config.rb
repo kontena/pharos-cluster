@@ -141,13 +141,14 @@ module Pharos
       YAML.dump(to_h.deep_stringify_keys)
     end
 
-    # @example deep get network provider
-    #   config.deep_get("network.provider")
-    # @param key [String] a dot separated key, such as network.provider
-    def deep_get(key)
-      key.to_s.split('.').inject(self) do |memo, item|
-        if memo.is_a?(Array) && item.match?(/^\d+$/)
-          memo.send(:[], item.to_i)
+    # @example dig network provider
+    #   config.dig("network", "provider")
+    # @param keys [String,Symbol]
+    # @return [Object,nil] returns nil when any part of the chain is unreachable
+    def dig(*keys)
+      keys.inject(self) do |memo, item|
+        if memo.is_a?(Array) && item.is_a?(Integer)
+          memo.send(:[], item)
         elsif memo.respond_to?(item.to_sym)
           memo.send(item.to_sym)
         end
