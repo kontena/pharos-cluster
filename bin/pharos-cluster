@@ -1,12 +1,4 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# add lib to libpath (only needed when running from the sources)
-require 'pathname'
-lib_path = File.expand_path('../../lib', Pathname.new(__FILE__).realpath)
-$LOAD_PATH.unshift lib_path unless $LOAD_PATH.include?(lib_path)
-
-STDOUT.sync = true
-
-require 'pharos_cluster'
-Pharos::RootCommand.run
+load File.join(__dir__, 'pharos')
