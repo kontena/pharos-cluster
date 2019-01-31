@@ -140,5 +140,19 @@ module Pharos
     def to_yaml
       YAML.dump(to_h.deep_stringify_keys)
     end
+
+    # @example dig network provider
+    #   config.dig("network", "provider")
+    # @param keys [String,Symbol]
+    # @return [Object,nil] returns nil when any part of the chain is unreachable
+    def dig(*keys)
+      keys.inject(self) do |memo, item|
+        if memo.is_a?(Array) && item.is_a?(Integer)
+          memo.send(:[], item)
+        elsif memo.respond_to?(item.to_sym)
+          memo.send(item.to_sym)
+        end
+      end
+    end
   end
 end

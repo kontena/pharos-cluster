@@ -45,6 +45,60 @@ describe Pharos::Addon do
     end
   end
 
+  describe ":validate_configuration hook" do
+    context 'arity 1' do
+      subject do
+        Class.new(Pharos::Addon) do
+          validate_configuration do |new_config|
+            raise "must be enabled" unless new_config.enabled
+          end
+        end
+      end
+
+      let(:old_cfg) { double(:old) }
+      let(:new_cfg) { double(:new, enabled: false) }
+
+      it 'calls the validation with new config' do
+        expect(new_cfg).to receive(:enabled).and_return(false)
+        expect{subject.apply_validate_configuration(old_cfg, new_cfg)}.to raise_error(RuntimeError, "must be enabled")
+      end
+    end
+
+    context 'arity 2' do
+      subject do
+        Class.new(Pharos::Addon) do
+          validate_configuration do |old_config, new_config|
+            raise "Can not disable" if old_config.enabled && !new_config.enabled
+          end
+        end
+      end
+
+      let(:old_cfg) { double(:old, enabled: true) }
+      let(:new_cfg) { double(:new, enabled: false) }
+      it 'calls the validation with old config and new config' do
+        expect(old_cfg).to receive(:enabled).and_return(true)
+        expect(new_cfg).to receive(:enabled).and_return(false)
+        expect{subject.apply_validate_configuration(old_cfg, new_cfg)}.to raise_error(RuntimeError, "Can not disable")
+      end
+    end
+
+    context 'arity 3' do
+      subject do
+        Class.new(Pharos::Addon) do
+          validate_configuration do |key, old_val, new_val|
+            raise "#{key} can not change from #{old_val} to #{new_val}"
+          end
+        end
+      end
+
+      let(:old_cfg) { { a: 1, b: { c: 'hello' } } }
+      let(:new_cfg) { { a: 1, b: { c: 'hey' } } }
+      it 'calls the validation with old config and new config' do
+        expect{subject.apply_validate_configuration(old_cfg, new_cfg)}.to raise_error(RuntimeError, "b.c can not change from hello to hey")
+      end
+    end
+  end
+
   describe ".validate" do
     it "returns result with error if invalid config" do
       result = described_class.validate({})

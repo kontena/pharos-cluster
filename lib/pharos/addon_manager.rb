@@ -54,6 +54,7 @@ module Pharos
       @configs ||= @config.addons.sort_by { |name, _config|
         addon_class = addon_classes.find { |a| a.addon_name == name }
         raise UnknownAddon, "unknown addon: #{name}" if addon_class.nil?
+
         addon_class.priority
       }.to_h.deep_stringify_keys
     end
@@ -77,6 +78,12 @@ module Pharos
         unless outcome.success?
           raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).gsub(/^---$/, '')
         end
+        prev_config = prev_configs[addon_class.addon_name]
+        addon_class.apply_validate_configuration(prev_config, config)
+      end
+
+      with_disabled_addons do |addon_class, prev_config, config|
+        addon_class.apply_validate_configuration(prev_config, config)
       end
     end
 
@@ -104,7 +111,7 @@ module Pharos
         Retry.perform(yield_object: addon, logger: logger, &block)
       end
 
-      with_disabled_addons do |addon_class|
+      with_disabled_addons do |addon_class, _, _|
         Retry.perform(yield_object: addon_class.new(nil, enabled: false, **options), logger: logger, &block)
       end
     end
@@ -119,12 +126,12 @@ module Pharos
     end
 
     def with_disabled_addons
-      addon_classes.select { |addon_class|
+      addon_classes.each do |addon_class|
         prev_config = prev_configs[addon_class.addon_name]
         config = configs[addon_class.addon_name]
-        prev_config && prev_config['enabled'] && (config.nil? || !config['enabled'])
-      }.each do |addon_class|
-        yield(addon_class)
+        next unless prev_config && prev_config['enabled'] && (config.nil? || !config['enabled'])
+
+        yield(addon_class, prev_config, config)
       end
     end
   end

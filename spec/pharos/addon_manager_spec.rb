@@ -38,7 +38,7 @@ describe Pharos::AddonManager do
     end
 
     before do
-      allow(subject).to receive_message_chain('addon_classes.find').and_return(enabled_addon)
+      allow(subject).to receive(:addon_classes).and_return([enabled_addon])
     end
 
     subject { described_class.new(config, {}) }
