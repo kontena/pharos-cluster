@@ -25,6 +25,7 @@ spec:
         - effect: NoSchedule
           operator: Exists
       serviceAccountName: lens-operator
+      priorityClassName: pharos-cluster-critical
       containers:
         - image: <%= image_repository %>/lens-authenticator:<%= version %>
           name: user-authenticator

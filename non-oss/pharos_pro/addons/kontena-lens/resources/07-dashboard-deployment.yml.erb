@@ -15,6 +15,7 @@ spec:
         app: dashboard
     spec:
       serviceAccountName: lens-operator
+      priorityClassName: pharos-cluster-critical
       restartPolicy: Always
       containers:
         - image: <%= image_repository %>/lens:<%= version %>

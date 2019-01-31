@@ -19,6 +19,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       serviceAccountName: lens-operator
+      priorityClassName: pharos-cluster-critical
       containers:
         - image: <%= image_repository %>/lens-idp:<%= version %>
           name: user-management

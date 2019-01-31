@@ -20,6 +20,7 @@ spec:
       tolerations:
         - effect: NoSchedule
           operator: Exists
+      priorityClassName: pharos-cluster-critical
       containers:
       - name: redis
         image: <%= image_repository %>/redis:4-alpine
