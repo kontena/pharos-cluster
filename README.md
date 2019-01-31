@@ -25,8 +25,8 @@ The binary packages are available on the Downloads section of your [Kontena Acco
 You need Ruby version 2.5
 
 ```
-$ gem build pharos-cluster.gemspec
-$ gem install pharos-cluster*.gem
+$ gem build pharos.gemspec
+$ gem install pharos-*.gem
 $ pharos --help
 ```
 

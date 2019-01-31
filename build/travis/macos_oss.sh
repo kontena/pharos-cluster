@@ -16,7 +16,7 @@ rm -rf non-oss/
 
 version=${TRAVIS_TAG#"v"}
 package="pharos-cluster-darwin-amd64-${version}+oss"
-rubyc --openssl-dir=/usr/local/etc/openssl -o "$package" --make-args=--silent pharos-cluster
+rubyc --openssl-dir=/usr/local/etc/openssl -o "$package" --make-args=--silent pharos
 ./"$package" version
 
 rm -rf upload/

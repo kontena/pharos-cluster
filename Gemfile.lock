@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pharos-cluster (2.2.0.rc.1)
+    pharos (2.2.0.rc.2)
       bcrypt
       bcrypt_pbkdf (>= 1.0, < 2.0)
       clamp (= 1.2.1)
@@ -151,7 +151,7 @@ PLATFORMS
 DEPENDENCIES
   bundler
   fakefs (~> 0.13)
-  pharos-cluster!
+  pharos!
   rake (~> 10.0)
   rspec (~> 3.7)
   rubocop (~> 0.57)

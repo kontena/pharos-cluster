@@ -6,5 +6,5 @@ pharos-cluster:
   - ./.pharos:/root/.pharos
   environment:
   - SSH_AUTH_SOCK=/run/ssh-agent.sock
-  entrypoint: bin/pharos-cluster
+  entrypoint: bin/pharos
   command: up

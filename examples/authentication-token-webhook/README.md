@@ -21,7 +21,7 @@ authentication:
 2. Pharos Cluster up
 
 ```sh
-$ pharos-cluster up
+$ pharos up
 $ export KUBECONFIG=~/.pharos/<master-ip>
 ```
 

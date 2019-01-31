@@ -10,16 +10,16 @@ ifconfig
 
 envsubst < e2e/cluster.yml > cluster.yml
 
-bundle exec bin/pharos-cluster
-bundle exec bin/pharos-cluster -v
-bundle exec bin/pharos-cluster version
-bundle exec bin/pharos-cluster up -d -y -c cluster.yml
-bundle exec bin/pharos-cluster ssh --role master -c cluster.yml -- kubectl get nodes
+bundle exec bin/pharos
+bundle exec bin/pharos -v
+bundle exec bin/pharos version
+bundle exec bin/pharos up -d -y -c cluster.yml
+bundle exec bin/pharos ssh --role master -c cluster.yml -- kubectl get nodes
 
 while ! kubectl get nodes | grep " Ready "; do
     echo "waiting for node to be ready ..."
     sleep 5
 done
 
-bundle exec bin/pharos-cluster up -d -y -c cluster.yml
-bundle exec bin/pharos-cluster reset -d -y -c cluster.yml
+bundle exec bin/pharos up -d -y -c cluster.yml
+bundle exec bin/pharos reset -d -y -c cluster.yml

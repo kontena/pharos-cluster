@@ -27,7 +27,7 @@ Fill `project_id` & `auth_token` to `terraform.tfvars`.
 $ terraform init
 $ terraform apply
 $ terraform output -json > tf.json
-$ pharos-cluster up --tf-json tf.json
+$ pharos up --tf-json tf.json
 ```
 
 ## Teardown Cluster

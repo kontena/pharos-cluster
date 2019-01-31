@@ -6,7 +6,7 @@ Pharos Cluster Vagrant setup mainly for local testing.
 
 ```sh
 $ vagrant up
-$ pharos-cluster up
+$ pharos up
 $ export KUBECONFIG=~/.pharos/192.168.100.100
 $ kubectl get nodes
 ```

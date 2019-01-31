@@ -11,7 +11,7 @@ if ENV['PHAROS_NON_OSS'] == 'true'
 end
 
 Gem::Specification.new do |spec|
-  spec.name          = "pharos-cluster"
+  spec.name          = "pharos"
   spec.version       = Pharos::VERSION.sub('-', '.')
   spec.authors       = ["Kontena, Inc."]
   spec.email         = ["info@kontena.io"]

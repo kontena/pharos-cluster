@@ -8,4 +8,4 @@ RUN bundle install
 
 COPY . .
 
-CMD ["./bin/pharos-cluster"]
+CMD ["./bin/pharos"]
