@@ -47,7 +47,6 @@ module Pharos
   module CoreExt
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
-    autoload :DeepKeys, 'pharos/core-ext/deep_keys'
     autoload :StringCasing, 'pharos/core-ext/string_casing'
   end
 
