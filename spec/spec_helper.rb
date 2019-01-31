@@ -1,4 +1,4 @@
-require_relative '../lib/pharos_cluster'
+require_relative '../lib/pharos'
 require 'fakefs/spec_helpers'
 require_relative 'support/fixtures_helper'
 require_relative 'support/exit_with_error_helper'
