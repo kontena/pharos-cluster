@@ -8,8 +8,11 @@ etcd_version_matches() {
 
 mkdir -p /etc/kubernetes/manifests
 mkdir -p /etc/kubernetes/tmp
-if [ ! -e /etc/kubernetes/manifests/pharos-etcd.yaml ] || ! etcd_version_matches; then
-  cat  >/etc/kubernetes/tmp/pharos-etcd.yaml <<EOF && mv /etc/kubernetes/tmp/pharos-etcd.yaml /etc/kubernetes/manifests/pharos-etcd.yaml
+if [ ! -e /etc/kubernetes/manifests/pharos-etcd.yaml ] || true; then
+  mkdir -p /var/lib/etcd
+  chmod 700 /var/lib/etcd
+
+  cat  >/etc/kubernetes/tmp/pharos-etcd.yaml <<EOF && install -m 0644 /etc/kubernetes/tmp/pharos-etcd.yaml /etc/kubernetes/manifests/pharos-etcd.yaml
 apiVersion: v1
 kind: Pod
 metadata:
