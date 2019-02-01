@@ -142,6 +142,8 @@ module Pharos
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 
+        args << "--rotate-server-certificates"
+
         if crio?
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
