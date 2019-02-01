@@ -299,7 +299,7 @@ describe Pharos::Kubeadm::ClusterConfig do
 
         it 'configures enabled plugins to api server' do
           extra_args = subject.generate['apiServerExtraArgs']
-          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages,DenyEscalatingExec,NamespaceLifecycle,ServiceAccount')
+          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages,NamespaceLifecycle,ServiceAccount')
           expect(extra_args['disable-admission-plugins']).to eq('Priority')
         end
       end
@@ -349,7 +349,7 @@ describe Pharos::Kubeadm::ClusterConfig do
 
         it 'configures enabled plugins to api server' do
           extra_args = subject.generate['apiServerExtraArgs']
-          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages,DenyEscalatingExec,NamespaceLifecycle,ServiceAccount')
+          expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages,NamespaceLifecycle,ServiceAccount')
           expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
         end
       end
@@ -368,7 +368,7 @@ describe Pharos::Kubeadm::ClusterConfig do
           extra_args = subject.generate['apiServerExtraArgs']
           expect(extra_args['disable-admission-plugins']).to eq('PodSecurityPolicy,AlwaysPullImages')
           expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
-          expect(extra_args['enable-admission-plugins']).to eq('NodeRestriction,DenyEscalatingExec,NamespaceLifecycle,ServiceAccount')
+          expect(extra_args['enable-admission-plugins']).to eq('NodeRestriction,NamespaceLifecycle,ServiceAccount')
         end
       end
     end
