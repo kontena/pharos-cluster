@@ -21,7 +21,8 @@ module Pharos
               'enabled' => true
             }
           },
-          'serverTLSBootstrap' => true
+          'serverTLSBootstrap' => true,
+          'tlsCipherSuites' => ClusterConfig::TLS_CIPHERS.split(',')
         }
         if @config.kubelet&.read_only_port
           config['readOnlyPort'] = '10255'
