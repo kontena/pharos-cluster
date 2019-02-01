@@ -13,5 +13,5 @@ if [ "$ROLE" = "master" ]; then
 fi
 firewall-cmd --permanent --add-service pharos-worker
 firewall-cmd --permanent --add-source ipset:pharos --zone trusted
-firewall-cmd --add-masquerade --permanent --zone trusted
+firewall-cmd --add-masquerade --permanent
 firewall-cmd --reload
