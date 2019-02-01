@@ -200,7 +200,18 @@ False positive, defaults to true 1.12 onwards
 [FAIL] 2.1.15 Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers (Not Scored)
 ```
 
-**Action:** Make default kubelet config to use the suggested ciphers
+False positive, configured in kubelet config file:
+```yaml
+tlsCipherSuites:
+- TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+- TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+- TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+- TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+- TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+- TLS_RSA_WITH_AES_256_GCM_SHA384
+- TLS_RSA_WITH_AES_128_GCM_SHA256
+```
 
 ## File permissions
 
