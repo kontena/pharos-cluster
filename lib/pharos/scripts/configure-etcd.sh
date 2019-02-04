@@ -8,7 +8,7 @@ etcd_version_matches() {
 
 mkdir -p /etc/kubernetes/manifests
 mkdir -p /etc/kubernetes/tmp
-if [ ! -e /etc/kubernetes/manifests/pharos-etcd.yaml ] || true; then
+if [ ! -e /etc/kubernetes/manifests/pharos-etcd.yaml ] || ! etcd_version_matches; then
   mkdir -p /var/lib/etcd
   chmod 700 /var/lib/etcd
 
