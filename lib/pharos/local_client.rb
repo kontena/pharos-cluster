@@ -46,7 +46,7 @@ module Pharos
     # @param content [String,IO] initial file content, default blank
     # @return [Pharos::SSH::Tempfile]
     # @yield [Pharos::SSH::Tempfile]
-    def tempfile(prefix: "pharos", content: nil, &block)
+    def tempfile(prefix: "pharos", content: nil)
       ::Tempfile.new(prefix) do |tmpfile|
         tmpfile.write(content) if content
         tmpfile.rewind
@@ -106,4 +106,3 @@ module Pharos
     end
   end
 end
-

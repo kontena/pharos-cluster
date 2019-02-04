@@ -44,6 +44,7 @@ module Pharos
     def run!
       result = run
       raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
+
       result
     end
 
@@ -84,14 +85,14 @@ module Pharos
     # @param source [String, NilClass]
     # @return [Integer]
     def debug_cmd(cmd, source: nil)
-      $stdout.write("#{INDENT} #{pastel.cyan("localhost:")} #{pastel.cyan("$ #{cmd}")}\n")
+      $stdout.write("#{INDENT} #{pastel.cyan('localhost:')} #{pastel.cyan("$ #{cmd}")}\n")
     end
 
     # @param data [String]
     # @return [String]
     def debug_stdout(data)
       data.each_line do |line|
-        $stdout.write("#{INDENT} #{pastel.dim("localhost:")} #{pastel.dim(line.to_s)}")
+        $stdout.write("#{INDENT} #{pastel.dim('localhost:')} #{pastel.dim(line.to_s)}")
       end
     end
 
@@ -99,15 +100,14 @@ module Pharos
     # @return [String]
     def debug_stderr(data)
       data.each_line do |line|
-        $stdout.write("#{INDENT} #{pastel.dim("localhost:")} #{pastel.red(line.to_s)}")
+        $stdout.write("#{INDENT} #{pastel.dim('localhost:')} #{pastel.red(line.to_s)}")
       end
     end
 
     # @param exit_status [Integer]
     # @return [Integer]
     def debug_exit(exit_status)
-      $stdout.write("#{INDENT} #{pastel.dim("localhost:")} #{pastel.yellow("! #{exit_status}")}\n")
+      $stdout.write("#{INDENT} #{pastel.dim('localhost:')} #{pastel.yellow("! #{exit_status}")}\n")
     end
   end
 end
-
