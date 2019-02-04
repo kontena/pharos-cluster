@@ -81,6 +81,7 @@ module Pharos
       # param options [Hash] extra options for the SSH client, see Net::SSH#start
       def ssh(**options)
         return @ssh if @ssh
+        return @ssh = Pharos::LocalClient.new(options) if address == '127.0.0.1'
 
         opts = {}
         opts[:keys] = [ssh_key_path] if ssh_key_path
@@ -94,7 +95,7 @@ module Pharos
       end
 
       def ssh?
-        @ssh && !@ssh.session.closed?
+        @ssh && !@ssh.closed?
       end
 
       def api_address

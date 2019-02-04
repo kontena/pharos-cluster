@@ -137,6 +137,10 @@ module Pharos
         synchronize { @session && !@session.closed? }
       end
 
+      def closed?
+        !connected?
+      end
+
       def disconnect
         synchronize { @session.close if @session && !@session.closed? }
       end

@@ -11,6 +11,8 @@ autoload :Rouge, 'rouge'
 autoload :K8s, 'k8s-client'
 autoload :Excon, 'excon'
 autoload :K8s, 'k8s-client'
+autoload :Open3, 'open3'
+autoload :Pathname, 'pathname'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
@@ -32,6 +34,8 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
+  autoload :LocalClient, 'pharos/local_client'
+  autoload :LocalCommand, 'pharos/local_command'
 
   module Kube
     autoload :Stack, 'pharos/kube/stack'
