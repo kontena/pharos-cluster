@@ -30,6 +30,7 @@ module Pharos
 
       def check_cpu_arch
         return if @host.cpu_arch.supported?
+
         raise Pharos::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
 
@@ -51,6 +52,7 @@ module Pharos
 
       def validate_localhost_resolve
         return if ssh.exec?("ping -c 1 -r -w 1 localhost")
+
         raise Pharos::InvalidHostError, "Hostname 'localhost' does not seem to resolve to an address on the local host"
       end
 

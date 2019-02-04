@@ -26,6 +26,7 @@ module Pharos
       # @return [String]
       def customer_token
         return '' unless File.exist?(TOKEN_FILE)
+
         match = File.read(TOKEN_FILE).match(/^CHPHAROS_TOKEN="(.+)"$/)
         return '' unless match
 

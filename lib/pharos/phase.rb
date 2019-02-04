@@ -79,6 +79,7 @@ module Pharos
     # @return [Pharos::SSH::Client]
     def master_ssh
       return cluster_context['master-ssh'] if cluster_context['master-ssh']
+
       fail "Phase #{self.class.name} does not have master ssh"
     end
 
