@@ -85,7 +85,7 @@ module Pharos
     # @param source [String, NilClass]
     # @return [Integer]
     def debug_cmd(cmd, source: nil)
-      $stdout.write("#{INDENT} #{pastel.cyan('localhost:')} #{pastel.cyan("$ #{cmd}")}\n")
+        $stdout.write("#{INDENT} #{pastel.cyan("localhost:")} #{pastel.cyan("$ #{cmd}" + (source ? " < #{source}" : ''))}\n")
     end
 
     # @param data [String]
