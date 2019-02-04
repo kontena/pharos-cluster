@@ -60,6 +60,7 @@ resource "digitalocean_droplet" "pharos_master" {
   size               = "${var.master_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
+  tags               = ["pharos-e2e"]
 }
 
 resource "random_pet" "pharos_worker" {
@@ -77,6 +78,7 @@ resource "digitalocean_droplet" "pharos_worker" {
   size               = "${var.worker_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
+  tags               = ["pharos-e2e"]
 }
 
 resource "digitalocean_volume" "pharos_storage" {
