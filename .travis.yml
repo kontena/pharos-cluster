@@ -66,10 +66,10 @@ jobs:
       rvm: 2.5
       os: osx
       install: ls -l
+      env:
+        - secure: "FLhmFZTMyXwngw9dZgi5X2I+6z5RwjMO0x+MeqG1ujniFEloONUsJHxSu7al9KPQECp9fZC4+GewaR088PXd00bCGYVvSiIn+S+ZbNqkOtv0QFPllvZooTZtMS+inqocr6pv4BJfALytcZQuaKrJ6iVdN7bu62n3/IBDfyvtBZYnWakeVe2k1mW1XUld/YuCjHe7wRFfAMOYu4+9LAhFyJgrpPRkhPMXkuvYaxGoeqcamc5AbMrRnDapTkLJBUc1TlmSY0wMEAhX4+yL8zehihEU6wGq05BGNfigJIpQkuj62zmQZdZkE3y9x4DGZauPDXNPhyYWqdxRm3KExHhJwLrY6d4L8l6snYAG7STPIziqNfotPzcTvM5/hhUkD65JpxO7rNq7BcYjV2fYfN8IgAHR/+wgDo7p4v+Y7fh6QsJ1oOujTsvIZDRE/Ly/Q2CKsdY2HqJfoROWh8/NWBEGcx+aRQekj9h7jbLqpML2LNa8Y9FOx86GFOskEi8tPmZ+drokxhakd+P6pdfdzwjHr1RwOH9z115tkG0HDKk6WnjTosGctBrUSzQGozv5HHEU3hRdnLLgyLZKdr+GRa6jHCnP/8qq3DjXey7RGOXI/b1okhgnAOJK38do65UIaJncijmWOl0w0pfrRuk/KA5QhwUWJTf/VGnnGgYg/dF9xhY=" # GITHUB_TOKEN
       deploy:
         provider: s3
-        env:
-          - secure: "FLhmFZTMyXwngw9dZgi5X2I+6z5RwjMO0x+MeqG1ujniFEloONUsJHxSu7al9KPQECp9fZC4+GewaR088PXd00bCGYVvSiIn+S+ZbNqkOtv0QFPllvZooTZtMS+inqocr6pv4BJfALytcZQuaKrJ6iVdN7bu62n3/IBDfyvtBZYnWakeVe2k1mW1XUld/YuCjHe7wRFfAMOYu4+9LAhFyJgrpPRkhPMXkuvYaxGoeqcamc5AbMrRnDapTkLJBUc1TlmSY0wMEAhX4+yL8zehihEU6wGq05BGNfigJIpQkuj62zmQZdZkE3y9x4DGZauPDXNPhyYWqdxRm3KExHhJwLrY6d4L8l6snYAG7STPIziqNfotPzcTvM5/hhUkD65JpxO7rNq7BcYjV2fYfN8IgAHR/+wgDo7p4v+Y7fh6QsJ1oOujTsvIZDRE/Ly/Q2CKsdY2HqJfoROWh8/NWBEGcx+aRQekj9h7jbLqpML2LNa8Y9FOx86GFOskEi8tPmZ+drokxhakd+P6pdfdzwjHr1RwOH9z115tkG0HDKk6WnjTosGctBrUSzQGozv5HHEU3hRdnLLgyLZKdr+GRa6jHCnP/8qq3DjXey7RGOXI/b1okhgnAOJK38do65UIaJncijmWOl0w0pfrRuk/KA5QhwUWJTf/VGnnGgYg/dF9xhY=" # GITHUB_TOKEN
         access_key_id:
           secure: "OHjLg4bzJBUdwmw42XK5s/+5tHUy7SO32/NzV5qCETIw+lr0lEhHIUeGUDGEqsMKvB3X1rIyFhhYJcRUCkJHfDUM2uRyIxYl/HUNNHCnZttwBHsn517Wt8sSzx5mSHuqXl54hoI47vvx0yfKrvW70/AF0aNufEde5tQePzsgghZ0FIPKx29CiG0QAufTgJ3B3tXJtDywDXO6kyQmmpjSTO+Rne8YEx4MvyoGH1DhHiiSsggSMrYUy80mZP967AvQ6cCQNS7d9A1ThNjJVNGQ9jzTGW8vWRsvI1Y5583sWwAwVbKSYtcaO2t5IC1q62PnYu9xVyy6D5QZ4uJ4jQk8at00348nj059CosNEE9IdqRaTJi5TIiX9H1nU8y3P/c/2dYpsQIKch0Ji/cQhl4RCe+QQuOpCzggElf8GeD/tg9GJFhX+uPPWFJMl4zvrH5EascRm+PHJsr7UFL0Lv4Q0x85qdCa/0Oh1XA+f+WaLpSkUUiLUUB27+2dLupD3VyuSZ0IferiDHHgIG0teXoSvI6hgSBg85ZYZKls72seTuGG0icrn+U/iz+7ywtaaS5yVmrelUiYq4ElZr3N9SPaWUxUGXo734B60AIJ9dPQQJY8e+TJ2jjX3OCAd//Z3Kh2+O+nbcHUUMY4OfUVp4wcRy2LKlNqPC5DevZij2uVmKM="
         secret_access_key:
