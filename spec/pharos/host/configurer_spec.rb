@@ -65,7 +65,11 @@ describe Pharos::Host::Configurer do
     subject { described_class.new(host) }
 
     before do
-      allow(host).to receive(:ssh).and_return(ssh)
+      allow(host).to receive(:transport).and_return(ssh)
+      allow(host).to receive(:exec!).and_call_original
+      allow(host).to receive(:exec).and_call_original
+      allow(host).to receive(:exec?).and_call_original
+      allow(host).to receive(:file).and_call_original
       allow(ssh).to receive(:file).with('/etc/environment').and_return(file)
       allow(ssh).to receive(:disconnect)
       allow(ssh).to receive(:connect)
@@ -186,7 +190,7 @@ hooks_dir_path = "/usr/share/containers/oci/hooks.d"
     }
 
     before(:each) do
-      allow(host).to receive(:ssh).and_return(ssh)
+      allow(host).to receive(:transport).and_return(ssh)
       allow(ssh).to receive(:file).and_return(file)
     end
 

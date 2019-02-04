@@ -14,7 +14,11 @@ describe Pharos::Phases::GatherFacts do
   subject { described_class.new(config.hosts[0], config: config) }
 
   before do
-    allow(host).to receive(:ssh).and_return(ssh)
+    allow(host).to receive(:transport).and_return(ssh)
+    allow(host).to receive(:exec!).and_call_original
+    allow(host).to receive(:exec).and_call_original
+    allow(host).to receive(:exec?).and_call_original
+    allow(host).to receive(:file).and_call_original
   end
 
   describe '#private_interface_address' do

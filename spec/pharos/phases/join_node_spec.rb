@@ -23,7 +23,11 @@ describe Pharos::Phases::JoinNode do
   let(:join_cmd) { 'kubeadm join --token 531bb9.d1637f0a9b6af2ba 127.0.0.1:6443 --discovery-token-ca-cert-hash sha256:98d563efbb07a11cde93884394ba1d266912def377bfadc65d01a3bcc0ddd30d' }
 
   before(:each) do
-    allow(host).to receive(:ssh).and_return(ssh)
+    allow(host).to receive(:transport).and_return(ssh)
+    allow(host).to receive(:exec!).and_call_original
+    allow(host).to receive(:exec).and_call_original
+    allow(host).to receive(:exec?).and_call_original
+    allow(host).to receive(:file).and_call_original
     allow(subject).to receive(:already_joined?).and_return(false)
   end
 
