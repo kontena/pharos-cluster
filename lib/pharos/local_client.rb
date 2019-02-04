@@ -28,7 +28,7 @@ module Pharos
 
     def logger
       @logger ||= Logger.new($stderr).tap do |logger|
-        logger.progname = "Local[#{localhost}]"
+        logger.progname = "Local[localhost]"
         logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
       end
     end
