@@ -34,6 +34,10 @@ module Pharos
         host.ssh
       end
 
+      def transport
+        host.transport
+      end
+
       def install_essentials
         abstract_method!
       end
@@ -98,15 +102,15 @@ module Pharos
       end
 
       def configure_script_library
-        ssh.exec("sudo mkdir -p #{script_library_install_path}")
-        ssh.file("#{script_library_install_path}/util.sh").write(
+        host.exec("sudo mkdir -p #{script_library_install_path}")
+        host.file("#{script_library_install_path}/util.sh").write(
           File.read(SCRIPT_LIBRARY)
         )
       end
 
       # @param script [String] name of file under ../scripts/
       def exec_script(script, vars = {})
-        ssh.exec_script!(
+        host.exec_script!(
           script,
           env: vars,
           path: script_path(script)
@@ -140,7 +144,7 @@ module Pharos
 
       # @return [Pharos::SSH::File]
       def env_file
-        ssh.file('/etc/environment')
+        host.file('/etc/environment')
       end
 
       def update_env_file
@@ -164,13 +168,13 @@ module Pharos
         end
         host_env_file.write(new_content.join("\n") + "\n")
         new_content.each do |kv_pair|
-          ssh.exec!("export #{kv_pair}")
+          host.exec!("export #{kv_pair}")
         end
       end
 
       # @return [String, NilClass]
       def current_crio_cgroup_manager
-        file = ssh.file('/etc/crio/crio.conf')
+        file = host.file('/etc/crio/crio.conf')
         return unless file.exist?
 
         match = file.read.match(/^cgroup_manager = "(.+)"/)
@@ -183,16 +187,16 @@ module Pharos
       def can_pull?
         return true if current_crio_cgroup_manager.nil?
 
-        ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
+        host.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
       end
 
       def cleanup_crio!
-        ssh.exec!("sudo systemctl stop kubelet")
-        ssh.exec!("sudo crictl stopp $(crictl pods -q)")
-        ssh.exec!("sudo crictl rmp $(crictl pods -q)")
-        ssh.exec!("sudo crictl rmi $(crictl images -q)")
+        host.exec!("sudo systemctl stop kubelet")
+        host.exec!("sudo crictl stopp $(crictl pods -q)")
+        host.exec!("sudo crictl rmp $(crictl pods -q)")
+        host.exec!("sudo crictl rmi $(crictl images -q)")
       ensure
-        ssh.exec!("sudo systemctl start kubelet")
+        host.exec!("sudo systemctl start kubelet")
       end
 
       class << self

@@ -36,6 +36,7 @@ module Pharos
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :LocalClient, 'pharos/local_client'
   autoload :LocalCommand, 'pharos/local_command'
+  autoload :LocalFile, 'pharos/local_file'
 
   module Kube
     autoload :Stack, 'pharos/kube/stack'

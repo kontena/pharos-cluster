@@ -115,8 +115,8 @@ Pharos.addon 'cert-manager' do
         namespace: "kube-system"
       },
       data: {
-        'tls.crt': Base64.strict_encode64(ssh.file('/etc/kubernetes/pki/ca.crt').read),
-        'tls.key': Base64.strict_encode64(ssh.file('/etc/kubernetes/pki/ca.key').read)
+        'tls.crt': Base64.strict_encode64(host.file('/etc/kubernetes/pki/ca.crt').read),
+        'tls.key': Base64.strict_encode64(host.file('/etc/kubernetes/pki/ca.key').read)
       }
     )
   end

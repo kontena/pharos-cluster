@@ -94,11 +94,15 @@ module Pharos
     # @param path [String]
     # @return [Pathname]
     def file(path)
-      Pathname.new(path)
+      Pharos::LocalFile.new(path)
     end
 
     def closed?
       false
+    end
+
+    def connected?
+      true
     end
   end
 end

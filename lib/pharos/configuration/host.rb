@@ -78,10 +78,17 @@ module Pharos
         hostname.split('.').first
       end
 
+      def local?
+        address == '127.0.0.1'
+      end
+
+      def transport(**options)
+        @transport ||= local? ? Pharos::LocalClient.new(options) : ssh(**options)
+      end
+
       # param options [Hash] extra options for the SSH client, see Net::SSH#start
       def ssh(**options)
         return @ssh if @ssh
-        return @ssh = Pharos::LocalClient.new(options) if address == '127.0.0.1'
 
         opts = {}
         opts[:keys] = [ssh_key_path] if ssh_key_path
@@ -228,6 +235,62 @@ module Pharos
         return if self.bastion
 
         attributes[:bastion] = bastion
+      end
+
+      # @param prefix [String] tempfile filename prefix (default "pharos")
+      # @param content [String,IO] initial file content, default blank
+      # @return [Pharos::SSH::Tempfile]
+      # @yield [Pharos::SSH::Tempfile]
+      def tempfile(prefix: "pharos", content: nil, &block)
+        transport.tempfile(prefix: prefix, content: content, &block)
+      end
+
+      # @param cmd [String] command to execute
+      # @param options [Hash]
+      # @return [Pharos::Command::Result]
+      def exec(cmd, **options)
+        transport.exec(cmd, **options)
+      end
+
+      # @param cmd [String] command to execute
+      # @param options [Hash]
+      # @raise [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [String] stdout
+      def exec!(cmd, **options)
+        transport.exec!(cmd, **options)
+      end
+
+      # @param cmd [String] command to execute
+      # @param options [Hash]
+      # @return [Boolean]
+      def exec?(cmd, **options)
+        transport.exec?(cmd, **options)
+      end
+
+      # @param name [String] name of script
+      # @param env [Hash] environment variables hash
+      # @param path [String] real path to file, defaults to script
+      # @raise [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [String] stdout
+      def exec_script!(name, env: {}, path: nil, **options)
+        transport.exec_script!(name, env: env, path: path, **options)
+      end
+
+      # @param path [String]
+      # @return [Pharos::SSH::RemoteFile]
+      def file(path)
+        transport.file(path)
+      end
+
+      # @return [Boolean] transport connected?
+      def connected?
+        transport.connected?
+      end
+
+      # Disconnect transport
+      # @return [Boolean]
+      def disconnect
+        transport.disconnect
       end
     end
   end

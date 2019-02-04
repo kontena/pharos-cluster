@@ -27,7 +27,7 @@ module Pharos
     private
 
     def config_file_content
-      file = ssh.file(REMOTE_FILE)
+      file = host.file(REMOTE_FILE)
       signal_usage_error "Remote file #{REMOTE_FILE} not found" unless file.exist?
       file.read
     end
