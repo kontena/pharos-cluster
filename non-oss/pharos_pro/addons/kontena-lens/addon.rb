@@ -8,7 +8,7 @@ Pharos.addon 'kontena-lens' do
   license 'Kontena License'
   priority 10
 
-  config_schema {
+  config_schema do
     optional(:name).filled(:str?)
     optional(:ingress).schema do
       optional(:host).filled(:str?)
@@ -41,15 +41,15 @@ Pharos.addon 'kontena-lens' do
         end
       end
     end
-  }
+  end
 
-  modify_cluster_config {
+  modify_cluster_config do
     if user_management_enabled?
       cluster_config.set(:authentication, Pharos::Configuration::Authentication.new(token_webhook: token_authentication_webhook_config))
     end
-  }
+  end
 
-  install {
+  install do
     patch_old_resource
 
     host = config.ingress&.host || config.host || "lens.#{gateway_node_ip}.nip.io"
@@ -82,7 +82,7 @@ Pharos.addon 'kontena-lens' do
     message << "\nWarning: `config.host` option is deprecated in favor of `config.ingress.host` option and will be removed in future." if config.host
     message << "\nWarning: `config.tls` option is deprecated in favor of `config.ingress.tls` option and will be removed in future." if config.tls
     post_install_message(message)
-  }
+  end
 
   def patch_old_resource
     last_config_annotation = "kubectl.kubernetes.io/last-applied-configuration"

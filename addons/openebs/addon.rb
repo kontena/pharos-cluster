@@ -15,12 +15,12 @@ Pharos.addon 'openebs' do
     path: DEFAULT_STORAGE_PATH
   }.freeze
 
-  config {
+  config do
     attribute :default_storage_class, Pharos::Types::Hash.default(DEFAULT_CLASS_OPTS)
     attribute :default_storage_pool, Pharos::Types::Hash.default(DEFAULT_POOL_OPTS)
-  }
+  end
 
-  config_schema {
+  config_schema do
     optional(:default_storage_class).schema do
       optional(:default_class).filled(:bool?)
       optional(:capacity).filled(:str?)
@@ -30,21 +30,21 @@ Pharos.addon 'openebs' do
     optional(:default_storage_pool).schema do
       optional(:path).filled(:str?)
     end
-  }
+  end
 
-  install {
+  install do
     apply_resources(
       default_replicas: config.default_storage_class[:replicas] || default_replica_count,
       default_capacity: config.default_storage_class[:capacity] || '5G',
       is_default_class: config.default_storage_class[:default_class] == true,
       default_storage_pool_path: config.default_storage_pool[:path]
     )
-  }
+  end
 
-  reset_host { |host|
+  reset_host do |host|
     data_dir = config.default_storage_pool[:path].strip
     host.ssh.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
-  }
+  end
 
   def validate
     super

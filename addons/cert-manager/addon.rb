@@ -4,31 +4,31 @@ Pharos.addon 'cert-manager' do
   version '0.5.2'
   license 'Apache License 2.0'
 
-  issuer = custom_type {
+  issuer = custom_type do
     attribute :name, Pharos::Types::String
     attribute :server, Pharos::Types::String.optional
     attribute :email, Pharos::Types::String
-  }
+  end
 
-  ca_issuer = custom_type {
+  ca_issuer = custom_type do
     attribute :enabled, Pharos::Types::Bool.default(true)
-  }
+  end
 
-  config {
+  config do
     attribute :issuer, issuer
     attribute :ca_issuer, ca_issuer.default(proc { ca_issuer.new(enabled: true) })
-  }
+  end
 
-  config_schema {
-    required(:issuer).schema {
+  config_schema do
+    required(:issuer).schema do
       required(:name).filled(:str?)
       required(:email).filled(:str?)
       optional(:server).filled(:str?)
-    }
+    end
 
-    optional(:ca_issuer).schema {
+    optional(:ca_issuer).schema do
       optional(:enabled).filled(:bool?)
-    }
+    end
 
     # Register custom error for LE Acme v1 endpoint validation
     configure do
@@ -44,9 +44,9 @@ Pharos.addon 'cert-manager' do
         true
       end
     end
-  }
+  end
 
-  install {
+  install do
     stack = kube_stack
 
     if config.ca_issuer&.enabled
@@ -58,7 +58,7 @@ Pharos.addon 'cert-manager' do
 
     migrate_le_acme_issuers
     migrate_le_acme_cluster_issuers
-  }
+  end
 
   def patch_spec
     {

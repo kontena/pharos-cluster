@@ -8,7 +8,7 @@ Pharos.addon 'kontena-backup' do
   version "#{ark_version}+kontena.1"
   license 'Kontena License'
 
-  config_schema {
+  config_schema do
     required(:cloud_credentials).filled(:str?)
     optional(:aws).schema do
       required(:region).filled(:str?)
@@ -19,7 +19,7 @@ Pharos.addon 'kontena-backup' do
     optional(:gcp).schema do
       required(:bucket).filled(:str?)
     end
-  }
+  end
 
   def validate
     super
@@ -40,7 +40,7 @@ Pharos.addon 'kontena-backup' do
     count
   end
 
-  install {
+  install do
     # Encode secret properly for erb templating
     config.cloud_credentials = Base64.strict_encode64(File.read(config.cloud_credentials))
 
@@ -55,7 +55,7 @@ Pharos.addon 'kontena-backup' do
       ark_config: ark_config.deep_stringify_keys,
       ark_version: ark_version
     )
-  }
+  end
 
   def aws_config
     ark_config = {

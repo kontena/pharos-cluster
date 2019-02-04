@@ -4,14 +4,14 @@ Pharos.addon 'kontena-network-lb' do
   version '0.7.3'
   license 'Kontena License'
 
-  config {
+  config do
     attribute :address_pools, Pharos::Types::Array
     attribute :peers, Pharos::Types::Array
     attribute :tolerations, Pharos::Types::Array.default([])
     attribute :node_selector, Pharos::Types::Hash.default({})
-  }
+  end
 
-  config_schema {
+  config_schema do
     required(:address_pools).filled(min_size?: 1) do
       each do
         schema do
@@ -36,9 +36,9 @@ Pharos.addon 'kontena-network-lb' do
 
     optional(:tolerations).each(:hash?)
     optional(:node_selector).filled(:hash?)
-  }
+  end
 
-  install {
+  install do
     # Load the base stack
     stack = kube_stack(
       version: self.class.version,
@@ -48,7 +48,7 @@ Pharos.addon 'kontena-network-lb' do
     )
     stack.resources << build_config
     stack.apply(kube_client)
-  }
+  end
 
   def validate
     super

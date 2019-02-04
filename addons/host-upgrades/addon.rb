@@ -4,19 +4,19 @@ Pharos.addon 'host-upgrades' do
   version '0.3.1'
   license 'Apache License 2.0'
 
-  config {
+  config do
     attribute :schedule, Pharos::Types::String
     attribute :schedule_window, Pharos::Types::String
     attribute :reboot, Pharos::Types::Bool.default(false)
     attribute :drain, Pharos::Types::Bool.default(true)
-  }
+  end
 
-  config_schema {
+  config_schema do
     required(:schedule).filled(:str?, :cron?)
     optional(:schedule_window).filled(:str?, :duration?)
     optional(:reboot).filled(:bool?)
     optional(:drain).filled(:bool?)
-  }
+  end
 
   # @return [String]
   def schedule
@@ -34,7 +34,7 @@ Pharos.addon 'host-upgrades' do
     "#{s}s"
   end
 
-  install {
+  install do
     apply_resources(
       schedule: schedule,
       schedule_window: schedule_window, # only supports h, m, s; not D, M, Y
@@ -42,5 +42,5 @@ Pharos.addon 'host-upgrades' do
       drain: config.reboot && config.drain,
       journal: false, # disabled due to https://github.com/kontena/pharos-host-upgrades/issues/15
     )
-  }
+  end
 end

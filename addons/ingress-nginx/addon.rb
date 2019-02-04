@@ -4,7 +4,7 @@ Pharos.addon 'ingress-nginx' do
   version '0.21.0'
   license 'Apache License 2.0'
 
-  config {
+  config do
     attribute :configmap, Pharos::Types::Hash.default(
       'worker-shutdown-timeout' => '3600s' # keep connection/workers alive for 1 hour
     )
@@ -14,19 +14,19 @@ Pharos.addon 'ingress-nginx' do
     )
     attribute :tolerations, Pharos::Types::Array.default([])
     attribute :extra_args, Pharos::Types::Array.default([])
-  }
+  end
 
-  config_schema {
+  config_schema do
     optional(:configmap).filled(:hash?)
     optional(:node_selector).filled(:hash?)
-    optional(:default_backend).schema {
+    optional(:default_backend).schema do
       optional(:image).filled(:str?)
-    }
+    end
     optional(:tolerations).each(:hash?)
     optional(:extra_args).each(:str?)
-  }
+  end
 
-  install {
+  install do
     apply_resources(
       configmap: config.configmap || {},
       node_selector: config.node_selector || {},
@@ -34,7 +34,7 @@ Pharos.addon 'ingress-nginx' do
       default_backend_replicas: default_backend_replicas,
       extra_args: config.extra_args
     )
-  }
+  end
 
   # ~One replica per 10 workers, but not more than nodes
   # @return [Integer]

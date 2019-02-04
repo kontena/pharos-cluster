@@ -5,7 +5,7 @@ Pharos.addon 'kontena-storage' do
   version '0.8.3+kontena.1'
   license 'Kontena License'
 
-  config_schema {
+  config_schema do
     required(:data_dir).filled(:str?)
     required(:storage).schema do
       required(:use_all_nodes).filled(:bool?)
@@ -97,21 +97,21 @@ Pharos.addon 'kontena-storage' do
         required(:size).filled(:int?)
       end
     end
-  }
+  end
 
-  install {
+  install do
     set_defaults
     cluster = build_cluster_resource
     apply_resources(
       cluster: cluster.to_h.deep_transform_keys(&:to_s),
       rook_version: self.class.version.split('+').first
     )
-  }
+  end
 
-  reset_host { |host|
+  reset_host do |host|
     data_dir = config.data_dir.strip
     host.ssh.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
-  }
+  end
 
   def set_defaults
     return if config&.pool&.replicated

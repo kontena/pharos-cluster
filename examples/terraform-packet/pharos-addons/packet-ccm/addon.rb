@@ -4,13 +4,13 @@ Pharos.addon 'packet-ccm' do
   version '0.0.4'
   license 'Apache License 2.0'
 
-  config {
+  config do
     attribute :project_id, Pharos::Types::String.default(ENV['PACKET_PROJECT_ID'].to_s)
     attribute :api_key, Pharos::Types::String.default(ENV['PACKET_API_KEY'].to_s)
-  }
+  end
 
-  config_schema {
+  config_schema do
     required(:project_id).filled(:str?)
     required(:api_key).filled(:str?)
-  }
+  end
 end
