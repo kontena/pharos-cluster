@@ -254,7 +254,7 @@ module Pharos
 
       # @param cmd [String] command to execute
       # @param options [Hash]
-      # @raise [Pharos::SSH::RemoteCommand::ExecError]
+      # @raise [Pharos::SSH::RemoteCommand::ExecError,Pharos::SSH::LocalCommand::ExecError]
       # @return [String] stdout
       def exec!(cmd, **options)
         transport.exec!(cmd, **options)
@@ -270,7 +270,7 @@ module Pharos
       # @param name [String] name of script
       # @param env [Hash] environment variables hash
       # @param path [String] real path to file, defaults to script
-      # @raise [Pharos::SSH::RemoteCommand::ExecError]
+      # @raise [Pharos::SSH::RemoteCommand::ExecError,Pharos::SSH::LocalCommand::ExecError]
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
         transport.exec_script!(name, env: env, path: path, **options)
