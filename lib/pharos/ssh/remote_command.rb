@@ -66,6 +66,7 @@ module Pharos
       def run!
         result = run
         raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
+
         result
       end
 
