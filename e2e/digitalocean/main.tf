@@ -86,6 +86,7 @@ resource "digitalocean_volume" "pharos_storage" {
   region                  = "${var.region}"
   name                    = "${element(digitalocean_droplet.pharos_worker.*.name, count.index)}"
   size                    = "${var.data_volume_size}"
+  tags                    = ["pharos-e2e"]
 }
 
 resource "digitalocean_volume_attachment" "pharos_storage" {
