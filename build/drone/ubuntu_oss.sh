@@ -25,6 +25,6 @@ chmod +x /usr/local/bin/github-release
 /usr/local/bin/github-release upload \
     --user kontena \
     --repo pharos-cluster \
-    --tag $DRONE_TAG \
-    --name $package \
-    --file ./$package
+    --tag "$DRONE_TAG" \
+    --name "$package" \
+    --file ./"$package"

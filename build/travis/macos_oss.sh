@@ -25,9 +25,9 @@ chmod +x /usr/local/bin/github-release
 /usr/local/bin/github-release upload \
     --user kontena \
     --repo pharos-cluster \
-    --tag $TRAVIS_TAG \
-    --name $package \
-    --file ./$package
+    --tag "$TRAVIS_TAG" \
+    --name "$package" \
+    --file ./"$package"
 
 rm -rf upload/
 mkdir -p upload
