@@ -167,9 +167,9 @@ describe Pharos::Phases::ValidateHost do
 
     context 'for an unconfigured host' do
       let(:routes) { [
-        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
-        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
       ] }
 
       context 'with non-overlapping calico routes' do
@@ -228,12 +228,12 @@ describe Pharos::Phases::ValidateHost do
         pod_network_cidr: '10.32.0.0/12',
       }}
       let(:routes) { [
-        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
-        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(type: 'blackhole', prefix: '10.32.0.0/24', proto: 'bird'),
-        Pharos::Configuration::Host::Route.new(prefix: '10.32.0.39', dev: 'cali5f1ddd73716', options: 'scope link'),
-        Pharos::Configuration::Host::Route.new(prefix: '10.32.1.0/24', via: '192.0.2.10', dev: 'tunl0', proto: 'bird', options: 'onlink'),
+        Pharos::Configuration::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(type: 'blackhole', prefix: '10.32.0.0/24', proto: 'bird'),
+        Pharos::Configuration::Route.new(prefix: '10.32.0.39', dev: 'cali5f1ddd73716', options: 'scope link'),
+        Pharos::Configuration::Route.new(prefix: '10.32.1.0/24', via: '192.0.2.10', dev: 'tunl0', proto: 'bird', options: 'onlink'),
       ] }
 
       it 'validates' do
@@ -248,10 +248,10 @@ describe Pharos::Phases::ValidateHost do
         pod_network_cidr: '10.32.0.0/12',
       }}
       let(:routes) { [
-        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
-        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '10.32.0.0/12', dev: 'weave', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '10.32.0.0/12', dev: 'weave', proto: 'kernel'),
       ] }
 
       it 'validates' do

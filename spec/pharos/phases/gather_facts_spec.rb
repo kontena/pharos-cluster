@@ -72,7 +72,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_content) { "# nameserver config\nnameserver 8.8.8.8\n" }
 
       it 'returns ok' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: false,
           systemd_resolved_stub: false,
         )
@@ -83,7 +83,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_content) { "nameserver 127.0.0.53" }
 
       it 'returns nameserver_localhost' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: false,
         )
@@ -94,7 +94,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_content) { "nameserver ::1" }
 
       it 'returns nameserver_localhost' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: false,
         )
@@ -106,7 +106,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_readlink) { '../run/systemd/resolve/stub-resolv.conf' }
 
       it 'returns systemd_resolved_stub' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: true,
         )
@@ -118,7 +118,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_readlink) { '/run/resolvconf/resolv.conf' }
 
       it 'returns ok' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: false,
           systemd_resolved_stub: false,
         )

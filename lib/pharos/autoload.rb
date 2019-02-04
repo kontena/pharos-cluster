@@ -66,6 +66,8 @@ module Pharos
 
   module Configuration
     autoload :Host, 'pharos/configuration/host'
+    autoload :Route, 'pharos/configuration/route'
+    autoload :ResolvConf, 'pharos/configuration/resolv_conf'
     autoload :Taint, 'pharos/configuration/taint'
     autoload :OsRelease, 'pharos/configuration/os_release'
   end
