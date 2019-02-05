@@ -6,6 +6,7 @@ require_relative 'bastion'
 
 require 'net/ssh'
 require 'net/ssh/proxy/jump'
+require 'ipaddr'
 
 module Pharos
   module Configuration
@@ -79,7 +80,7 @@ module Pharos
       end
 
       def local?
-        address == '127.0.0.1'
+        IPAddr.new(address).loopback?
       end
 
       def transport(**options)
