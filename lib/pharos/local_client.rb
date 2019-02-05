@@ -6,10 +6,6 @@ module Pharos
       nil
     end
 
-    def closed?
-      false
-    end
-
     def connected?
       true
     end

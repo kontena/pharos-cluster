@@ -92,8 +92,12 @@ module Pharos
       Pharos::SSH::RemoteFile.new(self, path)
     end
 
+    def closed?
+      connected?
+    end
+
     def connected?
-      !closed?
+      abstract_method!
     end
 
     def connect
@@ -101,10 +105,6 @@ module Pharos
     end
 
     def command
-      abstract_method!
-    end
-
-    def closed?
       abstract_method!
     end
 
