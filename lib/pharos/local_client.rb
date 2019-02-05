@@ -95,7 +95,7 @@ module Pharos
     # @param path [String]
     # @return [Pathname]
     def file(path)
-      Pharos::LocalFile.new(path)
+      Pharos::SSH::RemoteFile.new(self, path)
     end
 
     def closed?
