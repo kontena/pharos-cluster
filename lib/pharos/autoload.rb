@@ -35,13 +35,18 @@ module Pharos
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :Transport, 'pharos/transport'
-  autoload :CommandResult, 'pharos/command_result'
-  autoload :LocalCommand, 'pharos/local_command'
 
   module Transport
     autoload :Base, 'pharos/transport/base'
     autoload :Local, 'pharos/transport/local'
     autoload :SSH, 'pharos/transport/ssh'
+    autoload :InteractiveSSH, 'pharos/transport/interactive_ssh'
+
+    module Command
+      autoload :SSH, 'pharos/transport/command/ssh'
+      autoload :Local, 'pharos/transport/command/local'
+      autoload :Result, 'pharos/transport/command/result'
+    end
   end
 
   module Kube
@@ -59,14 +64,6 @@ module Pharos
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
     autoload :StringCasing, 'pharos/core-ext/string_casing'
-  end
-
-  module SSH
-    autoload :Client, 'pharos/ssh/client'
-    autoload :RemoteCommand, 'pharos/ssh/remote_command'
-    autoload :RemoteFile, 'pharos/ssh/remote_file'
-    autoload :Tempfile, 'pharos/ssh/tempfile'
-    autoload :InteractiveSession, 'pharos/ssh/interactive_session'
   end
 
   module Terraform

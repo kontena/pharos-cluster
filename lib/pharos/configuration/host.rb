@@ -88,6 +88,9 @@ module Pharos
 
       def transport(**options)
         @transport ||= Pharos::Transport.for(self, **options)
+      rescue StandardError
+        @transport = nil
+        raise
       end
 
       def api_address

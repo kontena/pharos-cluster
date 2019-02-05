@@ -8,7 +8,7 @@ module Pharos
     class RemoteFile
       attr_reader :path
       # Initializes an instance of a remote file
-      # @param [Pharos::SSH::Client]
+      # @param [Pharos::Transport::Base]
       # @param path [String]
       def initialize(client, path)
         @client = client
@@ -19,7 +19,7 @@ module Pharos
       alias to_s path
 
       # Removes the remote file
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def unlink
         @client.exec!("sudo rm #{escaped_path}")
@@ -37,7 +37,7 @@ module Pharos
       end
 
       # @param content [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def write(content)
         tmp = temp_file_path.shellescape
@@ -48,14 +48,14 @@ module Pharos
       end
 
       # @param mode [String, Integer]
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def chmod(mode)
         @client.exec!("sudo chmod #{mode} #{escaped_path}")
       end
 
       # Returns remote jfile content
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def read
         @client.exec!("sudo cat #{escaped_path}")
@@ -69,14 +69,14 @@ module Pharos
       end
 
       # Performs the block if the remote file exists, otherwise returns false
-      # @yield [Pharos::SSH::RemoteFile]
+      # @yield [Pharos::Transport::File]
       def with_existing
         exist? && yield(self)
       end
 
       # Moves the current file to target path
       # @param target [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def move(target)
         @client.exec!("sudo mv #{@path} #{target.shellescape}")
@@ -85,7 +85,7 @@ module Pharos
 
       # Copies the current file to target path
       # @param target [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def copy(target)
         @client.exec!("sudo cp #{escaped_path} #{target.shellescape}")
@@ -94,7 +94,7 @@ module Pharos
 
       # Creates a symlink at the target path that points to the current file
       # @param target [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def link(target)
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+#
 module Pharos
   module Transport
     class Local < Base
@@ -19,7 +19,7 @@ module Pharos
       private
 
       def command(cmd, **options)
-        LocalCommand.new(self, cmd, **options)
+        Pharos::Transport::Command::Local.new(self, cmd, **options)
       end
     end
   end

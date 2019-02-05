@@ -43,7 +43,7 @@ module Pharos
       end
 
       def interactive_session
-        synchronize { Pharos::SSH::InteractiveSession.new(self).run }
+        synchronize { Pharos::Transport::InteractiveSSH.new(self).run }
       end
 
       def connected?
@@ -57,7 +57,7 @@ module Pharos
       private
 
       def command(cmd, **options)
-        RemoteCommand.new(self, cmd, **options)
+        Pharos::Transport::Command::SSH.new(self, cmd, **options)
       end
     end
   end

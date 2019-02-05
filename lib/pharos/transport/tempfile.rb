@@ -4,21 +4,21 @@ require 'securerandom'
 require_relative 'remote_file'
 
 module Pharos
-  module SSH
+  module Transport
     # A temporary filename on a remote host
     # Optionally uploads given content.
     # When used with a block, removes the temporary file after execution.
-    class Tempfile < RemoteFile
+    class Tempfile < Pharos::Transport::File
       # @param client [Pharos::SSH::Client]
       # @param prefix [String] Filename prefix, default "pharos"
       # @param content [NilClass,String,IO] Content to upload to remote host
       # @yield [String] Temporary filename
       # @example
-      #   Pharos::SSH::Tempfile.new(client) do |path|
+      #   Pharos::Transport::Tempfile.new(client) do |path|
       #     client.exec("uname -a >> #{path}")
       #   end
       # @example
-      #   tempfile = Pharos::SSH::Tempfile.new(client)
+      #   tempfile = Pharos::Transport::Tempfile.new(client)
       #   client.exec("uname -a >> #{path}")
       #   tempfile.unlink
       def initialize(client, prefix: "pharos", content: nil, &block)
@@ -30,7 +30,7 @@ module Pharos
       end
 
       # @param content [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
+      # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
       def write(content)
         @client.exec!(

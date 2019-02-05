@@ -44,10 +44,10 @@ module Pharos
       #
       # @param prefix [String] tempfile filename prefix (default "pharos")
       # @param content [String,IO] initial file content, default blank
-      # @return [Pharos::SSH::Tempfile]
-      # @yield [Pharos::SSH::Tempfile]
+      # @return [Pharos::Transport::Tempfile]
+      # @yield [Pharos::Transport::Tempfile]
       def tempfile(prefix: "pharos", content: nil, &block)
-        synchronize { Pharos::SSH::Tempfile.new(self, prefix: prefix, content: content, &block) }
+        synchronize { Pharos::Transport::Tempfile.new(self, prefix: prefix, content: content, &block) }
       end
 
       # @param cmd [String] command to execute
@@ -71,7 +71,7 @@ module Pharos
       # @raise [Pharos::ExecError]
       # @return [String] stdout
       def exec_script!(name, env: {}, path: nil, **options)
-        script = File.read(path || name)
+        script = ::File.read(path || name)
         cmd = %w(sudo env -i -)
 
         cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
@@ -90,7 +90,7 @@ module Pharos
       # @param path [String]
       # @return [Pathname]
       def file(path)
-        Pharos::SSH::RemoteFile.new(self, path)
+        Pharos::Transport::File.new(self, path)
       end
 
       def closed?

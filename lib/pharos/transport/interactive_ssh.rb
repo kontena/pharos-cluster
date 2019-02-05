@@ -4,11 +4,11 @@ require 'io/console'
 require 'io/wait'
 
 module Pharos
-  module SSH
-    class InteractiveSession
+  module Transport
+    class InteractiveSSH
       attr_reader :client
 
-      # @param client [Pharos::SSH::Client]
+      # @param client [Pharos::Transport::SSH]
       def initialize(client)
         @client = client
       end
