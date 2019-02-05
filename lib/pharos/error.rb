@@ -23,7 +23,14 @@ module Pharos
     def initialize(cmd, exit_status, output)
       @cmd = cmd
       @exit_status = exit_status
-      @output = output
+      @output = if output.respond_to?(:string)
+                  output.string
+                elsif output.respond_to?(:read)
+                  output.rewind
+                  output.read
+                else
+                  output
+                end
     end
 
     def message

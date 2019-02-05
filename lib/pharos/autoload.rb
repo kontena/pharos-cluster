@@ -34,6 +34,7 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
+  autoload :CommandResult, 'pharos/command_result'
   autoload :LocalClient, 'pharos/local_client'
   autoload :LocalCommand, 'pharos/local_command'
 
