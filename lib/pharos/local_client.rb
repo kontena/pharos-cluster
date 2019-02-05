@@ -102,7 +102,7 @@ module Pharos
 
     def interactive_session
       return unless ENV['SHELL']
-      synchronize { exec ENV['SHELL'] }
+      synchronize { system ENV['SHELL'] }
     end
 
     private
