@@ -7,10 +7,13 @@ require_relative 'bastion'
 require 'net/ssh'
 require 'net/ssh/proxy/jump'
 require 'ipaddr'
+require 'forwardable'
 
 module Pharos
   module Configuration
     class Host < Pharos::Configuration::Struct
+      extend Forwardable
+
       class ResolvConf < Pharos::Configuration::Struct
         attribute :nameserver_localhost, Pharos::Types::Strict::Bool
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
@@ -238,65 +241,7 @@ module Pharos
         attributes[:bastion] = bastion
       end
 
-      # @param prefix [String] tempfile filename prefix (default "pharos")
-      # @param content [String,IO] initial file content, default blank
-      # @return [Pharos::SSH::Tempfile]
-      # @yield [Pharos::SSH::Tempfile]
-      def tempfile(prefix: "pharos", content: nil, &block)
-        transport.tempfile(prefix: prefix, content: content, &block)
-      end
-
-      # @param cmd [String] command to execute
-      # @param options [Hash]
-      # @return [Pharos::Command::Result]
-      def exec(cmd, **options)
-        transport.exec(cmd, **options)
-      end
-
-      # @param cmd [String] command to execute
-      # @param options [Hash]
-      # @raise [Pharos::ExecError]
-      # @return [String] stdout
-      def exec!(cmd, **options)
-        transport.exec!(cmd, **options)
-      end
-
-      # @param cmd [String] command to execute
-      # @param options [Hash]
-      # @return [Boolean]
-      def exec?(cmd, **options)
-        transport.exec?(cmd, **options)
-      end
-
-      # @param name [String] name of script
-      # @param env [Hash] environment variables hash
-      # @param path [String] real path to file, defaults to script
-      # @raise [Pharos::ExecError]
-      # @return [String] stdout
-      def exec_script!(name, env: {}, path: nil, **options)
-        transport.exec_script!(name, env: env, path: path, **options)
-      end
-
-      def interactive_session
-        transport.interactive_session
-      end
-
-      # @param path [String]
-      # @return [Pharos::SSH::RemoteFile]
-      def file(path)
-        transport.file(path)
-      end
-
-      # @return [Boolean] transport connected?
-      def connected?
-        transport.connected?
-      end
-
-      # Disconnect transport
-      # @return [Boolean]
-      def disconnect
-        transport.disconnect
-      end
+      def_delegators :transport, :tempfile, :exec, :exec!, :exec?, :exec_script!, :interactive_session, :file, :connected?, :disconnect
     end
   end
 end
