@@ -5,16 +5,14 @@ require 'net/ssh/gateway'
 
 module Pharos
   module SSH
-    class Client < Pharos::LocalClient
+    class Client < Pharos::Transport
       attr_reader :session
 
       # @param host [String]
-      # @param user [String, NilClass]
       # @param opts [Hash]
-      def initialize(host, user:, **opts)
+      def initialize(host, **opts)
         super(host, opts)
-        @user = user
-        @host = host
+        @user = @opts.delete(:user)
       end
 
       # @return [Hash,NilClass]
@@ -50,10 +48,6 @@ module Pharos
 
       def connected?
         synchronize { @session && !@session.closed? }
-      end
-
-      def closed?
-        !connected?
       end
 
       def disconnect
