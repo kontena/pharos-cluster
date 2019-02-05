@@ -277,6 +277,10 @@ module Pharos
         transport.exec_script!(name, env: env, path: path, **options)
       end
 
+      def interactive_session
+        transport.interactive_session
+      end
+
       # @param path [String]
       # @return [Pharos::SSH::RemoteFile]
       def file(path)
