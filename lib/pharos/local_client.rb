@@ -47,11 +47,7 @@ module Pharos
     # @return [Pharos::SSH::Tempfile]
     # @yield [Pharos::SSH::Tempfile]
     def tempfile(prefix: "pharos", content: nil)
-      ::Tempfile.new(prefix) do |tmpfile|
-        tmpfile.write(content) if content
-        tmpfile.rewind
-        yield tmpfile
-      end
+      synchronize { Pharos::SSH::Tempfile.new(self, prefix: prefix, content: content, &block) }
     end
 
     # @param cmd [String] command to execute

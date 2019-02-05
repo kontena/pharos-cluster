@@ -47,7 +47,7 @@ module Pharos
       ensure
         begin
           unlink
-        rescue Pharos::SSH::RemoteCommand::ExecError
+        rescue Pharos::SSH::RemoteCommand::ExecError, Pharos::SSH::LocalCommand::ExecError
           @client.logger.debug { "File did not exist in ensure" }
         end
       end

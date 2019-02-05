@@ -49,21 +49,21 @@ module Pharos
 
       # @param mode [String, Integer]
       # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError,Pharos::LocalCommand::ExecError]
       def chmod(mode)
         @client.exec!("sudo chmod #{mode} #{escaped_path}")
       end
 
       # Returns remote jfile content
       # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError,Pharos::LocalCommand::ExecError]
       def read
         @client.exec!("sudo cat #{escaped_path}")
       end
 
       # True if the file exists. Assumes a bash-like shell.
       # @return [Boolean]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError,Pharos::LocalCommand::ExecError]
       def exist?
         @client.exec!("sudo env -i bash --norc --noprofile -c -- 'test -e #{escaped_path} && echo true || echo false'").strip == "true"
       end
@@ -77,7 +77,7 @@ module Pharos
       # Moves the current file to target path
       # @param target [String]
       # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError,Pharos::LocalCommand::ExecError]
       def move(target)
         @client.exec!("sudo mv #{@path} #{target.shellescape}")
       end
@@ -86,7 +86,7 @@ module Pharos
       # Copies the current file to target path
       # @param target [String]
       # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError,Pharos::LocalCommand::ExecError]
       def copy(target)
         @client.exec!("sudo cp #{escaped_path} #{target.shellescape}")
       end
@@ -95,13 +95,13 @@ module Pharos
       # Creates a symlink at the target path that points to the current file
       # @param target [String]
       # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError,Pharos::LocalCommand::ExecError]
       def link(target)
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
       end
 
       # @return [String, nil]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raises [Pharos::SSH::RemoteCommand::ExecError,Pharos::LocalCommand::ExecError]
       def readlink
         target = @client.exec!("readlink #{escaped_path} || echo").strip
 
