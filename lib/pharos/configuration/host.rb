@@ -87,26 +87,7 @@ module Pharos
       end
 
       def transport(**options)
-        @transport ||= local? ? Pharos::LocalClient.new(**options) : ssh(**options)
-      end
-
-      # param options [Hash] extra options for the SSH client, see Net::SSH#start
-      def ssh(**options)
-        return @ssh if @ssh
-
-        opts = {}
-        opts[:keys] = [ssh_key_path] if ssh_key_path
-        opts[:send_env] = [] # override default to not send LC_* envs
-        opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
-        opts[:bastion] = bastion if bastion
-        @ssh = Pharos::SSH::Client.new(address, user: user, **opts.merge(options)).tap(&:connect)
-      rescue StandardError
-        @ssh = nil
-        raise
-      end
-
-      def ssh?
-        @ssh && !@ssh.closed?
+        @transport ||= Pharos::Transport.for(self, **options)
       end
 
       def api_address

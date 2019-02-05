@@ -4,8 +4,8 @@ require 'net/ssh'
 require 'net/ssh/gateway'
 
 module Pharos
-  module SSH
-    class Client < Pharos::Transport
+  module Transport
+    class SSH < Base
       attr_reader :session
 
       # @param host [String]

@@ -36,8 +36,13 @@ module Pharos
   autoload :ClusterManager, 'pharos/cluster_manager'
   autoload :Transport, 'pharos/transport'
   autoload :CommandResult, 'pharos/command_result'
-  autoload :LocalClient, 'pharos/local_client'
   autoload :LocalCommand, 'pharos/local_command'
+
+  module Transport
+    autoload :Base, 'pharos/transport/base'
+    autoload :Local, 'pharos/transport/local'
+    autoload :SSH, 'pharos/transport/ssh'
+  end
 
   module Kube
     autoload :Stack, 'pharos/kube/stack'
