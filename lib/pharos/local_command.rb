@@ -37,11 +37,28 @@ module Pharos
     # @return [Pharos::CommandResult]
     def run
       result.append(@source.nil? ? @cmd : "#{@cmd} < #{@source}", :cmd)
-      result.append(@stdin, :stdin) if @stdin
-      stdout, stderr, status = Open3.capture3(@cmd, stdin_data: @stdin)
-      result.append(stdout, :stdout)
-      result.append(stderr, :stderr)
-      result.exit_status = status.exitstatus
+      Open3.popen3(@cmd) do |stdin, stdout, stderr, wait_thr|
+        unless stdin.closed?
+          stdin.write(@stdin) if @stdin
+          stdin.close
+        end
+
+        until [stdout, stderr].all?(&:eof?)
+          readable = IO.select([stdout, stderr])
+          if readable
+            readable.first.each do |stream|
+              data = +''
+              begin
+                stream.read_nonblock(1024, data)
+              rescue EOFError => exc
+                # ignore
+              end
+              result.append(data, stream == stdout ? :stdout : :stderr) unless data.empty?
+            end
+          end
+        end
+        result.exit_status = wait_thr.value.exitstatus
+      end
       result
     end
   end

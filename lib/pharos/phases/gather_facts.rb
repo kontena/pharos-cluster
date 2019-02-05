@@ -12,6 +12,7 @@ module Pharos
       FULL_HOSTNAME_CLOUD_PROVIDERS = %w(aws vsphere).freeze
 
       def call
+        Thread.current.abort_on_exception = true
         logger.info { "Checking sudo access ..." }
         check_sudo
         logger.info { "Gathering host facts ..." }
