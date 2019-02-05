@@ -46,7 +46,7 @@ module Pharos
     # @param content [String,IO] initial file content, default blank
     # @return [Pharos::SSH::Tempfile]
     # @yield [Pharos::SSH::Tempfile]
-    def tempfile(prefix: "pharos", content: nil)
+    def tempfile(prefix: "pharos", content: nil, &block)
       synchronize { Pharos::SSH::Tempfile.new(self, prefix: prefix, content: content, &block) }
     end
 
