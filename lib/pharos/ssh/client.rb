@@ -2,42 +2,19 @@
 
 require 'net/ssh'
 require 'net/ssh/gateway'
-require 'shellwords'
-require 'monitor'
 
 module Pharos
   module SSH
-    Error = Class.new(StandardError)
-
-    EXPORT_ENVS = {
-      http_proxy: '$http_proxy',
-      HTTP_PROXY: '$HTTP_PROXY',
-      HTTPS_PROXY: '$HTTPS_PROXY',
-      NO_PROXY: '$NO_PROXY',
-      FTP_PROXY: '$FTP_PROXY',
-      PATH: '$PATH'
-    }.freeze
-
-    class Client
-      include MonitorMixin
-
-      attr_reader :session, :host
+    class Client < Pharos::LocalClient
+      attr_reader :session
 
       # @param host [String]
       # @param user [String, NilClass]
       # @param opts [Hash]
-      def initialize(host, user = nil, opts = {})
-        super()
-        @host = host
+      def initialize(host, user:, **opts)
+        super(host, opts)
         @user = user
-        @opts = opts
-      end
-
-      def logger
-        @logger ||= Logger.new($stderr).tap do |logger|
-          logger.progname = "SSH[#{@host}]"
-          logger.level = ENV["DEBUG_SSH"] ? Logger::DEBUG : Logger::INFO
-        end
+        @host = host
       end
 
       # @return [Hash,NilClass]
@@ -67,68 +44,6 @@ module Pharos
         Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
       end
 
-      # @example
-      #   tempfile do |tmp|
-      #     exec!("less #{tmp}")
-      #   end
-      # @example
-      #   tmp = tempfile.new(content: "hello")
-      #   exec!("cat #{tmp}")
-      #   tmp.unlink
-      #
-      # @param prefix [String] tempfile filename prefix (default "pharos")
-      # @param content [String,IO] initial file content, default blank
-      # @return [Pharos::SSH::Tempfile]
-      # @yield [Pharos::SSH::Tempfile]
-      def tempfile(prefix: "pharos", content: nil, &block)
-        synchronize { Tempfile.new(self, prefix: prefix, content: content, &block) }
-      end
-
-      # @param cmd [String] command to execute
-      # @param options [Hash]
-      # @return [Pharos::Command::Result]
-      def exec(cmd, **options)
-        require_session!
-        synchronize { RemoteCommand.new(self, cmd, **options).run }
-      end
-
-      # @param cmd [String] command to execute
-      # @param options [Hash]
-      # @raise [Pharos::ExecError]
-      # @return [String] stdout
-      def exec!(cmd, **options)
-        require_session!
-        synchronize { RemoteCommand.new(self, cmd, **options).run!.stdout }
-      end
-
-      # @param name [String] name of script
-      # @param env [Hash] environment variables hash
-      # @param path [String] real path to file, defaults to script
-      # @raise [Pharos::ExecError]
-      # @return [String] stdout
-      def exec_script!(name, env: {}, path: nil, **options)
-        script = File.read(path || name)
-        cmd = %w(sudo env -i -)
-
-        cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
-        cmd.concat(%w(bash --norc --noprofile -x -s))
-        logger.debug { "exec: #{cmd}" }
-        exec!(cmd, stdin: script, source: name, **options)
-      end
-
-      # @param cmd [String] command to execute
-      # @param options [Hash]
-      # @return [Boolean]
-      def exec?(cmd, **options)
-        exec(cmd, **options).success?
-      end
-
-      # @param path [String]
-      # @return [Pharos::SSH::RemoteFile]
-      def file(path)
-        Pharos::SSH::RemoteFile.new(self, path)
-      end
-
       def interactive_session
         synchronize { Pharos::SSH::InteractiveSession.new(self).run }
       end
@@ -147,8 +62,8 @@ module Pharos
 
       private
 
-      def require_session!
-        raise Error, "Connection not established" if @session.nil? || @session.closed?
+      def command(cmd, **options)
+        RemoteCommand.new(self, cmd, **options)
       end
     end
   end

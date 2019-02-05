@@ -11,6 +11,8 @@ module Pharos
 
       # @return [Pharos::CommandResult]
       def run
+        raise Pharos::ExecError, "Connection not established" unless @client.connected?
+
         result.append(@source.nil? ? @cmd : "#{@cmd} < #{@source}", :cmd)
         response = @client.session.open_channel do |channel|
           channel.env('LC_ALL', 'C.UTF-8')

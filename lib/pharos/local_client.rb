@@ -1,12 +1,9 @@
 # frozen_string_literal: true
 
-require 'shellwords'
 require 'monitor'
 
 module Pharos
   class LocalClient
-    Error = Class.new(StandardError)
-
     EXPORT_ENVS = {
       http_proxy: '$http_proxy',
       HTTP_PROXY: '$HTTP_PROXY',
@@ -18,18 +15,20 @@ module Pharos
 
     include MonitorMixin
 
-    attr_reader :session, :host
+    attr_reader :host
 
+    # @param host [String]
     # @param opts [Hash]
-    def initialize(opts = {})
+    def initialize(host, **opts)
       super()
+      @host = host
       @opts = opts
     end
 
     def logger
       @logger ||= Logger.new($stderr).tap do |logger|
         logger.progname = "Local[localhost]"
-        logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
+        logger.level = ENV["DEBUG_TRANSPORT"] ? Logger::DEBUG : Logger::INFO
       end
     end
 
@@ -54,7 +53,7 @@ module Pharos
     # @param options [Hash]
     # @return [Pharos::Command::Result]
     def exec(cmd, **options)
-      synchronize { LocalCommand.new(self, cmd, **options).run }
+      synchronize { command(cmd, **options).run }
     end
 
     # @param cmd [String] command to execute
@@ -62,7 +61,7 @@ module Pharos
     # @raise [Pharos::ExecError]
     # @return [String] stdout
     def exec!(cmd, **options)
-      synchronize { LocalCommand.new(self, cmd, **options).run!.stdout }
+      synchronize { command(cmd, **options).run!.stdout }
     end
 
     # @param name [String] name of script
@@ -99,6 +98,17 @@ module Pharos
 
     def connected?
       true
+    end
+
+    def interactive_session
+      return unless ENV['SHELL']
+      synchronize { exec ENV['SHELL'] }
+    end
+
+    private
+
+    def command(cmd, **options)
+      LocalCommand.new(self, cmd, **options)
     end
   end
 end
