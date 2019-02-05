@@ -4,24 +4,6 @@ module Pharos
   class LocalCommand
     Error = Class.new(StandardError)
 
-    class ExecError < Error
-      attr_reader :cmd, :exit_status, :output
-
-      def initialize(cmd, exit_status, output)
-        @cmd = cmd
-        @exit_status = exit_status
-        @output = output
-      end
-
-      def message
-        "Local exec failed with code #{@exit_status}: #{@cmd}\n#{@output}"
-      end
-    end
-
-    def self.debug?
-      @debug ||= !ENV['DEBUG'].to_s.empty?
-    end
-
     INDENT = "    "
 
     attr_reader :cmd
@@ -40,10 +22,10 @@ module Pharos
     end
 
     # @return [Result]
-    # @raises [ExecError] if result errors
+    # @raise [Pharos::ExecError]
     def run!
       result = run
-      raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
+      raise Pharos::ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
 
       result
     end

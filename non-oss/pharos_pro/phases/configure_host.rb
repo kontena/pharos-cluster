@@ -17,7 +17,7 @@ module Pharos
               logger.info { "Draining node ..." }
               begin
                 drain_host
-              rescue Pharos::SSH::RemoteCommand::ExecError
+              rescue Pharos::ExecError
                 drain_host!
               end
             end

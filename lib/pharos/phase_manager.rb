@@ -10,8 +10,7 @@ module Pharos
       OpenSSL::SSL::SSLError,
       Excon::Error,
       K8s::Error,
-      Pharos::SSH::RemoteCommand::ExecError,
-      Pharos::LocalCommand::ExecError,
+      Pharos::ExecError,
       Errno::ECONNRESET
     ].freeze
 

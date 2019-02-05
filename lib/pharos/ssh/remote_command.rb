@@ -5,20 +5,6 @@ module Pharos
     class RemoteCommand
       Error = Class.new(StandardError)
 
-      class ExecError < Error
-        attr_reader :cmd, :exit_status, :output
-
-        def initialize(cmd, exit_status, output)
-          @cmd = cmd
-          @exit_status = exit_status
-          @output = output
-        end
-
-        def message
-          "SSH exec failed with code #{@exit_status}: #{@cmd}\n#{@output}"
-        end
-      end
-
       class Result
         attr_reader :stdin, :stdout, :stderr, :output
         attr_accessor :exit_status
@@ -62,10 +48,10 @@ module Pharos
       end
 
       # @return [Result]
-      # @raises [ExecError] if result errors
+      # @raises [Pharos::ExecError] if command returns an error
       def run!
         result = run
-        raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
+        raise Pharos::ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
         result
       end
 

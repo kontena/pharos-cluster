@@ -31,7 +31,7 @@ module Pharos
 
       # @param content [String]
       # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raise [Pharos::ExecError]
       def write(content)
         @client.exec!(
           "cat > #{escaped_path}",
@@ -47,7 +47,7 @@ module Pharos
       ensure
         begin
           unlink
-        rescue Pharos::SSH::RemoteCommand::ExecError, Pharos::SSH::LocalCommand::ExecError
+        rescue Pharos::ExecError
           @client.logger.debug { "File did not exist in ensure" }
         end
       end
