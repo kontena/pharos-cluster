@@ -30,8 +30,8 @@ module Pharos
       @cluster_context = cluster_context
     end
 
-    def ssh
-      @host.ssh
+    def transport
+      @host.transport
     end
 
     def logger
@@ -57,7 +57,7 @@ module Pharos
     # @param script [String] name of file under ../scripts/
     # @param vars [Hash]
     def exec_script(script, vars = {})
-      ssh.exec_script!(
+      host.exec_script!(
         script,
         env: vars,
         path: script_path(script)

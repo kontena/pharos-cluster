@@ -30,10 +30,6 @@ module Pharos
         host.config
       end
 
-      def ssh
-        host.ssh
-      end
-
       def transport
         host.transport
       end

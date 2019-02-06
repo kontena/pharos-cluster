@@ -32,10 +32,6 @@ module Pharos
       file.read
     end
 
-    def ssh
-      @ssh ||= master_host.ssh
-    end
-
     # @return [Pharos::Config]
     def master_host
       @master_host ||= load_config.master_host

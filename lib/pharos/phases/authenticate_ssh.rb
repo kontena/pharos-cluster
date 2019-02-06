@@ -8,7 +8,7 @@ module Pharos
       def call
         return if host.local?
 
-        host.ssh(non_interactive: false)
+        host.transport(non_interactive: false)
         logger.info { "Authenticated as #{host.user}@#{host}" }
       end
     end
