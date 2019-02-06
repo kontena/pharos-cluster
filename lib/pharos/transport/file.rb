@@ -28,12 +28,12 @@ module Pharos
 
       # @return [String]
       def basename
-        File.basename(@path)
+        ::File.basename(@path)
       end
 
       # @return [String]
       def dirname
-        File.dirname(@path)
+        ::File.dirname(@path)
       end
 
       # @param content [String]
@@ -125,7 +125,7 @@ module Pharos
       private
 
       def temp_file_path(prefix: nil)
-        File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}")
+        ::File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}")
       end
 
       def escaped_path
