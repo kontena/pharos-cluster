@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'securerandom'
-require_relative 'remote_file'
+require_relative 'transport_file'
 
 module Pharos
   module Transport

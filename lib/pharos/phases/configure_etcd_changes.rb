@@ -69,7 +69,7 @@ module Pharos
 
       # @return [Pharos::Etcd::Client]
       def etcd
-        @etcd ||= Pharos::Etcd::Client.new(ssh)
+        @etcd ||= Pharos::Etcd::Client.new(host.transport)
       end
 
       # @return [String,NilClass]
