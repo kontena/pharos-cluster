@@ -142,7 +142,7 @@ module Pharos
         end
       end
 
-      # @return [Pharos::Transport::File]
+      # @return [Pharos::Transport::TransportFile]
       def env_file
         host.file('/etc/environment')
       end

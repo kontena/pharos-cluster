@@ -5,7 +5,7 @@ require 'securerandom'
 
 module Pharos
   module Transport
-    class File
+    class TransportFile
       attr_reader :path
       # Initializes an instance of a remote file
       # @param [Pharos::Transport::Base]
@@ -69,7 +69,7 @@ module Pharos
       end
 
       # Performs the block if the remote file exists, otherwise returns false
-      # @yield [Pharos::Transport::File]
+      # @yield [Pharos::Transport::TransportFile]
       def with_existing
         exist? && yield(self)
       end

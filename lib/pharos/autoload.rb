@@ -37,7 +37,7 @@ module Pharos
   autoload :Transport, 'pharos/transport'
 
   module Transport
-    autoload :File, 'pharos/transport/file'
+    autoload :TransportFile, 'pharos/transport/transport_file'
     autoload :Base, 'pharos/transport/base'
     autoload :Local, 'pharos/transport/local'
     autoload :SSH, 'pharos/transport/ssh'

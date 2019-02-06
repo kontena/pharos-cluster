@@ -24,7 +24,7 @@ describe Pharos::Phases::ConfigureSecretsEncryption do
   end
 
   describe '#read_config_keys' do
-    let(:file) { instance_double(Pharos::Transport::File) }
+    let(:file) { instance_double(Pharos::Transport::TransportFile) }
 
     before do
       allow(master_ssh).to receive(:file).with('/etc/pharos/secrets-encryption/config.yml').and_return(file)

@@ -62,7 +62,7 @@ describe Pharos::Phases::GatherFacts do
   end
 
   describe '#get_resolvconf' do
-    let(:file) { instance_double Pharos::Transport::File }
+    let(:file) { instance_double Pharos::Transport::TransportFile }
     let(:file_content) { "" }
     let(:file_readlink) { nil }
 

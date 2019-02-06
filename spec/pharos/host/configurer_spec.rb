@@ -59,7 +59,7 @@ describe Pharos::Host::Configurer do
   describe '#update_env_file' do
     let(:host) { instance_double(Pharos::Configuration::Host) }
     let(:ssh) { instance_double(Pharos::Transport::SSH) }
-    let(:file) { instance_double(Pharos::Transport::File) }
+    let(:file) { instance_double(Pharos::Transport::TransportFile) }
     let(:host_env_content) { "PATH=/bin:/usr/local/bin\n" }
 
     subject { described_class.new(host) }
@@ -171,7 +171,7 @@ describe Pharos::Host::Configurer do
 
   describe '#current_crio_cgroup_manager' do
     let(:ssh) { instance_double(Pharos::Transport::SSH) }
-    let(:file) { instance_double(Pharos::Transport::File) }
+    let(:file) { instance_double(Pharos::Transport::TransportFile) }
     let(:config) {
       %{
 # cgroup_manager is the cgroup management implementation to be used
