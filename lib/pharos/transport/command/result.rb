@@ -56,10 +56,9 @@ module Pharos
         end
 
         def initialize_debug
-          if !ENV['DEBUG'].to_s.empty?
-            @pastel = Pastel.new(enabled: $stdout.tty?)
-            @debug_prefix = "    #{@pastel.dim("#{hostname}:")} "
-          end
+          return if ENV['DEBUG'].to_s.empty?
+          @pastel = Pastel.new(enabled: $stdout.tty?)
+          @debug_prefix = "    #{@pastel.dim("#{hostname}:")} "
         end
 
         # @return [Boolean]
@@ -89,6 +88,7 @@ module Pharos
         # @return [Integer]
         def debug_stdin(data)
           return if ENV["DEBUG_STDIN"].to_s.empty?
+
           synchronize do
             $stdout << @debug_prefix << @pastel.green("< #{data}")
           end

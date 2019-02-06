@@ -47,16 +47,17 @@ module Pharos
 
             until [stdout, stderr].all?(&:eof?)
               readable = IO.select([stdout, stderr])
-              if readable
-                readable.first.each do |stream|
-                  data = +''
-                  begin
-                    stream.read_nonblock(1024, data)
-                  rescue EOFError => exc
-                    # ignore
-                  end
-                  result.append(data, stream == stdout ? :stdout : :stderr) unless data.empty?
+              next unless readablereadable&.first&.each do |stream|
+                data = +''
+                # rubocop:disable Lint/HandleExceptions
+                begin
+                  stream.read_nonblock(1024, data)
+                rescue EOFError => exc
+                  # ignore, it's expected for read_nonblock to raise EOFError
+                  # when all is read
                 end
+                # rubocop:enable Lint/HandleExceptions
+                result.append(data, stream == stdout ? :stdout : :stderr) unless data.empty?
               end
             end
             result.exit_status = wait_thr.value.exitstatus

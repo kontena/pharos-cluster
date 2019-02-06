@@ -156,6 +156,7 @@ module Pharos
           host_env_file.read.lines.each do |line|
             line.strip!
             next if line.start_with?('#')
+
             key, val = line.split('=', 2)
             val&.delete_suffix!('"') if val&.delete_prefix!('"')
             val = nil if val.to_s.empty?

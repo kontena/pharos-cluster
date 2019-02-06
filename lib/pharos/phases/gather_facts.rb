@@ -48,6 +48,7 @@ module Pharos
       # @return [Pharos::Configuration::OsRelease]
       def os_release
         raise Pharos::InvalidHostError, "Only linux hosts supported" unless host.exec?('uname | grep -q -i linux')
+
         os_info = {}
         host.file('/etc/os-release').each_line do |line|
           match = line.match(/^(.+)=(.+)$/)

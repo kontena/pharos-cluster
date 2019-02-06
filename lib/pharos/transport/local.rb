@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-#
+
 module Pharos
   module Transport
     class Local < Base
@@ -13,6 +13,7 @@ module Pharos
 
       def interactive_session
         return unless ENV['SHELL']
+
         synchronize { system ENV['SHELL'] }
       end
 

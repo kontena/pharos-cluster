@@ -41,7 +41,7 @@ module Pharos
             'kubelet-certificate-authority' => CA_FILE,
             'repair-malformed-updates' => 'false', # CIS 1.1.9
             'tls-cipher-suites' => TLS_CIPHERS, # CIS 1.1.30
-            'service-account-lookup' => 'true', # CIS 1.1.23
+            'service-account-lookup' => 'true' # CIS 1.1.23
           },
           'controllerManagerExtraArgs' => {
             'horizontal-pod-autoscaler-use-rest-clients' => 'true',
@@ -124,9 +124,9 @@ module Pharos
             'endpoints' => @config.etcd_hosts.map { |h|
               "https://#{@config.etcd_peer_address(h)}:2379"
             },
-            'certFile'  => '/etc/pharos/pki/etcd/client.pem',
-            'caFile'    => '/etc/pharos/pki/ca.pem',
-            'keyFile'   => '/etc/pharos/pki/etcd/client-key.pem'
+            'certFile' => '/etc/pharos/pki/etcd/client.pem',
+            'caFile' => '/etc/pharos/pki/ca.pem',
+            'keyFile' => '/etc/pharos/pki/etcd/client-key.pem'
           }
         }
       end

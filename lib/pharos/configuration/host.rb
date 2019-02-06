@@ -20,7 +20,7 @@ module Pharos
       end
 
       class Route < Pharos::Configuration::Struct
-        ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
+        ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$).freeze
 
         # @param line [String]
         # @return [Pharos::Configuration::Host::Route]
@@ -215,6 +215,7 @@ module Pharos
       def configurer
         return @configurer if @configurer
         raise "Os release not set" unless os_release&.id
+
         @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
       end
 
