@@ -175,7 +175,7 @@ module Pharos
     end
 
     def disconnect
-      config.hosts.map(&:ssh).select(&:connected?).each(&:disconnect)
+      config.hosts.map(&:disconnect)
     end
   end
 end

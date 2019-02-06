@@ -76,7 +76,7 @@ module Pharos
       @host_configurer ||= @host.configurer
     end
 
-    # @return [Pharos::SSH::Client]
+    # @return [Pharos::Transport::SSH,Pharos::Transport::Local]
     def master_ssh
       return cluster_context['master-ssh'] if cluster_context['master-ssh']
 

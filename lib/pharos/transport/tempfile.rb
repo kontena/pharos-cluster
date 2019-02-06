@@ -5,11 +5,11 @@ require_relative 'remote_file'
 
 module Pharos
   module Transport
-    # A temporary filename on a remote host
+    # A temporary filename on a host
     # Optionally uploads given content.
     # When used with a block, removes the temporary file after execution.
     class Tempfile < Pharos::Transport::File
-      # @param client [Pharos::SSH::Client]
+      # @param client [Pharos::Transport::SSH,Pharos::Transport::Local]
       # @param prefix [String] Filename prefix, default "pharos"
       # @param content [NilClass,String,IO] Content to upload to remote host
       # @yield [String] Temporary filename

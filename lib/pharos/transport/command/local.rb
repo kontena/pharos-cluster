@@ -6,7 +6,7 @@ module Pharos
       class Local
         attr_reader :cmd, :result
 
-        # @param client [Pharos::SSH::Client] ssh client instance
+        # @param client [Pharos::Transport::Local] client instance
         # @param cmd [String,Array<String>] command to execute
         # @param stdin [String,IO] attach string or stream to command STDIN
         # @param source [String]

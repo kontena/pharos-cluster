@@ -142,7 +142,7 @@ module Pharos
         end
       end
 
-      # @return [Pharos::SSH::File]
+      # @return [Pharos::Transport::File]
       def env_file
         host.file('/etc/environment')
       end

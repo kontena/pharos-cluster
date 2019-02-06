@@ -10,6 +10,7 @@ module Pharos
           @mutex ||= Mutex.new
         end
 
+        # @param hostname [String]
         def initialize(hostname)
           @hostname = hostname
           @stdin = +''
@@ -20,15 +21,15 @@ module Pharos
           initialize_debug
         end
 
-        def synchronize(&block)
-          self.class.mutex.synchronize(&block)
-        end
-
+        # @param exitstatus [Integer]
         def exit_status=(exitstatus)
           @exit_status = exitstatus
           debug { debug_exit(exitstatus) }
         end
 
+        # Append text to one of the streams
+        # @param data [String]
+        # @param stream [Symbol]
         def append(data, stream = :stdout)
           case stream
           when :cmd
@@ -47,24 +48,70 @@ module Pharos
           end
         end
 
+        # @return [Boolean] true when exit status is zero
         def success?
           exit_status.zero?
         end
 
+        # @return [Boolean] true when exit status is non zero
         def error?
           !success?
-        end
-
-        def initialize_debug
-          return if ENV['DEBUG'].to_s.empty?
-          @pastel = Pastel.new(enabled: $stdout.tty?)
-          @debug_prefix = "    #{@pastel.dim("#{hostname}:")} "
         end
 
         # @return [Boolean]
         def debug?
           @debug
         end
+
+        # @param cmd [String]
+        # @return [IO] $stdout
+        def debug_cmd(cmd)
+          synchronize do
+            $stdout << @debug_prefix << @pastel.cyan("$ #{cmd}") << "\n"
+          end
+        end
+
+        # @param data [String]
+        # @return [IO] $stdout
+        def debug_stdin(data)
+          return if ENV["DEBUG_STDIN"].to_s.empty?
+
+          synchronize do
+            $stdout << @debug_prefix << @pastel.green("< #{data}")
+          end
+        end
+
+        # @param data [String]
+        # @return [IO] $stdout
+        def debug_stdout(data)
+          synchronize do
+            data.each_line do |line|
+              $stdout << @debug_prefix << @pastel.dim(line)
+              $stdout << "\n" unless line.end_with?("\n")
+            end
+          end
+        end
+
+        # @param data [String]
+        # @return [IO] $stdout
+        def debug_stderr(data)
+          synchronize do
+            data.each_line do |line|
+              $stdout << @debug_prefix << @pastel.red(line)
+              $stdout << "\n" unless line.end_with?("\n")
+            end
+          end
+        end
+
+        # @param exit_status [Integer]
+        # @return [IO] $stdout
+        def debug_exit(exit_status)
+          synchronize do
+            $stdout << @debug_prefix << @pastel.yellow("! #{exit_status}") << "\n"
+          end
+        end
+
+        private
 
         if !ENV['DEBUG'].to_s.empty?
           def debug(&block)
@@ -76,52 +123,14 @@ module Pharos
           end
         end
 
-        # @param cmd [String]
-        # @return [Integer]
-        def debug_cmd(cmd)
-          synchronize do
-            $stdout << @debug_prefix << @pastel.cyan("$ #{cmd}") << "\n"
-          end
+        def synchronize(&block)
+          self.class.mutex.synchronize(&block)
         end
 
-        # @param data [String]
-        # @return [Integer]
-        def debug_stdin(data)
-          return if ENV["DEBUG_STDIN"].to_s.empty?
-
-          synchronize do
-            $stdout << @debug_prefix << @pastel.green("< #{data}")
-          end
-        end
-
-        # @param data [String]
-        # @return [String]
-        def debug_stdout(data)
-          synchronize do
-            data.each_line do |line|
-              $stdout << @debug_prefix << @pastel.dim(line)
-              $stdout << "\n" unless line.end_with?("\n")
-            end
-          end
-        end
-
-        # @param data [String]
-        # @return [String]
-        def debug_stderr(data)
-          synchronize do
-            data.each_line do |line|
-              $stdout << @debug_prefix << @pastel.red(line)
-              $stdout << "\n" unless line.end_with?("\n")
-            end
-          end
-        end
-
-        # @param exit_status [Integer]
-        # @return [Integer]
-        def debug_exit(exit_status)
-          synchronize do
-            $stdout << @debug_prefix << @pastel.yellow("! #{exit_status}") << "\n"
-          end
+        def initialize_debug
+          return if ENV['DEBUG'].to_s.empty?
+          @pastel = Pastel.new(enabled: $stdout.tty?)
+          @debug_prefix = "    #{@pastel.dim("#{hostname}:")} "
         end
       end
     end

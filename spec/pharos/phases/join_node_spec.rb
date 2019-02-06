@@ -2,18 +2,17 @@ require 'pharos/config'
 require 'pharos/phases/join_node'
 
 describe Pharos::Phases::JoinNode do
-  let(:host) {
-    double(
-      :host,
+  let(:host) do
+    Pharos::Configuration::Host.new(
       address: '10.10.10.2',
       user: 'root',
       ssh_key_path: '~/.ssh/id_rsa.pub',
       container_runtime: 'docker',
       hostname: 'node-1'
     )
-  }
-  let(:master) { double(:master) }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  end
+
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
   let(:cluster_context) {
     {
       'join-command' => join_cmd
@@ -24,10 +23,6 @@ describe Pharos::Phases::JoinNode do
 
   before(:each) do
     allow(host).to receive(:transport).and_return(ssh)
-    allow(host).to receive(:exec!).and_call_original
-    allow(host).to receive(:exec).and_call_original
-    allow(host).to receive(:exec?).and_call_original
-    allow(host).to receive(:file).and_call_original
     allow(subject).to receive(:already_joined?).and_return(false)
   end
 

@@ -4,8 +4,8 @@ require 'shellwords'
 require 'securerandom'
 
 module Pharos
-  module SSH
-    class RemoteFile
+  module Transport
+    class File
       attr_reader :path
       # Initializes an instance of a remote file
       # @param [Pharos::Transport::Base]

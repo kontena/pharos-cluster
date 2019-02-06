@@ -45,8 +45,9 @@ module Pharos
         rescue StandardError => ex
           [
             host,
-            Pharos::SSH::RemoteCommand::Result.new.tap do |r|
-              r.output << ex.message
+            Pharos::Transport::Command::Result.new(host.to_s).tap do |r|
+              r.append(ex.message, :stderr)
+              r.exit_status = -127
             end
           ]
         end
