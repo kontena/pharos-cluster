@@ -15,10 +15,6 @@ describe Pharos::Phases::GatherFacts do
 
   before do
     allow(host).to receive(:transport).and_return(ssh)
-    allow(host).to receive(:exec!).and_call_original
-    allow(host).to receive(:exec).and_call_original
-    allow(host).to receive(:exec?).and_call_original
-    allow(host).to receive(:file).and_call_original
   end
 
   describe '#private_interface_address' do
