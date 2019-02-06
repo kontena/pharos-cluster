@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Pharos
-  class SSHCommand < Pharos::Command
+  class ExecCommand < Pharos::Command
     options :filtered_hosts
 
     usage "[OPTIONS] -- [COMMANDS] ..."
