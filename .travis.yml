@@ -66,6 +66,8 @@ jobs:
       rvm: 2.5
       os: osx
       install: ls -l
+      env:
+        - secure: "FLhmFZTMyXwngw9dZgi5X2I+6z5RwjMO0x+MeqG1ujniFEloONUsJHxSu7al9KPQECp9fZC4+GewaR088PXd00bCGYVvSiIn+S+ZbNqkOtv0QFPllvZooTZtMS+inqocr6pv4BJfALytcZQuaKrJ6iVdN7bu62n3/IBDfyvtBZYnWakeVe2k1mW1XUld/YuCjHe7wRFfAMOYu4+9LAhFyJgrpPRkhPMXkuvYaxGoeqcamc5AbMrRnDapTkLJBUc1TlmSY0wMEAhX4+yL8zehihEU6wGq05BGNfigJIpQkuj62zmQZdZkE3y9x4DGZauPDXNPhyYWqdxRm3KExHhJwLrY6d4L8l6snYAG7STPIziqNfotPzcTvM5/hhUkD65JpxO7rNq7BcYjV2fYfN8IgAHR/+wgDo7p4v+Y7fh6QsJ1oOujTsvIZDRE/Ly/Q2CKsdY2HqJfoROWh8/NWBEGcx+aRQekj9h7jbLqpML2LNa8Y9FOx86GFOskEi8tPmZ+drokxhakd+P6pdfdzwjHr1RwOH9z115tkG0HDKk6WnjTosGctBrUSzQGozv5HHEU3hRdnLLgyLZKdr+GRa6jHCnP/8qq3DjXey7RGOXI/b1okhgnAOJK38do65UIaJncijmWOl0w0pfrRuk/KA5QhwUWJTf/VGnnGgYg/dF9xhY=" # GITHUB_TOKEN
       deploy:
         provider: s3
         access_key_id:

@@ -89,6 +89,7 @@ pipeline:
       event: tag
   build_ubuntu_oss:
     image: ubuntu:xenial
+    secrets: [ github_token ]
     environment:
       - CPPFLAGS=-P
     commands:
