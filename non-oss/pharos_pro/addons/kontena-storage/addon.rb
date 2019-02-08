@@ -39,7 +39,7 @@ Pharos.addon 'kontena-storage' do
       end
       optional(:directories).each do
         schema do
-          required(:name).filled(:str?)
+          required(:path).filled(:str?)
         end
       end
     end
@@ -139,6 +139,7 @@ Pharos.addon 'kontena-storage' do
           useAllNodes: config.storage&.use_all_nodes,
           useAllDevices: false,
           deviceFilter: config.storage&.device_filter,
+          directories: config.storage&.directories,
           nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
         },
         placement: (config.placement || {}).to_h.deep_transform_keys(&:camelback),

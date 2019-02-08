@@ -94,17 +94,34 @@ module Pharos
           optional(:endpoint).filled(:str?)
         end
         optional(:network).schema do
-          optional(:provider).filled(included_in?: %(weave calico))
+          optional(:provider).filled(included_in?: %(weave calico custom))
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
-          optional(:trusted_subnets).value(:none?)
-
+          optional(:firewalld).schema do
+            required(:enabled).filled(:bool?)
+            optional(:open_ports).filled do
+              each do
+                schema do
+                  required(:port).filled(:str?)
+                  required(:protocol).filled(included_in?: %(tcp udp))
+                  required(:roles).filled(included_in?: %(master worker *))
+                end
+              end
+            end
+            optional(:trusted_subnets).each(:str?)
+          end
           optional(:weave).schema do
             optional(:trusted_subnets).each(type?: String)
+            optional(:no_masq_local).filled(:bool?)
           end
           optional(:calico).schema do
             optional(:ipip_mode).filled(included_in?: %(Always, CrossSubnet, Never))
+            optional(:nat_outgoing).filled(:bool?)
+          end
+          optional(:custom).schema do
+            required(:manifest_path).filled(:str?)
+            optional(:options).filled(:hash?)
           end
         end
         optional(:etcd).schema do
@@ -128,6 +145,15 @@ module Pharos
               end
             end
             optional(:cache_ttl).filled
+          end
+          optional(:oidc).schema do
+            required(:issuer_url).filled(:str?)
+            required(:client_id).filled(:str?)
+            optional(:username_claim).filled(:str?)
+            optional(:username_prefix).filled(:str?)
+            optional(:groups_claim).filled(:str?)
+            optional(:groups_prefix).filled(:str?)
+            optional(:ca_file).filled(:str?)
           end
         end
         optional(:cloud).schema do

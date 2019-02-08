@@ -24,11 +24,9 @@ module Pharos
 
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
-    # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, master: nil, cluster_context: nil)
+    def initialize(host, config: nil, cluster_context: nil)
       @host = host
       @config = config
-      @master = master
       @cluster_context = cluster_context
     end
 

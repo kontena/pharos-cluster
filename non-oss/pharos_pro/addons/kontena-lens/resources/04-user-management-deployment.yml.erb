@@ -1,3 +1,4 @@
+<%- if user_management -%>
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,6 +7,7 @@ metadata:
   labels:
     app: user-management
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: user-management
@@ -17,7 +19,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       serviceAccountName: lens-operator
-      replicas: 2
+      priorityClassName: pharos-cluster-critical
       containers:
         - image: <%= image_repository %>/lens-idp:<%= version %>
           name: user-management
@@ -39,3 +41,4 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 180
             timeoutSeconds: 5
+<%- end -%>

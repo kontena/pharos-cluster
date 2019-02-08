@@ -7,4 +7,3 @@ if [ "$SKIP_UNSET_PROXY" = "true" ]; then
 fi
 
 kubeadm init --ignore-preflight-errors all --skip-token-print --config "${CONFIG}"
-

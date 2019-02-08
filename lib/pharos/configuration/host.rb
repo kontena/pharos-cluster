@@ -78,7 +78,8 @@ module Pharos
         hostname.split('.').first
       end
 
-      def ssh
+      # param options [Hash] extra options for the SSH client, see Net::SSH#start
+      def ssh(**options)
         return @ssh if @ssh
 
         opts = {}
@@ -86,7 +87,14 @@ module Pharos
         opts[:send_env] = [] # override default to not send LC_* envs
         opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
         opts[:bastion] = bastion if bastion
-        @ssh = Pharos::SSH::Client.new(address, user, opts).tap(&:connect)
+        @ssh = Pharos::SSH::Client.new(address, user, opts.merge(options)).tap(&:connect)
+      rescue StandardError
+        @ssh = nil
+        raise
+      end
+
+      def ssh?
+        @ssh && !@ssh.session.closed?
       end
 
       def api_address
@@ -134,10 +142,12 @@ module Pharos
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
 
+        args << "--rotate-server-certificates"
+
         if crio?
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=unix:///var/run/crio/crio.sock'
+          args << '--container-runtime-endpoint=/var/run/crio/crio.sock' # see: https://github.com/kubernetes/kubernetes/issues/71712
         end
 
         if local_only

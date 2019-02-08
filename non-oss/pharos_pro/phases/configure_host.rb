@@ -6,6 +6,7 @@ module Pharos
       title "Configure hosts"
 
       def configure_container_runtime
+        Thread.current.abort_on_exception = true
         if @host.new? || host_configurer.configure_container_runtime_safe?
           logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
           host_configurer.configure_container_runtime
@@ -40,12 +41,8 @@ module Pharos
         master_ssh.exec!("kubectl drain --force --grace-period=0 --ignore-daemonsets --delete-local-data #{@host.hostname}")
       end
 
-      def master_ssh
-        @master.ssh
-      end
-
       def master_healthy?
-        @master.master_sort_score.zero?
+        @config.master_host.master_sort_score.zero?
       end
     end
   end

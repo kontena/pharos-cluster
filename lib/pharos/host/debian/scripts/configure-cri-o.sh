@@ -40,9 +40,10 @@ fi
 
 configure_container_runtime_proxy "crio"
 
+orig_version=$(/usr/local/bin/crio -v || echo "0.0.0")
 export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold cri-o
-apt-get install -y cri-o="${CRIO_VERSION}"
+apt-get install -y --allow-downgrades -o "Dpkg::Options::=--force-confnew" cri-o="${CRIO_VERSION}"
 apt-mark hold cri-o
 
 rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
@@ -56,15 +57,31 @@ lineinfile "^registries =" "registries = [ \"docker.io\"" "/etc/crio/crio.conf"
 lineinfile "^insecure_registries =" "insecure_registries = [ $INSECURE_REGISTRIES" "/etc/crio/crio.conf"
 
 if ! systemctl is-active --quiet crio; then
+    if [ -f /etc/cni/net.d/100-crio-bridge.conf ] || [ -f /etc/cni/net.d/200-loopback.conf ]; then
+        rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
+    fi
     systemctl daemon-reload
     systemctl enable crio
     systemctl start crio
 else
+    if [ -f /etc/cni/net.d/100-crio-bridge.conf ] || [ -f /etc/cni/net.d/200-loopback.conf ]; then
+        rm -f /etc/cni/net.d/100-crio-bridge.conf /etc/cni/net.d/200-loopback.conf || true
+        reload_systemd_daemon "crio"
+        exit 0
+    fi
+
     if systemctl status crio 2>&1 | grep -q 'changed on disk' ; then
         reload_systemd_daemon "crio"
+        exit 0
     fi
 
     if [ "$orig_config" != "$(cat /etc/crio/crio.conf)" ]; then
         reload_systemd_daemon "crio"
+        exit 0
+    fi
+
+    if [ "$orig_version" != "$(/usr/local/bin/crio -v)" ]; then
+        reload_systemd_daemon "crio"
+        exit 0
     fi
 fi

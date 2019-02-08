@@ -12,6 +12,13 @@ describe Pharos::Host::UbuntuXenial do
   let(:subject) { described_class.new(host) }
   before do
     allow(host).to receive(:config).and_return(cluster_config)
+    allow(host).to receive(:ssh).and_return(ssh)
+  end
+
+  describe '#docker_version' do
+    it 'returns correct version' do
+      expect(subject.docker_version).to eq(Pharos::Host::UbuntuXenial::DOCKER_VERSION)
+    end
   end
 
   describe '#configure_container_runtime' do
@@ -26,6 +33,7 @@ describe Pharos::Host::UbuntuXenial do
 
     context 'cri-o' do
       it 'configures cri-o' do
+        allow(subject).to receive(:can_pull?).and_return(true)
         allow(subject).to receive(:config).and_return(cluster_config)
         allow(subject).to receive(:insecure_registries)
         allow(subject).to receive(:docker?).and_return(false)

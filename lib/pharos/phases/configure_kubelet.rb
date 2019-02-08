@@ -110,20 +110,16 @@ module Pharos
       # @return [Array<String>]
       def kubelet_extra_args
         args = []
-        if @config.kubelet&.read_only_port
-          args << "--read-only-port=10255"
-        end
         args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
         if @host.resolvconf.systemd_resolved_stub
-          # use usptream resolvers instead of systemd stub resolver at localhost for `dnsPolicy: Default` pods
+          # use upstream resolvers instead of systemd stub resolver at localhost for `dnsPolicy: Default` pods
           # XXX: kubeadm also handles this?
           args << '--resolv-conf=/run/systemd/resolve/resolv.conf'
         elsif @host.resolvconf.nameserver_localhost
           fail "Host has /etc/resolv.conf configured with localhost as a resolver"
         end
 
-        args << "--authentication-token-webhook=true"
         args << "--pod-infra-container-image=#{@config.image_repository}/pause:3.1"
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config

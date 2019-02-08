@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require_relative 'mixins/psp'
+
 module Pharos
   module Phases
     class UpgradeMaster < Pharos::Phase
+      include Pharos::Phases::Mixins::PSP
       title "Upgrade master"
 
       def kubeadm
@@ -27,9 +30,18 @@ module Pharos
         version.split('.')[0...2].join('.')
       end
 
+      # @return [Boolean]
+      def pod_security_disabled?
+        api_manifest = ssh.file('/etc/kubernetes/manifests/kube-apiserver.yaml')
+        return false unless api_manifest.exist?
+
+        !api_manifest.read.match?(/--enable-admission-plugins=.*PodSecurityPolicy/)
+      end
+
       def call
         if upgrade?
           upgrade_kubeadm
+          apply_psp_stack if pod_security_disabled?
           upgrade
         else
           logger.info { "Kubernetes control plane is up-to-date." }
@@ -41,12 +53,12 @@ module Pharos
       end
 
       def upgrade
-        cfg = kubeadm.generate_config
+        cfg = kubeadm.generate_yaml_config
 
         logger.info { "Upgrading control plane to v#{Pharos::KUBE_VERSION} ..." }
-        logger.debug { cfg.to_yaml }
+        logger.debug { cfg }
 
-        ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           ssh.exec!("sudo /usr/local/bin/pharos-kubeadm-#{Pharos::KUBEADM_VERSION} upgrade apply #{Pharos::KUBE_VERSION} -y --ignore-preflight-errors=all --allow-experimental-upgrades --config #{tmp_file}")
         end
 

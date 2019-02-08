@@ -17,8 +17,7 @@ module Pharos
 
       def configure_metrics_server
         logger.info { "Configuring metrics server ..." }
-        retries = 0
-        begin
+        Retry.perform(logger: logger, exceptions: [K8s::Error::NotFound, K8s::Error::ServiceUnavailable]) do
           apply_stack(
             'metrics-server',
             version: METRICS_SERVER_VERSION,
@@ -26,14 +25,6 @@ module Pharos
             arch: @host.cpu_arch,
             worker_count: @config.worker_hosts.size
           )
-        rescue K8s::Error::NotFound, K8s::Error::ServiceUnavailable => exc
-          # retry until kubernetes api reports that metrics-server is available
-          raise if retries >= 10
-
-          logger.debug { "#{exc.class.name}: #{exc.message}" }
-          sleep 2**retries
-          retries += 1
-          retry
         end
       end
     end

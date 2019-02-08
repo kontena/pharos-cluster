@@ -3,6 +3,7 @@
 require 'net/ssh'
 require 'net/ssh/gateway'
 require 'shellwords'
+require 'monitor'
 
 module Pharos
   module SSH
@@ -18,9 +19,15 @@ module Pharos
     }.freeze
 
     class Client
-      attr_reader :session
+      include MonitorMixin
 
+      attr_reader :session, :host
+
+      # @param host [String]
+      # @param user [String, NilClass]
+      # @param opts [Hash]
       def initialize(host, user = nil, opts = {})
+        super()
         @host = host
         @user = user
         @opts = opts
@@ -33,26 +40,31 @@ module Pharos
         end
       end
 
+      # @return [Hash,NilClass]
       def bastion
         @bastion ||= @opts.delete(:bastion)
       end
 
-      def connect
-        logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
-        if bastion
-          gw_opts = {}
-          gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
-          gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-          @session = gateway.ssh(@host, @user, @opts)
-        else
-          @session = Net::SSH.start(@host, @user, @opts)
+      # @param options [Hash] see Net::SSH#start
+      def connect(**options)
+        synchronize do
+          logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
+          if bastion
+            gw_opts = {}
+            gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
+            gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
+            @session = gateway.ssh(@host, @user, @opts.merge(options))
+          else
+            @session = Net::SSH.start(@host, @user, @opts.merge(options))
+          end
         end
       end
 
+      # @param host [String]
+      # @param port [Integer]
       # @return [Integer] local port number
       def gateway(host, port)
-        gateway = Net::SSH::Gateway.new(@host, @user, @opts)
-        gateway.open(host, port)
+        Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
       end
 
       # @example
@@ -69,25 +81,28 @@ module Pharos
       # @return [Pharos::SSH::Tempfile]
       # @yield [Pharos::SSH::Tempfile]
       def tempfile(prefix: "pharos", content: nil, &block)
-        Tempfile.new(self, prefix: prefix, content: content, &block)
+        synchronize { Tempfile.new(self, prefix: prefix, content: content, &block) }
       end
 
       # @param cmd [String] command to execute
+      # @param options [Hash]
       # @return [Pharos::Command::Result]
       def exec(cmd, **options)
         require_session!
-        RemoteCommand.new(self, cmd, **options).run
+        synchronize { RemoteCommand.new(self, cmd, **options).run }
       end
 
       # @param cmd [String] command to execute
+      # @param options [Hash]
       # @raise [Pharos::SSH::RemoteCommand::ExecError]
       # @return [String] stdout
       def exec!(cmd, **options)
         require_session!
-        RemoteCommand.new(self, cmd, **options).run!.stdout
+        synchronize { RemoteCommand.new(self, cmd, **options).run!.stdout }
       end
 
-      # @param script [String] name of script
+      # @param name [String] name of script
+      # @param env [Hash] environment variables hash
       # @param path [String] real path to file, defaults to script
       # @raise [Pharos::SSH::RemoteCommand::ExecError]
       # @return [String] stdout
@@ -102,31 +117,34 @@ module Pharos
       end
 
       # @param cmd [String] command to execute
+      # @param options [Hash]
       # @return [Boolean]
       def exec?(cmd, **options)
         exec(cmd, **options).success?
       end
 
+      # @param path [String]
+      # @return [Pharos::SSH::RemoteFile]
       def file(path)
         Pharos::SSH::RemoteFile.new(self, path)
       end
 
       def interactive_session
-        Pharos::SSH::InteractiveSession.new(self).run
+        synchronize { Pharos::SSH::InteractiveSession.new(self).run }
       end
 
       def connected?
-        @session && !@session.closed?
+        synchronize { @session && !@session.closed? }
       end
 
       def disconnect
-        @session.close if @session && !@session.closed?
+        synchronize { @session.close if @session && !@session.closed? }
       end
 
       private
 
       def require_session!
-        raise Error, "Connection not established" unless @session
+        raise Error, "Connection not established" if @session.nil? || @session.closed?
       end
     end
   end
