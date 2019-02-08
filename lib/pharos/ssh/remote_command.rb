@@ -67,6 +67,7 @@ module Pharos
       def run!
         result = run
         raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
+
         result
       end
 
@@ -114,14 +115,6 @@ module Pharos
       end
 
       private
-
-      def initialize_debug
-        if self.class.debug?
-          @debug = true
-        else
-          @debug = false
-        end
-      end
 
       # @return [Boolean]
       def debug?
