@@ -59,7 +59,6 @@ module Pharos
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
         @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
         @source = source
-        initialize_debug
         freeze
       end
 
@@ -126,7 +125,7 @@ module Pharos
 
       # @return [Boolean]
       def debug?
-        @debug
+        self.class.debug?
       end
 
       # @param cmd [String]
