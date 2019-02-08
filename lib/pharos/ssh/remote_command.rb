@@ -53,21 +53,25 @@ module Pharos
       # @param client [Pharos::SSH::Client] ssh client instance
       # @param cmd [String,Array<String>] command to execute
       # @param stdin [String,IO] attach string or stream to command STDIN
-      # @param debug
+      # @param source [String]
       def initialize(client, cmd, stdin: nil, source: nil)
         @client = client
         @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
         @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
         @source = source
+        initialize_debug
         freeze
       end
 
+      # @return [Result]
+      # @raises [ExecError] if result errors
       def run!
         result = run
         raise ExecError.new(@source || cmd, result.exit_status, result.output) if result.error?
         result
       end
 
+      # @return [Result]
       def run
         debug_cmd(@cmd, source: @source) if debug?
 
@@ -112,29 +116,47 @@ module Pharos
 
       private
 
-      def debug?
-        self.class.debug?
-      end
-
-      def debug_cmd(cmd, source: nil)
-        $stdout << INDENT << ("$ #{cmd}" + (source ? " < #{source}" : "")).cyan << "\n"
-      end
-
-      def debug_stdout(data)
-        data.each_line do |line|
-          $stdout << INDENT << line.to_s.dim
+      def initialize_debug
+        if self.class.debug?
+          @debug = true
+        else
+          @debug = false
         end
       end
 
+      # @return [Boolean]
+      def debug?
+        @debug
+      end
+
+      # @param cmd [String]
+      # @param source [String, NilClass]
+      # @return [Integer]
+      def debug_cmd(cmd, source: nil)
+        $stdout.write("#{INDENT} #{"#{@client.host}:".cyan} #{("$ #{cmd}" + (source ? " < #{source}" : '')).cyan}\n")
+      end
+
+      # @param data [String]
+      # @return [String]
+      def debug_stdout(data)
+        data.each_line do |line|
+          $stdout.write("#{INDENT} #{"#{@client.host}:".dim} #{line.dim}")
+        end
+      end
+
+      # @param data [String]
+      # @return [String]
       def debug_stderr(data)
         data.each_line do |line|
           # TODO: stderr is not line-buffered, this indents each write
-          $stdout << INDENT << line.to_s.red
+          $stdout.write("#{INDENT} #{"#{@client.host}:".dim} #{line.red}")
         end
       end
 
+      # @param exit_status [Integer]
+      # @return [Integer]
       def debug_exit(exit_status)
-        $stdout << INDENT << "! #{exit_status}".yellow << "\n"
+        $stdout.write("#{INDENT} #{"#{@client.host}:".dim} #{"! #{exit_status}".yellow}\n")
       end
     end
   end

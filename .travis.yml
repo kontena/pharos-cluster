@@ -2,18 +2,53 @@ language: ruby
 sudo: required
 cache: bundler
 bundler_args: --without development
-env:
-  global:
-    - secure: "AX0y/vETBJ4C93/RWgTZNFwlm8r+4b0cWExOa3G4NBvxc3x1PBjA9sD7LOezUxMCaOuTM1GF+vpXupreeZtdU6mUqQNJSsOH5sWivPfQwCmxbhODW/CGhlhKZT0pTJQ2QhUbp6zXeLfQ3WJT4X4VH2NP5zkfJ7Q0hO7AJqqty/+mAZLbtaBkw1eKhwWPx1t3UQx9zY07V2WsJQCmj9O/bdMyoa3uoTvSahzvAQsY/1XQ6OMZrVvt7JGoFjEVLNnttT3at3HvG3Izwb8u+ftrCr+0u6V9tUPAH+1WHJgP1fYrysU2n+HwhvGYlkl3TYt0wxP9ccz18NiFGf3SOf+OSBQJ11cQ6RJ7R6Qo/RLpW2AffjYW881d32pORbVsEpj8vBvElfJKbl0rT4IgIRJxxCuZnqVbX+8szma9EAmltGbtNdyuX4WxARZ3XNlFONacX5mnubRZDruYijNPzv3tCb6KBaRV5yfg8dhMPjOf6r0i8r0+9IFRsfszVMSxJhrnXlhtaYn7OikqBDOSiCa/VeSBb09fl/klnTCpCHFRICYgWqO8vf1jWvXLuKtHA7E3Ah4CJTkirY4eFwLMEN2kJ6g28OudWMU/urL4/rRb4LpzlDySy9KFA8f1/+7A/mzLDv7Iket2ig6/Pa7ymnYSlmypzVZTvcpJr0EfK+hmr6E="
+before_install:
+  - gem update --system
+  - gem --version
 stages:
+  - name: e2e
+    if: type IN (pull_request, cron)
   - name: publish binary
     if: tag IS present
 jobs:
   include:
+    - stage: e2e
+      name: "e2e: docker with weave"
+      script: ./e2e/travis.sh
+      rvm: 2.5
+      dist: xenial
+      env:
+        - CONTAINER_RUNTIME=docker
+        - NETWORK_PROVIDER=weave
+    - stage: e2e
+      name: "e2e: docker with calico"
+      script: ./e2e/travis.sh
+      rvm: 2.5
+      dist: xenial
+      env:
+        - CONTAINER_RUNTIME=docker
+        - NETWORK_PROVIDER=calico
+    - stage: e2e
+      name: "e2e: cri-o with weave"
+      script: ./e2e/travis.sh
+      rvm: 2.5
+      dist: xenial
+      env:
+        - CONTAINER_RUNTIME=cri-o
+        - NETWORK_PROVIDER=weave
+    - stage: e2e
+      name: "e2e: cri-o with calico"
+      script: ./e2e/travis.sh
+      rvm: 2.5
+      dist: xenial
+      env:
+        - CONTAINER_RUNTIME=cri-o
+        - NETWORK_PROVIDER=calico
     - stage: publish binary
       script: ./build/travis/macos.sh
-      rvm: 2.4
+      rvm: 2.5
       os: osx
+      install: ls -l
       deploy:
         provider: s3
         access_key_id:
@@ -28,8 +63,11 @@ jobs:
           all_branches: true
     - stage: publish binary
       script: ./build/travis/macos_oss.sh
-      rvm: 2.4
+      rvm: 2.5
       os: osx
+      install: ls -l
+      env:
+        - secure: "FLhmFZTMyXwngw9dZgi5X2I+6z5RwjMO0x+MeqG1ujniFEloONUsJHxSu7al9KPQECp9fZC4+GewaR088PXd00bCGYVvSiIn+S+ZbNqkOtv0QFPllvZooTZtMS+inqocr6pv4BJfALytcZQuaKrJ6iVdN7bu62n3/IBDfyvtBZYnWakeVe2k1mW1XUld/YuCjHe7wRFfAMOYu4+9LAhFyJgrpPRkhPMXkuvYaxGoeqcamc5AbMrRnDapTkLJBUc1TlmSY0wMEAhX4+yL8zehihEU6wGq05BGNfigJIpQkuj62zmQZdZkE3y9x4DGZauPDXNPhyYWqdxRm3KExHhJwLrY6d4L8l6snYAG7STPIziqNfotPzcTvM5/hhUkD65JpxO7rNq7BcYjV2fYfN8IgAHR/+wgDo7p4v+Y7fh6QsJ1oOujTsvIZDRE/Ly/Q2CKsdY2HqJfoROWh8/NWBEGcx+aRQekj9h7jbLqpML2LNa8Y9FOx86GFOskEi8tPmZ+drokxhakd+P6pdfdzwjHr1RwOH9z115tkG0HDKk6WnjTosGctBrUSzQGozv5HHEU3hRdnLLgyLZKdr+GRa6jHCnP/8qq3DjXey7RGOXI/b1okhgnAOJK38do65UIaJncijmWOl0w0pfrRuk/KA5QhwUWJTf/VGnnGgYg/dF9xhY=" # GITHUB_TOKEN
       deploy:
         provider: s3
         access_key_id:

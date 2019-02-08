@@ -10,7 +10,8 @@ module Pharos
       OpenSSL::SSL::SSLError,
       Excon::Error,
       K8s::Error,
-      Pharos::SSH::RemoteCommand::ExecError
+      Pharos::SSH::RemoteCommand::ExecError,
+      Errno::ECONNRESET
     ].freeze
 
     # @param dirs [Array<String>]
@@ -21,8 +22,7 @@ module Pharos
     end
 
     # @param dirs [Array<String>]
-    def initialize(ssh_manager:, **options)
-      @ssh_manager = ssh_manager
+    def initialize(**options)
       @options = options
     end
 
@@ -31,7 +31,8 @@ module Pharos
     def run_parallel(phases, &block)
       threads = phases.map { |phase|
         Thread.new do
-          yield_phase_with_retry(phase, &block)
+          Thread.current.report_on_exception = false
+          Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
         end
       }
       threads.map(&:value)
@@ -41,25 +42,7 @@ module Pharos
     # @return [Array<...>]
     def run_serial(phases, &block)
       phases.map do |phase|
-        yield_phase_with_retry(phase, &block)
-      end
-    end
-
-    # @param phase [Pharos::Phases::Base]
-    # @param retry_times [Integer]
-    def yield_phase_with_retry(phase, retry_times = 10)
-      retries = 0
-      begin
-        yield phase
-      rescue *RETRY_ERRORS => exc
-        raise if retries >= retry_times
-
-        logger.error { "[#{phase.host}] got error (#{exc.class.name}): #{exc.message.strip}" }
-        logger.debug { exc.backtrace.join("\n") }
-        logger.error { "[#{phase.host}] retrying after #{2**retries} seconds ..." }
-        sleep 2**retries
-        retries += 1
-        retry
+        Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
       end
     end
 
@@ -75,11 +58,8 @@ module Pharos
     end
 
     # @return [Pharos::Phase]
-    def prepare_phase(phase_class, host, ssh: false, **options)
+    def prepare_phase(phase_class, host, **options)
       options = @options.merge(options)
-
-      options[:ssh] = @ssh_manager.client_for(host) if ssh
-
       phase_class.new(host, **options)
     end
 
@@ -91,7 +71,7 @@ module Pharos
 
         phase.call
 
-        logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
+        phase.logger.info 'Completed phase in %<duration>.2fs' % { duration: Time.now - start }
       end
     end
   end

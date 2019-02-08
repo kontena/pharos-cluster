@@ -6,7 +6,7 @@ module Pharos
       title "Label nodes"
 
       def call
-        unless @host.labels || @host.taints
+        if @host.labels.empty? && @host.taints.nil?
           logger.info { "No labels or taints set ... " }
           return
         end
@@ -15,7 +15,7 @@ module Pharos
         raise Pharos::Error, "Cannot set labels, node not found" if node.nil?
 
         logger.info { "Configuring node labels and taints ... " }
-        patch_labels(node) if @host.labels
+        patch_labels(node) unless @host.labels.empty?
         patch_taints(node) if @host.taints
       end
 

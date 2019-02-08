@@ -30,14 +30,6 @@ module Pharos
         logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
         host_configurer.configure_container_runtime
       end
-
-      def master_ssh
-        ssh_manager.client_for(@master)
-      end
-
-      def master_healthy?
-        @master.master_sort_score.zero?
-      end
     end
   end
 end

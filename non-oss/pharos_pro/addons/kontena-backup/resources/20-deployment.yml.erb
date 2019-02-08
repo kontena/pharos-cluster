@@ -31,6 +31,7 @@ spec:
     spec:
       restartPolicy: Always
       serviceAccountName: ark
+      priorityClassName: pharos-cluster-critical
       containers:
         - name: ark
           image: <%= image_repository %>/backup-ark:v<%= ark_version %>

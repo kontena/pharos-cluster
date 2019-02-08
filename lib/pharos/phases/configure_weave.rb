@@ -5,14 +5,21 @@ module Pharos
     class ConfigureWeave < Pharos::Phase
       title "Configure Weave network"
 
-      WEAVE_VERSION = '2.4.1'
+      WEAVE_VERSION = '2.5.0'
+      WEAVE_FLYING_SHUTTLE_VERSION = '0.1.1'
 
       register_component(
         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
         enabled: proc { |c| c.network.provider == 'weave' }
       )
 
+      register_component(
+        name: 'weave-flying-shuttle', version: WEAVE_FLYING_SHUTTLE_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.network.provider == 'weave' }
+      )
+
       def call
+        configure_cni
         ensure_passwd
         ensure_resources
       end
@@ -44,12 +51,20 @@ module Pharos
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,
-          version: WEAVE_VERSION
+          version: WEAVE_VERSION,
+          firewalld_enabled: !!@config.network&.firewalld&.enabled,
+          flying_shuttle_enabled: @config.regions.size > 1,
+          flying_shuttle_version: WEAVE_FLYING_SHUTTLE_VERSION,
+          no_masq_local: @config.network.weave&.no_masq_local || false
         )
       end
 
       def generate_password
         SecureRandom.hex(24)
+      end
+
+      def configure_cni
+        exec_script('configure-weave-cni.sh')
       end
     end
   end

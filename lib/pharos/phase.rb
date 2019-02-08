@@ -24,14 +24,14 @@ module Pharos
 
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
-    # @param ssh [Pharos::SSH::Client]
-    # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, ssh: nil, master: nil, cluster_context: nil)
+    def initialize(host, config: nil, cluster_context: nil)
       @host = host
       @config = config
-      @ssh = ssh
-      @master = master
       @cluster_context = cluster_context
+    end
+
+    def ssh
+      @host.ssh
     end
 
     def logger
@@ -57,7 +57,7 @@ module Pharos
     # @param script [String] name of file under ../scripts/
     # @param vars [Hash]
     def exec_script(script, vars = {})
-      @ssh.exec_script!(
+      ssh.exec_script!(
         script,
         env: vars,
         path: script_path(script)
@@ -73,7 +73,7 @@ module Pharos
 
     # @return [Pharos::Host::Configurer]
     def host_configurer
-      @host.configurer(@ssh)
+      @host_configurer ||= @host.configurer
     end
 
     # @return [Pharos::SSH::Client]
@@ -105,11 +105,6 @@ module Pharos
     # @return [Array<K8s::Resource>]
     def delete_stack(name)
       Pharos::Kube::Stack.new(name).delete(kube_client)
-    end
-
-    # @return [Pharos::SSH::Manager]
-    def ssh_manager
-      Pharos::SSH::Manager.instance
     end
 
     def mutex

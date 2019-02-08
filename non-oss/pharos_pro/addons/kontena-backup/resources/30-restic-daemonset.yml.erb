@@ -27,6 +27,7 @@ spec:
         name: restic
     spec:
       serviceAccountName: ark
+      priorityClassName: pharos-cluster-critical
       securityContext:
         runAsUser: 0
       volumes:

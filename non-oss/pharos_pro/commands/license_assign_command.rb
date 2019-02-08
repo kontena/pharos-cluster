@@ -33,7 +33,7 @@ module Pharos
     end
 
     def ssh
-      @ssh ||= Pharos::SSH::Manager.instance.client_for(master_host)
+      @ssh ||= master_host.ssh
     end
 
     def master_host

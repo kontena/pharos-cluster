@@ -15,11 +15,18 @@ module Pharos
     def run(*_args)
       Pharos::CoreExt::Colorize.disable! unless color?
       super
+    rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
+      raise
+    rescue Errno::EPIPE => ex
+      raise if debug?
+
+      warn "ERROR: #{ex.class.name} : #{ex.message}" if $stdout.tty?
+      exit 141
     rescue Pharos::ConfigError => exc
       warn "==> #{exc}"
       exit 11
     rescue StandardError => ex
-      raise unless ENV['DEBUG'].to_s.empty?
+      raise if debug?
 
       signal_error "#{ex.class.name} : #{ex.message}"
     end

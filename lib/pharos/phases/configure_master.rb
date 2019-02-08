@@ -15,7 +15,7 @@ module Pharos
       end
 
       def install?
-        !@ssh.file("/etc/kubernetes/admin.conf").exist?
+        !ssh.file("/etc/kubernetes/admin.conf").exist?
       end
 
       def call
@@ -36,15 +36,16 @@ module Pharos
       end
 
       def install
-        cfg = kubeadm.generate_config
+        cfg = kubeadm.generate_yaml_config
 
         logger.info { "Initializing control plane (v#{Pharos::KUBE_VERSION}) ..." }
-        logger.debug { cfg.to_yaml }
+        logger.debug { cfg }
 
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-init.sh',
-            CONFIG: tmp_file
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
           )
         end
 
@@ -52,33 +53,42 @@ module Pharos
       end
 
       def install_kubeconfig
-        @ssh.exec!('install -m 0700 -d ~/.kube')
-        @ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
+        ssh.exec!('install -m 0700 -d ~/.kube')
+        ssh.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
 
       def reconfigure
         replace_cert if replace_cert?
 
-        cfg = kubeadm.generate_config
+        logger.info { "Renewing control plane certificates ..." }
+        ssh.tempfile(content: kubeadm.cluster_config.generate.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+          exec_script(
+            'kubeadm-renew-certs.sh',
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
+          )
+        end
 
+        cfg = kubeadm.generate_yaml_config
         logger.info { "Reconfiguring control plane (v#{Pharos::KUBE_VERSION})..." }
-        logger.debug { cfg.to_yaml }
+        logger.debug { cfg }
 
-        @ssh.tempfile(content: cfg.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        ssh.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-reconfigure.sh',
-            CONFIG: tmp_file
+            CONFIG: tmp_file,
+            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
           )
         end
       end
 
       # @param certs [Hash] path => PEM data
       def push_kube_certs(certs)
-        @ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
+        ssh.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
         certs.each do |file, contents|
           path = File.join(KUBE_DIR, 'pki', file)
-          @ssh.file(path).write(contents)
-          @ssh.exec!("sudo chmod 0400 #{path}")
+          ssh.file(path).write(contents)
+          ssh.exec!("sudo chmod 0400 #{path}")
         end
       end
 
@@ -87,7 +97,7 @@ module Pharos
         certs = {}
         SHARED_CERT_FILES.each do |file|
           path = File.join(KUBE_DIR, 'pki', file)
-          certs[file] = @ssh.file(path).read
+          certs[file] = ssh.file(path).read
         end
         certs
       end
@@ -95,7 +105,7 @@ module Pharos
       # @param path [String]
       # @return [OpenSSL::X509::Certificate, nil] nil if not exist
       def read_cert(path)
-        file = @ssh.file(path)
+        file = ssh.file(path)
 
         return nil unless file.exist?
 
@@ -139,8 +149,8 @@ module Pharos
 
         sans = read_cert_sans(cert)
 
-        missing_sans = kubeadm.build_extra_sans - sans
-        extra_sans = sans - kubeadm.build_extra_sans
+        missing_sans = kubeadm.cluster_config.build_extra_sans - sans
+        extra_sans = sans - kubeadm.cluster_config.build_extra_sans
 
         if missing_sans.empty?
           logger.debug { "apiserver cert is up to update: #{sans}" }
@@ -154,8 +164,8 @@ module Pharos
       def replace_cert
         logger.info { "Replacing apiserver cert" }
 
-        @ssh.file(APISERVER_CERT).rm
-        @ssh.file(APISERVER_KEY).rm
+        ssh.file(APISERVER_CERT).rm
+        ssh.file(APISERVER_KEY).rm
       end
     end
   end

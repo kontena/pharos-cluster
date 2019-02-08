@@ -3,41 +3,56 @@ require 'recursive-open-struct'
 describe Pharos::Host::Configurer do
   let(:test_config_class) do
     Class.new(described_class) do
+      register_config 'test', '1.0.0'
       register_config 'test', '1.1.0'
     end
   end
 
   let(:host) { double(:host) }
-  let(:ssh) { double(:ssh) }
-  let(:subject) { described_class.new(host, ssh) }
+
+  before do
+    Pharos::Host::Configurer.configurers.delete_if { |c| c.supported_os_releases&.first&.id == 'test' }
+    test_config_class
+  end
+
+  after do
+    Pharos::Host::Configurer.configurers.delete_if { |c| c == test_config_class }
+  end
+
+  subject { described_class.new(host) }
 
   describe '#register_config' do
-    it 'sets os_name and os_version' do
-      expect(test_config_class.os_name).to eq('test')
-      expect(test_config_class.os_version).to eq('1.1.0')
-    end
-
-    it 'registers config class' do
-      test_config_class # load
-      expect(described_class.configs.last).to eq(test_config_class)
+    it 'registers multiple versions to configs' do
+      expect(test_config_class.supported_os_releases.first.version).to eq('1.0.0')
+      expect(test_config_class.supported_os_releases.first.id).to eq('test')
+      expect(test_config_class.supported_os_releases.last.version).to eq('1.1.0')
+      expect(test_config_class.supported_os_releases.last.id).to eq('test')
     end
   end
 
   describe '#supported_os?' do
-    it 'returns true if supported' do
+    it 'supports multiple versions' do
       expect(
-        test_config_class.supported_os?(
-          double(:os_release, id: test_config_class.os_name, version: test_config_class.os_version)
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '1.0.0')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '1.1.0')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '1.2.0')
         )
-      ).to be_truthy
+      ).to be_nil
     end
 
-    it 'returns false if not supported' do
-      expect(
-        test_config_class.supported_os?(
-          double(:os_release, id: test_config_class.os_name, version: '1.2.0')
-        )
-      ).to be_falsey
+    it 'registers config class' do
+      expect(described_class.configurers.include?(test_config_class)).to be_truthy
     end
   end
 
@@ -47,9 +62,10 @@ describe Pharos::Host::Configurer do
     let(:file) { instance_double(Pharos::SSH::RemoteFile) }
     let(:host_env_content) { "PATH=/bin:/usr/local/bin\n" }
 
-    subject { described_class.new(host, ssh) }
+    subject { described_class.new(host) }
 
     before do
+      allow(host).to receive(:ssh).and_return(ssh)
       allow(ssh).to receive(:file).with('/etc/environment').and_return(file)
       allow(ssh).to receive(:disconnect)
       allow(ssh).to receive(:connect)
@@ -62,7 +78,9 @@ describe Pharos::Host::Configurer do
       let(:config_environment) { { 'TEST' => 'foo' } }
 
       it 'adds a line to /etc/environment' do
-        expect(file).to receive(:write).with("TEST=foo\nPATH=/bin:/usr/local/bin\n")
+        expect(file).to receive(:write).with("TEST=\"foo\"\nPATH=\"/bin:/usr/local/bin\"\n")
+        expect(ssh).to receive(:exec!).with("export TEST=\"foo\"")
+        expect(ssh).to receive(:exec!).with("export PATH=\"/bin:/usr/local/bin\"")
         subject.update_env_file
       end
     end
@@ -71,23 +89,25 @@ describe Pharos::Host::Configurer do
       let(:config_environment) { { 'PATH' => '/bin' } }
 
       it 'modifies a line in /etc/environment' do
-        expect(file).to receive(:write).with("PATH=/bin\n")
+        expect(file).to receive(:write).with("PATH=\"/bin\"\n")
+        expect(ssh).to receive(:exec!).with("export PATH=\"/bin\"")
         subject.update_env_file
       end
     end
 
     context 'delete keys' do
+      let(:host_env_content) { "PATH=/bin\nTEST=foo\n" }
       let(:config_environment) { { 'PATH' => nil } }
 
       it 'removes a line in /etc/environment' do
-        expect(file).to receive(:write).with("\n")
+        expect(ssh).to receive(:exec!).with("export TEST=\"foo\"")
+        expect(file).to receive(:write).with("TEST=\"foo\"\n")
         subject.update_env_file
       end
     end
   end
 
   describe '#insecure_registries' do
-
     context 'for docker' do
       before do
         allow(host).to receive(:crio?).and_return(false)
@@ -102,7 +122,7 @@ describe Pharos::Host::Configurer do
             ]
           }
         })
-        expect(subject).to receive(:cluster_config).and_return(cfg)
+        expect(subject).to receive(:config).and_return(cfg)
 
         expect(subject.insecure_registries).to eq("\"[\\\"registry.foobar.acme\\\",\\\"localhost:5000\\\"]\"")
       end
@@ -113,7 +133,7 @@ describe Pharos::Host::Configurer do
             insecure_registries: []
           }
         })
-        expect(subject).to receive(:cluster_config).and_return(cfg)
+        expect(subject).to receive(:config).and_return(cfg)
 
         expect(subject.insecure_registries).to eq("\"[]\"")
       end
@@ -133,7 +153,7 @@ describe Pharos::Host::Configurer do
             ]
           }
         })
-        expect(subject).to receive(:cluster_config).and_return(cfg)
+        expect(subject).to receive(:config).and_return(cfg)
 
         expect(subject.insecure_registries).to eq("\"\\\"registry.foobar.acme\\\",\\\"localhost:5000\\\"\"")
       end
@@ -144,11 +164,50 @@ describe Pharos::Host::Configurer do
             insecure_registries: []
           }
         })
-        expect(subject).to receive(:cluster_config).and_return(cfg)
+        expect(subject).to receive(:config).and_return(cfg)
 
         expect(subject.insecure_registries).to eq("\"\"")
       end
     end
+  end
 
+  describe '#current_crio_cgroup_manager' do
+    let(:ssh) { double(:ssh) }
+    let(:file) { double(:file) }
+    let(:config) {
+      %{
+# cgroup_manager is the cgroup management implementation to be used
+# for the runtime.
+cgroup_manager = "foobar"
+
+# hooks_dir_path is the oci hooks directory for automatically executed hooks
+hooks_dir_path = "/usr/share/containers/oci/hooks.d"
+      }
+    }
+
+    before(:each) do
+      allow(host).to receive(:ssh).and_return(ssh)
+      allow(ssh).to receive(:file).and_return(file)
+    end
+
+    it 'returns nil by default' do
+      expect(file).to receive(:exist?).and_return(false)
+
+      expect(subject.current_crio_cgroup_manager).to be_nil
+    end
+
+    it 'returns nil if config exists but cgroup_manager is not set' do
+      expect(file).to receive(:exist?).and_return(true)
+      expect(file).to receive(:read).and_return(config.gsub('cgroup_manager', '#cgroup_manager'))
+
+      expect(subject.current_crio_cgroup_manager).to be_nil
+    end
+
+    it 'returns configured cgroup managed if config exists' do
+      expect(file).to receive(:exist?).and_return(true)
+      expect(file).to receive(:read).and_return(config)
+
+      expect(subject.current_crio_cgroup_manager).to eq('foobar')
+    end
   end
 end

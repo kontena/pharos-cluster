@@ -6,6 +6,7 @@ module Pharos
       title "Configure hosts"
 
       def configure_container_runtime
+        Thread.current.abort_on_exception = true
         if @host.new? || host_configurer.configure_container_runtime_safe?
           logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
           host_configurer.configure_container_runtime
@@ -14,13 +15,17 @@ module Pharos
           mutex.synchronize do
             if master_healthy?
               logger.info { "Draining node ..." }
-              master_ssh.exec!("kubectl drain --force --ignore-daemonsets --delete-local-data #{@host.hostname}")
+              begin
+                drain_host
+              rescue Pharos::SSH::RemoteCommand::ExecError
+                drain_host!
+              end
             end
             logger.info { "Reconfiguring container runtime (#{@host.container_runtime}) packages ..." }
             host_configurer.configure_container_runtime
             if master_healthy?
               logger.info { "Uncordoning node ..." }
-              master_ssh.exec!("kubectl uncordon #{@host.hostname}")
+              sleep 1 until master_ssh.exec("kubectl uncordon #{@host.hostname}")
               logger.info { "Waiting for node to be ready ..." }
               sleep 10 until master_ssh.exec("kubectl get nodes -o jsonpath=\"{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}\" | grep 'Ready=True'").success?
             end
@@ -28,12 +33,16 @@ module Pharos
         end
       end
 
-      def master_ssh
-        ssh_manager.client_for(@master)
+      def drain_host
+        master_ssh.exec!("kubectl drain --force --timeout=120s --ignore-daemonsets --delete-local-data #{@host.hostname}")
+      end
+
+      def drain_host!
+        master_ssh.exec!("kubectl drain --force --grace-period=0 --ignore-daemonsets --delete-local-data #{@host.hostname}")
       end
 
       def master_healthy?
-        @master.master_sort_score.zero?
+        @config.master_host.master_sort_score.zero?
       end
     end
   end

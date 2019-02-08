@@ -3,24 +3,18 @@
 module Pharos
   module CommandOptions
     module LoadConfig
-      using Pharos::CoreExt::Colorize
-
       def self.included(base)
         base.prepend(InstanceMethods)
         base.option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
-          begin
-            Pharos::YamlFile.new(File.realpath(config_file))
-          rescue Errno::ENOENT
-            signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
-          end
+          Pharos::YamlFile.new(File.realpath(config_file))
+        rescue Errno::ENOENT
+          signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
         end
 
         base.option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
-          begin
-            File.realpath(config_path)
-          rescue Errno::ENOENT
-            signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
-          end
+          File.realpath(config_path)
+        rescue Errno::ENOENT
+          signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
         end
       end
 
@@ -41,6 +35,7 @@ module Pharos
         # @return [Pharos::Config]
         def load_config
           return @config if @config
+
           puts("==> Reading instructions ...".green) if $stdout.tty?
 
           config_hash = config_yaml.load(ENV.to_h)

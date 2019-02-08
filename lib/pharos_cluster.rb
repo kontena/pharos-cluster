@@ -8,12 +8,12 @@ require_relative "pharos/error"
 require_relative "pharos/root_command"
 
 module Pharos
-  CRIO_VERSION = '1.11.9'
-  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.11.4' }
+  CRIO_VERSION = '1.13.0'
+  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.13.2' }
   KUBEADM_VERSION = ENV.fetch('KUBEADM_VERSION') { KUBE_VERSION }
-  ETCD_VERSION = ENV.fetch('ETCD_VERSION') { '3.2.18' }
+  ETCD_VERSION = ENV.fetch('ETCD_VERSION') { '3.2.24' }
   KUBELET_PROXY_VERSION = '0.3.7'
-  COREDNS_VERSION = '1.1.3'
+  COREDNS_VERSION = '1.2.2'
   TELEMETRY_VERSION = '0.2.0'
 end
 

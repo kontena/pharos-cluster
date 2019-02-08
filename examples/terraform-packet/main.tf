@@ -30,6 +30,10 @@ variable "worker_count" {
   default = 2
 }
 
+variable "host_os" {
+  default = "ubuntu_16_04"
+}
+
 provider "packet" {
   auth_token = "${var.auth_token}"
 }
@@ -39,7 +43,7 @@ resource "packet_device" "pharos_master" {
   hostname         = "${var.cluster_name}-master-${count.index}"
   plan             = "${var.master_plan}"
   facility         = "${var.facility}"
-  operating_system = "ubuntu_16_04"
+  operating_system = "${var.host_os}"
   billing_cycle    = "hourly"
   project_id       = "${var.project_id}"
 }
@@ -49,9 +53,19 @@ resource "packet_device" "pharos_worker" {
   hostname         = "${var.cluster_name}-worker-${count.index}"
   plan             = "${var.worker_plan}"
   facility         = "${var.facility}"
-  operating_system = "ubuntu_16_04"
+  operating_system = "${var.host_os}"
   billing_cycle    = "hourly"
   project_id       = "${var.project_id}"
+}
+
+
+output "pharos_addons" {
+  value = {
+      packet-ccm = {
+          project_id    = "${var.project_id}"
+          api_key       = "${var.auth_token}"
+      }
+  }
 }
 
 output "pharos_hosts" {

@@ -17,6 +17,7 @@ module TTY
 end
 
 module Pharos
+  autoload :Retry, 'pharos/retry'
   autoload :Types, 'pharos/types'
   autoload :Config, 'pharos/config'
   autoload :ConfigSchema, 'pharos/config_schema'
@@ -30,7 +31,11 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
-  autoload :HostConfigManager, 'pharos/host_config_manager'
+
+  module Kube
+    autoload :Stack, 'pharos/kube/stack'
+    autoload :Config, 'pharos/kube/config'
+  end
 
   module CommandOptions
     autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'
@@ -47,7 +52,6 @@ module Pharos
 
   module SSH
     autoload :Client, 'pharos/ssh/client'
-    autoload :Manager, 'pharos/ssh/manager'
     autoload :RemoteCommand, 'pharos/ssh/remote_command'
     autoload :RemoteFile, 'pharos/ssh/remote_file'
     autoload :Tempfile, 'pharos/ssh/tempfile'

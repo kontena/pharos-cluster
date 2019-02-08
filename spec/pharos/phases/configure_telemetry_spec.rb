@@ -2,9 +2,9 @@ require 'pharos/phases/configure_telemetry'
 require 'fileutils'
 
 describe Pharos::Phases::ConfigureTelemetry do
-  subject { described_class.new(double, config: double, ssh: double) }
+  subject { described_class.new(double, config: double) }
 
-  describe '#customer_token' do
+  describe '#customer_token', fakefs: true do
     it 'returns empty string if not found' do
       FakeFS do
         expect(subject.customer_token).to eq('')

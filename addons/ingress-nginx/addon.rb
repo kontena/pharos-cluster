@@ -1,16 +1,19 @@
 # frozen_string_literal: true
 
 Pharos.addon 'ingress-nginx' do
-  version '0.17.1'
+  version '0.21.0'
   license 'Apache License 2.0'
 
   config {
-    attribute :configmap, Pharos::Types::Hash
+    attribute :configmap, Pharos::Types::Hash.default(
+      'worker-shutdown-timeout' => '3600s' # keep connection/workers alive for 1 hour
+    )
     attribute :node_selector, Pharos::Types::Hash
     attribute :default_backend, Pharos::Types::Hash.default(
       'image' => 'registry.pharos.sh/kontenapharos/pharos-default-backend:0.0.3'
     )
     attribute :tolerations, Pharos::Types::Array.default([])
+    attribute :extra_args, Pharos::Types::Array.default([])
   }
 
   config_schema {
@@ -20,6 +23,7 @@ Pharos.addon 'ingress-nginx' do
       optional(:image).filled(:str?)
     }
     optional(:tolerations).each(:hash?)
+    optional(:extra_args).each(:str?)
   }
 
   install {
@@ -27,7 +31,8 @@ Pharos.addon 'ingress-nginx' do
       configmap: config.configmap || {},
       node_selector: config.node_selector || {},
       default_backend_image: config.default_backend['image'],
-      default_backend_replicas: default_backend_replicas
+      default_backend_replicas: default_backend_replicas,
+      extra_args: config.extra_args
     )
   }
 

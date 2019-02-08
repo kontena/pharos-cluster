@@ -4,9 +4,6 @@ module Pharos
   class ResetCommand < Pharos::Command
     using Pharos::CoreExt::Colorize
 
-    option '--[no-]drain', :flag, "enable or disable node drain before reset", default: true
-    option '--[no-]delete', :flag, "enable or disable node delete before reset", default: true
-
     options :filtered_hosts, :yes?
 
     def execute
@@ -30,7 +27,7 @@ module Pharos
 
       start_time = Time.now
       puts "==> Starting to reset hosts ...".green
-      cluster_manager.apply_reset_hosts(filtered_hosts, drain: drain?, delete: delete?)
+      cluster_manager.apply_reset_hosts(filtered_hosts)
       reset_time = Time.now - start_time
       puts "==> Hosts have been reset! (took #{humanize_duration(reset_time.to_i)})".green
     end
@@ -41,7 +38,7 @@ module Pharos
       start_time = Time.now
 
       puts "==> Starting to reset cluster ...".green
-      cluster_manager.apply_reset_all
+      cluster_manager.apply_reset_hosts(load_config.hosts)
       reset_time = Time.now - start_time
       puts "==> Cluster has been reset! (took #{humanize_duration(reset_time.to_i)})".green
     end
@@ -52,15 +49,6 @@ module Pharos
         cluster_manager.load
         cluster_manager.gather_facts
       end
-    end
-
-    def ssh
-      @ssh ||= Pharos::SSH::Manager.instance.client_for(master_host)
-    end
-
-    # @return [Pharos::Config]
-    def master_host
-      @master_host ||= load_config.master_host
     end
   end
 end

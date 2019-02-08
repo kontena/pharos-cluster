@@ -6,4 +6,4 @@
 /pkg/
 /spec/reports/
 /tmp/
-/examples/vagrant/.vagrant/
+**/.vagrant
