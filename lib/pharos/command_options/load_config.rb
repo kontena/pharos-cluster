@@ -3,6 +3,8 @@
 module Pharos
   module CommandOptions
     module LoadConfig
+      using Pharos::CoreExt::Colorize
+
       def self.included(base)
         base.prepend(InstanceMethods)
         base.option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
