@@ -96,34 +96,6 @@ module Pharos
       end
     end
 
-    def kube_client
-      return @kube_client if @kube_client
-
-      master = master_host
-
-      kubeconfig_file = master.ssh.file("/etc/kubernetes/admin.conf")
-      return nil unless kubeconfig_file.exist?
-
-      kubeconfig = kubeconfig_file.read
-
-      if master.bastion.nil?
-        api_address = master.api_address
-        api_port = 6443
-      else
-        api_address = 'localhost'
-        api_port = master.ssh.gateway(master.api_address, 6443)
-      end
-
-      config = Pharos::Kube::Config.new(kubeconfig)
-      config.update_server_address(api_address, api_port)
-
-      @kube_client = Pharos::Kube.client(api_address, config.to_h, api_port)
-    end
-
-    def reset_kube_client
-      @kube_client = nil
-    end
-
     # @param peer [Pharos::Configuration::Host]
     # @return [String]
     def etcd_peer_address(peer)
@@ -138,6 +110,33 @@ module Pharos
     # @return [Array<String>]
     def regions
       @regions ||= hosts.map(&:region).compact.uniq
+    end
+
+    # @return [K8s::Client]
+    def kube_client
+      return @kube_client if @kube_client
+
+      raise Pharos::Error, "No master available" unless master_host && master_host.master_sort_score.zero?
+
+      master_kubeconfig_file = master_host.ssh.file('/etc/kubernetes/admin.conf')
+      raise Pharos::Error, "Master does not have #{master_kubeconfig_file.path}" unless master_kubeconfig_file.exist?
+
+      kubeconfig = Pharos::Kube::Config.new(master_kubeconfig_file.read)
+
+      if master_host.bastion.nil?
+        api_address = master_host.api_address
+        api_port = 6443
+      else
+        api_address = 'localhost'
+        api_port = master_host.bastion.host.ssh.gateway(master_host.api_address, 6443)
+      end
+      kubeconfig.update_server_address(api_address, api_port)
+
+      @kube_client = Pharos::Kube.client(api_address, kubeconfig.to_h, api_port)
+    end
+
+    def reset_kube_client
+      @kube_client = nil
     end
 
     # @param key [Symbol]
