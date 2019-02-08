@@ -116,7 +116,7 @@ module Pharos
     def kube_client
       return @kube_client if @kube_client
 
-      raise Pharos::Error, "No master available" unless master_host && master_host.master_sort_score.zero?
+      raise Pharos::Error, "No master available" unless master_host&.master_sort_score.zero?
 
       master_kubeconfig_file = master_host.ssh.file('/etc/kubernetes/admin.conf')
       raise Pharos::Error, "Master does not have #{master_kubeconfig_file.path}" unless master_kubeconfig_file.exist?
