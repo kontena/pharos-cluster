@@ -16,6 +16,8 @@ module Pharos
         exit 0
       end
 
+      filtered_hosts.each { |host| host.transport.connect }
+
       Dir.chdir(config_yaml.dirname) do
         exit run_single(filtered_hosts.first) if filtered_hosts.size == 1
         exit run_parallel

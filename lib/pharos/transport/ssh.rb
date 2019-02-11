@@ -27,10 +27,24 @@ module Pharos
           if bastion
             gw_opts = {}
             gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
-            gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
+            gw_opts[:non_interactive] = true
+            begin
+              gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
+            rescue StandardError
+              raise if gw_opts[:non_interactive] == false || !$stdin.tty? # don't re-retry
+              gw_opts[:non_interactive] = false
+              retry
+            end
             @session = gateway.ssh(@host, @user, @opts.merge(options))
           else
-            @session = Net::SSH.start(@host, @user, @opts.merge(options))
+            non_interactive = true
+            begin
+              @session = Net::SSH.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
+            rescue StandardError
+              raise if non_interactive == false || $stdin.tty? # don't re-retry
+              non_interactive = false
+              retry
+            end
           end
         end
       end
