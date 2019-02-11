@@ -36,7 +36,7 @@ module Pharos
             namespace: 'kube-system'
           },
           data: {
-            'weave-passwd': Base64.strict_encode64(generate_password)
+            'weave-passwd': Base64.strict_encode64(@config.network.weave&.passwd || generate_password)
           }
         )
         kube_secrets.create_resource(weave_passwd)
@@ -52,13 +52,48 @@ module Pharos
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,
           version: WEAVE_VERSION,
-          firewalld_enabled: !!@config.network&.firewalld&.enabled,
-          flying_shuttle_enabled: @config.regions.size > 1,
+          firewalld_enabled: firewalld?,
+          known_peers: known_peers,
+          flying_shuttle_enabled: flying_shuttle?,
           flying_shuttle_version: WEAVE_FLYING_SHUTTLE_VERSION,
-          no_masq_local: @config.network.weave&.no_masq_local || false
+          no_masq_local: no_masq_local?
         )
       end
 
+      # @return [Array<String>]
+      def known_peers
+        configmap = kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('flying-shuttle')
+        return initial_known_peers unless configmap.data['known-peers']
+
+        JSON.parse(configmap.data['known-peers'])['peers']
+      rescue K8s::Error::NotFound
+        initial_known_peers
+      end
+
+      # @return [Array<String>, NilClass]
+      def initial_known_peers
+        @config.network.weave&.known_peers
+      end
+
+      # @return [Boolean]
+      def firewalld?
+        !!@config.network&.firewalld&.enabled
+      end
+
+      # @return [Boolean]
+      def flying_shuttle?
+        return true if @config.network.weave&.known_peers
+        return true if @config.regions.size > 1
+
+        @config.network.weave&.flying_shuttle || false
+      end
+
+      # @return [Boolean]
+      def no_masq_local?
+        @config.network.weave&.no_masq_local || false
+      end
+
+      # @return [String]
       def generate_password
         SecureRandom.hex(24)
       end

@@ -33,6 +33,10 @@ spec:
             - name: EXTRA_ARGS
               value: "--trusted-subnets <%= trusted_subnets.join(',') %><% if flying_shuttle_enabled %> --no-discovery<% end %>"
             <% end %>
+            <% if known_peers %>
+            - name: KUBE_PEERS
+              value: "<%= known_peers.join(' ') %>"
+            <% end %>
             <% if no_masq_local %>
             - name: NO_MASQ_LOCAL
               value: '1'
@@ -96,7 +100,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: '<%= image_repository %>/weave-flying-shuttle:<%= flying_shuttle_version %>'
+          #image: '<%= image_repository %>/weave-flying-shuttle:<%= flying_shuttle_version %>'
+          image: 'quay.io/jakolehm/weave-flying-shuttle:latest'
           resources:
             requests:
               cpu: 10m
