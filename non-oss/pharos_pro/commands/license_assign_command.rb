@@ -24,6 +24,8 @@ module Pharos
     def execute
       validate_license_format
 
+      master_host.transport.connect
+
       master_host.transport.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token} --dry-run -o yaml | kubectl apply -f -")
       logger.info "Added subscription token to pharos cluster secrets"
     end
