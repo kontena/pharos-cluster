@@ -81,11 +81,6 @@ module Pharos
       @config.master_host
     end
 
-    # @return [Pharos::Transport::SSH,Pharos::Transport::Local]
-    def master_transport
-      return master_host.transport
-    end
-
     # @return [K8s::Client]
     def kube_client
       fail "Phase #{self.class.name} does not have kubeconfig cluster_context" unless cluster_context['kubeconfig']
