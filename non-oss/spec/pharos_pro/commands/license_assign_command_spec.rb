@@ -14,6 +14,7 @@ describe Pharos::LicenseAssignCommand do
   before do
     allow(subject).to receive(:config).and_return(config)
     allow(host).to receive(:transport).and_return(ssh)
+    allow(ssh).to receive(:connect)
     allow(subject).to receive(:http_client).and_return(http_client)
     allow(subject).to receive(:license_key).and_return(license_key)
   end
