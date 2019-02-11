@@ -76,11 +76,14 @@ module Pharos
       @host_configurer ||= @host.configurer
     end
 
-    # @return [Pharos::Transport::SSH,Pharos::Transport::Local]
-    def master_ssh
-      return cluster_context['master-ssh'] if cluster_context['master-ssh']
+    # @return [Pharos::Configuration::Host]
+    def master_host
+      @config.master_host
+    end
 
-      fail "Phase #{self.class.name} does not have master ssh"
+    # @return [Pharos::Transport::SSH,Pharos::Transport::Local]
+    def master_transport
+      return master_host.transport
     end
 
     # @return [K8s::Client]

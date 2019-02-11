@@ -25,24 +25,24 @@ module Pharos
             host_configurer.configure_container_runtime
             if master_healthy?
               logger.info { "Uncordoning node ..." }
-              sleep 1 until master_ssh.exec("kubectl uncordon #{@host.hostname}")
+              sleep 1 until master_host.transport.exec("kubectl uncordon #{@host.hostname}")
               logger.info { "Waiting for node to be ready ..." }
-              sleep 10 until master_ssh.exec("kubectl get nodes -o jsonpath=\"{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}\" | grep 'Ready=True'").success?
+              sleep 10 until master_host.transport.exec("kubectl get nodes -o jsonpath=\"{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}\" | grep 'Ready=True'").success?
             end
           end
         end
       end
 
       def drain_host
-        master_ssh.exec!("kubectl drain --force --timeout=120s --ignore-daemonsets --delete-local-data #{@host.hostname}")
+        master_host.transport.exec!("kubectl drain --force --timeout=120s --ignore-daemonsets --delete-local-data #{@host.hostname}")
       end
 
       def drain_host!
-        master_ssh.exec!("kubectl drain --force --grace-period=0 --ignore-daemonsets --delete-local-data #{@host.hostname}")
+        master_host.transport.exec!("kubectl drain --force --grace-period=0 --ignore-daemonsets --delete-local-data #{@host.hostname}")
       end
 
       def master_healthy?
-        @config.master_host.master_sort_score.zero?
+        master_host.master_sort_score.zero?
       end
     end
   end
