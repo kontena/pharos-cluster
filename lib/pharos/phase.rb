@@ -57,7 +57,7 @@ module Pharos
     # @param script [String] name of file under ../scripts/
     # @param vars [Hash]
     def exec_script(script, vars = {})
-      host.exec_script!(
+      transport.exec_script!(
         script,
         env: vars,
         path: script_path(script)

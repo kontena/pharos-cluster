@@ -28,12 +28,12 @@ module Pharos
       filtered_hosts.map do |host|
         target = "#{host.user}@#{host.address}"
         puts pastel.green("==> Opening a session to #{target} ..")
-        host.interactive_session
+        host.transport.interactive_session
       end
     end
 
     def run_single(host)
-      result = host.exec(command_list)
+      result = host.transport.exec(command_list)
       puts result.output
       result.exit_status
     end
@@ -41,7 +41,7 @@ module Pharos
     def run_parallel
       threads = filtered_hosts.map do |host|
         Thread.new do
-          [host, host.exec(command_list)]
+          [host, host.transport.exec(command_list)]
         rescue StandardError => ex
           [
             host,

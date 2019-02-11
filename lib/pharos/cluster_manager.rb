@@ -175,7 +175,7 @@ module Pharos
     end
 
     def disconnect
-      config.hosts.map(&:disconnect)
+      config.hosts.map { |host| host.transport.disconnect }
     end
   end
 end

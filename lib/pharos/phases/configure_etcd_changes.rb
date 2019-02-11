@@ -20,7 +20,7 @@ module Pharos
       def store_initial_cluster_state
         return if cluster_context['etcd-initial-cluster-state']
 
-        state = if host.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
+        state = if transport.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
                   'existing'
                 else
                   'new'

@@ -61,11 +61,11 @@ module Pharos
         return true if custom_docker?
 
         if docker?
-          result = host.exec("dpkg-query --show docker-ce")
+          result = transport.exec("dpkg-query --show docker-ce")
           return true if result.error? # docker not installed
           return true if result.stdout.split("\t")[1].to_s.start_with?(DOCKER_VERSION)
         elsif crio?
-          result = host.exec("dpkg-query --show cri-o")
+          result = transport.exec("dpkg-query --show cri-o")
           return true if result.error? # cri-o not installed
           return true if result.stdout.split("\t")[1].to_s.start_with?(Pharos::CRIO_VERSION)
         end

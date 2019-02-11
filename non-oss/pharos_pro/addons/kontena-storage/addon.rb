@@ -110,7 +110,7 @@ Pharos.addon 'kontena-storage' do
 
   reset_host { |host|
     data_dir = config.data_dir.strip
-    host.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
+    transport.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
   }
 
   def set_defaults

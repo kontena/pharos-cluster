@@ -5,13 +5,10 @@ require_relative 'cpu_arch'
 require_relative 'bastion'
 
 require 'ipaddr'
-require 'forwardable'
 
 module Pharos
   module Configuration
     class Host < Pharos::Configuration::Struct
-      extend Forwardable
-
       class ResolvConf < Pharos::Configuration::Struct
         attribute :nameserver_localhost, Pharos::Types::Strict::Bool
         attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
@@ -223,8 +220,6 @@ module Pharos
 
         attributes[:bastion] = bastion
       end
-
-      def_delegators :transport, :tempfile, :exec, :exec!, :exec?, :exec_script!, :interactive_session, :file, :connected?, :disconnect
     end
   end
 end

@@ -15,7 +15,7 @@ module Pharos
       end
 
       def install?
-        !host.file("/etc/kubernetes/admin.conf").exist?
+        !transport.file("/etc/kubernetes/admin.conf").exist?
       end
 
       def call
@@ -53,8 +53,8 @@ module Pharos
       end
 
       def install_kubeconfig
-        host.exec!('install -m 0700 -d ~/.kube')
-        host.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
+        transport.exec!('install -m 0700 -d ~/.kube')
+        transport.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
 
       def reconfigure
@@ -84,11 +84,11 @@ module Pharos
 
       # @param certs [Hash] path => PEM data
       def push_kube_certs(certs)
-        host.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
+        transport.exec!("sudo mkdir -p #{KUBE_DIR}/pki")
         certs.each do |file, contents|
           path = File.join(KUBE_DIR, 'pki', file)
-          host.file(path).write(contents)
-          host.exec!("sudo chmod 0400 #{path}")
+          transport.file(path).write(contents)
+          transport.exec!("sudo chmod 0400 #{path}")
         end
       end
 
@@ -97,7 +97,7 @@ module Pharos
         certs = {}
         SHARED_CERT_FILES.each do |file|
           path = File.join(KUBE_DIR, 'pki', file)
-          certs[file] = host.file(path).read
+          certs[file] = transport.file(path).read
         end
         certs
       end
@@ -105,7 +105,7 @@ module Pharos
       # @param path [String]
       # @return [OpenSSL::X509::Certificate, nil] nil if not exist
       def read_cert(path)
-        file = host.file(path)
+        file = transport.file(path)
 
         return nil unless file.exist?
 
@@ -164,8 +164,8 @@ module Pharos
       def replace_cert
         logger.info { "Replacing apiserver cert" }
 
-        host.file(APISERVER_CERT).rm
-        host.file(APISERVER_KEY).rm
+        transport.file(APISERVER_CERT).rm
+        transport.file(APISERVER_KEY).rm
       end
     end
   end

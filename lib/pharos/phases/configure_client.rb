@@ -25,12 +25,12 @@ module Pharos
 
       # @return [String]
       def kubeconfig?
-        host.file(REMOTE_FILE).exist?
+        transport.file(REMOTE_FILE).exist?
       end
 
       # @return [K8s::Config]
       def read_kubeconfig
-        host.file(REMOTE_FILE).read
+        transport.file(REMOTE_FILE).read
       end
 
       # @return [K8s::Config]

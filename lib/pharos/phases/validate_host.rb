@@ -51,7 +51,7 @@ module Pharos
       end
 
       def validate_localhost_resolve
-        return if host.exec?("ping -c 1 -r -w 1 localhost")
+        return if transport.exec?("ping -c 1 -r -w 1 localhost")
 
         raise Pharos::InvalidHostError, "Hostname 'localhost' does not seem to resolve to an address on the local host"
       end
@@ -81,7 +81,7 @@ module Pharos
       def validate_peer_address
         return unless @host.master?
 
-        host_addresses = host.exec!("sudo hostname --all-ip-addresses").split(" ")
+        host_addresses = transport.exec!("sudo hostname --all-ip-addresses").split(" ")
 
         fail "Peer address #{@host.peer_address} does not seem to be a node local address" unless host_addresses.include?(@host.peer_address)
 

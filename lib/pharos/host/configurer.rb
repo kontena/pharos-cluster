@@ -98,15 +98,15 @@ module Pharos
       end
 
       def configure_script_library
-        host.exec("sudo mkdir -p #{script_library_install_path}")
-        host.file("#{script_library_install_path}/util.sh").write(
+        transport.exec("sudo mkdir -p #{script_library_install_path}")
+        transport.file("#{script_library_install_path}/util.sh").write(
           File.read(SCRIPT_LIBRARY)
         )
       end
 
       # @param script [String] name of file under ../scripts/
       def exec_script(script, vars = {})
-        host.exec_script!(
+        transport.exec_script!(
           script,
           env: vars,
           path: script_path(script)
@@ -140,7 +140,7 @@ module Pharos
 
       # @return [Pharos::Transport::TransportFile]
       def env_file
-        host.file('/etc/environment')
+        transport.file('/etc/environment')
       end
 
       def update_env_file
@@ -165,13 +165,13 @@ module Pharos
         end
         host_env_file.write(new_content.join("\n") + "\n")
         new_content.each do |kv_pair|
-          host.exec!("export #{kv_pair}")
+          transport.exec!("export #{kv_pair}")
         end
       end
 
       # @return [String, NilClass]
       def current_crio_cgroup_manager
-        file = host.file('/etc/crio/crio.conf')
+        file = transport.file('/etc/crio/crio.conf')
         return unless file.exist?
 
         match = file.read.match(/^cgroup_manager = "(.+)"/)
@@ -184,16 +184,16 @@ module Pharos
       def can_pull?
         return true if current_crio_cgroup_manager.nil?
 
-        host.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
+        transport.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
       end
 
       def cleanup_crio!
-        host.exec!("sudo systemctl stop kubelet")
-        host.exec!("sudo crictl stopp $(crictl pods -q)")
-        host.exec!("sudo crictl rmp $(crictl pods -q)")
-        host.exec!("sudo crictl rmi $(crictl images -q)")
+        transport.exec!("sudo systemctl stop kubelet")
+        transport.exec!("sudo crictl stopp $(crictl pods -q)")
+        transport.exec!("sudo crictl rmp $(crictl pods -q)")
+        transport.exec!("sudo crictl rmi $(crictl images -q)")
       ensure
-        host.exec!("sudo systemctl start kubelet")
+        transport.exec!("sudo systemctl start kubelet")
       end
 
       class << self

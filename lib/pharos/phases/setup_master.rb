@@ -22,21 +22,21 @@ module Pharos
       def push_external_etcd_certs
         logger.info { "Pushing external etcd certificates ..." }
 
-        host.exec!('sudo mkdir -p /etc/pharos/etcd')
-        host.file('/etc/pharos/etcd/ca-certificate.pem').write(File.open(@config.etcd.ca_certificate))
-        host.file('/etc/pharos/etcd/certificate.pem').write(File.open(@config.etcd.certificate))
-        host.file('/etc/pharos/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
+        transport.exec!('sudo mkdir -p /etc/pharos/etcd')
+        transport.file('/etc/pharos/etcd/ca-certificate.pem').write(File.open(@config.etcd.ca_certificate))
+        transport.file('/etc/pharos/etcd/certificate.pem').write(File.open(@config.etcd.certificate))
+        transport.file('/etc/pharos/etcd/certificate-key.pem').write(File.open(@config.etcd.key))
       end
 
       def push_audit_policy
-        host.exec!("sudo mkdir -p /etc/pharos/audit")
-        host.file("/etc/pharos/audit/policy.yml").write(parse_resource_file('audit/policy.yml'))
+        transport.exec!("sudo mkdir -p /etc/pharos/audit")
+        transport.file("/etc/pharos/audit/policy.yml").write(parse_resource_file('audit/policy.yml'))
       end
 
       def push_audit_config
         logger.info { "Pushing audit configs to master ..." }
-        host.exec!("sudo mkdir -p /etc/pharos/audit")
-        host.file("/etc/pharos/audit/webhook.yml").write(
+        transport.exec!("sudo mkdir -p /etc/pharos/audit")
+        transport.file("/etc/pharos/audit/webhook.yml").write(
           parse_resource_file('audit/webhook-config.yml.erb', server: @config.audit.server)
         )
       end
@@ -45,10 +45,10 @@ module Pharos
       def push_authentication_token_webhook_certs(webhook_config)
         logger.info { "Pushing token authentication webhook certificates ..." }
 
-        host.exec!("sudo mkdir -p /etc/pharos/token_webhook")
-        host.file('/etc/pharos/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
-        host.file('/etc/pharos/token_webhook/cert.pem').write(File.open(File.expand_path(webhook_config[:user][:client_certificate]))) if webhook_config[:user][:client_certificate]
-        host.file('/etc/pharos/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
+        transport.exec!("sudo mkdir -p /etc/pharos/token_webhook")
+        transport.file('/etc/pharos/token_webhook/ca.pem').write(File.open(File.expand_path(webhook_config[:cluster][:certificate_authority]))) if webhook_config[:cluster][:certificate_authority]
+        transport.file('/etc/pharos/token_webhook/cert.pem').write(File.open(File.expand_path(webhook_config[:user][:client_certificate]))) if webhook_config[:user][:client_certificate]
+        transport.file('/etc/pharos/token_webhook/key.pem').write(File.open(File.expand_path(webhook_config[:user][:client_key]))) if webhook_config[:user][:client_key]
       end
 
       def push_authentication_token_webhook_config
@@ -57,22 +57,22 @@ module Pharos
         logger.info { "Pushing token authentication webhook config ..." }
         auth_token_webhook_config = kubeadm.generate_authentication_token_webhook_config(webhook_config)
 
-        host.exec!('sudo mkdir -p /etc/kubernetes/authentication')
-        host.file('/etc/kubernetes/authentication/token-webhook-config.yaml').write(auth_token_webhook_config.to_yaml)
+        transport.exec!('sudo mkdir -p /etc/kubernetes/authentication')
+        transport.file('/etc/kubernetes/authentication/token-webhook-config.yaml').write(auth_token_webhook_config.to_yaml)
 
         push_authentication_token_webhook_certs(webhook_config)
       end
 
       def push_cloud_config
         logger.info { "Pushing cloud-config to master ..." }
-        host.exec!('sudo mkdir -p /etc/pharos/cloud')
-        host.file('/etc/pharos/cloud/cloud-config').write(File.open(File.expand_path(@config.cloud.config)))
+        transport.exec!('sudo mkdir -p /etc/pharos/cloud')
+        transport.file('/etc/pharos/cloud/cloud-config').write(File.open(File.expand_path(@config.cloud.config)))
       end
 
       def push_oidc_certs
         logger.info { "Pushing OIDC certificates to master ..." }
-        host.exec!('sudo mkdir -p /etc/kubernetes/authentication')
-        host.file('/etc/kubernetes/authentication/oidc_ca.crt').write(File.open(File.expand_path(@config.authentication.oidc.ca_file)))
+        transport.exec!('sudo mkdir -p /etc/kubernetes/authentication')
+        transport.file('/etc/kubernetes/authentication/oidc_ca.crt').write(File.open(File.expand_path(@config.authentication.oidc.ca_file)))
       end
     end
   end

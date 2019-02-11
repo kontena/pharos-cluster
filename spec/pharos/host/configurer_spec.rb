@@ -66,7 +66,7 @@ describe Pharos::Host::Configurer do
 
     before do
       allow(host).to receive(:transport).and_return(ssh)
-      allow(host).to receive(:file).with('/etc/environment').and_return(file)
+      allow(ssh).to receive(:file).with('/etc/environment').and_return(file)
       allow(file).to receive(:exist?).and_return(true)
       allow(file).to receive(:read).and_return(host_env_content)
       allow(host).to receive(:environment).and_return(config_environment)
@@ -77,8 +77,8 @@ describe Pharos::Host::Configurer do
 
       it 'adds a line to /etc/environment' do
         expect(file).to receive(:write).with("TEST=\"foo\"\nPATH=\"/bin:/usr/local/bin\"\n")
-        expect(host).to receive(:exec!).with("export TEST=\"foo\"")
-        expect(host).to receive(:exec!).with("export PATH=\"/bin:/usr/local/bin\"")
+        expect(ssh).to receive(:exec!).with("export TEST=\"foo\"")
+        expect(ssh).to receive(:exec!).with("export PATH=\"/bin:/usr/local/bin\"")
         subject.update_env_file
       end
     end
@@ -88,7 +88,7 @@ describe Pharos::Host::Configurer do
 
       it 'modifies a line in /etc/environment' do
         expect(file).to receive(:write).with("PATH=\"/bin\"\n")
-        expect(host).to receive(:exec!).with("export PATH=\"/bin\"")
+        expect(ssh).to receive(:exec!).with("export PATH=\"/bin\"")
         subject.update_env_file
       end
     end
@@ -98,7 +98,7 @@ describe Pharos::Host::Configurer do
       let(:config_environment) { { 'PATH' => nil } }
 
       it 'removes a line in /etc/environment' do
-        expect(host).to receive(:exec!).with("export TEST=\"foo\"")
+        expect(ssh).to receive(:exec!).with("export TEST=\"foo\"")
         expect(file).to receive(:write).with("TEST=\"foo\"\n")
         subject.update_env_file
       end
@@ -185,7 +185,7 @@ hooks_dir_path = "/usr/share/containers/oci/hooks.d"
 
     before(:each) do
       allow(host).to receive(:transport).and_return(ssh)
-      allow(host).to receive(:file).and_return(file)
+      allow(ssh).to receive(:file).and_return(file)
     end
 
     it 'returns nil by default' do
