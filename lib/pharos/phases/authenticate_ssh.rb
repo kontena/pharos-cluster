@@ -6,8 +6,6 @@ module Pharos
       title "Authenticate SSH connection"
 
       def call
-        return if host.local?
-
         host.transport.connect(non_interactive: false)
         logger.info { "Authenticated as #{host.user}@#{host}" }
       end
