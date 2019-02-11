@@ -8,6 +8,12 @@ module Pharos
     class SSH < Base
       attr_reader :session
 
+      RETRY_CONNECTION_ERRORS = [
+        Net::SSH::AuthenticationFailed,
+        Net::SSH::Authentication::KeyManagerError,
+        ArgumentError # until the ED25519 passphrase is fixed
+      ].freeze
+
       # @param host [String]
       # @param opts [Hash]
       def initialize(host, **opts)
@@ -30,7 +36,7 @@ module Pharos
             gw_opts[:non_interactive] = true
             begin
               gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-            rescue StandardError => exc
+            rescue *RETRY_CONNECTION_ERRORS => exc
               logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to bastion host #{bastion.user}@#{bastion.host}" }
               raise if gw_opts[:non_interactive] == false || !$stdin.tty? # don't re-retry
               logger.debug { "Retrying in interactive mode" }
@@ -42,7 +48,7 @@ module Pharos
             non_interactive = true
             begin
               @session = Net::SSH.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
-            rescue StandardError => exc
+            rescue *RETRY_CONNECTION_ERRORS => exc
               logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}" }
               raise if non_interactive == false || $stdin.tty? # don't re-retry
               logger.debug { "Retrying in interactive mode" }
