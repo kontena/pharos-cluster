@@ -34,9 +34,13 @@ module Pharos
       file.read
     end
 
+    def master_host
+      @master_host ||= load_config.master_host
+    end
+
     # @return [Pharos::Config]
     def transport
-      @transport ||= load_config.master_host.transport
+      @transport ||= master_host.transport
     end
   end
 end
