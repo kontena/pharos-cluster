@@ -41,7 +41,7 @@ module Pharos
         logger.info { "Initializing control plane (v#{Pharos::KUBE_VERSION}) ..." }
         logger.debug { cfg }
 
-        host.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
+        transport.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-init.sh',
             CONFIG: tmp_file,
@@ -61,7 +61,7 @@ module Pharos
         replace_cert if replace_cert?
 
         logger.info { "Renewing control plane certificates ..." }
-        host.tempfile(content: kubeadm.cluster_config.generate.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
+        transport.tempfile(content: kubeadm.cluster_config.generate.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-renew-certs.sh',
             CONFIG: tmp_file,
@@ -73,7 +73,7 @@ module Pharos
         logger.info { "Reconfiguring control plane (v#{Pharos::KUBE_VERSION})..." }
         logger.debug { cfg }
 
-        host.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
+        transport.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-reconfigure.sh',
             CONFIG: tmp_file,
