@@ -30,8 +30,10 @@ module Pharos
             gw_opts[:non_interactive] = true
             begin
               gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-            rescue StandardError
+            rescue StandardError => exc
+              logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to bastion host #{bastion.user}@#{bastion.host}" }
               raise if gw_opts[:non_interactive] == false || !$stdin.tty? # don't re-retry
+              logger.debug { "Retrying in interactive mode" }
               gw_opts[:non_interactive] = false
               retry
             end
@@ -40,8 +42,10 @@ module Pharos
             non_interactive = true
             begin
               @session = Net::SSH.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
-            rescue StandardError
+            rescue StandardError => exc
+              logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}" }
               raise if non_interactive == false || $stdin.tty? # don't re-retry
+              logger.debug { "Retrying in interactive mode" }
               non_interactive = false
               retry
             end

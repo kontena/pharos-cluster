@@ -11,8 +11,6 @@ module Pharos
     REMOTE_FILE = "/etc/kubernetes/admin.conf"
 
     def execute
-      transport.connect
-
       Dir.chdir(config_yaml.dirname) do
         config = Pharos::Kube::Config.new(config_file_content)
         config.rename_cluster(new_name) if new_name
@@ -40,7 +38,7 @@ module Pharos
 
     # @return [Pharos::Config]
     def transport
-      @transport ||= master_host.transport
+      @transport ||= master_host.transport.tap(&:connect)
     end
   end
 end
