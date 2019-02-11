@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Pharos
-  class LicenseAssignCommand < UpCommand
+  class LicenseAssignCommand < Pharos::Command
+    options :load_config
+
     include Pharos::Logging
 
     LICENSE_SERVICE_ENDPOINT = 'https://get.pharos.sh/api/licenses/%<key>s/assign'
@@ -24,10 +26,11 @@ module Pharos
     def execute
       validate_license_format
 
-      master_host.transport.connect
-
-      master_host.transport.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token} --dry-run -o yaml | kubectl apply -f -")
-      logger.info "Added subscription token to pharos cluster secrets"
+      Dir.chdir(config_yaml.dirname) do
+        master_host.transport.connect
+        master_host.transport.exec!("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal=key=#{subscription_token} --dry-run -o yaml | kubectl apply -f -")
+        logger.info "Added subscription token to pharos cluster secrets"
+      end
     end
 
     def validate_license_format
