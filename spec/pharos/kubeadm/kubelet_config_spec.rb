@@ -32,7 +32,7 @@ describe Pharos::Kubeadm::KubeletConfig do
 
       it 'configures readOnlyPort' do
         config = subject.generate
-        expect(config['readOnlyPort']).to eq('10255')
+        expect(config['readOnlyPort']).to eq(10_255)
       end
     end
   end
