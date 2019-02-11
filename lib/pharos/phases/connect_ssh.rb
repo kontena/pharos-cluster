@@ -8,7 +8,7 @@ module Pharos
       def call
         return if host.local?
 
-        host.transport(non_interactive: true)
+        host.transport.connect(non_interactive: true)
       rescue Net::SSH::AuthenticationFailed, Net::SSH::Authentication::KeyManagerError
         logger.error { "Authentication failed for #{host.user}@#{host}" }
       end

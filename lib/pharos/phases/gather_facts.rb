@@ -47,7 +47,7 @@ module Pharos
 
       # @return [Pharos::Configuration::OsRelease]
       def os_release
-        raise Pharos::InvalidHostError, "Only linux hosts supported" unless host.exec?('uname | grep -q -i linux')
+        raise Pharos::InvalidHostError, "Only linux hosts supported" unless transport.exec?('uname | grep -q -i linux')
 
         os_info = {}
         transport.file('/etc/os-release').each_line do |line|

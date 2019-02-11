@@ -81,11 +81,11 @@ module Pharos
         IPAddr.new(address).loopback?
       end
 
-      def transport(**options)
-        @transport ||= Pharos::Transport.for(self, **options)
-      rescue StandardError
-        @transport = nil
-        raise
+      # Accessor to host transport which handles running commands and manipulating files on the
+      # target host
+      # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
+      def transport
+        @transport ||= Pharos::Transport.for(self)
       end
 
       def api_address
