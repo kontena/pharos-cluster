@@ -7,7 +7,7 @@ module Pharos
         raise TypeError, "Non-SSH connections do not provide an ssh gateway"
       end
 
-      def connect
+      def connect(**_options)
         nil
       end
 
