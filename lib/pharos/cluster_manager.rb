@@ -33,7 +33,7 @@ module Pharos
 
     # @return [Pharos::AddonManager]
     def phase_manager
-      @phase_manager = Pharos::PhaseManager.new(
+      @phase_manager ||= Pharos::PhaseManager.new(
         config: @config,
         cluster_context: @context
       )
