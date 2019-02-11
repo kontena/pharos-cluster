@@ -11,5 +11,5 @@ pharos-cluster
 pharos-cluster -v
 pharos-cluster version
 pharos-cluster up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json
-DEBUG=true DEBUG_SSH=true pharos-cluster ssh --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide
+DEBUG=true DEBUG_TRANSPORT=true pharos-cluster ssh --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide
 pharos-cluster up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json
