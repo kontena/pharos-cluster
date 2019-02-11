@@ -12,7 +12,8 @@ describe Pharos::LicenseAssignCommand do
   let(:success_response) { JSON.dump(data: { attributes: { 'license-token': { token: license_token } } }) }
 
   before do
-    allow(subject).to receive(:config).and_return(config)
+    allow(subject).to receive(:config_yaml).and_return(double(dirname: __dir__))
+    allow(subject).to receive(:load_config).and_return(config)
     allow(host).to receive(:transport).and_return(ssh)
     allow(ssh).to receive(:connect)
     allow(subject).to receive(:http_client).and_return(http_client)
