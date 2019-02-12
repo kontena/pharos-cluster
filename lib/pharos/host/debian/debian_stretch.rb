@@ -8,7 +8,7 @@ module Pharos
       register_config 'debian', '9'
 
       CFSSL_VERSION = '1.2'
-      DOCKER_VERSION = '18.06.1'
+      DOCKER_VERSION = '18.06.2'
 
       register_component(
         name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0',
@@ -35,7 +35,7 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker-ce',
-            DOCKER_VERSION: "#{DOCKER_VERSION}~3-0~debian",
+            DOCKER_VERSION: "DOCKER_VERSION",
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
