@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pharos-cluster (2.2.1.rc.1)
+    pharos-cluster (2.2.1)
       bcrypt (~> 3.1)
       bcrypt_pbkdf (~> 1.0)
       clamp (= 1.2.1)
