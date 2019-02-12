@@ -50,7 +50,7 @@ module Pharos
               @session = Net::SSH.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
             rescue *RETRY_CONNECTION_ERRORS => exc
               logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}" }
-              raise if non_interactive == false || $stdin.tty? # don't re-retry
+              raise if non_interactive == false || !$stdin.tty? # don't re-retry
               logger.debug { "Retrying in interactive mode" }
               non_interactive = false
               retry
