@@ -60,6 +60,7 @@ module Pharos
       attribute :labels, Pharos::Types::Strict::Hash
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
+      attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
       attribute :ssh_key_path, Pharos::Types::Strict::String
       attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
@@ -87,6 +88,7 @@ module Pharos
         opts[:send_env] = [] # override default to not send LC_* envs
         opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
         opts[:bastion] = bastion if bastion
+        opts[:port] = ssh_port
         @ssh = Pharos::SSH::Client.new(address, user, opts.merge(options)).tap(&:connect)
       rescue StandardError
         @ssh = nil

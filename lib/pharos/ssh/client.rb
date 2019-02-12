@@ -48,23 +48,14 @@ module Pharos
       # @param options [Hash] see Net::SSH#start
       def connect(**options)
         synchronize do
-          logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           if bastion
-            gw_opts = {}
-            gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
-            gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-            @session = gateway.ssh(@host, @user, @opts.merge(options))
+            logger.debug { "connect: #{@user}@#{@host} (#{@opts}) via bastion #{bastion.user}@#{bastion.address}:#{bastion.ssh_port}" }
+            @session = bastion.gateway.ssh(@host, @user, @opts.merge(options))
           else
+            logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
             @session = Net::SSH.start(@host, @user, @opts.merge(options))
           end
         end
-      end
-
-      # @param host [String]
-      # @param port [Integer]
-      # @return [Integer] local port number
-      def gateway(host, port)
-        Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
       end
 
       # @example

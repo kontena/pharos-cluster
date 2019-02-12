@@ -152,20 +152,18 @@ describe Pharos::Config do
         let(:master) { Pharos::Configuration::Host.new('address' => '192.0.2.1', 'role' => 'master', 'bastion' => { 'address' => '192.0.2.2', 'user' => 'bastion' }) }
         let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'role' => 'master', 'bastion' => { 'address' => '192.0.2.2', 'user' => 'bastion' } } ] } }
         let(:bastion) { Pharos::Configuration::Bastion.new('address' => '192.0.2.2', 'user' => 'bastion') }
-        let(:bastion_host) { instance_double(Pharos::Configuration::Host) }
-        let(:ssh) { instance_double(Pharos::SSH::Client) }
+        let(:gateway) { double(:net_ssh_gateway) }
 
         before do
           allow(subject).to receive(:master_host).and_return(master)
           allow(master).to receive(:bastion).and_return(bastion)
-          allow(bastion).to receive(:host).and_return(bastion_host)
-          allow(bastion_host).to receive(:ssh).and_return(ssh)
+          allow(bastion).to receive(:gateway).and_return(gateway)
           allow(master).to receive(:api_address).and_return('api.example.com')
         end
 
         it 'creates a kube client through ssh' do
           expect(Pharos::Kube).to receive(:client).with('localhost', kubeconfig, 9999)
-          expect(ssh).to receive(:gateway).with('api.example.com', 6443).and_return(9999)
+          expect(gateway).to receive(:open).with('api.example.com', 6443).and_return(9999)
           subject.kube_client(kubeconfig)
         end
       end
