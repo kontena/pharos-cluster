@@ -79,7 +79,6 @@ module Pharos
     # @return [Pharos::SSH::Client]
     def master_ssh
       cluster_context.master_ssh
-      fail "Phase #{self.class.name} does not have master ssh"
     end
 
     # @return [K8s::Client]
