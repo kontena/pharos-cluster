@@ -4,7 +4,7 @@ module Pharos
   class UpCommand < Pharos::Command
     options :load_config, :yes?
 
-    option ['-f', '--force'], :flag, "force upgrade"
+    option ['-f', '--force'], :flag, "force upgrade", default: false
     STRIP_OPTIONS = %w(-y --yes -d --debug -f --force).freeze
 
     def execute
@@ -24,10 +24,8 @@ module Pharos
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config)
-      manager = ClusterManager.new(config, pastel: pastel)
+      manager = ClusterManager.new(Pharos::Context.new(config: config, force: force?), pastel: pastel)
       start_time = Time.now
-
-      manager.context['force'] = force?
 
       puts pastel.green("==> Sharpening tools ...")
       manager.load
@@ -51,9 +49,7 @@ module Pharos
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       manager.post_install_messages.each do |component, message|
         puts "    Post-install message from #{component}:"
-        message.lines.each do |line|
-          puts "      #{line}"
-        end
+        puts message.gsub(/^/, '      ')
       end
       puts "    To configure kubectl for connecting to the cluster, use:"
       puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
@@ -84,7 +80,7 @@ module Pharos
     # @param config [Pharos::Config]
     # @param existing_version [String]
     def prompt_continue(config, context)
-      existing_version = context['existing-pharos-version']
+      existing_version = context.existing_pharos_version
       lexer = Rouge::Lexers::YAML.new
       puts pastel.green("==> Configuration is generated and shown below:")
       if color?
@@ -97,7 +93,7 @@ module Pharos
       if existing_version && Pharos.version != existing_version
         puts
         puts pastel.yellow("Cluster is currently running Kontena Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
-        if context['unsafe_upgrade']
+        if context.unsafe_upgrade?
           if force?
             puts
             puts pastel.red("WARNING:") + " using --force to attempt an unsafe upgrade, this can break your cluster."

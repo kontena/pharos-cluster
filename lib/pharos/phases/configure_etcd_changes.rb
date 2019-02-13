@@ -18,7 +18,7 @@ module Pharos
       end
 
       def store_initial_cluster_state
-        return if cluster_context['etcd-initial-cluster-state']
+        return if cluster_context.etcd_initial_cluster_state
 
         state = if ssh.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
                   'existing'
@@ -26,7 +26,7 @@ module Pharos
                   'new'
                 end
 
-        cluster_context['etcd-initial-cluster-state'] = state
+        cluster_context.etcd_initial_cluster_state = state
       end
 
       def add_new_members
@@ -72,7 +72,7 @@ module Pharos
 
       # @return [String,NilClass]
       def initial_cluster_state
-        cluster_context['etcd-initial-cluster-state']
+        cluster_context.etcd_initial_cluster_state
       end
     end
   end

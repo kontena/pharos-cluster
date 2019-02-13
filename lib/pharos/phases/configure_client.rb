@@ -17,8 +17,7 @@ module Pharos
       def call
         return if @optional && !kubeconfig?
 
-        cluster_context['kubeconfig'] = kubeconfig
-        cluster_context['master-ssh'] = ssh
+        cluster_context.kube_config = kubeconfig
 
         client_prefetch unless @optional
       end
@@ -39,7 +38,7 @@ module Pharos
         config = YAML.safe_load(read_kubeconfig)
 
         logger.debug { "New config: #{config}" }
-        K8s::Config.new(config)
+        config
       end
 
       # prefetch client resources to warm up caches

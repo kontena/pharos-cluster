@@ -15,11 +15,11 @@ module Pharos
           return
         end
 
-        cluster_context['kubeconfig'] = kubeconfig
+        cluster_context.kube_config = kubeconfig
         config_map = previous_config_map
         if config_map
           existing_version = config_map.data['pharos-version']
-          cluster_context['existing-pharos-version'] = existing_version
+          cluster_context.existing_pharos_version = existing_version
           validate_version(existing_version)
         else
           logger.info { 'No version detected' }
@@ -35,7 +35,7 @@ module Pharos
           logger.info { "Valid cluster version detected: #{cluster_version}" }
         else
           logger.warn { "Invalid cluster version detected: #{cluster_version}" }
-          cluster_context['unsafe_upgrade'] = true
+          cluster_context.unsafe_upgrade = true
         end
       end
 

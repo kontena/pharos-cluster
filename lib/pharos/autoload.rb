@@ -22,6 +22,7 @@ module Pharos
   autoload :Types, 'pharos/types'
   autoload :Config, 'pharos/config'
   autoload :ConfigSchema, 'pharos/config_schema'
+  autoload :Context, 'pharos/context'
   autoload :Kube, 'pharos/kube'
   autoload :Kubeadm, 'pharos/kubeadm'
   autoload :YamlFile, 'pharos/yaml_file'

@@ -21,14 +21,12 @@ module Pharos
       ]
     end
 
-    # @param config [Pharos::Config]
+    # @param context [Pharos::Context]
     # @param pastel [Pastel]
-    def initialize(config, pastel: Pastel.new)
-      @config = config
+    def initialize(context, pastel: Pastel.new)
+      @context = context
+      @config = context.config
       @pastel = pastel
-      @context = {
-        'post_install_messages' => {}
-      }
     end
 
     # @return [Pharos::AddonManager]
@@ -68,7 +66,7 @@ module Pharos
       apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
-      apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
+      apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if context.previous_config
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
       apply_phase(Phases::ValidateVersion, [config.master_host], parallel: false)
     end
@@ -166,7 +164,7 @@ module Pharos
     end
 
     def post_install_messages
-      @context['post_install_messages']
+      context.post_install_messages
     end
 
     def save_config

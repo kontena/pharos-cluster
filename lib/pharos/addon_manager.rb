@@ -34,10 +34,10 @@ module Pharos
     end
 
     # @param config [Pharos::Configuration]
-    # @param cluster_context [Hash]
+    # @param cluster_context [Pharos::Context,Hash]
     def initialize(config, cluster_context)
       @config = config
-      @cluster_context = cluster_context
+      @cluster_context = cluster_context.is_a?(Hash) ? Pharos::Context.new(cluster_context) : cluster_context
       enable_default_addons
     end
 
@@ -60,7 +60,7 @@ module Pharos
     end
 
     def prev_configs
-      if config = @cluster_context['previous-config']
+      if config = @cluster_context.previous_config
         config.addons
       else
         {}
@@ -89,10 +89,7 @@ module Pharos
 
     # @return [K8s::Client]
     def kube_client
-      if !@kubeclient && @cluster_context['kubeconfig']
-        @kube_client = @config.kube_client(@cluster_context['kubeconfig'])
-      end
-      @kube_client
+      @cluster_context.kube_client
     end
 
     def options

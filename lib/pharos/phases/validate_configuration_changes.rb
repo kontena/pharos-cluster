@@ -23,7 +23,7 @@ module Pharos
       end
 
       def previous_config
-        cluster_context['previous-config']
+        cluster_context.previous_config
       end
     end
   end

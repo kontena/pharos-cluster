@@ -22,7 +22,7 @@ module Pharos
         CA_FILES.each do |file|
           data[file] = ssh.file(File.join(CA_PATH, file)).read
         end
-        cluster_context['etcd-ca'] = data
+        cluster_context.etcd_ca = data
       end
     end
   end

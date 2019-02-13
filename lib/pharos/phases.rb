@@ -16,6 +16,8 @@ module Pharos
         return true if enabled.nil?
 
         enabled.call(config)
+      rescue
+        require 'byebug'; byebug
       end
 
       def to_h

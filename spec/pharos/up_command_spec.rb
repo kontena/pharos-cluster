@@ -14,46 +14,48 @@ describe Pharos::UpCommand do
   describe '#prompt_continue' do
     let(:prompt) { double(:prompt) }
     let(:config) { double(:config) }
+    let(:cluster_context) { Pharos::Context.new(existing_pharos_version: Pharos.version) }
 
     it 'prompts' do
       allow($stdin).to receive(:tty?).and_return(true)
       expect(subject).to receive(:prompt).and_return(prompt)
       expect(prompt).to receive(:yes?)
-      subject.prompt_continue(config, Pharos.version)
+      subject.prompt_continue(config, cluster_context)
     end
 
     it 'does not prompt with --yes' do
       allow(subject).to receive(:confirm_yes!).and_return(true)
       expect(subject).not_to receive(:prompt)
-      subject.prompt_continue(config, Pharos.version)
+      subject.prompt_continue(config, cluster_context)
     end
 
     it 'shows config' do
       allow(subject).to receive(:confirm_yes!).and_return(true)
       expect(subject).to receive(:color?).and_return(true).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
-      subject.prompt_continue(config, Pharos.version)
+      subject.prompt_continue(config, cluster_context)
     end
 
     it 'shows config without color' do
       allow(subject).to receive(:confirm_yes!).and_return(true)
       expect(subject).to receive(:color?).and_return(false).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
-      subject.prompt_continue(config, 'existing-pharos-version' => Pharos.version)
+      subject.prompt_continue(config, cluster_context)
     end
 
     it 'shows a warning when the cluster is going to be upgraded' do
+      allow(cluster_context).to receive(:existing_pharos_version).and_return('0.0.0')
       allow(subject).to receive(:yes?).and_return(true)
       expect(subject).to receive(:color?).and_return(false).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
-      expect{subject.prompt_continue(config, 'existing-pharos-version' => '0.0.0')}.to output(/will be upgraded/).to_stdout
+      expect{subject.prompt_continue(config, cluster_context)}.to output(/will be upgraded/).to_stdout
     end
 
     it 'does not show a warning when the cluster is going to be upgraded' do
       allow(subject).to receive(:yes?).and_return(true)
       expect(subject).to receive(:color?).and_return(false).at_least(1).times
       expect(config).to receive(:to_yaml).and_return('---')
-      expect{subject.prompt_continue(config, 'existing-pharos-version' => Pharos.version)}.not_to output(/will be upgraded/).to_stdout
+      expect{subject.prompt_continue(config, cluster_context)}.not_to output(/will be upgraded/).to_stdout
     end
   end
 end

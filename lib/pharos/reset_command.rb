@@ -42,7 +42,7 @@ module Pharos
     end
 
     def cluster_manager
-      @cluster_manager ||= ClusterManager.new(load_config, pastel: pastel).tap do |cluster_manager|
+      @cluster_manager ||= ClusterManager.new(Pharos::Context.new(config: load_config), pastel: pastel).tap do |cluster_manager|
         puts pastel.green("==> Sharpening tools ...")
         cluster_manager.load
         cluster_manager.gather_facts

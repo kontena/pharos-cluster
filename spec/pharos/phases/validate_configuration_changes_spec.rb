@@ -14,7 +14,7 @@ describe Pharos::Phases::ValidateConfigurationChanges do
   }
   let(:config) { Pharos::Config.new(hosts: [{address: '10.0.0.1', role: 'master'}], network: { provider: 'new' }) }
   let(:old_config) { Pharos::Config.new(hosts: [{address: '10.0.0.1', role: 'master'}], network: { provider: 'old' }) }
-  let(:cluster_context) { { 'previous-config' => old_config } }
+  let(:cluster_context) { Pharos::Context.new(config: config, previous_config: old_config) }
 
   let(:subject) { described_class.new(config.hosts.first, cluster_context: cluster_context, config: config) }
 

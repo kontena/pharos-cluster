@@ -5,7 +5,7 @@ module Pharos
     def execute
       puts "Kontena Pharos:"
       puts "  - #{File.basename($PROGRAM_NAME)} version #{Pharos.version}"
-      ClusterManager.new(Pharos::Config.new({}), pastel: false).load
+      ClusterManager.new(Pharos::Context.new(config: Pharos::Config.new({})), pastel: false).load # <-- must be a better way
 
       phases.each do |os, phases|
         title = (os || 'Common').capitalize
