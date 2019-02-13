@@ -89,7 +89,7 @@ module Pharos
 
     # @return [K8s::Client]
     def kube_client
-      @cluster_context.kube_client
+      @cluster_context.kube_client if @cluster_context.kube_config
     end
 
     def options
