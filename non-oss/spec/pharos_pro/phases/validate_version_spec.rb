@@ -1,12 +1,14 @@
-describe Pharos::Phases::ValidateVersion, unless: Pharos.oss? do
+describe "Pharos::Phases::ValidateVersion", unless: Pharos.oss? do
   before :all do
-    require 'pharos_pro/phases/validate_version'
+    Pharos::Phases.send(:remove_const, :ValidateVersion) if Pharos::Phases.const_defined?(:ValidateVersion)
+    load File.expand_path(File.join(__dir__, '../../../../lib/pharos/phases/validate_version.rb'))
+    load File.expand_path(File.join(__dir__, '../../../pharos_pro/phases/validate_version.rb'))
   end
 
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.1', role: 'master') }
   let(:network_config) { {} }
   let(:config) { Pharos::Config.new(hosts: [host]) }
-  subject { described_class.new(host, config: config) }
+  subject { Pharos::Phases::ValidateVersion.new(host, config: config) }
 
   describe '#validate_version' do
     it 'allows re-up for stable releases' do
