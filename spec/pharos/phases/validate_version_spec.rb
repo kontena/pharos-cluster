@@ -1,6 +1,6 @@
 require 'pharos/phases/validate_version'
 
-describe Pharos::Phases::ValidateVersion do
+describe Pharos::Phases::ValidateVersion, if: Pharos.oss? do
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.1', role: 'master') }
   let(:network_config) { {} }
   let(:config) { Pharos::Config.new(hosts: [host]) }
