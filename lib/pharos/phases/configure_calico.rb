@@ -54,8 +54,19 @@ module Pharos
           master_ip: @config.master_host.peer_address,
           version: CALICO_VERSION,
           nat_outgoing: @config.network.calico&.nat_outgoing,
-          firewalld_enabled: !!@config.network&.firewalld&.enabled
+          firewalld_enabled: !!@config.network&.firewalld&.enabled,
+          envs: @config.network.calico&.environment || {},
+          metrics_enabled: metrics_enabled?,
+          metrics_port: metrics_port
         )
+      end
+
+      def metrics_enabled?
+        !!@config.network.calico&.environment&.dig('FELIX_PROMETHEUSMETRICSENABLED')
+      end
+
+      def metrics_port
+        @config.network.calico&.environment&.dig('FELIX_PROMETHEUSMETRICSPORT') || 9091
       end
     end
   end
