@@ -43,12 +43,11 @@ module Pharos
       end
 
       def ensure_resources
-        trusted_subnets = @config.network.weave&.trusted_subnets || []
         logger.info { "Configuring overlay network ..." }
         apply_stack(
           'weave',
           image_repository: @config.image_repository,
-          trusted_subnets: trusted_subnets,
+          extra_args: extra_args,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,
           version: WEAVE_VERSION,
@@ -58,6 +57,18 @@ module Pharos
           flying_shuttle_version: WEAVE_FLYING_SHUTTLE_VERSION,
           no_masq_local: no_masq_local?
         )
+      end
+
+      def extra_args
+        args = []
+        args << "--trusted-subnets=#{trusted_subnets.join(',')}" unless trusted_subnets.empty?
+        args << "--no-discovery" if flying_shuttle?
+
+        args
+      end
+
+      def trusted_subnets
+        @config.network.weave&.trusted_subnets || []
       end
 
       # @return [Array<String>]
@@ -85,7 +96,7 @@ module Pharos
         return true if @config.network.weave&.known_peers
         return true if @config.regions.size > 1
 
-        @config.network.weave&.flying_shuttle || false
+        false
       end
 
       # @return [Boolean]
