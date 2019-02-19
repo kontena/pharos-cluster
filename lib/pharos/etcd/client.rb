@@ -9,8 +9,8 @@ module Pharos
 
       class Error < StandardError; end
 
-      def initialize(ssh)
-        @ssh = ssh
+      def initialize(transport)
+        @transport = transport
       end
 
       # @return [Boolean]
@@ -49,7 +49,7 @@ module Pharos
       # @param parameters [Array<String>]
       # @param options [Hash]
       def curl(path, parameters = [], options = {})
-        result = @ssh.exec("#{CURL}#{path} #{parameters.join(' ')}", options)
+        result = @transport.exec("#{CURL}#{path} #{parameters.join(' ')}", options)
         raise Error, "path: #{path}, params: #{parameters}, options: #{options}, stderr: #{result.stderr}" if result.error?
 
         if result.stdout.empty?

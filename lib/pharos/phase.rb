@@ -30,8 +30,8 @@ module Pharos
       @cluster_context = (cluster_context.is_a?(Hash) ? Pharos::Context.new(cluster_context) : cluster_context) if cluster_context
     end
 
-    def ssh
-      @host.ssh
+    def transport
+      @host.transport
     end
 
     def logger
@@ -57,7 +57,7 @@ module Pharos
     # @param script [String] name of file under ../scripts/
     # @param vars [Hash]
     def exec_script(script, vars = {})
-      ssh.exec_script!(
+      transport.exec_script!(
         script,
         env: vars,
         path: script_path(script)
@@ -76,9 +76,9 @@ module Pharos
       @host_configurer ||= @host.configurer
     end
 
-    # @return [Pharos::SSH::Client]
-    def master_ssh
-      cluster_context.master_ssh
+    # @return [Pharos::Configuration::Host]
+    def master_host
+      @config.master_host
     end
 
     # @return [K8s::Client]
