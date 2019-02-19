@@ -31,7 +31,7 @@ module Pharos
 
         raise "File does not exist #{password_file}" unless File.exist?(password_file)
 
-        File.read(password_file)
+        File.read(password_file).strip
       end
 
       def ensure_passwd
