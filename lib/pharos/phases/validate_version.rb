@@ -41,12 +41,12 @@ module Pharos
 
       # @return [String]
       def kubeconfig?
-        ssh.file(REMOTE_KUBECONFIG).exist?
+        transport.file(REMOTE_KUBECONFIG).exist?
       end
 
       # @return [String]
       def read_kubeconfig
-        ssh.file(REMOTE_KUBECONFIG).read
+        transport.file(REMOTE_KUBECONFIG).read
       end
 
       # @return [Hash]

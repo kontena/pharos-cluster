@@ -35,7 +35,7 @@ module Pharos
       # @param file [String]
       # @param contents [String]
       def write_config(file, contents)
-        @host.ssh.file(File.join('/etc/firewalld/', file)).write(contents)
+        transport.file(File.join('/etc/firewalld/', file)).write(contents)
       end
 
       # @return [Array<String>]

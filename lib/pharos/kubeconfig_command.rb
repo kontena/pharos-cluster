@@ -12,6 +12,8 @@ module Pharos
 
     def execute
       Dir.chdir(config_yaml.dirname) do
+        transport.connect
+
         config = Pharos::Kube::Config.new(config_file_content)
         config.rename_cluster(new_name) if new_name
         config.rename_context(new_context) if new_context
@@ -27,18 +29,18 @@ module Pharos
     private
 
     def config_file_content
-      file = ssh.file(REMOTE_FILE)
+      file = transport.file(REMOTE_FILE)
       signal_usage_error "Remote file #{REMOTE_FILE} not found" unless file.exist?
       file.read
     end
 
-    def ssh
-      @ssh ||= master_host.ssh
+    def master_host
+      @master_host ||= load_config.master_host
     end
 
     # @return [Pharos::Config]
-    def master_host
-      @master_host ||= load_config.master_host
+    def transport
+      @transport ||= master_host.transport
     end
   end
 end

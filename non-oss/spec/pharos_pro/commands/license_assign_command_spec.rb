@@ -6,14 +6,16 @@ describe Pharos::LicenseAssignCommand do
   let(:license_key) { "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" }
   let(:host) { Pharos::Configuration::Host.new(address: '127.0.0.1', role: 'master') }
   let(:config) { Pharos::Config.new(hosts: [host]) }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
   let(:http_client) { spy }
   let(:license_token) { 'abcd' }
   let(:success_response) { JSON.dump(data: { attributes: { 'license-token': { token: license_token } } }) }
 
   before do
-    allow(subject).to receive(:config).and_return(config)
-    allow(subject).to receive(:ssh).and_return(ssh)
+    allow(subject).to receive(:config_yaml).and_return(double(dirname: __dir__))
+    allow(subject).to receive(:load_config).and_return(config)
+    allow(host).to receive(:transport).and_return(ssh)
+    allow(ssh).to receive(:connect)
     allow(subject).to receive(:http_client).and_return(http_client)
     allow(subject).to receive(:license_key).and_return(license_key)
   end
