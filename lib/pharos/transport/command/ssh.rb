@@ -12,13 +12,13 @@ module Pharos
 
         # @return [Pharos::Transport::CommandResult]
         def run
-          raise Pharos::ExecError, "Connection not established" unless @client.connected?
+          raise Pharos::ExecError.new(@source || cmd, -127, "Connection not established") unless @client.connected?
 
           result.append(@source.nil? ? @cmd : "#{@cmd} < #{@source}", :cmd)
           response = @client.session.open_channel do |channel|
             channel.env('LC_ALL', 'C.UTF-8')
             channel.exec @cmd do |_, success|
-              raise Pharos::ExecError, "Failed to exec #{cmd}" unless success
+              raise Pharos::ExecError.new(@source || cmd, -127, "Failed to exec #{cmd}") unless success
 
               channel.on_data do |_, data|
                 result.append(data, :stdout)

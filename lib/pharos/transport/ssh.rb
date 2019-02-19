@@ -15,12 +15,14 @@ module Pharos
 
       def connect
         synchronize do
-          logger.debug { "connect: #{host.user}@#{host.address} (#{host.ssh_options})" }
           if host.bastion
-            @session = host.bastion.gateway.ssh(host.address, host.user, host.ssh_options)
+            logger.debug { "connect #{host.user}@#{host.address} (#{host.ssh_options}) via bastion: #{host.bastion.user}@#{host.bastion.address} (#{host.bastion.host.ssh_options})" }
+            @gateway = host.bastion.gateway
+            @session = @gateway.ssh(host.address, host.user, host.ssh_options)
           else
             non_interactive = true
             begin
+              logger.debug { "connect #{host.user}@#{host.address} (#{host.ssh_options})" }
               @session = Net::SSH.start(host.address, host.user, host.ssh_options.merge(non_interactive: non_interactive))
             rescue *RETRY_CONNECTION_ERRORS => exc
               logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{host.user}@#{host.address}" }
@@ -43,10 +45,22 @@ module Pharos
       end
 
       def disconnect
-        synchronize { @session.close if @session && !@session.closed? }
-      end
+        return unless connected?
 
-      private
+        synchronize do
+          logger.debug { "disconnect SSH #{host.user}@#{host.address}" }
+          if @gateway
+            @session.close
+            logger.debug { "disconnect SSH gateway #{host.bastion.user}@#{host.bastion.address}" }
+            @gateway.shutdown!
+            sleep 0.5 until !@gateway.active?
+            @gateway = nil
+          else
+            @session.close
+          end
+          @session = nil
+        end
+      end
 
       def command(cmd, **options)
         Pharos::Transport::Command::SSH.new(self, cmd, **options)

@@ -104,7 +104,7 @@ module Pharos
         abstract_method!
       end
 
-      def command
+      def command(_cmd, **_options)
         abstract_method!
       end
 
