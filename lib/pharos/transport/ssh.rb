@@ -34,6 +34,7 @@ module Pharos
             gw_opts = {}
             gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
             gw_opts[:non_interactive] = true
+            gw_opts[:port] = bastion.ssh_port if bastion.ssh_port
             begin
               gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
             rescue *RETRY_CONNECTION_ERRORS => exc
@@ -63,7 +64,7 @@ module Pharos
       # @param port [Integer]
       # @return [Integer] local port number
       def gateway(host, port)
-        Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
+        Net::SSH::Gateway.new(@host, @user, @opts)
       end
 
       def interactive_session

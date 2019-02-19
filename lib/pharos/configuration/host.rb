@@ -72,6 +72,10 @@ module Pharos
         short_hostname || address
       end
 
+      def local?
+        @local ||= IPAddr.new(address).loopback?
+      end
+
       def short_hostname
         return nil unless hostname
 
