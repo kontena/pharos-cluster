@@ -60,6 +60,7 @@ module Pharos
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
+      attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
       attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :environment, Pharos::Types::Strict::Hash
@@ -75,6 +76,15 @@ module Pharos
         return nil unless hostname
 
         hostname.split('.').first
+      end
+
+      def ssh_options
+        {}.tap do |opts|
+          opts[:keys] = [ssh_key_path] if ssh_key_path
+          opts[:send_env] = [] # override default to not send LC_* envs
+          opts[:proxycommand] = ssh_proxy_command if ssh_proxy_command
+          opts[:port] = ssh_port if ssh_port
+        end
       end
 
       def local?
