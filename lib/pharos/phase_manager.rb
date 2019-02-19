@@ -11,7 +11,8 @@ module Pharos
       Excon::Error,
       K8s::Error,
       Pharos::SSH::RemoteCommand::ExecError,
-      Errno::ECONNRESET
+      Errno::ECONNRESET,
+      Errno::ECONNREFUSED
     ].freeze
 
     # @param dirs [Array<String>]
