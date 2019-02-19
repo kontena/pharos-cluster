@@ -24,6 +24,16 @@ module Pharos
         ensure_resources
       end
 
+      # @return [String, NilClass]
+      def configured_password
+        password_file = @config.network.weave&.password
+        return unless password_file
+
+        raise "File does not exist #{password_file}" unless File.exist?(password_file)
+
+        File.read(password_file)
+      end
+
       def ensure_passwd
         kube_secrets = kube_client.api('v1').resource('secrets', namespace: 'kube-system')
 
@@ -36,7 +46,7 @@ module Pharos
             namespace: 'kube-system'
           },
           data: {
-            'weave-passwd': Base64.strict_encode64(@config.network.weave&.passwd || generate_password)
+            'weave-passwd': Base64.strict_encode64(configured_password || generate_password)
           }
         )
         kube_secrets.create_resource(weave_passwd)

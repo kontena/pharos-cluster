@@ -4,6 +4,21 @@ describe Pharos::Phases::ConfigureWeave do
   let(:config) { double(:config) }
   subject { described_class.new(double, config: config) }
 
+  describe '#configured_password', fakefs: true do
+    it 'returns nil if no password set' do
+      allow(config).to receive_message_chain('network.weave').and_return(nil)
+      expect(subject.configured_password).to be_nil
+    end
+
+    it 'returns password file contents if given' do
+      FakeFS do
+        File.write('./weave_passwd', 'abcde123')
+        allow(config).to receive_message_chain('network.weave.password').and_return('./weave_passwd')
+        expect(subject.configured_password).to eq('abcde123')
+      end
+    end
+  end
+
   describe '#initial_known_peers' do
     it 'returns nil if configmap does not exist and known_peers not set' do
       allow(config).to receive_message_chain('network.weave').and_return(nil)
