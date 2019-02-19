@@ -6,7 +6,7 @@ module Pharos
       title "Configure Weave network"
 
       WEAVE_VERSION = '2.5.0'
-      WEAVE_FLYING_SHUTTLE_VERSION = '0.1.1'
+      WEAVE_FLYING_SHUTTLE_VERSION = '0.2.0'
 
       register_component(
         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
@@ -53,12 +53,14 @@ module Pharos
           version: WEAVE_VERSION,
           firewalld_enabled: firewalld?,
           known_peers: known_peers,
+          initial_known_peers: initial_known_peers,
           flying_shuttle_enabled: flying_shuttle?,
           flying_shuttle_version: WEAVE_FLYING_SHUTTLE_VERSION,
           no_masq_local: no_masq_local?
         )
       end
 
+      # @return [Array<String>]
       def extra_args
         args = []
         args << "--trusted-subnets=#{trusted_subnets.join(',')}" unless trusted_subnets.empty?
@@ -71,18 +73,20 @@ module Pharos
         @config.network.weave&.trusted_subnets || []
       end
 
+      # Initial known peers are kept to initially set value because we don't want to
+      # rollout new weave deployment everytime known_peers is changed (flying-shuttle will handle updates).
       # @return [Array<String>]
-      def known_peers
+      def initial_known_peers
         configmap = kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('flying-shuttle')
-        return initial_known_peers unless configmap.data['known-peers']
+        return known_peers unless configmap.data['known-peers']
 
         JSON.parse(configmap.data['known-peers'])['peers']
       rescue K8s::Error::NotFound
-        initial_known_peers
+        known_peers
       end
 
       # @return [Array<String>, NilClass]
-      def initial_known_peers
+      def known_peers
         @config.network.weave&.known_peers
       end
 
@@ -93,7 +97,7 @@ module Pharos
 
       # @return [Boolean]
       def flying_shuttle?
-        return true if @config.network.weave&.known_peers
+        return true if known_peers
         return true if @config.regions.size > 1
 
         false

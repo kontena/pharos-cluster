@@ -33,9 +33,9 @@ spec:
             - name: EXTRA_ARGS
               value: "<%= extra_args.join(' ') %>"
             <% end %>
-            <% if known_peers %>
+            <% if initial_known_peers %>
             - name: KUBE_PEERS
-              value: "<%= known_peers.join(' ') %>"
+              value: "<%= initial_known_peers.join(' ') %>"
             <% end %>
             <% if no_masq_local %>
             - name: NO_MASQ_LOCAL
