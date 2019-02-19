@@ -6,7 +6,7 @@ require 'net/ssh/gateway'
 module Pharos
   module Transport
     class SSH < Base
-      attr_reader :session
+      attr_reader :session, :bastion
 
       RETRY_CONNECTION_ERRORS = [
         Net::SSH::AuthenticationFailed,
@@ -19,11 +19,7 @@ module Pharos
       def initialize(host, **opts)
         super(host, opts)
         @user = @opts.delete(:user)
-      end
-
-      # @return [Hash,NilClass]
-      def bastion
-        @bastion ||= @opts.delete(:bastion)
+        @bastion = @opts.delete(:bastion)
       end
 
       # @param options [Hash] see Net::SSH#start
@@ -31,20 +27,7 @@ module Pharos
         synchronize do
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           if bastion
-            gw_opts = {}
-            gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
-            gw_opts[:non_interactive] = true
-            gw_opts[:port] = bastion.ssh_port if bastion.ssh_port
-            begin
-              gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-            rescue *RETRY_CONNECTION_ERRORS => exc
-              logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to bastion host #{bastion.user}@#{bastion.host}" }
-              raise if gw_opts[:non_interactive] == false || !$stdin.tty? # don't re-retry
-              logger.debug { "Retrying in interactive mode" }
-              gw_opts[:non_interactive] = false
-              retry
-            end
-            @session = gateway.ssh(@host, @user, @opts.merge(options))
+            @session = bastion.gateway.ssh(@host, @user, @opts.merge(options))
           else
             non_interactive = true
             begin
@@ -78,8 +61,6 @@ module Pharos
       def disconnect
         synchronize { @session.close if @session && !@session.closed? }
       end
-
-      private
 
       def command(cmd, **options)
         Pharos::Transport::Command::SSH.new(self, cmd, **options)

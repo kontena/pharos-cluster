@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'net/ssh/gateway'
+
 module Pharos
   module Configuration
     class Bastion < Pharos::Configuration::Struct
@@ -14,7 +16,15 @@ module Pharos
 
       # @return [Net::SSH::Gateway]
       def gateway
-        @gateway ||= Net::SSH::Gateway.new(address, user, ssh_opts)
+        return @gateway if @gateway
+
+        non_interactive = true
+        @gateway ||= Net::SSH::Gateway.new(address, user, ssh_opts.merge(non_interactive: non_interactive))
+      rescue *Pharos::Transport::SSH::RETRY_CONNECTION_ERRORS => exc
+        raise if non_interactive == false || !$stdin.tty? # don't re-retry
+
+        non_interactive = false
+        retry
       end
 
       private
