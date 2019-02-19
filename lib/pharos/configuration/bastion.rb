@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'net/ssh/gateway'
+require 'net/ssh/proxy/jump'
 
 module Pharos
   module Configuration
@@ -8,6 +9,7 @@ module Pharos
       attribute :address, Pharos::Types::Strict::String
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
+      attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
 
       def host
