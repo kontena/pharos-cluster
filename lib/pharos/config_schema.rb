@@ -33,6 +33,7 @@ module Pharos
       schema = build
       result = schema.call(DEFAULT_DATA.merge(data))
       raise Pharos::ConfigError, result.messages unless result.success?
+
       result.to_h
     end
 
@@ -94,7 +95,7 @@ module Pharos
           optional(:endpoint).filled(:str?)
         end
         optional(:network).schema do
-          optional(:provider).filled(included_in?: %(weave calico custom))
+          optional(:provider).filled(included_in?: %w(weave calico custom))
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
@@ -104,8 +105,8 @@ module Pharos
               each do
                 schema do
                   required(:port).filled(:str?)
-                  required(:protocol).filled(included_in?: %(tcp udp))
-                  required(:roles).filled(included_in?: %(master worker *))
+                  required(:protocol).filled(included_in?: %w(tcp udp))
+                  required(:roles).each(type?: String, included_in?: %w(master worker *))
                 end
               end
             end
@@ -116,8 +117,9 @@ module Pharos
             optional(:no_masq_local).filled(:bool?)
           end
           optional(:calico).schema do
-            optional(:ipip_mode).filled(included_in?: %(Always, CrossSubnet, Never))
+            optional(:ipip_mode).filled(included_in?: %w(Always CrossSubnet Never))
             optional(:nat_outgoing).filled(:bool?)
+            optional(:environment).filled(:hash?)
           end
           optional(:custom).schema do
             required(:manifest_path).filled(:str?)

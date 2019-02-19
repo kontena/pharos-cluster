@@ -1,21 +1,21 @@
 PATH
   remote: .
   specs:
-    pharos-cluster (2.2.0.rc.3)
-      bcrypt
-      bcrypt_pbkdf (>= 1.0, < 2.0)
+    pharos-cluster (2.2.1)
+      bcrypt (~> 3.1)
+      bcrypt_pbkdf (~> 1.0)
       clamp (= 1.2.1)
       dry-logic (= 0.4.2)
       dry-struct (= 0.5.0)
       dry-types (= 0.13.2)
       dry-validation (= 0.12.1)
-      ed25519 (= 1.2.4)
+      ed25519 (~> 1.2)
       excon (~> 0.62.0)
       fugit (~> 1.1.2)
       k8s-client (~> 0.8.1)
       net-ssh (= 5.1.0)
       net-ssh-gateway (= 2.0.0)
-      pastel
+      pastel (~> 0.7)
       rouge (~> 3.1)
       tty-prompt (~> 0.16)
       yaml-safe_load_stream (~> 0.1)
@@ -29,9 +29,10 @@ GEM
     clamp (1.2.1)
     concurrent-ruby (1.1.4)
     diff-lcs (1.3)
-    dry-configurable (0.7.0)
+    dry-configurable (0.8.1)
       concurrent-ruby (~> 1.0)
-    dry-container (0.6.0)
+      dry-core (~> 0.4, >= 0.4.7)
+    dry-container (0.7.0)
       concurrent-ruby (~> 1.0)
       dry-configurable (~> 0.1, >= 0.1.3)
     dry-core (0.4.7)
@@ -149,7 +150,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler
+  bundler (>= 1.17.2, <= 3.0)
   fakefs (~> 0.13)
   pharos-cluster!
   rake (~> 10.0)

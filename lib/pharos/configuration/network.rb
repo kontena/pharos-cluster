@@ -21,6 +21,7 @@ module Pharos
       class Calico < Pharos::Configuration::Struct
         attribute :ipip_mode, Pharos::Types::String.default('Always')
         attribute :nat_outgoing, Pharos::Types::Strict::Bool.default(true)
+        attribute :environment, Pharos::Types::Hash.default({})
 
         # @param routes [Array<Pharos::Configuration::Routes>]
         # @return [Array<Pharos::Configuration::Routes>]

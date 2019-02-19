@@ -20,7 +20,7 @@ module Pharos
       def store_initial_cluster_state
         return if cluster_context['etcd-initial-cluster-state']
 
-        state = if ssh.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
+        state = if transport.file('/etc/kubernetes/manifests/pharos-etcd.yaml').exist?
                   'existing'
                 else
                   'new'
@@ -39,6 +39,7 @@ module Pharos
         if new_members.size > 1
           fail "Cannot add multiple etcd peers at once"
         end
+
         new_members.each do |h|
           logger.info { "Adding new etcd peer https://#{@config.etcd_peer_address(h)}:2380 ..." }
           etcd.add_member(h)
@@ -57,6 +58,7 @@ module Pharos
         if remove_members.size / member_list.size.to_f >= 0.5
           fail "Cannot remove majority of etcd peers"
         end
+
         remove_members.each do |m|
           logger.info { "Removing old etcd peer #{m['peerURLs'].join(', ')} ..." }
           etcd.remove_member(m['id'])
@@ -67,7 +69,7 @@ module Pharos
 
       # @return [Pharos::Etcd::Client]
       def etcd
-        @etcd ||= Pharos::Etcd::Client.new(ssh)
+        @etcd ||= Pharos::Etcd::Client.new(host.transport)
       end
 
       # @return [String,NilClass]

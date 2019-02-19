@@ -7,8 +7,8 @@ module Pharos
 
       def call
         logger.info { "deleting node from kubernetes api ..." }
-        master_ssh.exec!("kubectl delete node #{@host.hostname}")
-      rescue Pharos::SSH::RemoteCommand::ExecError => ex
+        master_host.transport.exec!("kubectl delete node #{@host.hostname}")
+      rescue Pharos::ExecError => ex
         logger.error { "failed to delete node: #{ex.message}" }
       end
     end
