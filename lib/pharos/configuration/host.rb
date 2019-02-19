@@ -4,8 +4,7 @@ require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
 
-require 'net/ssh'
-require 'net/ssh/proxy/jump'
+require 'ipaddr'
 
 module Pharos
   module Configuration
@@ -79,24 +78,11 @@ module Pharos
         hostname.split('.').first
       end
 
-      # param options [Hash] extra options for the SSH client, see Net::SSH#start
-      def ssh(**options)
-        return @ssh if @ssh
-
-        opts = {}
-        opts[:keys] = [ssh_key_path] if ssh_key_path
-        opts[:send_env] = [] # override default to not send LC_* envs
-        opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
-        opts[:bastion] = bastion if bastion
-        opts[:port] = ssh_port
-        @ssh = Pharos::SSH::Client.new(address, user, opts.merge(options)).tap(&:connect)
-      rescue StandardError
-        @ssh = nil
-        raise
-      end
-
-      def ssh?
-        @ssh && !@ssh.session.closed?
+      # Accessor to host transport which handles running commands and manipulating files on the
+      # target host
+      # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
+      def transport
+        @transport ||= Pharos::Transport.for(self)
       end
 
       def api_address
@@ -221,6 +207,7 @@ module Pharos
       def configurer
         return @configurer if @configurer
         raise "Os release not set" unless os_release&.id
+
         @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
       end
 

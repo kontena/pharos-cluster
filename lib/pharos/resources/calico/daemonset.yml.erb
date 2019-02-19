@@ -106,6 +106,10 @@ spec:
               value: "can-reach=<%= master_ip %>"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            <% envs.each do |k,v| %>
+            - name: <%= k %>
+              value: "<%= v %>"
+            <% end %>
           securityContext:
             privileged: true
           resources:
@@ -136,6 +140,11 @@ spec:
             - mountPath: /var/lib/calico
               name: var-lib-calico
               readOnly: false
+          <% if metrics_enabled %>
+          ports:
+            - containerPort: <%= metrics_port %>
+              name: metrics
+          <% end %>
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni

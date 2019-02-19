@@ -10,11 +10,11 @@ describe Pharos::Phases::GatherFacts do
 
   let(:config) { Pharos::Config.new(hosts: [host]) }
 
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
   subject { described_class.new(config.hosts[0], config: config) }
 
   before do
-    allow(host).to receive(:ssh).and_return(ssh)
+    allow(host).to receive(:transport).and_return(ssh)
   end
 
   describe '#private_interface_address' do
@@ -58,7 +58,7 @@ describe Pharos::Phases::GatherFacts do
   end
 
   describe '#get_resolvconf' do
-    let(:file) { instance_double Pharos::SSH::RemoteFile }
+    let(:file) { instance_double Pharos::Transport::TransportFile }
     let(:file_content) { "" }
     let(:file_readlink) { nil }
 

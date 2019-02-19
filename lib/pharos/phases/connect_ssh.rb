@@ -6,9 +6,7 @@ module Pharos
       title "Open SSH connection"
 
       def call
-        host.ssh(non_interactive: true)
-      rescue Net::SSH::AuthenticationFailed, Net::SSH::Authentication::KeyManagerError
-        logger.error { "Authentication failed for #{host.user}@#{host}" }
+        host.transport.connect
       end
     end
   end

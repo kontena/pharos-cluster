@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Pharos
-  class SSHCommand < Pharos::Command
+  class ExecCommand < Pharos::Command
     options :filtered_hosts
 
     usage "[OPTIONS] -- [COMMANDS] ..."
@@ -17,6 +17,8 @@ module Pharos
       end
 
       Dir.chdir(config_yaml.dirname) do
+        filtered_hosts.each { |host| host.transport.connect }
+
         exit run_single(filtered_hosts.first) if filtered_hosts.size == 1
         exit run_parallel
       end
@@ -28,12 +30,12 @@ module Pharos
       filtered_hosts.map do |host|
         target = "#{host.user}@#{host.address}"
         puts pastel.green("==> Opening a session to #{target} ..")
-        host.ssh.interactive_session
+        host.transport.interactive_session
       end
     end
 
     def run_single(host)
-      result = host.ssh.exec(command_list)
+      result = host.transport.exec(command_list)
       puts result.output
       result.exit_status
     end
@@ -41,12 +43,13 @@ module Pharos
     def run_parallel
       threads = filtered_hosts.map do |host|
         Thread.new do
-          [host, host.ssh.exec(command_list)]
+          [host, host.transport.exec(command_list)]
         rescue StandardError => ex
           [
             host,
-            Pharos::SSH::RemoteCommand::Result.new.tap do |r|
-              r.output << ex.message
+            Pharos::Transport::Command::Result.new(host.to_s).tap do |r|
+              r.append(ex.message, :stderr)
+              r.exit_status = -127
             end
           ]
         end
