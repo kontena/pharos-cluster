@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'net/ssh/gateway'
-require 'net/ssh/proxy/jump'
 
 module Pharos
   module Configuration
