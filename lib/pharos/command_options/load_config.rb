@@ -34,13 +34,19 @@ module Pharos
 
           config_hash = config_yaml.load(ENV.to_h)
 
-          load_terraform(tf_json, config_hash) if tf_json
+          load_external_config(config_hash)
 
           config = Pharos::Config.load(config_hash)
 
           signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
           @config = config
+        end
+
+        # Config extension point mainly for terraform
+        #
+        # @param config_hash [Hash]
+        def load_external_config(config_hash)
         end
       end
     end

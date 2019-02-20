@@ -16,6 +16,11 @@ module Pharos
       module InstanceMethods
         private
 
+        # @param config_hash [Hash]
+        def load_external_config(config_hash)
+          load_terraform(tf_json, config_hash) if tf_json
+        end
+
         # @param file [String]
         # @param config [Hash]
         # @return [Hash]
