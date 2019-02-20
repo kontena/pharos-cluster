@@ -132,10 +132,10 @@ describe Pharos::Configuration::Host do
 
   describe '#overlapping_routes' do
     let(:routes) { [
-      Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0', options: 'onlink'),
-      Pharos::Configuration::Host::Route.new(prefix: '10.18.0.0/16', dev: 'eth0', proto: 'kernel', options: 'scope link  src 10.18.0.13'),
-      Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel', options: 'scope link  src 192.0.2.11'),
-      Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel', options: 'scope link  src 172.17.0.1 linkdown'),
+      Pharos::Configuration::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0', options: 'onlink'),
+      Pharos::Configuration::Route.new(prefix: '10.18.0.0/16', dev: 'eth0', proto: 'kernel', options: 'scope link  src 10.18.0.13'),
+      Pharos::Configuration::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel', options: 'scope link  src 192.0.2.11'),
+      Pharos::Configuration::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel', options: 'scope link  src 172.17.0.1 linkdown'),
     ] }
 
     subject do
