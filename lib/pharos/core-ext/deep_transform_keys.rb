@@ -16,8 +16,8 @@ module Pharos
             else
               key
             end
-          end.transform_values do |value|
-            deep_transform_keys(value, &block)
+          end.transform_values do |inner_value|
+            deep_transform_keys(inner_value, &block)
           end
         else
           value
