@@ -9,26 +9,19 @@ describe Pharos::ClusterManager do
     ))
   end
 
-  let(:fake_ssh) do
-    double(:ssh)
+  let(:transport) do
+    instance_double(Pharos::Transport::Base)
   end
 
   before(:each) do
     hosts.each do |host|
-      allow(host).to receive(:ssh).and_return(fake_ssh)
+      allow(host).to receive(:transport).and_return(transport)
     end
   end
 
   describe '#disconnect' do
-    it 'disconnects connected ssh clients' do
-      expect(fake_ssh).to receive(:connected?).and_return(true)
-      expect(fake_ssh).to receive(:disconnect)
-      subject.disconnect
-    end
-
-    it 'does not disconnect not connected ssh clients' do
-      expect(fake_ssh).to receive(:connected?).and_return(false)
-      expect(fake_ssh).not_to receive(:disconnect)
+    it 'disconnects transports' do
+      expect(transport).to receive(:disconnect)
       subject.disconnect
     end
   end

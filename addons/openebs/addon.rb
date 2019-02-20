@@ -16,8 +16,8 @@ Pharos.addon 'openebs' do
   }.freeze
 
   config {
-    attribute :default_storage_class, Pharos::Types::Hash.default(DEFAULT_CLASS_OPTS)
-    attribute :default_storage_pool, Pharos::Types::Hash.default(DEFAULT_POOL_OPTS)
+    attribute :default_storage_class, Pharos::Types::Hash.default(proc { DEFAULT_CLASS_OPTS.dup })
+    attribute :default_storage_pool, Pharos::Types::Hash.default(proc { DEFAULT_POOL_OPTS.dup })
   }
 
   config_schema {
@@ -43,7 +43,7 @@ Pharos.addon 'openebs' do
 
   reset_host { |host|
     data_dir = config.default_storage_pool[:path].strip
-    host.ssh.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
+    host.transport.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
   }
 
   def validate

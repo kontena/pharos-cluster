@@ -10,12 +10,6 @@ module Pharos
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
         end
-
-        base.option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
-          File.realpath(config_path)
-        rescue Errno::ENOENT
-          signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
-        end
       end
 
       module InstanceMethods
@@ -40,7 +34,7 @@ module Pharos
 
           config_hash = config_yaml.load(ENV.to_h)
 
-          load_terraform(tf_json, config_hash) if tf_json
+          load_external_config(config_hash)
 
           config = Pharos::Config.load(config_hash)
 
@@ -49,25 +43,10 @@ module Pharos
           @config = config
         end
 
-        # @param file [String]
-        # @param config [Hash]
-        # @return [Hash]
-        def load_terraform(file, config)
-          puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
-
-          tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
-          config['hosts'] ||= []
-          config['api'] ||= {}
-          config['addons'] ||= {}
-          config['hosts'] += tf_parser.hosts
-          config['api'].merge!(tf_parser.api) if tf_parser.api
-          config['addons'].each do |name, conf|
-            if addon_config = tf_parser.addons[name]
-              conf.merge!(addon_config)
-            end
-          end
-          config
-        end
+        # Config extension point mainly for terraform
+        #
+        # @param config_hash [Hash]
+        def load_external_config(config_hash); end
       end
     end
   end

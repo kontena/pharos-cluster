@@ -55,8 +55,8 @@ module Pharos
     attribute :telemetry, Pharos::Configuration::Telemetry
     attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
     attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
-    attribute :addon_paths, Pharos::Types::Array.default([])
-    attribute :addons, Pharos::Types::Hash.default({})
+    attribute :addon_paths, Pharos::Types::Array.default(proc { [] })
+    attribute :addons, Pharos::Types::Hash.default(proc { {} })
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
 
@@ -123,7 +123,7 @@ module Pharos
         api_port = 6443
       else
         api_address = 'localhost'
-        api_port = master_host.bastion.host.ssh.gateway(master_host.api_address, 6443)
+        api_port = master_host.bastion.host.transport.gateway(master_host.api_address, 6443)
       end
 
       @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)

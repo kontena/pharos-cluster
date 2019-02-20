@@ -4,11 +4,11 @@ require 'shellwords'
 require 'securerandom'
 
 module Pharos
-  module SSH
-    class RemoteFile
+  module Transport
+    class TransportFile
       attr_reader :path
       # Initializes an instance of a remote file
-      # @param [Pharos::SSH::Client]
+      # @param [Pharos::Transport::Base]
       # @param path [String]
       def initialize(client, path)
         @client = client
@@ -19,8 +19,8 @@ module Pharos
       alias to_s path
 
       # Removes the remote file
-      # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [Pharos::Transport::Command::Result]
+      # @raise [Pharos::ExecError]
       def unlink
         @client.exec!("sudo rm #{escaped_path}")
       end
@@ -28,17 +28,17 @@ module Pharos
 
       # @return [String]
       def basename
-        File.basename(@path)
+        ::File.basename(@path)
       end
 
       # @return [String]
       def dirname
-        File.dirname(@path)
+        ::File.dirname(@path)
       end
 
       # @param content [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [Pharos::Transport::Command::Result]
+      # @raise [Pharos::ExecError]
       def write(content)
         tmp = temp_file_path.shellescape
         @client.exec!(
@@ -48,36 +48,36 @@ module Pharos
       end
 
       # @param mode [String, Integer]
-      # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [Pharos::Transport::Command::Result]
+      # @raise [Pharos::ExecError]
       def chmod(mode)
         @client.exec!("sudo chmod #{mode} #{escaped_path}")
       end
 
       # Returns remote jfile content
-      # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [Pharos::Transport::Command::Result]
+      # @raise [Pharos::ExecError]
       def read
         @client.exec!("sudo cat #{escaped_path}")
       end
 
       # True if the file exists. Assumes a bash-like shell.
       # @return [Boolean]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raise [Pharos::ExecError]
       def exist?
         @client.exec!("sudo env -i bash --norc --noprofile -c -- 'test -e #{escaped_path} && echo true || echo false'").strip == "true"
       end
 
       # Performs the block if the remote file exists, otherwise returns false
-      # @yield [Pharos::SSH::RemoteFile]
+      # @yield [Pharos::Transport::TransportFile]
       def with_existing
         exist? && yield(self)
       end
 
       # Moves the current file to target path
       # @param target [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [Pharos::Transport::Command::Result]
+      # @raise [Pharos::ExecError]
       def move(target)
         @client.exec!("sudo mv #{@path} #{target.shellescape}")
       end
@@ -85,8 +85,8 @@ module Pharos
 
       # Copies the current file to target path
       # @param target [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [Pharos::Transport::Command::Result]
+      # @raise [Pharos::ExecError]
       def copy(target)
         @client.exec!("sudo cp #{escaped_path} #{target.shellescape}")
       end
@@ -94,14 +94,14 @@ module Pharos
 
       # Creates a symlink at the target path that points to the current file
       # @param target [String]
-      # @return [Pharos::SSH::RemoteCommand::Result]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @return [Pharos::Transport::Command::Result]
+      # @raise [Pharos::ExecError]
       def link(target)
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
       end
 
       # @return [String, nil]
-      # @raises [Pharos::SSH::RemoteCommand::ExecError]
+      # @raise [Pharos::ExecError]
       def readlink
         target = @client.exec!("readlink #{escaped_path} || echo").strip
 
@@ -125,7 +125,7 @@ module Pharos
       private
 
       def temp_file_path(prefix: nil)
-        File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}")
+        ::File.join('/tmp', "#{prefix || basename}.#{SecureRandom.hex(16)}")
       end
 
       def escaped_path

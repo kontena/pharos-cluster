@@ -11,6 +11,8 @@ autoload :Rouge, 'rouge'
 autoload :K8s, 'k8s-client'
 autoload :Excon, 'excon'
 autoload :K8s, 'k8s-client'
+autoload :Open3, 'open3'
+autoload :Pathname, 'pathname'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
@@ -32,6 +34,22 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
+  autoload :Transport, 'pharos/transport'
+
+  module Transport
+    autoload :TransportFile, 'pharos/transport/transport_file'
+    autoload :Tempfile, 'pharos/transport/tempfile'
+    autoload :Base, 'pharos/transport/base'
+    autoload :Local, 'pharos/transport/local'
+    autoload :SSH, 'pharos/transport/ssh'
+    autoload :InteractiveSSH, 'pharos/transport/interactive_ssh'
+
+    module Command
+      autoload :SSH, 'pharos/transport/command/ssh'
+      autoload :Local, 'pharos/transport/command/local'
+      autoload :Result, 'pharos/transport/command/result'
+    end
+  end
 
   module Kube
     autoload :Stack, 'pharos/kube/stack'
@@ -42,20 +60,13 @@ module Pharos
     autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'
     autoload :LoadConfig, 'pharos/command_options/load_config'
     autoload :Yes, 'pharos/command_options/yes'
+    autoload :TfJson, 'pharos/command_options/tf_json'
   end
 
   module CoreExt
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
     autoload :StringCasing, 'pharos/core-ext/string_casing'
-  end
-
-  module SSH
-    autoload :Client, 'pharos/ssh/client'
-    autoload :RemoteCommand, 'pharos/ssh/remote_command'
-    autoload :RemoteFile, 'pharos/ssh/remote_file'
-    autoload :Tempfile, 'pharos/ssh/tempfile'
-    autoload :InteractiveSession, 'pharos/ssh/interactive_session'
   end
 
   module Terraform
@@ -66,6 +77,8 @@ module Pharos
 
   module Configuration
     autoload :Host, 'pharos/configuration/host'
+    autoload :Route, 'pharos/configuration/route'
+    autoload :ResolvConf, 'pharos/configuration/resolv_conf'
     autoload :Taint, 'pharos/configuration/taint'
     autoload :OsRelease, 'pharos/configuration/os_release'
   end
