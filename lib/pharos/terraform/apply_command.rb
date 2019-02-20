@@ -24,7 +24,8 @@ module Pharos
       def tf_apply
         cmd = ["terraform", "apply"]
         cmd << "-auto-approve" if yes?
-        cmd = cmd + var_list.map { |var| "-var #{var}" } if var_list
+        cmd << "-var-file #{var_file}" if var_file
+        cmd += var_list.map { |var| "-var #{var}" } if var_list
 
         run_cmd! cmd.join(' ')
       end
@@ -33,6 +34,7 @@ module Pharos
         run_cmd "terraform output -json > .#{workspace}.json"
         cmd = ['--tf-json', ".#{workspace}.json", '-c', config_yaml.filename]
         cmd << '-y' if yes?
+        cmd << '--force' if force?
 
         Pharos::UpCommand.new('pharos').run(cmd)
       end
