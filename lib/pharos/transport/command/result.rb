@@ -129,6 +129,7 @@ module Pharos
 
         def initialize_debug
           return if ENV['DEBUG'].to_s.empty?
+
           @pastel = Pastel.new(enabled: $stdout.tty?)
           @debug_prefix = "    #{@pastel.dim("#{hostname}:")} "
         end
