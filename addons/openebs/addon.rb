@@ -43,7 +43,7 @@ Pharos.addon 'openebs' do
 
   reset_host { |host|
     data_dir = config.default_storage_pool[:path].strip
-    host.ssh.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
+    host.transport.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
   }
 
   def validate

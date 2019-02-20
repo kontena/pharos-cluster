@@ -115,13 +115,13 @@ Pharos.addon 'cert-manager' do
         namespace: "kube-system"
       },
       data: {
-        'tls.crt': Base64.strict_encode64(ssh.file('/etc/kubernetes/pki/ca.crt').read),
-        'tls.key': Base64.strict_encode64(ssh.file('/etc/kubernetes/pki/ca.key').read)
+        'tls.crt': Base64.strict_encode64(master_host.transport.file('/etc/kubernetes/pki/ca.crt').read),
+        'tls.key': Base64.strict_encode64(master_host.transport.file('/etc/kubernetes/pki/ca.key').read)
       }
     )
   end
 
-  def ssh
-    @ssh ||= cluster_config.master_host.ssh
+  def master_host
+    @master_host ||= cluster_config.master_host
   end
 end

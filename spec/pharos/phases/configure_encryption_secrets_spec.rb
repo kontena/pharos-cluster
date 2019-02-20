@@ -16,15 +16,15 @@ describe Pharos::Phases::ConfigureSecretsEncryption do
     )
   end
 
-  let(:master_ssh) { instance_double(Pharos::SSH::Client) }
+  let(:master_ssh) { instance_double(Pharos::Transport::SSH) }
   subject { described_class.new(master, config: config) }
 
   before do
-    allow(master).to receive(:ssh).and_return(master_ssh)
+    allow(master).to receive(:transport).and_return(master_ssh)
   end
 
   describe '#read_config_keys' do
-    let(:file) { instance_double(Pharos::SSH::RemoteFile) }
+    let(:file) { instance_double(Pharos::Transport::TransportFile) }
 
     before do
       allow(master_ssh).to receive(:file).with('/etc/pharos/secrets-encryption/config.yml').and_return(file)

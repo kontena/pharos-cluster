@@ -12,11 +12,11 @@ describe Pharos::Phases::ValidateHost do
       network: network_config,
   ) }
   let(:host) { config.hosts[0] }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
   subject { described_class.new(host, config: config) }
 
   before do
-    allow(host).to receive(:ssh).and_return(ssh)
+    allow(host).to receive(:transport).and_return(ssh)
   end
 
   describe '#check_role' do
