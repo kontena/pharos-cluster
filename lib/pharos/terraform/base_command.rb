@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'open3'
-require 'English'
 
 module Pharos
   module Terraform
@@ -11,7 +10,7 @@ module Pharos
       option "--workspace", "NAME", "terraform workspace", default: "default"
 
       def tf_workspace
-        return 0 if run_cmd("terraform workspace select #{workspace} 2> /dev/null").zero?
+        return 0 if run_cmd("terraform workspace select #{workspace} 2> /dev/null")
 
         run_cmd("terraform workspace new #{workspace}")
       end
@@ -21,15 +20,14 @@ module Pharos
       end
 
       def run_cmd!(cmd)
-        code = run_cmd(cmd)
-        signal_error "#{cmd} failed" unless code.zero?
+        success = run_cmd(cmd)
+        signal_error "#{cmd} failed" unless success
       end
 
       # @param cmd [String]
-      # @return [Integer]
+      # @return [Boolean]
       def run_cmd(cmd)
         system(cmd)
-        $CHILD_STATUS.exitstatus
       end
     end
   end
