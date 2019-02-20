@@ -60,6 +60,7 @@ module Pharos
     autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'
     autoload :LoadConfig, 'pharos/command_options/load_config'
     autoload :Yes, 'pharos/command_options/yes'
+    autoload :TfJson, 'pharos/command_options/tf_json'
   end
 
   module CoreExt
