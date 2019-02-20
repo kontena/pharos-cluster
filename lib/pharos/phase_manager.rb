@@ -11,7 +11,7 @@ module Pharos
       Excon::Error,
       K8s::Error,
       Pharos::ExecError,
-      Errno::ECONNRESET
+      Errno::ECONNRESET,
       Errno::ECONNREFUSED
     ].freeze
 
