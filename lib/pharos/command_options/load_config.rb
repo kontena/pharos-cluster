@@ -46,8 +46,7 @@ module Pharos
         # Config extension point mainly for terraform
         #
         # @param config_hash [Hash]
-        def load_external_config(config_hash)
-        end
+        def load_external_config(config_hash); end
       end
     end
   end
