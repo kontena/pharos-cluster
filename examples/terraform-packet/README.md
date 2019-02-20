@@ -4,8 +4,8 @@
 ## Prerequisities
 
 - Kontena Pharos [toolchain](https://www.pharos.sh/docs/install.html) installed locally
+- [Terraform](https://www.terraform.io/) installed locally
 - Packet.net credentials
-
 
 ## Install the latest version
 
@@ -24,14 +24,11 @@ Fill `project_id` & `auth_token` to `terraform.tfvars`.
 ## Create Cluster
 
 ```
-$ terraform init
-$ terraform apply
-$ terraform output -json > tf.json
-$ pharos-cluster up --tf-json tf.json
+$ pharos tf apply
 ```
 
 ## Teardown Cluster
 
 ```
-$ terraform destroy && rm tf.json
+$ pharos tf destroy
 ```
