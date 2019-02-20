@@ -2,7 +2,7 @@
 
 module Pharos
   class ExecCommand < Pharos::Command
-    options :filtered_hosts
+    options :filtered_hosts, :tf_json
 
     usage "[OPTIONS] -- [COMMANDS] ..."
     parameter "[COMMAND] ...", "Run command on host"

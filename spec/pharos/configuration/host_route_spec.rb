@@ -1,6 +1,6 @@
 require 'pharos/config'
 
-describe Pharos::Configuration::Host::Route do
+describe Pharos::Configuration::Route do
   describe '#self.parse' do
     {
       'default via 192.0.2.1 dev eth0 onlink' => {prefix: 'default', via: '192.0.2.1', dev: 'eth0', options: 'onlink'},

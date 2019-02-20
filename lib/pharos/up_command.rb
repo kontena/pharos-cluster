@@ -2,7 +2,7 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    options :load_config, :yes?
+    options :load_config, :tf_json, :yes?
 
     option ['-f', '--force'], :flag, "force upgrade"
     STRIP_OPTIONS = %w(-y --yes -d --debug -f --force).freeze
