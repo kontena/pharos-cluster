@@ -49,14 +49,12 @@ module Pharos
 
         synchronize do
           logger.debug { "disconnect SSH #{host.user}@#{host.address}" }
+          @session.close
           if @gateway
-            @session.close
             logger.debug { "disconnect SSH gateway #{host.bastion.user}@#{host.bastion.address}" }
             @gateway.shutdown!
             sleep 0.5 until !@gateway.active?
             @gateway = nil
-          else
-            @session.close
           end
           @session = nil
         end
