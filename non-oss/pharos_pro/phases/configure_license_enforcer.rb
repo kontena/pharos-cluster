@@ -15,7 +15,8 @@ module Pharos
       def call
         logger.info { "Configuring icense enforcement on Pharos PRO ..." }
 
-        stack = Pharos::Kube.stack('license-enforcer',
+        stack = Pharos::Kube.stack(
+          'license-enforcer',
           RESOURCE_PATH,
           version: LICENSE_ENFORCER_VERSION,
           image_repository: @config.image_repository
