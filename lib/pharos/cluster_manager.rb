@@ -101,6 +101,7 @@ module Pharos
 
       # master is now configured and can be used
       # configure essential services
+      apply_phase(Phases::ConfigureLicenseEnforcer, master_only)
       apply_phase(Phases::ConfigurePriorityClasses, master_only)
       apply_phase(Phases::ConfigurePSP, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
