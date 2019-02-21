@@ -25,14 +25,14 @@ module Pharos
         def jwt_token
           @jwt_token ||= if license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
                            Pharos::LicenseKey.new(subscription_token, cluster_id)
-                          else
-                            begin
-                              load_config
-                              c_id = cluster_id
-                            rescue
-                              c_id = nil
-                            end
-                            Pharos::LicenseKey.new(license_key, cluster_id: c_id)
+                         else
+                           begin
+                             load_config
+                             c_id = cluster_id
+                           rescue StandardError
+                             c_id = nil
+                           end
+                           Pharos::LicenseKey.new(license_key, cluster_id: c_id)
                           end
         end
 
@@ -106,4 +106,3 @@ module Pharos
     end
   end
 end
-

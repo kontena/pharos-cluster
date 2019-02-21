@@ -44,7 +44,7 @@ module Pharos
     # @raise [JWT::DecodeError,JWT::VerificationError,JWT::ExpiredSignature]
     def decode(verify: true)
       OpenStruct.new(
-        JWT.decode(token, self.class.jwt_public_key, verify, { algorithm: 'RS256' })&.first&.fetch('data', nil)&.tap do |data|
+        JWT.decode(token, self.class.jwt_public_key, verify, algorithm: 'RS256')&.first&.fetch('data', nil)&.tap do |data|
           data['days_left'] = (Time.parse(data['valid_until']) - Time.now.utc).to_i / 86_400
         end
       )
@@ -91,4 +91,3 @@ module Pharos
     end
   end
 end
-

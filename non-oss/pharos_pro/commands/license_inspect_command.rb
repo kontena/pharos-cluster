@@ -2,7 +2,6 @@
 
 module Pharos
   class LicenseInspectCommand < Pharos::Command
-
     options :license_key
     option %w(-q --quiet), :flag, 'exit with error status when license is not valid'
 
@@ -12,11 +11,10 @@ module Pharos
       puts decorate_license
 
       if jwt_token.valid?
-        puts ?\n + pastel.green("License is valid") if $stdout.tty?
+        puts "\n" + pastel.green("License is valid") if $stdout.tty?
       else
         signal_error pastel.red("License is NOT valid")
       end
     end
   end
 end
-

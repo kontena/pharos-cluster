@@ -15,7 +15,7 @@ module Pharos
         exit
       end
 
-      signal_error "Token invalid: #{jwt_token.errors.join(". ")}"
+      signal_error "Token invalid: #{jwt_token.errors.join('. ')}"
     end
 
     def execute
