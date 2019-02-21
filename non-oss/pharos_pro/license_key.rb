@@ -61,7 +61,7 @@ module Pharos
     end
 
     def payload
-      token.split(?., 3)[1]
+      token.split('.', 3)[1]
     end
   end
 end

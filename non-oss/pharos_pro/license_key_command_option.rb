@@ -53,7 +53,7 @@ module Pharos
             master_host.transport.exec!('kubectl get configmap --namespace kube-public -o yaml cluster-info')
           end
         rescue Pharos::ExecError => ex
-          signal_error 'Failed to get cluster-info configmap'
+          signal_error "Failed to get cluster-info configmap: #{ex.message}"
         end
 
         def cluster_id
