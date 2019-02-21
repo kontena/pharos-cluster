@@ -37,9 +37,7 @@ module Pharos
 
     # @return [Hash] license data
     def data
-      @data ||= decode_payload['data'].tap do |data|
-        data['days_left'] = (Time.parse(data['valid_until']) - Time.now.utc).to_i / 86_400 unless data.nil? || data['valid_until'].nil?
-      end
+      @data ||= decode_payload['data']
     end
 
     # @return [Hash]
@@ -53,7 +51,7 @@ module Pharos
     def validate
       return false if data.nil?
 
-      errors << "License expired #{data['days_left'].to_i} days ago" if data['days_left'].to_i <= 0
+      errors << "License has expired" if Time.parse(data['valid_until']) < Time.now.utc
       errors << "License status is #{data['status']}" unless data['status'] == 'valid'
       errors << "License is not for this cluster" if @cluster_id && @cluster_id != data['cluster_id']
 
