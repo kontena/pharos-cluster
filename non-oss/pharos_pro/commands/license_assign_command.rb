@@ -23,7 +23,7 @@ module Pharos
 
       puts decorate_license
 
-      unless license_key.valid? || force?
+      unless jwt_token.valid? || force?
         signal_error "License is not valid"
       end
 

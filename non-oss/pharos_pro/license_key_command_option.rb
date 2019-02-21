@@ -24,7 +24,7 @@ module Pharos
 
         def jwt_token
           @jwt_token ||= if license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
-                           Pharos::LicenseKey.new(subscription_token, cluster_id)
+                           Pharos::LicenseKey.new(subscription_token, cluster_id: cluster_id)
                          else
                            begin
                              load_config
@@ -41,17 +41,19 @@ module Pharos
         end
 
         def cluster_info
-          @cluster_info ||= Dir.chdir(config_yaml.dirname) do
+          @cluster_info ||= Pharos::YamlFile.new(
+            StringIO.new(cluster_info_configmap),
+            override_filename: "#{master_host.address}:kube-public/cluster-info"
+          ).load
+        end
+
+        def cluster_info_configmap
+          Dir.chdir(config_yaml.dirname) do
             master_host.transport.connect
-            Pharos::YamlFile.new(
-              StringIO.new(
-                master_host.transport.exec!('kubectl get configmap --namespace kube-public -o yaml cluster-info')
-              ),
-              override_filename: "#{master_host.address}:kube-public/cluster-info"
-            ).load
+            master_host.transport.exec!('kubectl get configmap --namespace kube-public -o yaml cluster-info')
           end
-        rescue StandardError => ex
-          signal_error "Failed to request cluster-info configmap: #{ex.class.name} : #{ex.message}"
+        rescue Pharos::ExecError => ex
+          signal_error 'Failed to get cluster-info configmap'
         end
 
         def cluster_id

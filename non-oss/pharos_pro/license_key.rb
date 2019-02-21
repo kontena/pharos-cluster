@@ -41,6 +41,7 @@ module Pharos
       @data
     end
 
+    # @return [Hash]
     def to_h
       (data&.to_h || {}).transform_keys(&:to_s).tap do |hash|
         hash['errors'] = errors unless valid?
