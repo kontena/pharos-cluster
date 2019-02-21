@@ -46,7 +46,7 @@ module Pharos
       manager.save_config
 
       craft_time = Time.now - start_time
-      defined_opts = (ARGV[1..-1] - STRIP_OPTIONS).join(" ")
+      defined_opts = (argv[1..-1] - STRIP_OPTIONS).join(" ")
       defined_opts += " " unless defined_opts.empty?
       puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
       manager.post_install_messages.each do |component, message|
@@ -59,6 +59,14 @@ module Pharos
       puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
       manager.disconnect
+    end
+
+    def argv=(argv)
+      @argv = argv
+    end
+
+    def argv
+      @argv ||= ARGV
     end
 
     # @param config [Pharos::Config]

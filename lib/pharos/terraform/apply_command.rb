@@ -36,7 +36,9 @@ module Pharos
         cmd << '-y' if yes?
         cmd << '--force' if force?
 
-        Pharos::UpCommand.new('pharos').run(cmd)
+        up = Pharos::UpCommand.new('pharos')
+        up.argv = ['up'] + cmd
+        up.run(cmd)
       end
     end
   end
