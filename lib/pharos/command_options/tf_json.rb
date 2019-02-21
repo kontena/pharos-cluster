@@ -7,6 +7,8 @@ module Pharos
         base.prepend(InstanceMethods)
 
         base.option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
+          @config_params ||= []
+          @config_params.concat(['--tf-json', config_path])
           File.realpath(config_path)
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
