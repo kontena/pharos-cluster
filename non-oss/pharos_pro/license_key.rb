@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 require 'time'
-require 'ostruct'
+require 'base64'
+require 'json'
 
 module Pharos
   class LicenseKey
@@ -11,7 +12,9 @@ module Pharos
     def initialize(token, cluster_id: nil)
       @token = token
       @cluster_id = cluster_id
+
       validate
+      freeze
     end
 
     # @return [Array<String>] validation errors
@@ -24,45 +27,41 @@ module Pharos
       errors.empty?
     end
 
-    # @return [OpenStruct] data struct with decoded license data
-    def decode_token
-      OpenStruct.new(
-        JSON.load(Base64.decode64(token[/\.(.+?)\./, 1])).fetch('data').tap do |data|
-          data['days_left'] = (Time.parse(data['valid_until']) - Time.now.utc).to_i / 86_400
-        end
-      )
+    # @return [Hash] decoded payload data
+    def decode_payload
+      JSON.parse(Base64.decode64(payload))
+    rescue StandardError => ex
+      errors << "Can't decode token payload (#{ex.class.name} : #{ex.message})"
+      {}
     end
 
     # @return [Hash] license data
     def data
-      return @data if @data
-
-      validate
-      @data
+      @data ||= decode_payload['data'].tap do |data|
+        data['days_left'] = (Time.parse(data['valid_until']) - Time.now.utc).to_i / 86_400 unless data.nil? || data['valid_until'].nil?
+      end
     end
 
     # @return [Hash]
     def to_h
-      (data&.to_h || {}).transform_keys(&:to_s).tap do |hash|
+      (data&.to_h || {}).tap do |hash|
         hash['errors'] = errors unless valid?
       end
     end
 
     # @return [Boolean] validation result
     def validate
-      errors.clear
+      return false if data.nil?
 
-      @data = decode_token
-      if @data.nil?
-        errors << "Can't decode token"
-        return false
-      end
-
-      errors << "License expired #{data.days_left} days ago" if data.days_left.negative?
-      errors << "License status is #{data.status}" unless data.status == 'valid'
-      errors << "License is not for this cluster" if @cluster_id && @cluster_id != data.cluster_id
+      errors << "License expired #{data['days_left'].to_i} days ago" if data['days_left'].to_i <= 0
+      errors << "License status is #{data['status']}" unless data['status'] == 'valid'
+      errors << "License is not for this cluster" if @cluster_id && @cluster_id != data['cluster_id']
 
       errors.empty?
+    end
+
+    def payload
+      token.split(?., 3)[1]
     end
   end
 end
