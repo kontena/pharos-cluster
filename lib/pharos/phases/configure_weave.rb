@@ -73,6 +73,7 @@ module Pharos
       # @return [Array<String>]
       def extra_args
         args = []
+        args << "--ipalloc-default-subnet=#{@config.network&.weave&.ipalloc_cidr}" if @config.network&.weave&.ipalloc_cidr
         args << "--trusted-subnets=#{trusted_subnets.join(',')}" unless trusted_subnets.empty?
         args << "--no-discovery" if flying_shuttle?
 
