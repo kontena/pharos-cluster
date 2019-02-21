@@ -9,7 +9,6 @@ module Pharos
 
       def call
         logger.info { "No license enforcement on Pharos OSS ..." }
-
       end
     end
   end
