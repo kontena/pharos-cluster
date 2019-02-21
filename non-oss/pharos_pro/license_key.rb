@@ -7,7 +7,7 @@ require 'ostruct'
 module Pharos
   class LicenseKey
     def self.jwt_public_key
-      @jwt_public_key ||= OpenSSL::PKey::RSA.new(<<~EOS)
+      @jwt_public_key ||= OpenSSL::PKey::RSA.new(<<~LICENSE_END)
         -----BEGIN PUBLIC KEY-----
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwgO55tqduo+jKRrvnOOJ
         KKvkOdaYvy4uW+9f5AkqZxOPRTb+AMiSg/bgGvZUc4YM6UoUmvHmq2TigRRWk/9Z
@@ -17,7 +17,7 @@ module Pharos
         TJTyiregF4J8rCqVwKcV7qPrZBeuXQnZhFsGPjBuFFVAbR8ydC5n7WvPkYkcGFPF
         pQIDAQAB
         -----END PUBLIC KEY-----
-      EOS
+      LICENSE_END
     end
 
     attr_reader :token

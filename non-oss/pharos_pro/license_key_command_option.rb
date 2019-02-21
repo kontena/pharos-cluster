@@ -33,7 +33,7 @@ module Pharos
                              c_id = nil
                            end
                            Pharos::LicenseKey.new(license_key, cluster_id: c_id)
-                          end
+                         end
         end
 
         def master_host
