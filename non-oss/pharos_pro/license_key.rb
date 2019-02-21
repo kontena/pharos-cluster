@@ -27,27 +27,15 @@ module Pharos
       errors.empty?
     end
 
-    # @return [Hash] decoded payload data
-    def decode_payload
-      JSON.parse(Base64.decode64(payload))
-    rescue StandardError => ex
-      errors << "Can't decode token payload (#{ex.class.name} : #{ex.message})"
-      {}
-    end
-
-    # @return [Hash] license data
-    def data
-      @data ||= decode_payload['data']
-    end
-
     # @return [Hash]
     def to_h
-      (data&.to_h || {}).tap do |hash|
-        hash['errors'] = errors unless valid?
+      (data || {}).tap do |outcome|
+        outcome['errors'] = errors unless valid?
       end
     end
 
-    # @return [Boolean] validation result
+    private
+
     def validate
       return false if data.nil?
 
@@ -58,8 +46,20 @@ module Pharos
       errors.empty?
     end
 
+    def decode_payload
+      JSON.parse(Base64.decode64(payload))
+    rescue StandardError => ex
+      errors << "Can't decode token payload (#{ex.class.name} : #{ex.message})"
+      {}
+    end
+
     def payload
       token.split('.', 3)[1]
+    end
+
+    # @return [Hash] license data
+    def data
+      @data ||= decode_payload['data']
     end
   end
 end
