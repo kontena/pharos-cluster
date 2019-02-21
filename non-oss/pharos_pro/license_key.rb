@@ -1,25 +1,10 @@
 # frozen_string_literal: true
 
 require 'time'
-require 'jwt'
 require 'ostruct'
 
 module Pharos
   class LicenseKey
-    def self.jwt_public_key
-      @jwt_public_key ||= OpenSSL::PKey::RSA.new(<<~LICENSE_END)
-        -----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwgO55tqduo+jKRrvnOOJ
-        KKvkOdaYvy4uW+9f5AkqZxOPRTb+AMiSg/bgGvZUc4YM6UoUmvHmq2TigRRWk/9Z
-        bjulmJtbmypbLPf1D/ZIIHQkert63hR9ow/2SCTIEydyOGWLvVZPNd+LrAQT6Vpl
-        2i/NSCd8GpkLTtxh7Qq7iVg2S4vERt7ueEyFkd7B/bpp3aOI+WWSolnPq1Av6fep
-        9/MiKPN6tFpbjpRrEdGH84/G12hBB2PBmFxgqaZB0Q/kdxlqDmxOWDlXgugS34ty
-        TJTyiregF4J8rCqVwKcV7qPrZBeuXQnZhFsGPjBuFFVAbR8ydC5n7WvPkYkcGFPF
-        pQIDAQAB
-        -----END PUBLIC KEY-----
-      LICENSE_END
-    end
-
     attr_reader :token
 
     # @param token [String] Kontena Pharos license JWT
@@ -39,12 +24,10 @@ module Pharos
       errors.empty?
     end
 
-    # @param verify [Boolean] will decode the token without verifying signature or expiration when false
     # @return [OpenStruct] data struct with decoded license data
-    # @raise [JWT::DecodeError,JWT::VerificationError,JWT::ExpiredSignature]
-    def decode(verify: true)
+    def decode_token
       OpenStruct.new(
-        JWT.decode(token, self.class.jwt_public_key, verify, algorithm: 'RS256')&.first&.fetch('data', nil)&.tap do |data|
+        JSON.load(Base64.decode64(token[/\.(.+?)\./, 1])).fetch('data').tap do |data|
           data['days_left'] = (Time.parse(data['valid_until']) - Time.now.utc).to_i / 86_400
         end
       )
@@ -68,18 +51,9 @@ module Pharos
     def validate
       errors.clear
 
-      verify = true
-      begin
-        @data = decode(verify: verify)
-      rescue JWT::VerificationError, Jwt::ExpiredSignature => ex
-        raise unless verify
-
-        errors << "Verification failed (#{ex.class.name} : #{ex.message})"
-        verify = false
-        retry
-      rescue StandardError => ex
-        errors << "Decoding failed (#{ex.class.name} : #{ex.message})"
-        @data = nil
+      @data = decode_token
+      if @data.nil?
+        errors << "Can't decode token"
         return false
       end
 
