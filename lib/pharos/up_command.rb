@@ -53,7 +53,7 @@ module Pharos
         end
       end
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_params.join(' ')} " if @config_params}> kubeconfig"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
       manager.disconnect
     end
