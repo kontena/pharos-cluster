@@ -21,7 +21,7 @@ spec:
       - key: node-role.kubernetes.io/master
       containers:
       - name: enforcer
-        image: quay.io/kontena/pharos-license-enforcer-amd64:0.1.0
+        image: <%= image_repository %>/pharos-license-enforcer:<%= version %>
         args:
           - -interval
           - 30s
