@@ -8,6 +8,7 @@ module Pharos
   class AddonManager
     include Pharos::Logging
     using Pharos::CoreExt::DeepTransformKeys
+    using Pharos::CoreExt::StringCasing
 
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
@@ -23,15 +24,49 @@ module Pharos
       @addons ||= []
     end
 
+    DSL_HEAD_REGEX = Regexp.new(<<~E_REGEX, Regexp::EXTENDED).freeze
+      (?<lead>[^\#]+)?                 # capture leading code, skip lines starting with #
+        Pharos\\.addon
+          (?<name>\(.+?\)|\\s[^{\\s]+) # capture ('name'), 'name', "name", %(name), %w(foo bar).join or what ever it could be
+          (?<block_open>\\s{0,}do)     # capture do
+          (?<trail>.*)                 # capture any trailing code or comments
+    E_REGEX
+
+    # rubocop:disable Security/Eval
     # @param dirs [Array<String>]
     # @return [Array<Class<Pharos::Addon>>]
     def self.load_addons(*dirs)
       dirs.each do |dir|
-        Dir.glob(File.join(dir, '*/**', 'addon.rb')).each { |f| require(f) }
+        Dir.glob(File.join(dir, '*/**', 'addon.rb')).each do |addon_path|
+          next if $LOADED_FEATURES.include?(addon_path)
+
+          klasses = []
+          source = File.readlines(addon_path).map do |row|
+            md = DSL_HEAD_REGEX.match(row)
+            if md
+              actual_name = eval(md[:name]).camelcase
+              raise NameError, "Can't redefine Pharos::Addons::#{actual_name}" if Pharos::Addons.const_defined?(actual_name)
+
+              klasses << actual_name
+              <<~E_CODE
+                #{md[:lead]}class Pharos::Addons::#{actual_name} < Pharos::Addon
+                  #{md[:trail]}
+                  self.addon_name = #{md[:name]}
+                  self.addon_location = '#{File.dirname(addon_path)}'
+              E_CODE
+            else
+              row
+            end
+          end
+          eval(source.join("\n"))
+          $LOADED_FEATURES << addon_path
+          Pharos::AddonManager.addons.concat(klasses.map { |klass| Pharos::Addons.const_get(klass) }) unless klasses.empty?
+        end
       end
 
       addons
     end
+    # rubocop:enable Security/Eval
 
     # @param config [Pharos::Configuration]
     # @param cluster_context [Hash]
