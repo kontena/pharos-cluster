@@ -56,3 +56,8 @@ Naming/UncommunicativeMethodParamName:
 
 Metrics/BlockLength:
   Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: true
+  Exclude:
+    - "**/addon.rb"
