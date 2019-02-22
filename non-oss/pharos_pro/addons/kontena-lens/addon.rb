@@ -4,7 +4,7 @@ require 'bcrypt'
 require 'json'
 
 class Pharos::Addons::KontenaLens < Pharos::Addon
-#  using Pharos::CoreExt::Colorize
+  using Pharos::CoreExt::Colorize
 
   version '1.4.1'
   license 'Kontena License'
