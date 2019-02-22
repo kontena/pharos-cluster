@@ -3,6 +3,8 @@
 module Pharos
   module CommandOptions
     module TfJson
+      using Pharos::CoreExt::Colorize
+
       def self.included(base)
         base.prepend(InstanceMethods)
 
@@ -27,7 +29,7 @@ module Pharos
         # @param config [Hash]
         # @return [Hash]
         def load_terraform(file, config)
-          puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
+          puts("==> Importing configuration from Terraform ...".green) if $stdout.tty?
 
           tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
           config['hosts'] ||= []
