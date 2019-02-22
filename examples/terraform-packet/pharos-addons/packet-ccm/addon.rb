@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'packet-ccm' do
+class Pharos::Addons::PacketCcm < Pharos::Addon
   version '0.0.4'
   license 'Apache License 2.0'
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'kontena-backup' do
+class Pharos::Addons::KontenaBackup < Pharos::Addon
   using Pharos::CoreExt::DeepTransformKeys
 
   ark_version = '0.9.6'

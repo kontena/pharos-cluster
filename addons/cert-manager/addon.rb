@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'cert-manager' do
+class Pharos::Addons::CertManager < Pharos::Addon
   version '0.5.2'
   license 'Apache License 2.0'
 

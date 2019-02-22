@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'ingress-nginx' do
+class Pharos::Addons::IngressNginx < Pharos::Addon
   version '0.21.0'
   license 'Apache License 2.0'
 

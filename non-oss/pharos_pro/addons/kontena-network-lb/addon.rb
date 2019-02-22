@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'kontena-network-lb' do
+class Pharos::Addons::KontenaNetworkLb < Pharos::Addon
   version '0.7.3'
   license 'Kontena License'
 

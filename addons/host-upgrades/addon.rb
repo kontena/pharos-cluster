@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'host-upgrades' do
+class Pharos::Addons::HostUpgrades < Pharos::Addon
   version '0.3.1'
   license 'Apache License 2.0'
 

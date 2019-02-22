@@ -8,22 +8,34 @@ require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
+  using Pharos::CoreExt::StringCasing
+  using Pharos::CoreExt::Colorize
+
   # @param name [String]
   # @return [Pharos::Addon]
   def self.addon(name, &block)
+    warn '[DEPRECATED] The "Pharos.addon ..." DSL will be removed in the near future.'
+    warn "             To upgrade, change #{block.source_location.first}:"
+    warn "               before: Pharos.addon '#{name}' do".red
+    warn "               after: class Pharos::Addons::#{name.capitalize} < Pharos::Addon".green
+
     klass = Class.new(Pharos::Addon, &block).tap do |addon|
       addon.addon_location = File.dirname(block.source_location.first)
       addon.addon_name = name
     end
 
-    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
-    Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
-    Pharos::AddonManager.addons << klass
     klass
   end
 
   class Addon
     include Pharos::Logging
+
+    def self.inherited(klass)
+      super
+      klass.addon_location ||= File.dirname(caller(1..1).first.split(':').first)
+      klass.addon_name = klass.name.to_s.split('::').last.underscore.tr('_', '-') if klass.name
+      Pharos::AddonManager.addons << klass
+    end
 
     # return class for use as superclass in Dry::Validation.Params
     Schema = Dry::Validation.Schema(build: false) do

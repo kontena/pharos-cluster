@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'kontena-storage' do
+class Pharos::Addons::KontenaStorage < Pharos::Addon
   using Pharos::CoreExt::DeepTransformKeys
   version '0.8.3+kontena.1'
   license 'Kontena License'

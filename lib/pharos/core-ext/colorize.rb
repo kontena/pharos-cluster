@@ -15,6 +15,7 @@ module Pharos
 
       refine String do
         Pastel::ANSI::ATTRIBUTES.each_key do |meth|
+          next if meth == :underscore
           define_method(meth) do
             Pharos::CoreExt::Colorize.pastel.send(meth, self)
           end

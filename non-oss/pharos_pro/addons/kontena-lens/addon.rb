@@ -3,8 +3,8 @@
 require 'bcrypt'
 require 'json'
 
-Pharos.addon 'kontena-lens' do
-  using Pharos::CoreExt::Colorize
+class Pharos::Addons::KontenaLens < Pharos::Addon
+#  using Pharos::CoreExt::Colorize
 
   version '1.4.1'
   license 'Kontena License'
