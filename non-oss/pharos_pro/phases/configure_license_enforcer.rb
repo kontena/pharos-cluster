@@ -12,6 +12,10 @@ module Pharos
         name: 'PHAROS-LICENSE-ENFORCER', version: LICENSE_ENFORCER_VERSION, license: 'Kontena License'
       )
 
+      def enabled?
+        true
+      end
+
       def call
         logger.info { "Configuring icense enforcement on Pharos PRO ..." }
 

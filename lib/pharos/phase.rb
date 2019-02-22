@@ -30,6 +30,12 @@ module Pharos
       @cluster_context = cluster_context
     end
 
+    # Checks if a phase should be executed or not
+    # @return [Boolean]
+    def enabled?
+      true
+    end
+
     def transport
       @host.transport
     end

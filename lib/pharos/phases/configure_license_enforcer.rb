@@ -7,6 +7,10 @@ module Pharos
     class ConfigureLicenseEnforcer < Pharos::Phase
       title "Configure license enforcement"
 
+      def enabled?
+        false
+      end
+
       def call
         logger.info { "No license enforcement on Pharos OSS ..." }
       end

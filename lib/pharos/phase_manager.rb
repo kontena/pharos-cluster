@@ -25,6 +25,7 @@ module Pharos
     # @param dirs [Array<String>]
     def initialize(**options)
       @options = options
+      @pastel = options.delete(:pastel)
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
@@ -61,11 +62,17 @@ module Pharos
     # @return [Pharos::Phase]
     def prepare_phase(phase_class, host, **options)
       options = @options.merge(options)
-      phase_class.new(host, **options)
+      phase = phase_class.new(host, **options)
+      return phase if phase.enabled?
+      nil
     end
 
     def apply(phase_class, hosts, parallel: false, **options)
-      phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
+      phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }.compact
+
+      return if phases.empty?
+
+      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
       run(phases, parallel: parallel) do |phase|
         start = Time.now

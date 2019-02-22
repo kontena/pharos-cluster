@@ -35,7 +35,8 @@ module Pharos
     def phase_manager
       @phase_manager ||= Pharos::PhaseManager.new(
         config: @config,
-        cluster_context: @context
+        cluster_context: @context,
+        pastel: @pastel
       )
     end
 
@@ -150,8 +151,6 @@ module Pharos
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, **options)
       return if hosts.empty?
-
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
 
       phase_manager.apply(phase_class, hosts, **options)
     end
