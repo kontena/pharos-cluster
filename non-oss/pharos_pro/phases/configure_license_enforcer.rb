@@ -9,7 +9,7 @@ module Pharos
       RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, '..', 'resources', 'license-enforcer'))).freeze
 
       register_component(
-        name: 'PHAROS-LICENSE-ENFORCER', version: LICENSE_ENFORCER_VERSION, license: 'Kontena License'
+        name: 'Pharos License Enforcer', version: LICENSE_ENFORCER_VERSION, license: 'Kontena License'
       )
 
       def enabled?

@@ -26,7 +26,6 @@ module Pharos
     # @param dirs [Array<String>]
     def initialize(**options)
       @options = options
-      @pastel = options.delete(:pastel)
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
