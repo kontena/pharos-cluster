@@ -5,6 +5,7 @@ require_relative 'kube'
 module Pharos
   class PhaseManager
     include Pharos::Logging
+    using Pharos::CoreExt::Colorize
 
     RETRY_ERRORS = [
       OpenSSL::SSL::SSLError,
@@ -72,7 +73,7 @@ module Pharos
 
       return if phases.empty?
 
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      puts "==> #{phase_class.title} @ #{hosts.join(' ')}".cyan
 
       run(phases, parallel: parallel) do |phase|
         start = Time.now
