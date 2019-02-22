@@ -15,9 +15,9 @@ module Pharos
   # @return [Pharos::Addon]
   def self.addon(name, &block)
     warn '[DEPRECATED] The "Pharos.addon ..." DSL will be removed in the near future.'
-    warn "             To upgrade, change #{block.source_location.first}:"
-    warn "               before: Pharos.addon '#{name}' do".red
-    warn "               after: class Pharos::Addons::#{name.capitalize} < Pharos::Addon".green
+    warn "             To upgrade, change #{block.source_location.first.cyan}:"
+    warn '             before: ' + "Pharos.addon '#{name}' do".red
+    warn '             after:  ' + "class Pharos::Addons::#{name.to_s.dup.camelcase} < Pharos::Addon".green
 
     klass = Class.new(Pharos::Addon, &block).tap do |addon|
       addon.addon_location = File.dirname(block.source_location.first)
