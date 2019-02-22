@@ -32,7 +32,7 @@ module Pharos
 
     # @return [Array<Pharos::Addon>]
     def addons
-      Pharos::AddonManager.addons.sort_by(&:name)
+      Pharos::AddonManager.addons.sort_by(&:addon_name)
     end
   end
 end

@@ -33,7 +33,11 @@ module Pharos
     def self.inherited(klass)
       super
       klass.addon_location ||= File.dirname(caller(1..1).first.split(':').first)
-      klass.addon_name = klass.name.to_s.split('::').last.underscore.tr('_', '-') if klass.name
+      klass.addon_name = if klass.name
+                           klass.name.to_s.split('::').last.underscore.tr('_', '-')
+                         else
+                           File.split(File.dirname(klass.addon_location)).last
+                         end
       Pharos::AddonManager.addons << klass
     end
 
