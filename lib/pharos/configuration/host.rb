@@ -4,55 +4,11 @@ require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
 
-require 'net/ssh'
-require 'net/ssh/proxy/jump'
+require 'ipaddr'
 
 module Pharos
   module Configuration
     class Host < Pharos::Configuration::Struct
-      class ResolvConf < Pharos::Configuration::Struct
-        attribute :nameserver_localhost, Pharos::Types::Strict::Bool
-        attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
-      end
-
-      class Route < Pharos::Configuration::Struct
-        ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
-
-        # @param line [String]
-        # @return [Pharos::Configuration::Host::Route]
-        # @raise [RuntimeError] invalid route
-        def self.parse(line)
-          fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
-
-          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }.reject{ |_k, v| v.nil? }]
-
-          new(raw: line.strip, **captures)
-        end
-
-        attribute :raw, Pharos::Types::Strict::String
-        attribute :type, Pharos::Types::Strict::String.optional
-        attribute :prefix, Pharos::Types::Strict::String
-        attribute :via, Pharos::Types::Strict::String.optional
-        attribute :dev, Pharos::Types::Strict::String.optional
-        attribute :proto, Pharos::Types::Strict::String.optional
-        attribute :options, Pharos::Types::Strict::String.optional
-
-        def to_s
-          @raw
-        end
-
-        # @return [Boolean]
-        def overlaps?(cidr)
-          # special-case the default route and ignore it
-          return nil if prefix == 'default'
-
-          route_prefix = IPAddr.new(prefix)
-          cidr = IPAddr.new(cidr)
-
-          route_prefix.include?(cidr) || cidr.include?(route_prefix)
-        end
-      end
-
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String.optional.default(nil)
       attribute :private_interface, Pharos::Types::Strict::String.optional.default(nil)
@@ -78,23 +34,15 @@ module Pharos
         hostname.split('.').first
       end
 
-      # param options [Hash] extra options for the SSH client, see Net::SSH#start
-      def ssh(**options)
-        return @ssh if @ssh
-
-        opts = {}
-        opts[:keys] = [ssh_key_path] if ssh_key_path
-        opts[:send_env] = [] # override default to not send LC_* envs
-        opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
-        opts[:bastion] = bastion if bastion
-        @ssh = Pharos::SSH::Client.new(address, user, opts.merge(options)).tap(&:connect)
-      rescue StandardError
-        @ssh = nil
-        raise
+      def local?
+        IPAddr.new(address).loopback?
       end
 
-      def ssh?
-        @ssh && !@ssh.session.closed?
+      # Accessor to host transport which handles running commands and manipulating files on the
+      # target host
+      # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
+      def transport
+        @transport ||= Pharos::Transport.for(self)
       end
 
       def api_address
@@ -210,7 +158,7 @@ module Pharos
       end
 
       # @param cidr [String]
-      # @return [Array<Pharos::Configuration::Host::Route>]
+      # @return [Array<Pharos::Configuration::Route>]
       def overlapping_routes(cidr)
         routes.select{ |route| route.overlaps? cidr }
       end
@@ -219,6 +167,7 @@ module Pharos
       def configurer
         return @configurer if @configurer
         raise "Os release not set" unless os_release&.id
+
         @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
       end
 

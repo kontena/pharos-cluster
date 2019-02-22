@@ -8,7 +8,7 @@ module Pharos
       register_config 'debian', '9'
 
       CFSSL_VERSION = '1.2'
-      DOCKER_VERSION = '18.06.1'
+      DOCKER_VERSION = '18.06.2'
 
       register_component(
         name: 'cri-o', version: CRIO_VERSION, license: 'Apache License 2.0',
@@ -35,7 +35,7 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker-ce',
-            DOCKER_VERSION: "#{DOCKER_VERSION}~3-0~debian",
+            DOCKER_VERSION: DOCKER_VERSION,
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
@@ -61,11 +61,11 @@ module Pharos
         return true if custom_docker?
 
         if docker?
-          result = ssh.exec("dpkg-query --show docker-ce")
+          result = transport.exec("dpkg-query --show docker-ce")
           return true if result.error? # docker not installed
           return true if result.stdout.split("\t")[1].to_s.start_with?(DOCKER_VERSION)
         elsif crio?
-          result = ssh.exec("dpkg-query --show cri-o")
+          result = transport.exec("dpkg-query --show cri-o")
           return true if result.error? # cri-o not installed
           return true if result.stdout.split("\t")[1].to_s.start_with?(Pharos::CRIO_VERSION)
         end

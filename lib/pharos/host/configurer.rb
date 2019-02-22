@@ -30,8 +30,8 @@ module Pharos
         host.config
       end
 
-      def ssh
-        host.ssh
+      def transport
+        host.transport
       end
 
       def install_essentials
@@ -98,15 +98,15 @@ module Pharos
       end
 
       def configure_script_library
-        ssh.exec("sudo mkdir -p #{script_library_install_path}")
-        ssh.file("#{script_library_install_path}/util.sh").write(
+        transport.exec("sudo mkdir -p #{script_library_install_path}")
+        transport.file("#{script_library_install_path}/util.sh").write(
           File.read(SCRIPT_LIBRARY)
         )
       end
 
       # @param script [String] name of file under ../scripts/
       def exec_script(script, vars = {})
-        ssh.exec_script!(
+        transport.exec_script!(
           script,
           env: vars,
           path: script_path(script)
@@ -138,9 +138,9 @@ module Pharos
         end
       end
 
-      # @return [Pharos::SSH::File]
+      # @return [Pharos::Transport::TransportFile]
       def env_file
-        ssh.file('/etc/environment')
+        transport.file('/etc/environment')
       end
 
       def update_env_file
@@ -152,6 +152,7 @@ module Pharos
           host_env_file.read.lines.each do |line|
             line.strip!
             next if line.start_with?('#')
+
             key, val = line.split('=', 2)
             val&.delete_suffix!('"') if val&.delete_prefix!('"')
             val = nil if val.to_s.empty?
@@ -164,13 +165,13 @@ module Pharos
         end
         host_env_file.write(new_content.join("\n") + "\n")
         new_content.each do |kv_pair|
-          ssh.exec!("export #{kv_pair}")
+          transport.exec!("export #{kv_pair}")
         end
       end
 
       # @return [String, NilClass]
       def current_crio_cgroup_manager
-        file = ssh.file('/etc/crio/crio.conf')
+        file = transport.file('/etc/crio/crio.conf')
         return unless file.exist?
 
         match = file.read.match(/^cgroup_manager = "(.+)"/)
@@ -183,16 +184,16 @@ module Pharos
       def can_pull?
         return true if current_crio_cgroup_manager.nil?
 
-        ssh.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
+        transport.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
       end
 
       def cleanup_crio!
-        ssh.exec!("sudo systemctl stop kubelet")
-        ssh.exec!("sudo crictl stopp $(crictl pods -q)")
-        ssh.exec!("sudo crictl rmp $(crictl pods -q)")
-        ssh.exec!("sudo crictl rmi $(crictl images -q)")
+        transport.exec!("sudo systemctl stop kubelet")
+        transport.exec!("sudo crictl stopp $(crictl pods -q)")
+        transport.exec!("sudo crictl rmp $(crictl pods -q)")
+        transport.exec!("sudo crictl rmi $(crictl images -q)")
       ensure
-        ssh.exec!("sudo systemctl start kubelet")
+        transport.exec!("sudo systemctl start kubelet")
       end
 
       class << self

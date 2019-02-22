@@ -1,0 +1,15 @@
+<% if metrics_enabled %>
+apiVersion: v1
+kind: Service
+metadata:
+  name: calico-metrics
+  namespace: kube-system
+spec:
+  ports:
+  - name: metrics
+    port: <%= metrics_port %>
+    protocol: TCP
+    targetPort: <%= metrics_port %>
+  selector:
+    k8s-app: calico-node
+<% end %>

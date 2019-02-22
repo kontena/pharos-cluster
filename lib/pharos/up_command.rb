@@ -4,10 +4,9 @@ module Pharos
   class UpCommand < Pharos::Command
     using Pharos::CoreExt::Colorize
 
-    options :load_config, :yes?
+    options :load_config, :tf_json, :yes?
 
     option ['-f', '--force'], :flag, "force upgrade"
-    STRIP_OPTIONS = %w(-y --yes -d --debug -f --force).freeze
 
     def execute
       puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
@@ -48,8 +47,6 @@ module Pharos
       manager.save_config
 
       craft_time = Time.now - start_time
-      defined_opts = (ARGV[1..-1] - STRIP_OPTIONS).join(" ")
-      defined_opts += " " unless defined_opts.empty?
       puts "==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})".green
       manager.post_install_messages.each do |component, message|
         puts "    Post-install message from #{component}:"
@@ -58,7 +55,7 @@ module Pharos
         end
       end
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
       manager.disconnect
     end

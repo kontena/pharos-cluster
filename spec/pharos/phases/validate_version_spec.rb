@@ -4,12 +4,12 @@ describe Pharos::Phases::ValidateVersion do
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.1', role: 'master') }
   let(:network_config) { {} }
   let(:config) { Pharos::Config.new(hosts: [host]) }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
   let(:cluster_context) { Hash.new }
   subject { described_class.new(host, config: config, cluster_context: cluster_context) }
 
   before do
-    allow(host).to receive(:ssh).and_return(ssh)
+    allow(host).to receive(:transport).and_return(ssh)
   end
 
   describe '#validate_version' do

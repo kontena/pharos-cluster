@@ -2,7 +2,7 @@ require "pharos/host/configurer"
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do
-  let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+  let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
       nameserver_localhost: false,
       systemd_resolved_stub: false,
   ) }
@@ -133,7 +133,7 @@ describe Pharos::Phases::ConfigureKubelet do
     end
 
     context "with a systemd-resolved stub" do
-      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+      let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: true,
       ) }
@@ -144,7 +144,7 @@ describe Pharos::Phases::ConfigureKubelet do
     end
 
     context "with a non-systemd-resolved localhost resolver" do
-      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+      let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: false,
       ) }

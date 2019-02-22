@@ -18,3 +18,15 @@ network:
 addons:
   ingress-nginx:
     enabled: true
+  kontena-network-lb:
+    enabled: true
+    node_selector:
+      node-role.kubernetes.io/worker: ""
+    tolerations:
+      - operator: "Exists"
+        effect: "NoSchedule"
+    address_pools:
+      - name: default
+        protocol: layer2
+        addresses:
+          - 192.168.110.110-192.168.110.150

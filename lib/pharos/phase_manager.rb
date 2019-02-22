@@ -10,8 +10,9 @@ module Pharos
       OpenSSL::SSL::SSLError,
       Excon::Error,
       K8s::Error,
-      Pharos::SSH::RemoteCommand::ExecError,
-      Errno::ECONNRESET
+      Pharos::ExecError,
+      Errno::ECONNRESET,
+      Errno::ECONNREFUSED
     ].freeze
 
     # @param dirs [Array<String>]

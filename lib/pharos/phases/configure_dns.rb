@@ -60,7 +60,7 @@ module Pharos
             type: "RollingUpdate",
             rollingUpdate: {
               maxSurge: max_surge, # must be zero for a two-node cluster
-              maxUnavailable: max_unavailable, # must be at least one, even for a single-node cluster
+              maxUnavailable: max_unavailable # must be at least one, even for a single-node cluster
             }
           },
           template: {

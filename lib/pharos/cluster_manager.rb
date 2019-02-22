@@ -32,7 +32,7 @@ module Pharos
 
     # @return [Pharos::AddonManager]
     def phase_manager
-      @phase_manager = Pharos::PhaseManager.new(
+      @phase_manager ||= Pharos::PhaseManager.new(
         config: @config,
         cluster_context: @context
       )
@@ -56,8 +56,7 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::ConnectSSH, config.hosts, parallel: true)
-      apply_phase(Phases::AuthenticateSSH, config.hosts.reject(&:ssh?), parallel: false)
+      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
@@ -174,7 +173,7 @@ module Pharos
     end
 
     def disconnect
-      config.hosts.map(&:ssh).select(&:connected?).each(&:disconnect)
+      config.hosts.map { |host| host.transport.disconnect }
     end
   end
 end
