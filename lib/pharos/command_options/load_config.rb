@@ -3,9 +3,13 @@
 module Pharos
   module CommandOptions
     module LoadConfig
+      using Pharos::CoreExt::Colorize
+
       def self.included(base)
         base.prepend(InstanceMethods)
         base.option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
+          @config_options ||= []
+          @config_options.concat(['-c', config_file])
           Pharos::YamlFile.new(File.realpath(config_file))
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
@@ -30,7 +34,7 @@ module Pharos
         def load_config
           return @config if @config
 
-          puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
+          puts("==> Reading instructions ...".green) if $stdout.tty?
 
           config_hash = config_yaml.load(ENV.to_h)
 

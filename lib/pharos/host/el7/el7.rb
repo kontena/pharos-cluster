@@ -79,8 +79,8 @@ module Pharos
           return true if transport.exec("rpm -qi docker-#{DOCKER_VERSION}").success?
         elsif crio?
           bin_exist = transport.file('/usr/local/bin/crio').exist?
-          return true if trasport.exec("rpm -qi cri-o").error? && !bin_exist # cri-o not installed
-          return true if trasport.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
+          return true if transport.exec("rpm -qi cri-o").error? && !bin_exist # cri-o not installed
+          return true if transport.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
         end
 
         false

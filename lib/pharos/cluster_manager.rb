@@ -5,6 +5,7 @@ require 'pathname'
 module Pharos
   class ClusterManager
     include Pharos::Logging
+    using Pharos::CoreExt::Colorize
 
     attr_reader :config, :context
 
@@ -22,10 +23,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    # @param pastel [Pastel]
-    def initialize(config, pastel: Pastel.new)
+    def initialize(config)
       @config = config
-      @pastel = pastel
       @context = {
         'post_install_messages' => {}
       }
@@ -130,7 +129,7 @@ module Pharos
       addon_manager.each do |addon|
         next unless addon.enabled?
 
-        puts @pastel.cyan("==> Resetting addon #{addon.name}")
+        puts "==> Resetting addon #{addon.name}".cyan
         hosts.each do |host|
           addon.apply_reset_host(host)
         end
@@ -157,7 +156,7 @@ module Pharos
 
     def apply_addons
       addon_manager.each do |addon|
-        puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
+        puts "==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}".cyan
 
         addon.apply
         post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
