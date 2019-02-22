@@ -99,9 +99,9 @@ module Pharos
         def decorate_license
           lexer = Rouge::Lexers::YAML.new
           if color?
-            rouge.format(lexer.lex(jwt_token.to_h.to_yaml)).lines[1..-1]
+            rouge.format(lexer.lex(jwt_token.to_h.to_yaml.delete_prefix("---\n")))
           else
-            jwt_token.to_h.to_yaml.lines[1..-1]
+            jwt_token.to_h.to_yaml.delete_prefix("---\n")
           end
         end
       end

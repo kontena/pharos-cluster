@@ -88,10 +88,10 @@ module Pharos
       lexer = Rouge::Lexers::YAML.new
       puts pastel.green("==> Configuration is generated and shown below:")
       if color?
-        puts rouge.format(lexer.lex(config.to_yaml))
+        puts rouge.format(lexer.lex(config.to_yaml.delete_prefix("---\n")))
         puts ""
       else
-        puts config.to_yaml
+        puts config.to_yaml.delete_prefix("---\n")
       end
 
       if existing_version && Pharos.version != existing_version

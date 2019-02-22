@@ -76,7 +76,7 @@ module Pharos
       with_enabled_addons do |addon_class, config|
         outcome = addon_class.validate(config)
         unless outcome.success?
-          raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).gsub(/^---$/, '')
+          raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).delete_prefix("---\n")
         end
 
         prev_config = prev_configs[addon_class.addon_name]
