@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Pharos.addon 'pharos-license-enforcer' do
+class Pharos::Addons::PharosLicenseEnforcer < Pharos::Addon
   using Pharos::CoreExt::Colorize
 
   version '0.1.0'
