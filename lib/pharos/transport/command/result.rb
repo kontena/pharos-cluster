@@ -131,6 +131,7 @@ module Pharos
 
         def initialize_debug
           return if ENV['DEBUG'].to_s.empty?
+
           @debug_prefix = "    #{"#{hostname}:".dim} "
         end
       end
