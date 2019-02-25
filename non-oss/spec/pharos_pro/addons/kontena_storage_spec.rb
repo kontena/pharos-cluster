@@ -1,7 +1,7 @@
 require 'pharos/addon_manager'
 Pharos::AddonManager.load_addon './non-oss/pharos_pro/addons/kontena-storage/addon.rb'
 
-RSpec.describe Pharos::Addons::KontenaStorage do
+describe Pharos::AddonManager.addons['kontena-storage'] do
   describe '.validate' do
     it 'passes valid config' do
       expect(described_class.validate({

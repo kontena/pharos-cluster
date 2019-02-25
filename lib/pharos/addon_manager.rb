@@ -22,18 +22,18 @@ module Pharos
       K8s::Error
     ].freeze
 
-    # @return [Array<Class<Pharos::Addon>>]
+    # @return [Hash<String => Class<Pharos::Addon>>]
     def self.addons
-      @addons ||= []
+      @addons ||= {}
     end
 
     # @param dirs [Array<String>]
     # @return [Array<Class<Pharos::Addon>>]
     def self.load_addons(*dirs)
       dirs.each do |dir|
-        Dir.glob(File.join(dir, '*/**', 'addon.rb')).each { |f|
+        Dir.glob(File.join(dir, '*/**', 'addon.rb')).each do |f|
           load_addon(f)
-        }
+        end
       end
 
       addons
@@ -81,7 +81,13 @@ module Pharos
 
     # @return [Array<Class<Pharos::Addon>>]
     def addon_classes
-      self.class.addons
+      self.class.addons.values
+    end
+
+    # @param name [String]
+    # @return [Pharos::Addon,nil]
+    def find_addon(name)
+      self.class.addons[name]
     end
 
     def validate
@@ -131,7 +137,7 @@ module Pharos
 
     def with_enabled_addons
       configs.each do |name, config|
-        klass = addon_classes.find { |a| a.addon_name == name }
+        klass = find_addon(name)
         if klass && (klass.enabled? || config['enabled'])
           yield(klass, config.merge('enabled' => true))
         end

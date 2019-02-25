@@ -17,7 +17,7 @@ describe Pharos::AddonManager do
     end
 
     it 'loads files from symlinked subdirectories' do
-      expect(described_class).to receive(:require).with(File.join(tmpdir_1, 'linked-addon', 'addon.rb'))
+      expect(described_class).to receive(:load_addon).with(File.join(tmpdir_1, 'linked-addon', 'addon.rb'))
       described_class.load_addons(tmpdir_1)
     end
   end

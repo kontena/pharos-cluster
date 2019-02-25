@@ -1,7 +1,7 @@
 require 'pharos/addon_manager'
 Pharos::AddonManager.load_addon "./non-oss/pharos_pro/addons/kontena-backup/addon.rb"
 
-describe Pharos::Addons::KontenaBackup do
+describe Pharos::AddonManager.addons['kontena-backup'] do
   let(:cluster_config) { Pharos::Config.new(
     hosts: [Pharos::Configuration::Host.new(role: 'worker')],
     network: {},

@@ -1,7 +1,7 @@
 require 'pharos/addon_manager'
 Pharos::AddonManager.load_addon "./addons/cert-manager/addon.rb"
 
-describe Pharos::Addons::CertManager do
+describe Pharos::AddonManager.addons['cert-manager'] do
   let(:cluster_config) { Pharos::Config.new(
     hosts: [Pharos::Configuration::Host.new(role: 'worker')],
     network: {},
