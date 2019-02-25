@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'license_assign_command'
+require_relative 'license_inspect_command'
 
 module Pharos
   class LicenseCommand < Pharos::Command

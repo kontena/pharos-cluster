@@ -4,8 +4,6 @@ module Pharos
   class LicenseAssignCommand < Pharos::Command
     options :load_config, :license_key
 
-    include Pharos::Logging
-
     parameter "[LICENSE_KEY]", "kontena pharos license key or subscription token"
     option '--description', 'DESCRIPTION', "license description [DEPRECATED]", hidden: true
     option %w(-f --force), :flag, "force assign invalid/expired token"
