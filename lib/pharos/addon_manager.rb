@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'addon'
+require_relative 'addon_context'
 require_relative 'logging'
 require_relative 'kube'
 
@@ -27,10 +28,18 @@ module Pharos
     # @return [Array<Class<Pharos::Addon>>]
     def self.load_addons(*dirs)
       dirs.each do |dir|
-        Dir.glob(File.join(dir, '*/**', 'addon.rb')).each { |f| require(f) }
+        Dir.glob(File.join(dir, '*/**', 'addon.rb')).each { |f|
+          load_addon(f)
+        }
       end
 
       addons
+    end
+
+    # @param file [String]
+    def self.load_addon(file)
+      source = File.read(file)
+      Pharos::AddonContext.new.get_binding.instance_eval(source)
     end
 
     # @param config [Pharos::Configuration]

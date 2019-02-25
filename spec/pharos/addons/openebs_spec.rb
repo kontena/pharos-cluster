@@ -1,4 +1,5 @@
-require "./addons/openebs/addon"
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon "./addons/openebs/addon.rb"
 
 describe Pharos::Addons::Openebs do
   let(:cluster_config) { Pharos::Config.new(

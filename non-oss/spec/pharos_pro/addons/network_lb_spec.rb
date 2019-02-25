@@ -1,5 +1,5 @@
-require 'pharos/addon'
-require 'pharos_pro/addons/kontena-network-lb/addon'
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon './non-oss/pharos_pro/addons/kontena-network-lb/addon.rb'
 
 
 describe Pharos::Addons::KontenaNetworkLb do

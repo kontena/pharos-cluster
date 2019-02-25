@@ -1,4 +1,5 @@
-require "./addons/ingress-nginx/addon"
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon "./addons/ingress-nginx/addon.rb"
 
 describe Pharos::Addons::IngressNginx do
   let(:cluster_config) { Pharos::Config.new(

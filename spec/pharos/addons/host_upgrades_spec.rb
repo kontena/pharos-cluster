@@ -1,5 +1,5 @@
-require 'pharos/addon'
-require "./addons/host-upgrades/addon"
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon "./addons/host-upgrades/addon.rb"
 
 describe Pharos::Addons::HostUpgrades do
   let(:cluster_config) { Pharos::Config.load(

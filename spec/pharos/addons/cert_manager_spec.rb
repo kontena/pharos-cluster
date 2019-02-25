@@ -1,5 +1,5 @@
-require 'pharos/addon'
-require "./addons/cert-manager/addon"
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon "./addons/cert-manager/addon.rb"
 
 describe Pharos::Addons::CertManager do
   let(:cluster_config) { Pharos::Config.new(

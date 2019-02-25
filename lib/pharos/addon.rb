@@ -15,14 +15,15 @@ module Pharos
       addon.addon_location = File.dirname(block.source_location.first)
       addon.addon_name = name
     end
-
-    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
+    # Magic to create Pharos::Addons::Name etc so that specs still work
     Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
     Pharos::AddonManager.addons << klass
     klass
   end
 
   class Addon
+    using Pharos::CoreExt::Colorize
+    using Pharos::CoreExt::DeepTransformKeys
     include Pharos::Logging
 
     # return class for use as superclass in Dry::Validation.Params

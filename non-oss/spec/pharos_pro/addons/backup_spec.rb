@@ -1,5 +1,5 @@
-require 'pharos/addon'
-require "pharos_pro/addons/kontena-backup/addon"
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon "./non-oss/pharos_pro/addons/kontena-backup/addon.rb"
 
 describe Pharos::Addons::KontenaBackup do
   let(:cluster_config) { Pharos::Config.new(
