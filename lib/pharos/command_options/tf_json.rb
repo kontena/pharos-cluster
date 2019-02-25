@@ -3,10 +3,14 @@
 module Pharos
   module CommandOptions
     module TfJson
+      using Pharos::CoreExt::Colorize
+
       def self.included(base)
         base.prepend(InstanceMethods)
 
         base.option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
+          @config_options ||= []
+          @config_options.concat(['--tf-json', config_path])
           File.realpath(config_path)
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
@@ -25,7 +29,7 @@ module Pharos
         # @param config [Hash]
         # @return [Hash]
         def load_terraform(file, config)
-          puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
+          puts("==> Importing configuration from Terraform ...".green) if $stdout.tty?
 
           tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
           config['hosts'] ||= []

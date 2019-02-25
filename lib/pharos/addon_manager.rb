@@ -120,8 +120,8 @@ module Pharos
     def with_enabled_addons
       configs.each do |name, config|
         klass = addon_classes.find { |a| a.addon_name == name }
-        if klass && config['enabled']
-          yield(klass, config)
+        if klass && (klass.enabled? || config['enabled'])
+          yield(klass, config.merge('enabled' => true))
         end
       end
     end

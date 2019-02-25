@@ -114,6 +114,9 @@ module Pharos
           end
           optional(:weave).schema do
             optional(:trusted_subnets).each(type?: String)
+            optional(:known_peers).each(type?: String)
+            optional(:password).filled(:str?)
+            optional(:ipalloc_default_subnet).filled(:str?)
             optional(:no_masq_local).filled(:bool?)
           end
           optional(:calico).schema do

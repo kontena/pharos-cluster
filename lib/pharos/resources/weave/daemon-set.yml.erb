@@ -29,9 +29,13 @@ spec:
               value: "0"
             - name: CHECKPOINT_DISABLE
               value: "1"
-            <% if !trusted_subnets.empty? %>
+            <% unless extra_args.empty? %>
             - name: EXTRA_ARGS
-              value: "--trusted-subnets <%= trusted_subnets.join(',') %><% if flying_shuttle_enabled %> --no-discovery<% end %>"
+              value: "<%= extra_args.join(' ') %>"
+            <% end %>
+            <% if initial_known_peers %>
+            - name: KUBE_PEERS
+              value: "<%= initial_known_peers.join(' ') %>"
             <% end %>
             <% if no_masq_local %>
             - name: NO_MASQ_LOCAL
