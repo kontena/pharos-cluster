@@ -42,7 +42,7 @@ module Pharos
     # @param file [String]
     def self.load_addon(file)
       source = File.read(file)
-      Pharos::AddonContext.new.get_binding.instance_eval(source)
+      Pharos::AddonContext.new.context.instance_eval(source)
     end
 
     # @param config [Pharos::Configuration]

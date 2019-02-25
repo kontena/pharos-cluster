@@ -2,7 +2,7 @@
 
 module Pharos
   class AddonContext
-    def get_binding
+    def context
       binding
     end
   end
