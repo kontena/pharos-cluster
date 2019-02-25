@@ -7,8 +7,11 @@ require_relative 'kube'
 
 module Pharos
   class AddonManager
-    include Pharos::Logging
+    using Pharos::CoreExt::StringCasing
     using Pharos::CoreExt::DeepTransformKeys
+    using Pharos::CoreExt::Colorize
+
+    include Pharos::Logging
 
     class InvalidConfig < Pharos::Error; end
     class UnknownAddon < Pharos::Error; end
