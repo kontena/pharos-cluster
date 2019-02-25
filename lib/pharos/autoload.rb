@@ -12,6 +12,7 @@ autoload :Excon, 'excon'
 autoload :K8s, 'k8s-client'
 autoload :Open3, 'open3'
 autoload :Pathname, 'pathname'
+autoload :OpenSSL, 'openssl'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
