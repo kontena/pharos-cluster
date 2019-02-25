@@ -4,6 +4,8 @@ module Pharos
   module Transport
     module Command
       class Result
+        using Pharos::CoreExt::Colorize
+
         attr_reader :stdin, :stdout, :stderr, :output, :hostname, :exit_status
 
         def self.mutex
@@ -67,7 +69,7 @@ module Pharos
         # @return [IO] $stdout
         def debug_cmd(cmd)
           synchronize do
-            $stdout << @debug_prefix << @pastel.cyan("$ #{cmd}") << "\n"
+            $stdout << @debug_prefix << "$ #{cmd}".cyan << "\n"
           end
         end
 
@@ -77,7 +79,7 @@ module Pharos
           return if ENV["DEBUG_STDIN"].to_s.empty?
 
           synchronize do
-            $stdout << @debug_prefix << @pastel.green("< #{data}")
+            $stdout << @debug_prefix << "< #{data}".green
           end
         end
 
@@ -86,7 +88,7 @@ module Pharos
         def debug_stdout(data)
           synchronize do
             data.each_line do |line|
-              $stdout << @debug_prefix << @pastel.dim(line)
+              $stdout << @debug_prefix << line.dim
               $stdout << "\n" unless line.end_with?("\n")
             end
           end
@@ -97,7 +99,7 @@ module Pharos
         def debug_stderr(data)
           synchronize do
             data.each_line do |line|
-              $stdout << @debug_prefix << @pastel.red(line)
+              $stdout << @debug_prefix << line.red
               $stdout << "\n" unless line.end_with?("\n")
             end
           end
@@ -107,7 +109,7 @@ module Pharos
         # @return [IO] $stdout
         def debug_exit(exit_status)
           synchronize do
-            $stdout << @debug_prefix << @pastel.yellow("! #{exit_status}") << "\n"
+            $stdout << @debug_prefix << "! #{exit_status}".yellow << "\n"
           end
         end
 
@@ -129,8 +131,7 @@ module Pharos
 
         def initialize_debug
           return if ENV['DEBUG'].to_s.empty?
-          @pastel = Pastel.new(enabled: $stdout.tty?)
-          @debug_prefix = "    #{@pastel.dim("#{hostname}:")} "
+          @debug_prefix = "    #{"#{hostname}:".dim} "
         end
       end
     end

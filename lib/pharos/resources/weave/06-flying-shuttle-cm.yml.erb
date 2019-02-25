@@ -1,0 +1,9 @@
+<%- if known_peers -%>
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flying-shuttle
+  namespace: kube-system
+data:
+  known-peers: '<%= { peers: known_peers }.to_json %>'
+<%- end -%>

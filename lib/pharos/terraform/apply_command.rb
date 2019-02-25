@@ -32,7 +32,10 @@ module Pharos
 
       def pharos_up
         run_cmd "terraform output -json > .#{workspace}.json"
-        cmd = ['--tf-json', ".#{workspace}.json", '-c', config_yaml.filename]
+
+        cmd = @config_options || []
+        cmd << '--tf-json'
+        cmd << ".#{workspace}.json"
         cmd << '-y' if yes?
         cmd << '--force' if force?
 
