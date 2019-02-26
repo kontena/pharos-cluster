@@ -2,6 +2,8 @@
 
 module Pharos
   class LicenseInspectCommand < Pharos::Command
+    using Pharos::CoreExt::Colorize
+
     options :license_key
     option %w(-q --quiet), :flag, 'exit with error status when license is not valid'
 
