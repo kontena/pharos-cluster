@@ -11,9 +11,9 @@ module Pharos
       puts decorate_license
 
       if jwt_token.valid?
-        puts "\n" + pastel.green("License is valid") if $stdout.tty?
+        puts "\n" + "License is valid".green if $stdout.tty?
       else
-        signal_error pastel.red("License is NOT valid")
+        signal_error "License is NOT valid".red
       end
     end
   end
