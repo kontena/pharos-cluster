@@ -140,9 +140,9 @@ module Pharos
         org_config = config.read
         transport.exec!("sudo kubeadm upgrade node config --kubelet-version #{Pharos::KUBE_VERSION}")
         new_config = config.read
-        if new_config != org_config
-          transport.exec!("sudo systemctl restart kubelet")
-        end
+        return if new_config == org_config
+
+        transport.exec!("sudo systemctl restart kubelet")
       end
     end
   end
