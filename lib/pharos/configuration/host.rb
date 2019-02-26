@@ -83,8 +83,12 @@ module Pharos
           opts[:keys] = [ssh_key_path] if ssh_key_path
           opts[:send_env] = [] # override default to not send LC_* envs
           opts[:proxycommand] = ssh_proxy_command if ssh_proxy_command
-          opts[:port] = ssh_port if ssh_port
         end
+      end
+
+      # @return [Pharos::Transport::Gateway]
+      def gateway
+        @gateway ||= Pharos::Transport::Gateway.new(self)
       end
 
       def local?

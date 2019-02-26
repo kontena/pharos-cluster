@@ -43,6 +43,7 @@ module Pharos
     autoload :Local, 'pharos/transport/local'
     autoload :SSH, 'pharos/transport/ssh'
     autoload :InteractiveSSH, 'pharos/transport/interactive_ssh'
+    autoload :Gateway, 'pharos/transport/gateway'
 
     module Command
       autoload :SSH, 'pharos/transport/command/ssh'

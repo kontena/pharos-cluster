@@ -13,30 +13,34 @@ module Pharos
         ArgumentError # until the ED25519 passphrase is fixed
       ].freeze
 
+      def to_s
+        "#{"127.0.0.1:#{@port}->#{@gateway}->" if @gateway}#{host.user}@#{host.address}:#{host.ssh_port}"
+      end
+
       def connect
         synchronize do
-          if host.bastion
-            logger.debug { "connect #{host.user}@#{host.address} (#{host.ssh_options}) via bastion: #{host.bastion.user}@#{host.bastion.address} (#{host.bastion.host.ssh_options})" }
-            @gateway = host.bastion.gateway
-            @session = @gateway.ssh(host.address, host.user, host.ssh_options)
-          else
-            non_interactive = true
-            begin
-              logger.debug { "connect #{host.user}@#{host.address} (#{host.ssh_options})" }
-              @session = Net::SSH.start(host.address, host.user, host.ssh_options.merge(non_interactive: non_interactive))
-            rescue *RETRY_CONNECTION_ERRORS => exc
-              logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{host.user}@#{host.address}" }
-              raise if non_interactive == false || !$stdin.tty? # don't re-retry
+          connect_address = @gateway ? '127.0.0.1' : host.address
 
-              logger.debug { "Retrying in interactive mode" }
-              non_interactive = false
-              retry
-            end
+          non_interactive = true
+          begin
+            logger.debug { "connect #{self}" }
+            @session = Net::SSH.start(connect_address, host.user, host.ssh_options.merge(non_interactive: non_interactive, port: @port))
+            logger.debug { "connected" }
+            true
+          rescue *RETRY_CONNECTION_ERRORS => exc
+            logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{self}" }
+            raise if non_interactive == false || !$stdin.tty? # don't re-retry
+
+            logger.debug { "Retrying in interactive mode" }
+            non_interactive = false
+            retry
           end
         end
       end
 
       def interactive_session
+        connect unless connected?
+
         synchronize { Pharos::Transport::InteractiveSSH.new(self).run }
       end
 
@@ -45,22 +49,20 @@ module Pharos
       end
 
       def disconnect
-        return unless connected?
-
         synchronize do
           logger.debug { "disconnect SSH #{host.user}@#{host.address}" }
-          @session.close
+          @session.close if connected?
           if @gateway
-            logger.debug { "disconnect SSH gateway #{host.bastion.user}@#{host.bastion.address}" }
-            @gateway.shutdown!
-            sleep 0.5 until !@gateway.active?
-            @gateway = nil
+            logger.debug { "disconnect SSH gateway" }
+            @gateway.close(@port)
           end
           @session = nil
         end
       end
 
       def command(cmd, **options)
+        connect unless connected?
+
         Pharos::Transport::Command::SSH.new(self, cmd, **options)
       end
     end

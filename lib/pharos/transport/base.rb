@@ -19,10 +19,14 @@ module Pharos
       attr_reader :host
 
       # @param host [Pharos::Configuration::Host]
+      # @param gateway [Pharos::Transport::Gateway]
+      # @param port [Integer] ssh port
       # @param opts [Hash]
-      def initialize(host)
+      def initialize(host, gateway: nil, port: nil)
         super()
         @host = host
+        @gateway = gateway
+        @port = port || host.ssh_port
       end
 
       def logger
