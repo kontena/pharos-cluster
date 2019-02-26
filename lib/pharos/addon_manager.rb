@@ -76,7 +76,7 @@ module Pharos
       with_enabled_addons do |addon_class, config|
         outcome = addon_class.validate(config)
         unless outcome.success?
-          raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).gsub(/^---$/, '')
+          raise InvalidConfig, YAML.dump(addon_class.addon_name => outcome.errors.deep_stringify_keys).delete_prefix("---\n")
         end
 
         prev_config = prev_configs[addon_class.addon_name]
@@ -120,8 +120,8 @@ module Pharos
     def with_enabled_addons
       configs.each do |name, config|
         klass = addon_classes.find { |a| a.addon_name == name }
-        if klass && config['enabled']
-          yield(klass, config)
+        if klass && (klass.enabled? || config['enabled'])
+          yield(klass, config.merge('enabled' => true))
         end
       end
     end

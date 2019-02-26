@@ -60,7 +60,7 @@ module Pharos
           return true if result.error? # docker not installed
           return true if result.stdout.split("\t")[1].to_s.start_with?(docker_version)
         elsif crio?
-          result = trasport.exec("dpkg-query --show cri-o")
+          result = transport.exec("dpkg-query --show cri-o")
           bin_path = '/usr/local/bin/crio'
           bin_exist = transport.file(bin_path).exist?
           if result.error? && bin_exist

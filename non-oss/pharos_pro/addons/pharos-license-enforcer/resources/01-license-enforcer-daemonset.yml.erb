@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pharos-license-enforcer
+  namespace: kube-system
+  labels:
+    k8s-app: pharos-license-enforcer
+spec:
+  selector:
+    matchLabels:
+      k8s-app: pharos-license-enforcer
+  template:
+    metadata:
+      labels:
+        k8s-app: pharos-license-enforcer
+    spec:
+      serviceAccountName: pharos-license-enforcer
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - key: node-role.kubernetes.io/master
+      containers:
+      - name: enforcer
+        image: <%= image_repository %>/pharos-license-enforcer:<%= version %>
+        args:
+          - -interval
+          - 30s
+        env:
+          - name: NODE
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        resources:
+          limits:
+            memory: 20Mi
+          requests:
+            cpu: 100m
+            memory: 10Mi
+        volumeMounts:
+        - name: manifests
+          mountPath: /etc/kubernetes/manifests
+        - name: icebox
+          mountPath: /etc/pharos/icebox
+        - name: license
+          mountPath: /pharos-license
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: manifests
+          hostPath:
+            path: /etc/kubernetes/manifests
+        - name: icebox
+          hostPath:
+            path: /etc/pharos/icebox
+        - name: license
+          secret:
+            secretName: pharos-license
+            items:
+            - key: license.jwt
+              path: license.jwt

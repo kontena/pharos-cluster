@@ -8,9 +8,12 @@ module Pharos
       class Weave < Pharos::Configuration::Struct
         attribute :trusted_subnets, Pharos::Types::Array.of(Pharos::Types::String)
         attribute :no_masq_local, Pharos::Types::Strict::Bool.default(false)
+        attribute :known_peers, Pharos::Types::Array.of(Pharos::Types::String)
+        attribute :password, Pharos::Types::Strict::String.optional
+        attribute :ipalloc_default_subnet, Pharos::Types::Strict::String.optional
 
-        # @param routes [Array<Pharos::Configuration::Host::Routes>]
-        # @return [Array<Pharos::Configuration::Host::Routes>]
+        # @param routes [Array<Pharos::Configuration::Route>]
+        # @return [Array<Pharos::Configuration::Route>]
         def self.filter_host_routes(routes)
           routes.reject{ |route|
             route.dev == 'weave'
@@ -23,8 +26,8 @@ module Pharos
         attribute :nat_outgoing, Pharos::Types::Strict::Bool.default(true)
         attribute :environment, Pharos::Types::Hash.default({})
 
-        # @param routes [Array<Pharos::Configuration::Host::Routes>]
-        # @return [Array<Pharos::Configuration::Host::Routes>]
+        # @param routes [Array<Pharos::Configuration::Route>]
+        # @return [Array<Pharos::Configuration::Route>]
         def self.filter_host_routes(routes)
           routes.reject{ |route|
             route.proto == 'bird' || route.dev =~ /^cali/
@@ -36,8 +39,8 @@ module Pharos
         attribute :manifest_path, Pharos::Types::String
         attribute :options, Pharos::Types::Hash
 
-        # @param _routes [Array<Pharos::Configuration::Host::Routes>]
-        # @return [Array<Pharos::Configuration::Host::Routes>]
+        # @param _routes [Array<Pharos::Configuration::Route>]
+        # @return [Array<Pharos::Configuration::Route>]
         def self.filter_host_routes(_routes)
           # There's no way to validate routes for a custom CNI setup
           []
@@ -79,8 +82,8 @@ module Pharos
         (IPAddr.new(service_cidr) | 10).to_s
       end
 
-      # @param routes [Array<Pharos::Configuration::Host::Routes>]
-      # @return [Array<Pharos::Configuration::Host::Routes>]
+      # @param routes [Array<Pharos::Configuration::Route>]
+      # @return [Array<Pharos::Configuration::Route>]
       def filter_host_routes(routes)
         case provider
         when 'weave'

@@ -2,13 +2,14 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    options :load_config, :yes?
+    using Pharos::CoreExt::Colorize
+
+    options :load_config, :tf_json, :yes?
 
     option ['-f', '--force'], :flag, "force upgrade"
-    STRIP_OPTIONS = %w(-y --yes -d --debug -f --force).freeze
 
     def execute
-      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})")
+      puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
 
       Pharos::Kube.init_logging!
 
@@ -24,12 +25,12 @@ module Pharos
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config)
-      manager = ClusterManager.new(config, pastel: pastel)
+      manager = ClusterManager.new(config)
       start_time = Time.now
 
       manager.context['force'] = force?
 
-      puts pastel.green("==> Sharpening tools ...")
+      puts "==> Sharpening tools ...".green
       manager.load
       manager.validate
       show_component_versions(config)
@@ -37,18 +38,16 @@ module Pharos
       manager.apply_addons_cluster_config_modifications
       prompt_continue(config, manager.context)
 
-      puts pastel.green("==> Starting to craft cluster ...")
+      puts "==> Starting to craft cluster ...".green
       manager.apply_phases
 
-      puts pastel.green("==> Configuring addons ...")
+      puts "==> Configuring addons ...".green
       manager.apply_addons
 
       manager.save_config
 
       craft_time = Time.now - start_time
-      defined_opts = (ARGV[1..-1] - STRIP_OPTIONS).join(" ")
-      defined_opts += " " unless defined_opts.empty?
-      puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
+      puts "==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})".green
       manager.post_install_messages.each do |component, message|
         puts "    Post-install message from #{component}:"
         message.lines.each do |line|
@@ -56,14 +55,14 @@ module Pharos
         end
       end
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
       manager.disconnect
     end
 
     # @param config [Pharos::Config]
     def show_component_versions(config)
-      puts pastel.green("==> Using following software versions:")
+      puts "==> Using following software versions:".green
       Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
         if c.os_release
           " (#{c.os_release.id} #{c.os_release.version})"
@@ -75,7 +74,7 @@ module Pharos
     end
 
     def show_addon_versions(manager)
-      puts pastel.green("==> Using following addons:")
+      puts "==> Using following addons:".green
       manager.addon_manager.with_enabled_addons do |addon|
         puts "    #{addon.addon_name}: #{addon.version}"
       end
@@ -86,21 +85,21 @@ module Pharos
     def prompt_continue(config, context)
       existing_version = context['existing-pharos-version']
       lexer = Rouge::Lexers::YAML.new
-      puts pastel.green("==> Configuration is generated and shown below:")
+      puts "==> Configuration is generated and shown below:".green
       if color?
-        puts rouge.format(lexer.lex(config.to_yaml))
+        puts rouge.format(lexer.lex(config.to_yaml.delete_prefix("---\n")))
         puts ""
       else
-        puts config.to_yaml
+        puts config.to_yaml.delete_prefix("---\n")
       end
 
       if existing_version && Pharos.version != existing_version
         puts
-        puts pastel.yellow("Cluster is currently running Kontena Pharos version #{existing_version} and will be upgraded to #{Pharos.version}")
+        puts "Cluster is currently running Kontena Pharos version #{existing_version} and will be upgraded to #{Pharos.version}".yellow
         if context['unsafe_upgrade']
           if force?
             puts
-            puts pastel.red("WARNING:") + " using --force to attempt an unsafe upgrade, this can break your cluster."
+            puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this can break your cluster."
           else
             signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" \
                          "the command with --force or use the Kontena Pharos Pro version."
