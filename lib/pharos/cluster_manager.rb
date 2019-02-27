@@ -58,7 +58,7 @@ module Pharos
     def gather_facts
       apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::WarmUpClientCache, %w(localhost))
+      apply_phase(Phases::WarmUpClientCache, %w(localhost)) if config.hosts.any?(&:master_healthy?)
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
     end
 
@@ -95,6 +95,8 @@ module Pharos
 
       apply_phase(Phases::PullMasterImages, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
+
+      apply_phase(Phases::WarmUpClientCache, %w(localhost)) if config.hosts.any?(&:master_healthy?)
 
       # master is now configured and can be used
       # configure essential services
