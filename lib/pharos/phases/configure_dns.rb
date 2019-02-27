@@ -105,13 +105,19 @@ module Pharos
       end
 
       def deploy_node_dns_cache
-        logger.info { "Deploying node dns cache ..."}
+        logger.info { "Deploying node dns cache ..." }
         apply_stack(
           'node_local_dns',
           version: DNS_NODE_CACHE_VERSION,
+          image_repository: @config.image_repository,
           nodelocal_dns: Pharos::Configuration::Network::CLUSTER_DNS,
-          forward_target: @config.network.service_cidr.gsub(/\.(\d+\/\d+)/, '.10')
+          forward_target: dns_forward_target
         )
+      end
+
+      # @return [String]
+      def dns_forward_target
+        @config.network.service_cidr.gsub(/\.(\d+\/\d+)/, '.10')
       end
     end
   end
