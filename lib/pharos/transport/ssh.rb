@@ -23,7 +23,6 @@ module Pharos
         @port = port || host.ssh_port
       end
 
-
       def to_s
         "#{"#{@gateway}->127.0.0.1:#{@port}->" if @gateway}#{host.user}@#{host.address}:#{host.ssh_port}"
       end
