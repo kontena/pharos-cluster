@@ -49,4 +49,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.7"
   spec.add_development_dependency "fakefs", "~> 0.13"
   spec.add_development_dependency "rubocop", "~> 0.57"
+  spec.add_development_dependency "pry-byebug", "~> 3.6"
 end
