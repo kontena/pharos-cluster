@@ -117,7 +117,7 @@ module Pharos
 
       # @return [String]
       def dns_forward_target
-        @config.network.service_cidr.gsub(/\.(\d+\/\d+)/, '.10')
+        @config.network.service_cidr.gsub(%r{\.(\d+\/\d+)}, '.10')
       end
     end
   end
