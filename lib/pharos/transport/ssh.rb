@@ -13,6 +13,17 @@ module Pharos
         ArgumentError # until the ED25519 passphrase is fixed
       ].freeze
 
+      # @param host [Pharos::Configuration::Host]
+      # @param gateway [Pharos::Transport::Gateway]
+      # @param port [Integer] ssh port
+      # @param opts [Hash]
+      def initialize(host, gateway: nil, port: nil)
+        super(host)
+        @gateway = gateway
+        @port = port || host.ssh_port
+      end
+
+
       def to_s
         "#{"#{@gateway}->127.0.0.1:#{@port}->" if @gateway}#{host.user}@#{host.address}:#{host.ssh_port}"
       end
