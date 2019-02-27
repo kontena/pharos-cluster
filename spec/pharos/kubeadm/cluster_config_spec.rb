@@ -93,7 +93,7 @@ describe Pharos::Kubeadm::ClusterConfig do
     it 'comes with correct master addresses' do
       config.hosts << master
       config = subject.generate
-      expect(config.dig('apiServerCertSANs')).to eq(['localhost', 'test', 'private'])
+      expect(config.dig('apiServerCertSANs')).to eq(['localhost', '127.0.0.1', 'test', 'private'])
     end
 
     it 'comes with internal etcd config' do
