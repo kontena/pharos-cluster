@@ -39,6 +39,19 @@ module Pharos
         host.config = config
       end
 
+      # de-duplicate bastions (if two hosts share an identical bastion, make it the same object to avoid multiple gateways)
+      config.hosts.reject { |h| h.bastion.nil? }.permutation(2) do |host_a, host_b|
+        if host_a.bastion == host_b.bastion && host_a.bastion.object_id != host_b.bastion.object_id
+          host_b.attributes[:bastion] = host_a.bastion
+        end
+      end
+
+      # link real hosts to bastion's @host to avoid multiple gateways
+      config.bastions.each do |bastion|
+        existing_host = config.hosts.find { |host| bastion == host }
+        bastion.host = existing_host if existing_host
+      end
+
       config
     end
 
@@ -61,6 +74,11 @@ module Pharos
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
 
     attr_accessor :data
+
+    # @return [Array<Pharos::Configuration::Bastion>]
+    def bastions
+      hosts.reject { |h| h.bastion.nil? }.map(&:bastion)
+    end
 
     # @return [Integer]
     def dns_replicas
@@ -113,20 +131,22 @@ module Pharos
       @regions ||= hosts.map(&:region).compact.uniq
     end
 
-    # @param kubeconfig [Hash]
     # @return [K8s::Client]
-    def kube_client(kubeconfig)
-      return @kube_client if @kube_client
+    def kube_client
+      master_hosts.find(&:kube_client?)&.kube_client || master_hosts.find(&:kube_client)&.kube_client || raise(Pharos::Error, 'no kube_client available')
+    end
 
-      if master_host.bastion.nil?
-        api_address = master_host.api_address
-        api_port = 6443
-      else
-        api_address = 'localhost'
-        api_port = master_host.bastion.gateway.open(master_host.api_address, 6443)
+    # @return [nil]
+    def disconnect
+      hosts.group_by(&:gateway?).tap do |has_gateway|
+        has_gateway[false]&.each(&:disconnect) # disconnect non-gw hosts first
+        has_gateway[true]&.each(&:disconnect)
       end
 
-      @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)
+      # disconnect non-listed bastion hosts
+      bastions.map(&:host).reject { |bastion_host| hosts.include?(bastion_host) }.map(&:disconnect)
+
+      nil
     end
 
     # @param key [Symbol]

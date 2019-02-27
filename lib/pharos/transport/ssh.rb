@@ -14,7 +14,7 @@ module Pharos
       ].freeze
 
       def to_s
-        "#{"127.0.0.1:#{@port}->#{@gateway}->" if @gateway}#{host.user}@#{host.address}:#{host.ssh_port}"
+        "#{"#{@gateway}->127.0.0.1:#{@port}->" if @gateway}#{host.user}@#{host.address}:#{host.ssh_port}"
       end
 
       def connect

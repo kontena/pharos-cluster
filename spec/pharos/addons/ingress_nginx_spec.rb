@@ -8,11 +8,10 @@ describe Pharos::Addons::IngressNginx do
     etcd: {}
   ) }
   let(:config) { { foo: 'bar'} }
-  let(:kube_client) { instance_double(K8s::Client) }
   let(:cpu_arch) { double(:cpu_arch ) }
 
   subject do
-    described_class.new(config, enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config)
+    described_class.new(config, enabled: true, cpu_arch: cpu_arch, cluster_config: cluster_config)
   end
 
   describe "#validate" do

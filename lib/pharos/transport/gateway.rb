@@ -6,7 +6,7 @@ require 'monitor'
 module Pharos
   module Transport
     class Gateway
-      attr_reader :host, :session
+      attr_reader :host, :session, :options
 
       include MonitorMixin
 
@@ -28,20 +28,18 @@ module Pharos
 
       def connect
         synchronize do
-          begin
-            non_interactive = true
-            logger.debug { "Connecting gateway #{host.user}@#{host.address}:#{host.ssh_port}" }
-            @session = Net::SSH::Gateway.new(host.address, host.user, host.ssh_options.merge(non_interactive: non_interactive, port: host.ssh_port))
-            logger.debug { "Connected" }
-            true
-          rescue *Pharos::Transport::SSH::RETRY_CONNECTION_ERRORS
-            logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{host.user}@#{host.address}" }
-            raise if non_interactive == false || !$stdin.tty? # don't re-retry
+          non_interactive = true
+          logger.debug { "Connecting gateway #{host.user}@#{host.address}:#{host.ssh_port}" }
+          @session = Net::SSH::Gateway.new(host.address, host.user, host.ssh_options.merge(non_interactive: non_interactive, port: host.ssh_port))
+          logger.debug { "Connected" }
+          true
+        rescue *Pharos::Transport::SSH::RETRY_CONNECTION_ERRORS => exc
+          logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{host.user}@#{host.address}" }
+          raise if non_interactive == false || !$stdin.tty? # don't re-retry
 
-            logger.debug { "Retrying in interactive mode.." }
-            non_interactive = false
-            retry
-          end
+          logger.debug { "Retrying in interactive mode.." }
+          non_interactive = false
+          retry
         end
       end
 
@@ -70,7 +68,10 @@ module Pharos
         connect unless session
 
         synchronize do
+          # rubocop:disable Security/Open
+          # rubocop does not like calling the method `open`. using self.open triggers "unnecessary self"
           port = open(host.address, host.ssh_port)
+          # rubocop:enable Security/Open
           Pharos::Transport::SSH.new(host, gateway: self, port: port)
         end
       end
@@ -86,8 +87,9 @@ module Pharos
       end
 
       def close(port)
-        sychronize do
+        synchronize do
           address = ports.delete(port)
+
           logger.debug { "Closing tunnel from localhost:#{port} to #{address}" }
           session&.close(port)
         end
@@ -97,18 +99,16 @@ module Pharos
 
       def active?
         synchronize do
-          session&.active?
+          !!session&.active?
         end
       end
 
       def shutdown!
         synchronize do
-          return if !session
-
           logger.debug { "Shutting down gateway session" }
           ports.keys.each { |port| close(port) }
-          session.shutdown!
-          sleep 0.5 until !session.active?
+          session&.shutdown!
+          sleep 0.5 until !session || !session.active?
           @session = nil
           logger.debug { "Gateway shutdown complete" }
         end

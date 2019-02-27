@@ -58,7 +58,7 @@ module Pharos
     def gather_facts
       apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
+      apply_phase(Phases::WarmUpClientCache, %w(localhost))
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
     end
 
@@ -77,7 +77,6 @@ module Pharos
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, master_only, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints
         etcd_hosts = config.etcd_hosts
@@ -89,14 +88,13 @@ module Pharos
 
       apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, parallel: false)
       apply_phase(Phases::SetupMaster, master_hosts, parallel: true)
-      apply_phase(Phases::UpgradeMaster, master_hosts, parallel: false) # requires optional early ConfigureClient
+      apply_phase(Phases::UpgradeMaster, master_hosts, parallel: false)
 
       apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true)
       apply_phase(Phases::ConfigureKubelet, config.hosts, parallel: true)
 
       apply_phase(Phases::PullMasterImages, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
-      apply_phase(Phases::ConfigureClient, master_only, parallel: false)
 
       # master is now configured and can be used
       # configure essential services

@@ -14,8 +14,12 @@ describe Pharos::Addons::CertManager do
   let(:kube_resource_client) { instance_double(K8s::ResourceClient) }
   let(:cpu_arch) { double(:cpu_arch ) }
 
+  before do
+    allow(cluster_config).to receive(:kube_client).and_return(kube_client)
+  end
+
   subject do
-    described_class.new(config, enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config)
+    described_class.new(config, enabled: true, cpu_arch: cpu_arch, cluster_config: cluster_config)
   end
 
   describe "#validate" do

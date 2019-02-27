@@ -108,7 +108,7 @@ module Pharos
 
       # @return [Array<String>]
       def build_extra_sans
-        extra_sans = Set.new(['localhost'])
+        extra_sans = Set.new(['localhost', '127.0.0.1'])
         extra_sans << @host.address
         extra_sans << @host.private_address if @host.private_address
         extra_sans << @host.private_interface_address if @host.private_interface_address

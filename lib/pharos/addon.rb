@@ -181,17 +181,15 @@ module Pharos
       end
     end
 
-    attr_reader :config, :cpu_arch, :cluster_config, :kube_client
+    attr_reader :config, :cpu_arch, :cluster_config
 
     # @param config [Hash,Dry::Validation::Result]
     # @param enabled [Boolean]
-    # @param kube_client [K8s::Client]
     # @param cpu_arch [String, NilClass]
     # @param cluster_config [Pharos::Config, NilClass]
-    def initialize(config = nil, enabled: true, kube_client:, cpu_arch:, cluster_config:)
+    def initialize(config = nil, enabled: true, cpu_arch:, cluster_config:)
       @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(Hash(config))
       @enabled = enabled
-      @kube_client = kube_client
       @cpu_arch = cpu_arch
       @cluster_config = cluster_config
     end
@@ -266,6 +264,10 @@ module Pharos
         image_repository: cluster_config.image_repository,
         **vars
       )
+    end
+
+    def kube_client
+      @kube_client ||= @cluster_config.kube_client
     end
 
     # @param vars [Hash]

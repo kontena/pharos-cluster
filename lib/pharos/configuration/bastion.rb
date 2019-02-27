@@ -9,6 +9,14 @@ module Pharos
       attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
 
+      attr_writer :host
+
+      def ==(other)
+        return false unless other.respond_to?(:attributes)
+
+        attributes.all? { |k, v| other.attributes[k] == v }
+      end
+
       def host
         @host ||= Host.new(attributes)
       end

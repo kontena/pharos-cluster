@@ -21,11 +21,22 @@ describe Pharos::Addon do
     end
   end
 
+  let(:cluster_config) { Pharos::Config.new(
+    hosts: [Pharos::Configuration::Host.new(role: 'worker')],
+    network: {},
+    addons: {},
+    etcd: {}
+  ) }
+
   let(:cpu_arch) { double(:cpu_arch) }
   let(:kube_client) { instance_double(K8s::Client) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: double(image_repository: 'foo')) }
+  before do
+    allow(cluster_config).to receive(:kube_client).and_return(kube_client)
+  end
+
+  subject { test_addon.new(config, cpu_arch: cpu_arch, cluster_config: cluster_config) }
 
   describe ".addon_name" do
     it "returns configured name" do
@@ -128,7 +139,7 @@ describe Pharos::Addon do
           config.justatest
           apply_resources
         }
-      end.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: nil)
+      end.new(config, cpu_arch: cpu_arch, cluster_config: cluster_config)
     end
 
     let(:kube_stack) { double(:kube_stack) }
