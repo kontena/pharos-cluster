@@ -27,9 +27,7 @@ addons:
       use_all_nodes: true
       device_filter: ^sd[a-x]
   cert-manager:
-    # keeps failing: (K8s::Error::NotFound): GET /apis/certmanager.k8s.io/v1alpha1 => HTTP 404 Not Found: 404 page not found
-    # enabled: true
-    enabled: false
+    enabled: true
     issuer:
       name: letsencrypt-staging
       server: https://acme-staging-v02.api.letsencrypt.org/directory
