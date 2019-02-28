@@ -18,6 +18,14 @@ Class.new(Pharos::Command) do
     @config ||= load_config
   end
 
+  def cluster_manager
+    @cluster_manager ||= Pharos::ClusterManager.new(config).tap(&:load)
+  end
+
+  def addon_manager
+    cluster_manager.addon_manager
+  end
+
   def execute
     binding.pry
   end
