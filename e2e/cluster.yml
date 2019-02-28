@@ -14,8 +14,6 @@ addons:
     enabled: true
   helm:
     enabled: true
-  cert-manager:
-    enabled: false
   # TODO: fix cert-manager on travis
   # cert-manager:
   #  enabled: true
