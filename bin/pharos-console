@@ -27,6 +27,8 @@ Class.new(Pharos::Command) do
   end
 
   def execute
+    # rubocop:disable Lint/Debugger
     binding.pry
+    # rubocop:enable Lint/Debugger
   end
 end.run
