@@ -24,7 +24,7 @@ module Pharos
         end
 
         def inspect
-          streams = {stdin: stdin, stdout: stdout, stderr: stderr}.map do |name, stream|
+          streams = { stdin: stdin, stdout: stdout, stderr: stderr }.map do |name, stream|
             stream.empty? ? nil : "#{name}:#{stream[0..20].inspect}#{'...' if stream.length > 20}"
           end.compact.join(' ')
 
