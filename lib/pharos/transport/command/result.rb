@@ -23,6 +23,14 @@ module Pharos
           initialize_debug
         end
 
+        def inspect
+          streams = {stdin: stdin, stdout: stdout, stderr: stderr}.map do |name, stream|
+            stream.empty? ? nil : "#{name}:#{stream[0..20].inspect}#{'...' if stream.length > 20}"
+          end.compact.join(' ')
+
+          "#<Pharos::Transport::Command::Result:#{"`#{@cmd}`" if @cmd}@#{hostname} success?:#{success?} exit_status:#{exit_status} #{streams}>"
+        end
+
         # @param exitstatus [Integer]
         def exit_status=(exitstatus)
           @exit_status = exitstatus
@@ -35,6 +43,7 @@ module Pharos
         def append(data, stream = :stdout)
           case stream
           when :cmd
+            @cmd = data
             debug { debug_cmd(data) }
           when :stdin
             stdin << data
@@ -115,14 +124,10 @@ module Pharos
 
         private
 
-        if !ENV['DEBUG'].to_s.empty?
-          def debug(&block)
-            instance_exec(&block)
-          end
-        else
-          def debug(&_block)
-            nil
-          end
+        def debug(&block)
+          return unless Pharos.debug?
+
+          instance_exec(&block)
         end
 
         def synchronize(&block)
@@ -130,7 +135,7 @@ module Pharos
         end
 
         def initialize_debug
-          return if ENV['DEBUG'].to_s.empty?
+          return unless Pharos.debug?
 
           @debug_prefix = "    #{"#{hostname}:".dim} "
         end

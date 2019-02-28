@@ -21,11 +21,21 @@ module Pharos
         @user = @opts.delete(:user)
       end
 
+      def to_s
+        "#{"#{bastion.user}@#{bastion.address}->" if bastion}#{@user}:#{host}"
+      end
+
+      def inspect
+        "#<Pharos::Transport::SSH:#{self} connected:#{connected?}>"
+      end
+
       # @return [Hash,NilClass]
       def bastion
         @bastion ||= @opts.delete(:bastion)
       end
 
+      # @return [true] raises or returns true
+      # @raise [*]
       # @param options [Hash] see Net::SSH#start
       def connect(**options)
         synchronize do
@@ -59,6 +69,8 @@ module Pharos
             end
           end
         end
+
+        true
       end
 
       # @param host [String]

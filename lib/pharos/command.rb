@@ -39,7 +39,7 @@ module Pharos
     end
 
     option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
-      ENV["DEBUG"] = "true"
+      Pharos.debug!
     end
 
     def prompt

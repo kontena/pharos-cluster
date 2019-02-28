@@ -28,6 +28,10 @@ module Pharos
         short_hostname || address
       end
 
+      def inspect
+        "#<Pharos::Configuration::Host:#{self} user:#{user} role:#{role} bastion:#{!!bastion}>"
+      end
+
       def short_hostname
         return nil unless hostname
 

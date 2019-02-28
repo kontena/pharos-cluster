@@ -15,6 +15,17 @@ module Pharos
   KUBELET_PROXY_VERSION = '0.3.7'
   COREDNS_VERSION = '1.2.2'
   TELEMETRY_VERSION = '0.2.0'
+
+  # @return [Boolean]
+  def self.debug?
+    @debug ||= !ENV['DEBUG'].to_s.empty?
+  end
+
+  # Set debug true
+  # @return [true]
+  def self.debug!
+    @debug = true
+  end
 end
 
 require "pharos_non_oss" if $LOAD_PATH.any? { |path| path.end_with?('non-oss') }

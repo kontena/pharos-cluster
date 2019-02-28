@@ -6,7 +6,7 @@ module Pharos
   module Kube
     def self.init_logging!
       # rubocop:disable Style/GuardClause
-      if ENV['DEBUG']
+      if Pharos.debug?
         K8s::Logging.debug!
         K8s::Transport.verbose!
       end

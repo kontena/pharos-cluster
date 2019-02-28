@@ -18,6 +18,10 @@ module Pharos
 
       alias to_s path
 
+      def inspect
+        "#<Pharos::Transport::TransportFile:#{self}>"
+      end
+
       # Removes the remote file
       # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
