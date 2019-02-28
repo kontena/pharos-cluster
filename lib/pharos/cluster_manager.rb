@@ -23,8 +23,7 @@ module Pharos
     end
 
     # @param context [Pharos::Context]
-    # @param pastel [Pastel]
-    def initialize(context, pastel: Pastel.new)
+    def initialize(context)
       @context = context
       @config = context.config
     end
