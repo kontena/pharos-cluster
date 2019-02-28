@@ -35,20 +35,14 @@ module Pharos
       manager.validate
       show_component_versions(config)
       show_addon_versions(manager)
-      manager.apply_addons_cluster_config_modifications
       prompt_continue(config, manager.context)
 
       puts "==> Starting to craft cluster ...".green
       manager.apply_phases
 
-      puts "==> Configuring addons ...".green
-      manager.apply_addons
-
-      manager.save_config
-
       craft_time = Time.now - start_time
       puts "==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})".green
-      manager.post_install_messages.each do |component, message|
+      manager.context['post_install_messages'].each do |component, message|
         puts "    Post-install message from #{component}:"
         message.lines.each do |line|
           puts "      #{line}"

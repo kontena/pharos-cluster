@@ -64,7 +64,7 @@ module Pharos
 
     def validate
       apply_phase(Phases::UpgradeCheck, %w(localhost))
-      addon_manager.validate
+      apply_phase(Phases::ValidateAddons, %w(localhost))
       gather_facts
       apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
@@ -115,6 +115,8 @@ module Pharos
       # configure services that need workers
       apply_phase(Phases::ConfigureMetrics, master_only)
       apply_phase(Phases::ConfigureTelemetry, master_only)
+      apply_phase(Phases::ConfigureAddons, master_only)
+      apply_phase(Phases::StoreClusterConfiguration, master_only)
     end
 
     # @param hosts [Array<Pharos::Configuration::Host>]
@@ -135,15 +137,6 @@ module Pharos
       apply_phase(Phases::ResetHost, hosts, parallel: true)
     end
 
-    def apply_addons_cluster_config_modifications
-      addon_manager.each do |addon|
-        addon.apply_modify_cluster_config
-      rescue Pharos::Error => e
-        error_msg = "#{addon.name} => " + e.message
-        raise Pharos::AddonManager::InvalidConfig, error_msg
-      end
-    end
-
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, **options)
@@ -152,24 +145,6 @@ module Pharos
       puts "==> #{phase_class.title} @ #{hosts.join(' ')}".cyan
 
       phase_manager.apply(phase_class, hosts, **options)
-    end
-
-    def apply_addons
-      addon_manager.each do |addon|
-        puts "==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}".cyan
-
-        addon.apply
-        post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
-      end
-    end
-
-    def post_install_messages
-      @context['post_install_messages']
-    end
-
-    def save_config
-      master_host = config.master_host
-      apply_phase(Phases::StoreClusterConfiguration, [master_host])
     end
 
     def disconnect
