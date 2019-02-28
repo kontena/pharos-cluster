@@ -53,7 +53,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: pharos-license-enforcer
+  name: pharos-license-enforcer-basic
 subjects:
 - name: pharos-license-enforcer
   kind: ServiceAccount
