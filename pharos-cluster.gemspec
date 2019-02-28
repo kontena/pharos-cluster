@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
 
   spec.files         = files
   spec.bindir        = "bin"
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.executables   = spec.files.grep(%r{^bin/}).reject { |f| f.end_with?('console') }.map { |f| File.basename(f) }
   spec.require_paths = require_paths
   spec.required_ruby_version = '~> 2.5'
 
