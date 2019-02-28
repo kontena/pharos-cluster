@@ -7,7 +7,7 @@ module Pharos
     class UbuntuXenial < Ubuntu
       register_config 'ubuntu', '16.04'
 
-      DOCKER_VERSION = '17.03.2'
+      DOCKER_VERSION = '18.06.1'
       CFSSL_VERSION = '1.2'
 
       register_component(
@@ -35,20 +35,26 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu2~16.04.1"
+            DOCKER_VERSION: DOCKER_VERSION,
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
           exec_script(
-            'configure-docker.sh'
+            'configure-docker.sh',
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
+          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
+            CRIO_CGROUP_MANAGER: 'cgroupfs',
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository
+            IMAGE_REPO: config.image_repository,
+            INSECURE_REGISTRIES: insecure_registries
           )
+          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end

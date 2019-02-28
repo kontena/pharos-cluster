@@ -9,3 +9,6 @@ rules:
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
   verbs: ["list","get"]
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["watch"]

@@ -7,7 +7,7 @@ module Pharos
     class UbuntuBionic < Ubuntu
       register_config 'ubuntu', '18.04'
 
-      DOCKER_VERSION = '17.12.1'
+      DOCKER_VERSION = '18.06.1'
       CFSSL_VERSION = '1.2'
 
       register_component(
@@ -30,25 +30,44 @@ module Pharos
         exec_script('repos/update.sh')
       end
 
+      # @return [Array<String>]
+      def kubelet_args
+        kubelet_args = super
+        kubelet_args << "--cgroup-driver=#{crio_cgroup_manager}" if crio?
+
+        kubelet_args
+      end
+
+      # @return [String]
+      def crio_cgroup_manager
+        current_crio_cgroup_manager || 'systemd'
+      end
+
       def configure_container_runtime
         if docker?
           exec_script(
             'configure-docker.sh',
             DOCKER_PACKAGE: 'docker.io',
-            DOCKER_VERSION: "#{DOCKER_VERSION}-0ubuntu1"
+            DOCKER_VERSION: DOCKER_VERSION,
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?
           exec_script(
-            'configure-docker.sh'
+            'configure-docker.sh',
+            INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
+          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
             CRIO_STREAM_ADDRESS: '127.0.0.1',
+            CRIO_CGROUP_MANAGER: crio_cgroup_manager,
             CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: cluster_config.image_repository
+            IMAGE_REPO: config.image_repository,
+            INSECURE_REGISTRIES: insecure_registries
           )
+          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'hashdiff'
 require 'dry-validation'
 require 'fugit'
 
@@ -62,6 +63,14 @@ module Pharos
         @addon_location || __dir__
       end
 
+      def priority(priority = nil)
+        if priority
+          @priority = priority
+        else
+          @priority.to_i
+        end
+      end
+
       def version(version = nil)
         if version
           @version = version
@@ -119,8 +128,43 @@ module Pharos
         hooks[:uninstall] = block
       end
 
+      def reset_host(&block)
+        hooks[:reset_host] = block
+      end
+
       def modify_cluster_config(&block)
         hooks[:modify_cluster_config] = block
+      end
+
+      def validate_configuration(&block)
+        hooks[:validate_configuration] = block
+      end
+
+      # @param old_config [Hash,Pharos::Configuration]
+      # @param new_config [Hash,Pharos::Configuration]
+      # @return [nil]
+      def apply_validate_configuration(old_config, new_config)
+        hook = hooks[:validate_configuration]
+        return unless hook
+
+        case hook.arity
+        when 1
+          hook.call(new_config)
+        when 2
+          hook.call(old_config, new_config)
+        when 3
+          HashDiff.diff(old_config, new_config).each do |changeset|
+            case changeset.first
+            when '-'
+              hook.call(changeset[1], changeset[2], nil)
+            when '+'
+              hook.call(changeset[1], nil, changeset[2])
+            when '~'
+              hook.call(changeset[1], changeset[2], changeset[3])
+            end
+          end
+        end
+        nil
       end
 
       def validation
@@ -190,6 +234,11 @@ module Pharos
       else
         delete_resources
       end
+    end
+
+    # @param host [Pharos::Configuration::Host]
+    def apply_reset_host(host)
+      instance_exec(host, &hooks[:reset_host]) if hooks[:reset_host]
     end
 
     def apply_modify_cluster_config

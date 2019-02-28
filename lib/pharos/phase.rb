@@ -24,14 +24,14 @@ module Pharos
 
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]
-    # @param ssh [Pharos::SSH::Client]
-    # @param master [Pharos::Configuration::Host]
-    def initialize(host, config: nil, ssh: nil, master: nil, cluster_context: nil)
+    def initialize(host, config: nil, cluster_context: nil)
       @host = host
       @config = config
-      @ssh = ssh
-      @master = master
       @cluster_context = cluster_context
+    end
+
+    def transport
+      @host.transport
     end
 
     def logger
@@ -57,7 +57,7 @@ module Pharos
     # @param script [String] name of file under ../scripts/
     # @param vars [Hash]
     def exec_script(script, vars = {})
-      @ssh.exec_script!(
+      transport.exec_script!(
         script,
         env: vars,
         path: script_path(script)
@@ -73,15 +73,19 @@ module Pharos
 
     # @return [Pharos::Host::Configurer]
     def host_configurer
-      @host.configurer(@ssh)
+      @host_configurer ||= @host.configurer
+    end
+
+    # @return [Pharos::Configuration::Host]
+    def master_host
+      @config.master_host
     end
 
     # @return [K8s::Client]
     def kube_client
-      fail "Phase #{self.class.name} does not have kube @master" unless @master
       fail "Phase #{self.class.name} does not have kubeconfig cluster_context" unless cluster_context['kubeconfig']
 
-      @kube_client ||= Pharos::Kube.client(@master.api_address, cluster_context['kubeconfig'])
+      @config.kube_client(cluster_context['kubeconfig'])
     end
 
     # @param name [String]
@@ -100,6 +104,14 @@ module Pharos
     # @return [Array<K8s::Resource>]
     def delete_stack(name)
       Pharos::Kube::Stack.new(name).delete(kube_client)
+    end
+
+    def mutex
+      self.class.mutex
+    end
+
+    def self.mutex
+      @mutex ||= Mutex.new
     end
   end
 end

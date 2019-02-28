@@ -3,7 +3,7 @@ require 'pharos/phases/label_node'
 describe Pharos::Phases::LabelNode do
   let(:master) { Pharos::Configuration::Host.new(address: '192.0.2.1') }
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.2', labels: { foo: 'bar' } ) }
-  let(:subject) { described_class.new(host, master: master) }
+  let(:subject) { described_class.new(host) }
 
   let(:kube_client) { instance_double(K8s::Client) }
   let(:kube_api_v1) { instance_double(K8s::APIClient) }
@@ -46,16 +46,6 @@ describe Pharos::Phases::LabelNode do
       allow(subject).to receive(:find_node).and_return(node)
     end
 
-    context 'without any host labels' do
-      let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.2') }
-
-      it 'does nothing' do
-        expect(subject).not_to receive(:find_node)
-
-        subject.call
-      end
-    end
-
     context 'without kube node' do
       before do
         allow(subject).to receive(:find_node).and_return(nil)
@@ -75,7 +65,7 @@ describe Pharos::Phases::LabelNode do
       it 'patches node' do
         expect(node).to receive(:merge).with(
           metadata: {
-            labels: { :foo => 'bar' },
+            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2' },
           },
         ).and_return(node)
 
@@ -94,6 +84,7 @@ describe Pharos::Phases::LabelNode do
       ) }
 
       it 'patches node' do
+        allow(subject).to receive(:patch_labels)
         expect(node).to receive(:merge).with(
           spec: {
             taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ],
@@ -118,7 +109,7 @@ describe Pharos::Phases::LabelNode do
       it 'patches node twice' do
         expect(node).to receive(:merge).with(
           metadata: {
-            labels: { :foo => 'bar' },
+            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2' },
           },
         ).and_return(node)
         expect(node).to receive(:merge).with(

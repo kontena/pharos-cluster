@@ -19,7 +19,7 @@ spec:
       serviceAccountName: kontena-storage-cluster
       containers:
       - name: rook-ceph-tools
-        image: docker.io/rook/ceph-toolbox:v<%= rook_version %>
+        image: <%= image_repository %>/rook-ceph-toolbox:v<%= rook_version %>
         imagePullPolicy: IfNotPresent
         env:
           - name: ROOK_ADMIN_SECRET

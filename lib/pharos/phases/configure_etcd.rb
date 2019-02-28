@@ -17,7 +17,7 @@ module Pharos
         logger.info { 'Configuring etcd certs ...' }
         exec_script(
           'configure-etcd-certs.sh',
-          PEER_IP: @host.peer_address,
+          PEER_IP: @config.etcd_peer_address(@host),
           PEER_NAME: peer_name(@host),
           ARCH: @host.cpu_arch.name
         )
@@ -25,7 +25,7 @@ module Pharos
         logger.info { 'Configuring etcd ...' }
         exec_script(
           'configure-etcd.sh',
-          PEER_IP: @host.peer_address,
+          PEER_IP: @config.etcd_peer_address(@host),
           INITIAL_CLUSTER: initial_cluster.join(','),
           IMAGE_REPO: @config.image_repository,
           ETCD_VERSION: Pharos::ETCD_VERSION,
@@ -42,16 +42,17 @@ module Pharos
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           IMAGE_REPO: @config.image_repository
         )
+        logger.info { 'Waiting for etcd to respond ...' }
         exec_script(
           'wait-etcd.sh',
-          PEER_IP: @host.peer_address
+          PEER_IP: @config.etcd_peer_address(@host)
         )
       end
 
       # @return [Array<String>]
       def initial_cluster
         @config.etcd_hosts.map { |h|
-          "#{peer_name(h)}=https://#{h.peer_address}:2380"
+          "#{peer_name(h)}=https://#{@config.etcd_peer_address(h)}:2380"
         }
       end
 
@@ -62,14 +63,14 @@ module Pharos
       end
 
       def sync_ca
-        return if cluster_context['etcd-ca'].keys.all? { |k| @ssh.file(File.join(CA_PATH, k)).exist? }
+        return if cluster_context['etcd-ca'].keys.all? { |k| transport.file(File.join(CA_PATH, k)).exist? }
 
         logger.info { 'Pushing certificate authority files to host ...' }
-        @ssh.exec!("sudo mkdir -p #{CA_PATH}")
+        transport.exec!("sudo mkdir -p #{CA_PATH}")
 
         cluster_context['etcd-ca'].each do |file, crt|
           path = File.join(CA_PATH, file)
-          @ssh.file(path).write(crt)
+          transport.file(path).write(crt)
         end
       end
 

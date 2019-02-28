@@ -7,12 +7,14 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  <%- if tls_enabled -%>
   tls:
     - hosts:
       - <%= host %>
-      <% if config.host %>
+      <% if email %>
       secretName: kontena-lens-tls
       <% end %>
+  <%- end -%>
   rules:
   - host: <%= host %>
     http:

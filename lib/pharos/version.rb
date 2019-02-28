@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
 module Pharos
-  VERSION = "2.0.0-alpha.1"
+  VERSION = "2.2.1"
+
+  def self.version
+    VERSION + "+oss"
+  end
+
+  def self.oss?
+    true
+  end
 end

@@ -39,15 +39,15 @@ Pharos.addon 'kontena-storage' do
       end
       optional(:directories).each do
         schema do
-          required(:name).filled(:str?)
+          required(:path).filled(:str?)
         end
       end
     end
     optional(:placement).schema do
-      optional(:all).schema
-      optional(:mgr).schema
-      optional(:mon).schema
-      optional(:osd).schema
+      optional(:all).filled(:hash?)
+      optional(:mgr).filled(:hash?)
+      optional(:mon).filled(:hash?)
+      optional(:osd).filled(:hash?)
     end
     optional(:resources).schema do
       optional(:mgr).schema do
@@ -108,6 +108,11 @@ Pharos.addon 'kontena-storage' do
     )
   }
 
+  reset_host { |host|
+    data_dir = config.data_dir.strip
+    host.transport.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
+  }
+
   def set_defaults
     return if config&.pool&.replicated
 
@@ -131,9 +136,10 @@ Pharos.addon 'kontena-storage' do
         serviceAccount: 'kontena-storage-cluster',
         dataDirHostPath: config.data_dir,
         storage: {
-          useAllNodes: config.storage&.use_all_nodes || true,
+          useAllNodes: config.storage&.use_all_nodes,
           useAllDevices: false,
-          deviceFilter: config.storage&.device_filter&.to_h&.deep_transform_keys(&:camelback),
+          deviceFilter: config.storage&.device_filter,
+          directories: config.storage&.directories,
           nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
         },
         placement: (config.placement || {}).to_h.deep_transform_keys(&:camelback),

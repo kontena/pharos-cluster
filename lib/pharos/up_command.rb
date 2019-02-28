@@ -2,37 +2,14 @@
 
 module Pharos
   class UpCommand < Pharos::Command
-    option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
-      begin
-        Pharos::YamlFile.new(File.realpath(config_file))
-      rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
-      end
-    end
+    using Pharos::CoreExt::Colorize
 
-    option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
-      begin
-        File.realpath(config_path)
-      rescue Errno::ENOENT
-        signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
-      end
-    end
+    options :load_config, :tf_json, :yes?
 
-    option ['-y', '--yes'], :flag, 'answer automatically yes to prompts'
-
-    # @return [Pharos::YamlFile]
-    def default_config_yaml
-      if !tty? && !stdin_eof?
-        Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
-      else
-        cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
-        signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
-        Pharos::YamlFile.new(cluster_config)
-      end
-    end
+    option ['-f', '--force'], :flag, "force upgrade"
 
     def execute
-      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
+      puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
 
       Pharos::Kube.init_logging!
 
@@ -43,76 +20,34 @@ module Pharos
       Dir.chdir(config_yaml.dirname) do
         configure(config)
       end
-    rescue Pharos::ConfigError => exc
-      warn "==> #{exc}"
-      exit 11
-    rescue StandardError => ex
-      raise unless ENV['DEBUG'].to_s.empty?
-      warn "#{ex.class.name} : #{ex.message}"
-      exit 1
-    end
-
-    # @return [Pharos::Config]
-    def load_config
-      puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
-
-      config_hash = config_yaml.load(ENV.to_h)
-
-      load_terraform(tf_json, config_hash) if tf_json
-
-      config = Pharos::Config.load(config_hash)
-
-      signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
-
-      config
-    end
-
-    # @param file [String]
-    # @param config [Hash]
-    # @return [Hash]
-    def load_terraform(file, config)
-      puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
-
-      tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
-      config['hosts'] ||= []
-      config['api'] ||= {}
-      config['addons'] ||= {}
-      config['hosts'] += tf_parser.hosts
-      config['api'].merge!(tf_parser.api) if tf_parser.api
-      config['addons'].each do |name, conf|
-        if addon_config = tf_parser.addons[name]
-          conf.merge!(addon_config)
-        end
-      end
-      config
     end
 
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config)
-      manager = ClusterManager.new(config, pastel: pastel)
+      manager = ClusterManager.new(config)
       start_time = Time.now
 
-      puts pastel.green("==> Sharpening tools ...")
+      manager.context['force'] = force?
+
+      puts "==> Sharpening tools ...".green
       manager.load
       manager.validate
       show_component_versions(config)
       show_addon_versions(manager)
       manager.apply_addons_cluster_config_modifications
-      prompt_continue(config)
+      prompt_continue(config, manager.context)
 
-      puts pastel.green("==> Starting to craft cluster ...")
+      puts "==> Starting to craft cluster ...".green
       manager.apply_phases
 
-      puts pastel.green("==> Configuring addons ...")
+      puts "==> Configuring addons ...".green
       manager.apply_addons
 
       manager.save_config
 
       craft_time = Time.now - start_time
-      defined_opts = ARGV[1..-1].join(" ")
-      defined_opts += " " unless defined_opts.empty?
-      puts pastel.green("==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})")
+      puts "==> Cluster has been crafted! (took #{humanize_duration(craft_time.to_i)})".green
       manager.post_install_messages.each do |component, message|
         puts "    Post-install message from #{component}:"
         message.lines.each do |line|
@@ -120,14 +55,14 @@ module Pharos
         end
       end
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{defined_opts}> kubeconfig"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options}> kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
       manager.disconnect
     end
 
     # @param config [Pharos::Config]
     def show_component_versions(config)
-      puts pastel.green("==> Using following software versions:")
+      puts "==> Using following software versions:".green
       Pharos::Phases.components_for_config(config).sort_by(&:name).each do |c|
         if c.os_release
           " (#{c.os_release.id} #{c.os_release.version})"
@@ -139,38 +74,41 @@ module Pharos
     end
 
     def show_addon_versions(manager)
-      puts pastel.green("==> Using following addons:")
+      puts "==> Using following addons:".green
       manager.addon_manager.with_enabled_addons do |addon|
         puts "    #{addon.addon_name}: #{addon.version}"
       end
     end
 
     # @param config [Pharos::Config]
-    def prompt_continue(config)
+    # @param existing_version [String]
+    def prompt_continue(config, context)
+      existing_version = context['existing-pharos-version']
       lexer = Rouge::Lexers::YAML.new
-      puts pastel.green("==> Configuration is generated and shown below:")
+      puts "==> Configuration is generated and shown below:".green
       if color?
-        puts rouge.format(lexer.lex(config.to_yaml))
+        puts rouge.format(lexer.lex(config.to_yaml.delete_prefix("---\n")))
         puts ""
       else
-        puts config.to_yaml
+        puts config.to_yaml.delete_prefix("---\n")
       end
-      if tty? && !yes?
-        exit 1 unless prompt.yes?('Continue?')
-      end
-    rescue TTY::Reader::InputInterrupt
-      exit 1
-    end
 
-    # @param secs [Integer]
-    # @return [String]
-    def humanize_duration(secs)
-      [[60, :second], [60, :minute], [24, :hour], [1000, :day]].map{ |count, name|
-        next unless secs.positive?
-        secs, n = secs.divmod(count).map(&:to_i)
-        next if n.zero?
-        "#{n} #{name}#{'s' unless n == 1}"
-      }.compact.reverse.join(' ')
+      if existing_version && Pharos.version != existing_version
+        puts
+        puts "Cluster is currently running Kontena Pharos version #{existing_version} and will be upgraded to #{Pharos.version}".yellow
+        if context['unsafe_upgrade']
+          if force?
+            puts
+            puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this can break your cluster."
+          else
+            signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" \
+                         "the command with --force or use the Kontena Pharos Pro version."
+          end
+        end
+        puts
+      end
+
+      confirm_yes!('Continue?', default: true)
     end
   end
 end

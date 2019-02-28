@@ -26,6 +26,7 @@ spec:
         # priority scheduling and that its resources are reserved
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
+        kontena.io/firewalld: "<%= firewalld_enabled %>"
     spec:
       hostNetwork: true
       tolerations:
@@ -84,6 +85,9 @@ spec:
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "<%= ipip_mode %>"
+            # Enable or disable NAT
+            - name: CALICO_IPV4POOL_NAT_OUTGOING
+              value: "<%= nat_outgoing %>"
             # Enable IP-in-IP within Felix.
             - name: FELIX_IPINIPENABLED
               value: "<%= ipip_enabled ? 'true' : 'false' %>"
@@ -102,6 +106,10 @@ spec:
               value: "can-reach=<%= master_ip %>"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            <% envs.each do |k,v| %>
+            - name: <%= k %>
+              value: "<%= v %>"
+            <% end %>
           securityContext:
             privileged: true
           resources:
@@ -111,13 +119,16 @@ spec:
             httpGet:
               path: /liveness
               port: 9099
+              host: localhost
             periodSeconds: 10
             initialDelaySeconds: 10
             failureThreshold: 6
           readinessProbe:
-            httpGet:
-              path: /readiness
-              port: 9099
+            exec:
+              command:
+              - /bin/calico-node
+              - -bird-ready
+              - -felix-ready
             periodSeconds: 10
           volumeMounts:
             - mountPath: /lib/modules
@@ -129,6 +140,11 @@ spec:
             - mountPath: /var/lib/calico
               name: var-lib-calico
               readOnly: false
+          <% if metrics_enabled %>
+          ports:
+            - containerPort: <%= metrics_port %>
+              name: metrics
+          <% end %>
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni

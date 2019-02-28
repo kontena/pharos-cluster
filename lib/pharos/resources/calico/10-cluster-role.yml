@@ -6,6 +6,7 @@ rules:
   - apiGroups: [""]
     resources:
       - namespaces
+      - serviceaccounts
     verbs:
       - get
       - list
@@ -15,6 +16,7 @@ rules:
       - pods/status
     verbs:
       - update
+      - patch
   - apiGroups: [""]
     resources:
       - pods
@@ -36,11 +38,13 @@ rules:
   - apiGroups: [""]
     resources:
       - nodes
+      - nodes/status
     verbs:
       - get
       - list
       - update
       - watch
+      - patch
   - apiGroups: ["extensions"]
     resources:
       - networkpolicies

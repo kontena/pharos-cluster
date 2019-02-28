@@ -15,6 +15,12 @@ spec:
         app: redis
     spec:
       restartPolicy: Always
+      nodeSelector:
+        node-role.kubernetes.io/master: ''
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      priorityClassName: pharos-cluster-critical
       containers:
       - name: redis
         image: <%= image_repository %>/redis:4-alpine
@@ -35,4 +41,9 @@ spec:
             cpu: "50m"
       volumes:
       - name: data
+        <%- if config.persistence&.enabled -%>
+        persistentVolumeClaim:
+          claimName: redis-pvc
+        <%- else -%>
         emptyDir: {}
+        <%- end -%>

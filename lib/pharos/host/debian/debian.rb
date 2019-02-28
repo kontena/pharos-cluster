@@ -10,7 +10,6 @@ module Pharos
       end
 
       def configure_repos
-        exec_script('repos/cri-o.sh')
         exec_script('repos/kube.sh')
         exec_script('repos/update.sh')
       end
@@ -46,6 +45,10 @@ module Pharos
           VERSION: version,
           ARCH: host.cpu_arch.name
         )
+      end
+
+      def configure_firewalld
+        exec_script("configure-firewalld.sh")
       end
 
       def reset

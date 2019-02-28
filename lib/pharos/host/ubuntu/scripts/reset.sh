@@ -6,12 +6,14 @@ systemctl stop kubelet
 systemctl disable kubelet
 
 if systemctl is-active --quiet docker ; then
+    # shellcheck disable=SC2046
     docker stop $(docker ps -q)
     systemctl stop docker
     systemctl disable docker
 fi
 
 if systemctl is-active --quiet crio ; then
+    # shellcheck disable=SC2046
     crictl stopp $(crictl pods -q)
     systemctl stop crio
     systemctl disable crio
@@ -30,6 +32,7 @@ rm -rf /etc/kubernetes \
     /etc/systemd/system/crio.service \
     ~/.kube \
     /var/lib/kubelet \
+    /var/lib/containers \
     /opt/cni \
     /var/lib/etcd \
     /var/lib/weave \

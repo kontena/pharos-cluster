@@ -17,9 +17,10 @@ describe Pharos::Phases::ConfigureDNS do
 
   before do
     allow(master).to receive(:cpu_arch).and_return(cpu_arch)
+    allow(subject).to receive(:deploy_node_dns_cache)
   end
 
-  subject { described_class.new(master, config: config, master: master) }
+  subject { described_class.new(master, config: config) }
 
   describe '#call' do
     context "with one host" do
@@ -124,6 +125,14 @@ describe Pharos::Phases::ConfigureDNS do
         subject.call
       end
     end
+
+    context "dns node cache" do
+      it "deploys dns node cache" do
+        expect(subject).to receive(:patch_deployment)
+        expect(subject).to receive(:deploy_node_dns_cache)
+        subject.call
+      end
+    end
   end
 
   describe '#patch_kubedns' do
@@ -166,6 +175,17 @@ describe Pharos::Phases::ConfigureDNS do
       end
 
       subject.patch_deployment('kube-dns', replicas: 1, max_surge: 0, max_unavailable: 1)
+    end
+  end
+
+  describe "#dns_forward_target" do
+    it "returns dns service ip" do
+      allow(config).to receive_message_chain('network.service_cidr').and_return('10.10.0.0/16')
+      expect(subject.dns_forward_target).to eq('10.10.0.10')
+    end
+
+    it "returns default dns service ip" do
+      expect(subject.dns_forward_target).to eq('10.96.0.10')
     end
   end
 end

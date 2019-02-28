@@ -7,7 +7,6 @@ module Pharos
 
       def call
         config_map = previous_config_map
-
         return unless config_map
 
         logger.info { "Loading previous cluster configuration from configmap ..." }

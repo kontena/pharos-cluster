@@ -2,53 +2,13 @@
 
 require_relative 'os_release'
 require_relative 'cpu_arch'
+require_relative 'bastion'
+
+require 'ipaddr'
 
 module Pharos
   module Configuration
     class Host < Pharos::Configuration::Struct
-      class ResolvConf < Pharos::Configuration::Struct
-        attribute :nameserver_localhost, Pharos::Types::Strict::Bool
-        attribute :systemd_resolved_stub, Pharos::Types::Strict::Bool
-      end
-
-      class Route < Pharos::Configuration::Struct
-        ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
-
-        # @param line [String]
-        # @return [Pharos::Configuration::Host::Route]
-        # @raise [RuntimeError] invalid route
-        def self.parse(line)
-          fail "Unmatched ip route: #{line.inspect}" unless match = ROUTE_REGEXP.match(line.strip)
-
-          captures = Hash[match.named_captures.map{ |k, v| [k.to_sym, v] }.reject{ |_k, v| v.nil? }]
-
-          new(raw: line.strip, **captures)
-        end
-
-        attribute :raw, Pharos::Types::Strict::String
-        attribute :type, Pharos::Types::Strict::String.optional
-        attribute :prefix, Pharos::Types::Strict::String
-        attribute :via, Pharos::Types::Strict::String.optional
-        attribute :dev, Pharos::Types::Strict::String.optional
-        attribute :proto, Pharos::Types::Strict::String.optional
-        attribute :options, Pharos::Types::Strict::String.optional
-
-        def to_s
-          @raw
-        end
-
-        # @return [Boolean]
-        def overlaps?(cidr)
-          # special-case the default route and ignore it
-          return nil if prefix == 'default'
-
-          route_prefix = IPAddr.new(prefix)
-          cidr = IPAddr.new(cidr)
-
-          route_prefix.include?(cidr) || cidr.include?(route_prefix)
-        end
-      end
-
       attribute :address, Pharos::Types::Strict::String
       attribute :private_address, Pharos::Types::Strict::String.optional.default(nil)
       attribute :private_interface, Pharos::Types::Strict::String.optional.default(nil)
@@ -60,8 +20,9 @@ module Pharos
       attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :environment, Pharos::Types::Strict::Hash
+      attribute :bastion, Pharos::Configuration::Bastion
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :checks, :resolvconf, :routes
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes, :config
 
       def to_s
         short_hostname || address
@@ -73,39 +34,79 @@ module Pharos
         hostname.split('.').first
       end
 
+      def local?
+        IPAddr.new(address).loopback?
+      end
+
+      # Accessor to host transport which handles running commands and manipulating files on the
+      # target host
+      # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
+      def transport
+        @transport ||= Pharos::Transport.for(self)
+      end
+
       def api_address
         api_endpoint || address
       end
 
+      # @return [String]
       def peer_address
         private_address || private_interface_address || address
       end
 
-      def labels
-        return @attributes[:labels] unless worker?
-
-        @attributes[:labels] || { 'node-role.kubernetes.io/worker': "" }
+      # @param host [Pharos::Configuration::Host]
+      # @return [String]
+      def peer_address_for(host)
+        if region == host.region
+          peer_address
+        else
+          address
+        end
       end
 
+      # @return [String]
+      def region
+        labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
+      end
+
+      # @return [Hash]
+      def labels
+        labels = @attributes[:labels] || {}
+
+        labels['node-address.kontena.io/external-ip'] = address
+        labels['node-role.kubernetes.io/worker'] = '' if worker?
+
+        labels
+      end
+
+      # @return [Hash]
+      def checks
+        @checks ||= {}
+      end
+
+      # @param local_only [Boolean]
+      # @param cloud_provider [String, NilClass]
+      # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
         args = []
+
+        args << "--rotate-server-certificates"
 
         if crio?
           args << '--container-runtime=remote'
           args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=unix:///var/run/crio/crio.sock'
+          args << '--container-runtime-endpoint=/var/run/crio/crio.sock' # see: https://github.com/kubernetes/kubernetes/issues/71712
         end
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
-          args << "--cadvisor-port=0"
           args << "--address=127.0.0.1"
         else
           args << "--node-ip=#{peer_address}" if cloud_provider.nil?
           args << "--hostname-override=#{hostname}"
         end
 
-        args += configurer(nil).kubelet_args
+        args += configurer.kubelet_args
 
         args
       end
@@ -120,6 +121,10 @@ module Pharos
 
       def custom_docker?
         container_runtime == 'custom_docker'
+      end
+
+      def new?
+        !checks['kubelet_configured']
       end
 
       # @return [Integer]
@@ -153,15 +158,24 @@ module Pharos
       end
 
       # @param cidr [String]
-      # @return [Array<Pharos::Configuration::Host::Route>]
+      # @return [Array<Pharos::Configuration::Route>]
       def overlapping_routes(cidr)
         routes.select{ |route| route.overlaps? cidr }
       end
 
-      # @param ssh [Pharos::SSH::Client]
-      def configurer(ssh)
-        configurer = Pharos::Host::Configurer.config_for_os_release(os_release)
-        configurer&.new(self, ssh)
+      # @return [NilClass,Pharos::Host::Configurer]
+      def configurer
+        return @configurer if @configurer
+        raise "Os release not set" unless os_release&.id
+
+        @configurer = Pharos::Host::Configurer.for_os_release(os_release)&.new(self)
+      end
+
+      # @param bastion [Pharos::Configuration::Bastion]
+      def configure_bastion(bastion)
+        return if self.bastion
+
+        attributes[:bastion] = bastion
       end
     end
   end

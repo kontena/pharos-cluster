@@ -23,6 +23,10 @@ module Pharos
         logger.info { "Configuring netfilter ..." }
         host_configurer.configure_netfilter
 
+        configure_container_runtime
+      end
+
+      def configure_container_runtime
         logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
         host_configurer.configure_container_runtime
       end

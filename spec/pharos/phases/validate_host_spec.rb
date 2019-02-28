@@ -12,24 +12,36 @@ describe Pharos::Phases::ValidateHost do
       network: network_config,
   ) }
   let(:host) { config.hosts[0] }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(host, config: config, ssh: ssh) }
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
+  subject { described_class.new(host, config: config) }
+
+  before do
+    allow(host).to receive(:transport).and_return(ssh)
+  end
 
   describe '#check_role' do
     let(:role) { 'worker' }
-    let(:host) { Pharos::Configuration::Host.new(
-      address: '192.0.2.1',
-      role: role
-    ) }
-    let(:checks) { {
+
+    let(:host) do
+      Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: role
+      )
+    end
+
+    let(:checks) do
+      {
       'ca_exists' => false,
       'api_healthy' => false,
       'kubelet_configured' => false
-    } }
-    before do
-      host.checks = checks
+      }
     end
-    subject { described_class.new(host, config: config, ssh: ssh) }
+
+    before do
+      allow(host).to receive(:checks).and_return(checks)
+    end
+
+    subject { described_class.new(host, config: config) }
 
     context 'for a worker node' do
       let(:role) { 'worker' }
@@ -155,9 +167,9 @@ describe Pharos::Phases::ValidateHost do
 
     context 'for an unconfigured host' do
       let(:routes) { [
-        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
-        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
       ] }
 
       context 'with non-overlapping calico routes' do
@@ -216,12 +228,12 @@ describe Pharos::Phases::ValidateHost do
         pod_network_cidr: '10.32.0.0/12',
       }}
       let(:routes) { [
-        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
-        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(type: 'blackhole', prefix: '10.32.0.0/24', proto: 'bird'),
-        Pharos::Configuration::Host::Route.new(prefix: '10.32.0.39', dev: 'cali5f1ddd73716', options: 'scope link'),
-        Pharos::Configuration::Host::Route.new(prefix: '10.32.1.0/24', via: '192.0.2.10', dev: 'tunl0', proto: 'bird', options: 'onlink'),
+        Pharos::Configuration::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(type: 'blackhole', prefix: '10.32.0.0/24', proto: 'bird'),
+        Pharos::Configuration::Route.new(prefix: '10.32.0.39', dev: 'cali5f1ddd73716', options: 'scope link'),
+        Pharos::Configuration::Route.new(prefix: '10.32.1.0/24', via: '192.0.2.10', dev: 'tunl0', proto: 'bird', options: 'onlink'),
       ] }
 
       it 'validates' do
@@ -236,14 +248,40 @@ describe Pharos::Phases::ValidateHost do
         pod_network_cidr: '10.32.0.0/12',
       }}
       let(:routes) { [
-        Pharos::Configuration::Host::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
-        Pharos::Configuration::Host::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
-        Pharos::Configuration::Host::Route.new(prefix: '10.32.0.0/12', dev: 'weave', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: 'default', via: '192.0.2.1', dev: 'eth0'),
+        Pharos::Configuration::Route.new(prefix: '192.0.2.0/24', dev: 'eth0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '172.17.0.0/16', dev: 'docker0', proto: 'kernel'),
+        Pharos::Configuration::Route.new(prefix: '10.32.0.0/12', dev: 'weave', proto: 'kernel'),
       ] }
 
       it 'validates' do
         expect{subject.validate_routes}.to_not raise_error
+      end
+    end
+  end
+
+  describe '#validate_peer_address' do
+    context 'for master role' do
+      it "fails if peer_address is not found on host" do
+        expect(ssh).to receive(:exec!).with('sudo hostname --all-ip-addresses').and_return("1.1.1.1 2.2.2.2")
+        expect{subject.validate_peer_address}.to raise_error
+      end
+
+      it "does not fail if peer_address is found on host" do
+        expect(ssh).to receive(:exec!).with('sudo hostname --all-ip-addresses').and_return("1.1.1.1 192.0.2.1 2.2.2.2")
+        expect{subject.validate_peer_address}.not_to raise_error
+      end
+    end
+
+    context 'for worker role' do
+      let(:host) { Pharos::Configuration::Host.new(
+        address: '192.0.2.1',
+        role: 'worker'
+      ) }
+
+      it 'does not verfiy peer_address' do
+        expect(ssh).not_to receive(:exec!)
+        expect{subject.validate_peer_address}.not_to raise_error
       end
     end
   end

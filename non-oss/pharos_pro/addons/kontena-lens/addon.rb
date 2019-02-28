@@ -1,17 +1,47 @@
 # frozen_string_literal: true
 
+require 'bcrypt'
+require 'json'
+
 Pharos.addon 'kontena-lens' do
-  version '1.0.0'
+  using Pharos::CoreExt::Colorize
+
+  version '1.4.1'
   license 'Kontena License'
+  priority 10
 
   config_schema {
     optional(:name).filled(:str?)
+    optional(:ingress).schema do
+      optional(:host).filled(:str?)
+      optional(:tls).schema do
+        optional(:enabled).filled(:bool?)
+        optional(:email).filled(:str?)
+      end
+    end
     optional(:host).filled(:str?)
     optional(:tls).schema do
+      optional(:enabled).filled(:bool?)
       optional(:email).filled(:str?)
     end
     optional(:user_management).schema do
       optional(:enabled).filled(:bool?)
+    end
+    optional(:persistence).schema do
+      optional(:enabled).filled(:bool?)
+    end
+    optional(:shell).schema do
+      optional(:image).filled(:str?)
+      optional(:skip_refresh).filled(:bool?)
+    end
+    optional(:charts).schema do
+      optional(:enabled).filled(:bool?)
+      optional(:repositories).each do
+        schema do
+          required(:name).filled(:str?)
+          required(:url).filled(:str?)
+        end
+      end
     end
   }
 
@@ -22,44 +52,129 @@ Pharos.addon 'kontena-lens' do
   }
 
   install {
-    host = config.host || "lens.#{worker_node_ip}.nip.io"
+    patch_old_resource
+
+    host = config.ingress&.host || config.host || "lens.#{gateway_node_ip}.nip.io"
+    tls_email = config.ingress&.tls&.email || config.tls&.email
     name = config.name || 'pharos-cluster'
+    charts_enabled = config.charts&.enabled != false
+    helm_repositories = config.charts&.repositories || [stable_helm_repo]
+    tiller_version = '2.12.2'
     apply_resources(
       host: host,
-      email: config.tls&.email,
-      user_management: user_management_enabled?
+      email: tls_email,
+      tls_enabled: tls_enabled?,
+      charts_enabled: charts_enabled,
+      user_management: user_management_enabled?,
+      tiller_version: tiller_version,
+      helm_repositories: helm_repositories.map{ |repo| "#{repo[:name]}=#{repo[:url]}" }.join(',')
     )
-    wait_for_dashboard(host)
-    message = "Kontena Lens is running at: " + pastel.cyan("https://#{host}")
-    if lens_configured?
+    protocol = tls_enabled? ? 'https' : 'http'
+    message = "Kontena Lens is configured to respond at: " + "#{protocol}://#{host}".cyan
+    message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
+    if config_exists?
       update_lens_name(name) if configmap.data.clusterName != name
     else
-      create_lens_config(name, host, admin_password)
-      message << "\nYou can sign in with admin credentials: " + pastel.cyan("admin / #{admin_password}")
+      create_config(name, "https://#{master_host_ip}:6443")
     end
+    if user_management_enabled? && !admin_exists?
+      create_admin_user(admin_password)
+      message << "\nYou can sign in with the following admin credentials (you won't see these again): " + "admin / #{admin_password}".cyan
+    end
+    message << "\nWarning: `config.host` option is deprecated in favor of `config.ingress.host` option and will be removed in future." if config.host
+    message << "\nWarning: `config.tls` option is deprecated in favor of `config.ingress.tls` option and will be removed in future." if config.tls
     post_install_message(message)
   }
 
-  def pastel
-    @pastel ||= Pastel.new
+  def patch_old_resource
+    last_config_annotation = "kubectl.kubernetes.io/last-applied-configuration"
+
+    user_mgmt_deployment = kube_client.api('apps/v1').resource('deployments', namespace: 'kontena-lens').get('user-management')
+    last_applied_string = user_mgmt_deployment.dig('metadata', 'annotations', last_config_annotation)
+    return false unless last_applied_string
+
+    last_applied = JSON.parse(last_applied_string)
+    nested_replicas = last_applied.dig('spec', 'template', 'spec', 'replicas')
+    if nested_replicas
+      last_applied['spec']['template']['spec'].delete('replicas')
+      patch = { metadata: { annotations: {} } }
+      patch[:metadata][:annotations][last_config_annotation] = JSON.generate(last_applied)
+      kube_client.api('apps/v1').resource('deployments', namespace: 'kontena-lens').merge_patch('user-management', patch)
+      return true
+    end
+    false
+  rescue K8s::Error::NotFound
+    false
   end
 
-  def worker_node
-    cluster_config.worker_hosts.first
+  # @return [Boolean]
+  def admin_exists?
+    kube_client.api('beta.kontena.io/v1').resource('users').get('admin')
+    true
+  rescue K8s::Error::NotFound
+    false
   end
 
-  def worker_node_ip
-    worker_node&.address
+  # @param admin_password [String]
+  # @return [K8s::Resource]
+  def create_admin_user(admin_password)
+    admin = K8s::Resource.new(
+      apiVersion: 'beta.kontena.io/v1',
+      kind: 'User',
+      metadata: {
+        name: 'admin'
+      },
+      spec: {
+        username: 'admin',
+        passwordDigest: BCrypt::Password.create(admin_password)
+      }
+    )
+    kube_client.api('beta.kontena.io/v1').resource('users').create_resource(admin)
   end
 
-  def master_host_ip
-    cluster_config.master_host&.address
+  # @param name [String]
+  # @param kubernetes_api_url [String]
+  # @return [K8s::Resource]
+  def create_config(name, kubernetes_api_url)
+    config = K8s::Resource.new(
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        name: 'config',
+        namespace: 'kontena-lens'
+      },
+      data: {
+        clusterName: name,
+        clusterUrl: kubernetes_api_url
+      }
+    )
+    kube_client.api('v1').resource('configmaps').create_resource(config)
+  end
+
+  # @return [Pharos::Configuration::Host]
+  def gateway_node
+    cluster_config.worker_hosts.first || cluster_config.master_hosts.first
+  end
+
+  # @return [String, NilClass]
+  def gateway_node_ip
+    gateway_node&.address
+  end
+
+  def tls_enabled?
+    config.ingress&.tls&.enabled != false && config.tls&.enabled != false
   end
 
   def user_management_enabled?
     config.user_management&.enabled != false
   end
 
+  # @return [String, NilClass]
+  def master_host_ip
+    cluster_config.master_host&.address
+  end
+
+  # @return [Pharos::Configuration::TokenWebhook]
   def token_authentication_webhook_config
     Pharos::Configuration::TokenWebhook.new(
       config: {
@@ -74,49 +189,37 @@ Pharos.addon 'kontena-lens' do
     )
   end
 
-  def wait_for_dashboard(host)
-    puts "    Waiting for Kontena Lens to get up and running ..."
-    command = "sudo curl -LkIs -o /dev/null -w \"%{http_code}\" -H \"Host: #{host}\" http://localhost/" # rubocop:disable Style/FormatStringToken
-    response = ssh.exec(command)
-    i = 1
-    until response.output.to_i == 200
-      sleep 10
-      puts "    Still waiting... (#{i * 10}s elapsed)"
-      i += 1
-      response = ssh.exec(command)
-    end
-  end
-
+  # @return [String]
   def admin_password
     @admin_password ||= SecureRandom.hex(8)
   end
 
-  def lens_configured?
+  def config_exists?
     !configmap.nil?
   end
 
+  # @return [K8s::Resource, NilClass]
   def configmap
     @configmap ||= kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').get('config')
   rescue K8s::Error::NotFound
     nil
   end
 
-  def create_lens_config(name, host, admin_password)
-    cluster_config = {
-      clusterName: name,
-      clusterUrl: "https://#{master_host_ip}:6443",
-      adminPassword: admin_password
-    }
-    command = "sudo curl -k -L -X POST -d '#{cluster_config.to_json}' -s -H \"Host: #{host}\" -H \"Content-Type: application/json\" http://localhost/api/cluster"
-    ssh.exec(command)
-  end
-
+  # @param new_name [String]
+  # @return [K8s::Resource]
   def update_lens_name(new_name)
     configmap.data.clusterName = new_name
     kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').update_resource(configmap)
   end
 
   def ssh
-    @ssh ||= Pharos::SSH::Manager.new.client_for(worker_node)
+    @ssh ||= gateway_node&.ssh
+  end
+
+  def stable_helm_repo
+    {
+      name: 'stable',
+      url: 'https://kubernetes-charts.storage.googleapis.com'
+    }
   end
 end

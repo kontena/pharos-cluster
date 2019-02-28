@@ -1,16 +1,21 @@
 require 'pharos/phases/gather_facts'
 
 describe Pharos::Phases::GatherFacts do
-  let(:config) { Pharos::Config.new(
-      hosts: [
-        Pharos::Configuration::Host.new(
-          address: '192.0.2.1',
-          role: 'master'
-        ),
-      ],
-  ) }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
-  subject { described_class.new(config.hosts[0], config: config, ssh: ssh) }
+  let(:host) do
+    Pharos::Configuration::Host.new(
+      address: '192.0.2.1',
+      role: 'master'
+    )
+  end
+
+  let(:config) { Pharos::Config.new(hosts: [host]) }
+
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
+  subject { described_class.new(config.hosts[0], config: config) }
+
+  before do
+    allow(host).to receive(:transport).and_return(ssh)
+  end
 
   describe '#private_interface_address' do
     let(:iface) { 'eth0' }
@@ -53,7 +58,7 @@ describe Pharos::Phases::GatherFacts do
   end
 
   describe '#get_resolvconf' do
-    let(:file) { instance_double Pharos::SSH::RemoteFile }
+    let(:file) { instance_double Pharos::Transport::TransportFile }
     let(:file_content) { "" }
     let(:file_readlink) { nil }
 
@@ -67,7 +72,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_content) { "# nameserver config\nnameserver 8.8.8.8\n" }
 
       it 'returns ok' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: false,
           systemd_resolved_stub: false,
         )
@@ -78,7 +83,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_content) { "nameserver 127.0.0.53" }
 
       it 'returns nameserver_localhost' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: false,
         )
@@ -89,7 +94,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_content) { "nameserver ::1" }
 
       it 'returns nameserver_localhost' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: false,
         )
@@ -101,7 +106,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_readlink) { '../run/systemd/resolve/stub-resolv.conf' }
 
       it 'returns systemd_resolved_stub' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: true,
         )
@@ -113,7 +118,7 @@ describe Pharos::Phases::GatherFacts do
       let(:file_readlink) { '/run/resolvconf/resolv.conf' }
 
       it 'returns ok' do
-        expect(subject.read_resolvconf).to eq Pharos::Configuration::Host::ResolvConf.new(
+        expect(subject.read_resolvconf).to eq Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: false,
           systemd_resolved_stub: false,
         )
@@ -144,6 +149,23 @@ describe Pharos::Phases::GatherFacts do
     it 'returns lowercase hostname' do
       allow(ssh).to receive(:exec!).with('hostname -s').and_return('host-AAA101')
       expect(subject.hostname).to eq('host-aaa101')
+    end
+
+    it 'uses full hostname for aws' do
+      allow(config).to receive(:cloud).and_return(Pharos::Configuration::Cloud.new(provider: 'aws'))
+      expect(ssh).to receive(:exec!).with('hostname -f').and_return('host-01.mydomain.local')
+      subject.hostname
+    end
+
+    it 'uses full hostname for vsphere' do
+      allow(config).to receive(:cloud).and_return(Pharos::Configuration::Cloud.new(provider: 'vsphere'))
+      expect(ssh).to receive(:exec!).with('hostname -f').and_return('host-01.mydomain.local')
+      subject.hostname
+    end
+
+    it 'uses short hostname' do
+      expect(ssh).to receive(:exec!).with('hostname -s').and_return('host-01.mydomain.local')
+      subject.hostname
     end
   end
 end

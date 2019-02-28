@@ -1,47 +1,54 @@
 # frozen_string_literal: true
 
 module Pharos
-  class ResetCommand < UpCommand
-    def execute
-      puts pastel.bright_green("==> KONTENA PHAROS v#{Pharos::VERSION} (Kubernetes v#{Pharos::KUBE_VERSION})")
-      puts pastel.green("==> Reading instructions ...")
-      config = load_config
+  class ResetCommand < Pharos::Command
+    using Pharos::CoreExt::Colorize
 
-      # set workdir to the same dir where config was loaded from
-      # so that the certs etc. can be referenced more easily
+    options :filtered_hosts, :yes?
+
+    def execute
+      puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
+
       Dir.chdir(config_yaml.dirname) do
-        reset(config)
+        filtered_hosts.size == load_config.hosts.size ? reset_all : reset_hosts
       end
-    rescue Pharos::ConfigError => exc
-      warn "==> #{exc}"
-      exit 11
-    rescue StandardError => ex
-      raise unless ENV['DEBUG'].to_s.empty?
-      warn "#{ex.class.name} : #{ex.message}"
-      exit 1
+      cluster_manager.disconnect
     end
 
-    # @param config [Pharos::Config]
-    # @param config_content [String]
-    def reset(config)
-      manager = ClusterManager.new(config, pastel: pastel)
-      start_time = Time.now
-
-      puts pastel.green("==> Sharpening tools ...")
-      manager.load
-      manager.gather_facts
-
-      if $stdin.tty? && !yes?
-        puts "\n\n"
-        exit 1 unless prompt.yes?(pastel.bright_yellow('==> Do you really want to reset (reset will wipe configuration & data from all hosts)?'), default: false)
+    def reset_hosts
+      remaining_hosts = load_config.hosts - filtered_hosts
+      if remaining_hosts.none?(&:master?)
+        signal_error 'There would be no master hosts left in the cluster after the reset. Reset the whole cluster by running this command without host filters.'
+      elsif filtered_hosts.size > 1
+        confirm_yes!("==> Do you really want to reset #{filtered_hosts.size} hosts #{filtered_hosts.map(&:address).join(',')} (data may be lost)?".bright_yellow, default: false)
+      else
+        confirm_yes!("==> Do you really want to reset the host #{filtered_hosts.first.address} (data may be lost)?".bright_yellow, default: false)
       end
 
-      puts pastel.green("==> Starting to reset cluster ...")
-      manager.apply_reset
+      start_time = Time.now
+      puts "==> Starting to reset hosts ...".green
+      cluster_manager.apply_reset_hosts(filtered_hosts)
       reset_time = Time.now - start_time
-      puts pastel.green("==> Cluster has been reset! (took #{humanize_duration(reset_time.to_i)})")
+      puts "==> Hosts have been reset! (took #{humanize_duration(reset_time.to_i)})".green
+    end
 
-      manager.disconnect
+    def reset_all
+      confirm_yes!("==> Do you really want to reset all hosts in the cluster (reset will wipe configuration & data from all hosts)?".bright_yellow, default: false)
+
+      start_time = Time.now
+
+      puts "==> Starting to reset cluster ...".green
+      cluster_manager.apply_reset_hosts(load_config.hosts)
+      reset_time = Time.now - start_time
+      puts "==> Cluster has been reset! (took #{humanize_duration(reset_time.to_i)})".green
+    end
+
+    def cluster_manager
+      @cluster_manager ||= ClusterManager.new(load_config).tap do |cluster_manager|
+        puts "==> Sharpening tools ...".green
+        cluster_manager.load
+        cluster_manager.gather_facts
+      end
     end
   end
 end

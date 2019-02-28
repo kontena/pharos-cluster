@@ -30,7 +30,10 @@ describe Pharos::Kube::Stack do
             namespace: 'default',
             name: 'test',
             labels: { :'pharos.kontena.io/stack' => 'test' },
-            annotations: { :'pharos.kontena.io/stack-checksum' => subject.checksum },
+            annotations: {
+              :'pharos.kontena.io/stack-checksum' => anything,
+              :'kubectl.kubernetes.io/last-applied-configuration' => JSON.dump(YAML.load(File.read(fixtures_path('stacks/test/test.yml'))))
+            },
           ),
         ),
       ]

@@ -6,4 +6,6 @@
 /pkg/
 /spec/reports/
 /tmp/
-/examples/vagrant/.vagrant/
+**/.vagrant
+Gemfile.lock
+gems.locked
