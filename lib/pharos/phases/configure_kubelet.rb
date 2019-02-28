@@ -27,7 +27,12 @@ module Pharos
         configure_kubelet_proxy if @host.role == 'worker'
         configure_kube
 
-        logger.info { 'Configuring kubelet ...' }
+        if host.new?
+          logger.info { 'Configuring kubelet ...' }
+        else
+          logger.info { 'Reconfiguring kubelet ...' }
+          reconfigure_kubelet
+        end
         ensure_dropin(build_systemd_dropin)
       end
 
@@ -124,6 +129,20 @@ module Pharos
         args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
         args
+      end
+
+      def reconfigure_kubelet
+        config = transport.file('/var/lib/kubelet/config.yaml')
+        unless config.exist?
+          logger.error "Cannot read existing configuration file, skipping reconfigure ..."
+          return
+        end
+        org_config = config.read
+        transport.exec!("sudo kubeadm upgrade node config --kubelet-version #{Pharos::KUBE_VERSION}")
+        new_config = config.read
+        return if new_config == org_config
+
+        transport.exec!("sudo systemctl restart kubelet")
       end
     end
   end

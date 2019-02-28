@@ -5,7 +5,7 @@ require 'ipaddr'
 module Pharos
   module Configuration
     class Route < Pharos::Configuration::Struct
-      ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$)
+      ROUTE_REGEXP = %r(^((?<type>\S+)\s+)?(?<prefix>default|[0-9./]+)(\s+via (?<via>\S+))?(\s+dev (?<dev>\S+))?(\s+proto (?<proto>\S+))?(\s+(?<options>.+))?$).freeze
 
       # @param line [String]
       # @return [Pharos::Configuration::Route]
