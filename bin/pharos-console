@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# add lib to libpath (only needed when running from the sources)
+require 'pathname'
+lib_path = File.expand_path('../../lib', Pathname.new(__FILE__).realpath)
+$LOAD_PATH.unshift lib_path unless $LOAD_PATH.include?(lib_path)
+
+STDOUT.sync = true
+
+require 'pharos_cluster'
+require 'pry'
+
+Class.new(Pharos::Command) do
+  options :load_config, :tf_json, :filtered_hosts
+
+  def config
+    @config ||= load_config
+  end
+
+  def execute
+    binding.pry
+  end
+end.run
