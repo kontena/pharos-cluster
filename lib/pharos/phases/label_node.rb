@@ -6,49 +6,49 @@ module Pharos
       title "Label nodes"
 
       def call
-        @config.hosts.each do |host|
-          if host.labels.empty? && host.taints.nil?
-            logger.debug { "No labels or taints set for #{host}... " }
-            next
-          end
+        if @host.labels.empty? && @host.taints.nil?
+          logger.info { "No labels or taints set ... " }
+          return
+        end
 
-          node = find_node(host.hostname)
+        mutex.synchronize do
+          node = find_node
           raise Pharos::Error, "Cannot set labels, node not found" if node.nil?
 
-          logger.info { "Configuring node labels and taints for #{host}... " }
-          patch_labels(node, host.labels) unless host.labels.empty?
-          patch_taints(node, host.taints) if host.taints
+          logger.info { "Configuring node labels and taints ... " }
+          patch_labels(node) unless @host.labels.empty?
+          patch_taints(node) if @host.taints
         end
       end
 
       # @param node [K8s::Resource]
-      def patch_labels(node, labels)
+      def patch_labels(node)
         kube_nodes.update_resource(
           node.merge(
             metadata: {
-              labels: labels
+              labels: @host.labels
             }
           )
         )
       end
 
       # @param node [K8s::Resource]
-      def patch_taints(node, taints)
+      def patch_taints(node)
         kube_nodes.update_resource(
           node.merge(
             spec: {
-              taints: taints.map(&:to_h)
+              taints: @host.taints.map(&:to_h)
             }
           )
         )
       end
 
-      def find_node(hostname)
+      def find_node
         node = nil
         retries = 0
         while node.nil? && retries < 10
           begin
-            node = kube_nodes.get(hostname)
+            node = kube_nodes.get(@host.hostname)
           rescue K8s::Error::NotFound
             retries += 1
             sleep 2
