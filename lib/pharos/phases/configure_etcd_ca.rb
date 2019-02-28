@@ -8,13 +8,19 @@ module Pharos
       CA_FILES = %w(ca.pem ca-key.pem).freeze
 
       def call
+        Thread.abort_on_exception = true
+
         logger.info { 'Configuring etcd certificate authority ...' }
         exec_script(
           'configure-etcd-ca.sh',
           ARCH: @host.cpu_arch.name
         )
-        logger.info { 'Caching certificate authority files to memory ...' }
-        cache_ca_to_memory
+        mutex.synchronize do
+          unless cluster_context['etcd-ca']
+            logger.info { 'Caching certificate authority files to memory ...' }
+            cache_ca_to_memory
+          end
+        end
       end
 
       def cache_ca_to_memory

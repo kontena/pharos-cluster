@@ -56,9 +56,9 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
-      apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
+      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?))
+      apply_phase(Phases::GatherFacts, config.hosts)
+      apply_phase(Phases::ConfigureClient, [config.master_host], optional: true)
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
     end
 
@@ -67,36 +67,36 @@ module Pharos
       addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
-      apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
-      apply_phase(Phases::ValidateVersion, [config.master_host], parallel: false)
+      apply_phase(Phases::ValidateHost, config.hosts)
+      apply_phase(Phases::ValidateVersion, [config.master_host])
     end
 
     def apply_phases
       master_hosts = config.master_hosts
       master_only = [config.master_host]
-      apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
-      apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, master_only, parallel: false, optional: true)
+      apply_phase(Phases::MigrateMaster, master_hosts)
+      apply_phase(Phases::ConfigureHost, config.hosts)
+      apply_phase(Phases::ConfigureFirewalld, config.hosts)
+      apply_phase(Phases::ConfigureClient, master_only, optional: true)
 
       unless @config.etcd&.endpoints
         etcd_hosts = config.etcd_hosts
-        apply_phase(Phases::ConfigureCfssl, etcd_hosts, parallel: true)
-        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], parallel: false)
-        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], parallel: false)
-        apply_phase(Phases::ConfigureEtcd, etcd_hosts, parallel: true)
+        apply_phase(Phases::ConfigureCfssl, etcd_hosts)
+        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first])
+        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first])
+        apply_phase(Phases::ConfigureEtcd, etcd_hosts)
       end
 
-      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, parallel: false)
-      apply_phase(Phases::SetupMaster, master_hosts, parallel: true)
-      apply_phase(Phases::UpgradeMaster, master_hosts, parallel: false) # requires optional early ConfigureClient
+      apply_phase(Phases::ConfigureSecretsEncryption, master_hosts)
+      apply_phase(Phases::SetupMaster, master_hosts)
+      apply_phase(Phases::UpgradeMaster, master_hosts) # requires optional early ConfigureClient
 
-      apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true)
-      apply_phase(Phases::ConfigureKubelet, config.hosts, parallel: true)
+      apply_phase(Phases::MigrateWorker, config.worker_hosts)
+      apply_phase(Phases::ConfigureKubelet, config.hosts)
 
-      apply_phase(Phases::PullMasterImages, master_hosts, parallel: true)
-      apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
-      apply_phase(Phases::ConfigureClient, master_only, parallel: false)
+      apply_phase(Phases::PullMasterImages, master_hosts)
+      apply_phase(Phases::ConfigureMaster, master_hosts)
+      apply_phase(Phases::ConfigureClient, master_only)
 
       # master is now configured and can be used
       # configure essential services
@@ -109,8 +109,8 @@ module Pharos
       apply_phase(Phases::ConfigureKubeletCsrApprover, master_only)
       apply_phase(Phases::ConfigureBootstrap, master_only) # using `kubeadm token`, not the kube API
 
-      apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
-      apply_phase(Phases::LabelNode, config.hosts, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::JoinNode, config.worker_hosts)
+      apply_phase(Phases::LabelNode, master_only)
 
       # configure services that need workers
       apply_phase(Phases::ConfigureMetrics, master_only)
@@ -121,8 +121,8 @@ module Pharos
     def apply_reset_hosts(hosts)
       master_hosts = config.master_hosts
       if master_hosts.first.master_sort_score.zero?
-        apply_phase(Phases::Drain, hosts, parallel: false)
-        apply_phase(Phases::DeleteHost, hosts, parallel: false)
+        apply_phase(Phases::Drain, hosts)
+        apply_phase(Phases::DeleteHost, hosts)
       end
       addon_manager.each do |addon|
         next unless addon.enabled?
@@ -132,7 +132,7 @@ module Pharos
           addon.apply_reset_host(host)
         end
       end
-      apply_phase(Phases::ResetHost, hosts, parallel: true)
+      apply_phase(Phases::ResetHost, hosts)
     end
 
     def apply_addons_cluster_config_modifications

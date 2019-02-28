@@ -17,7 +17,11 @@ module Pharos
       def call
         return if @optional && !kubeconfig?
 
-        cluster_context['kubeconfig'] = kubeconfig
+        mutex.synchronize do
+          return if cluster_context['kubeconfig']
+
+          cluster_context['kubeconfig'] = kubeconfig
+        end
 
         client_prefetch unless @optional
       end

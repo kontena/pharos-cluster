@@ -19,20 +19,24 @@ module Pharos
       end
 
       def call
-        push_kube_certs(cluster_context['master-certs']) if cluster_context['master-certs']
+        Thread.current.abort_on_exception = true
 
-        logger.info { "Checking if Kubernetes control plane is already initialized ..." }
-        if install?
-          logger.info { "Kubernetes control plane is not initialized." }
-          install
-          install_kubeconfig
-        elsif !cluster_context['api_upgraded']
-          reconfigure
-        else
-          logger.info { "Kubernetes control plane is up to date." }
+        mutex.synchronize do
+          push_kube_certs(cluster_context['master-certs']) if cluster_context['master-certs']
+
+          logger.info { "Checking if Kubernetes control plane is already initialized ..." }
+          if install?
+            logger.info { "Kubernetes control plane is not initialized." }
+            install
+            install_kubeconfig
+          elsif !cluster_context['api_upgraded']
+            reconfigure
+          else
+            logger.info { "Kubernetes control plane is up to date." }
+          end
+
+          cluster_context['master-certs'] ||= pull_kube_certs
         end
-
-        cluster_context['master-certs'] = pull_kube_certs unless cluster_context['master-certs']
       end
 
       def install

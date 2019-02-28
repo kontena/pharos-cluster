@@ -12,11 +12,13 @@ module Pharos
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
 
       def call
-        keys = cluster_context['secrets_encryption'] || read_config_keys || generate_keys
+        Thread.current.abort_on_exception = true
+
+        keys = mutex.synchronize do
+          cluster_context['secrets_encryption'] ||= read_config_keys || generate_keys
+        end
 
         ensure_config(keys)
-
-        cluster_context['secrets_encryption'] = keys
       end
 
       # @return [Hash, nil]

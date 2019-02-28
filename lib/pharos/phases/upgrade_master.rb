@@ -40,9 +40,11 @@ module Pharos
 
       def call
         if upgrade?
-          upgrade_kubeadm
-          apply_psp_stack if pod_security_disabled?
-          upgrade
+          mutex.synchronize do
+            upgrade_kubeadm
+            apply_psp_stack if pod_security_disabled?
+            upgrade
+          end
         else
           logger.info { "Kubernetes control plane is up-to-date." }
         end

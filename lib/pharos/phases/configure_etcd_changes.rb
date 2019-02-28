@@ -8,13 +8,14 @@ module Pharos
       title 'Configure etcd member changes'
 
       def call
-        store_initial_cluster_state
+        mutex.synchronize do
+          store_initial_cluster_state
+          return if initial_cluster_state != 'existing' || !etcd.healthy?
 
-        return if initial_cluster_state != 'existing' || !etcd.healthy?
-
-        removed = remove_old_members
-        sleep 10 if removed.positive? # try to be gentle
-        add_new_members
+          removed = remove_old_members
+          sleep 10 if removed.positive? # try to be gentle
+          add_new_members
+        end
       end
 
       def store_initial_cluster_state

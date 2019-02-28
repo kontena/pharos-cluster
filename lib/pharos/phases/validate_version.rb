@@ -8,6 +8,8 @@ module Pharos
       REMOTE_KUBECONFIG = "/etc/kubernetes/admin.conf"
 
       def call
+        Thread.current.abort_on_exception = true
+
         return unless kubeconfig?
 
         if @host.master_sort_score.positive?
@@ -15,14 +17,19 @@ module Pharos
           return
         end
 
-        cluster_context['kubeconfig'] = kubeconfig
-        config_map = previous_config_map
-        if config_map
-          existing_version = config_map.data['pharos-version']
-          cluster_context['existing-pharos-version'] = existing_version
-          validate_version(existing_version)
-        else
-          logger.info { 'No version detected' }
+        mutex.synchronize do
+          return if cluster_context['existing-pharos-version']
+
+          cluster_context['kubeconfig'] ||= kubeconfig
+
+          config_map = previous_config_map
+          if config_map
+            existing_version = config_map.data['pharos-version']
+            cluster_context['existing-pharos-version'] = existing_version
+            validate_version(existing_version)
+          else
+            logger.info { 'No version detected' }
+          end
         end
       end
 

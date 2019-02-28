@@ -29,7 +29,7 @@ module Pharos
 
     # @param phases [Array<Pharos::Phases::Base>]
     # @return [Array<...>]
-    def run_parallel(phases, &block)
+    def run(phases, &block)
       threads = phases.map { |phase|
         Thread.new do
           Thread.current.report_on_exception = false
@@ -39,35 +39,16 @@ module Pharos
       threads.map(&:value)
     end
 
-    # @param phases [Array<Pharos::Phases::Base>]
-    # @return [Array<...>]
-    def run_serial(phases, &block)
-      phases.map do |phase|
-        Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
-      end
-    end
-
-    # @param phases [Array<Pharos::Phases::Base>]
-    # @param parallel [Boolean]
-    # @return [Array<...>]
-    def run(phases, parallel: true, &block)
-      if parallel
-        run_parallel(phases, &block)
-      else
-        run_serial(phases, &block)
-      end
-    end
-
     # @return [Pharos::Phase]
     def prepare_phase(phase_class, host, **options)
       options = @options.merge(options)
       phase_class.new(host, **options)
     end
 
-    def apply(phase_class, hosts, parallel: false, **options)
+    def apply(phase_class, hosts, **options)
       phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
 
-      run(phases, parallel: parallel) do |phase|
+      run(phases) do |phase|
         start = Time.now
 
         phase.call
