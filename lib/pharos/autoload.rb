@@ -5,7 +5,6 @@ autoload :SecureRandom, 'securerandom'
 autoload :YAML, 'yaml'
 autoload :JSON, 'json'
 autoload :RestClient, 'rest-client'
-autoload :Pastel, 'pastel'
 autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
 autoload :K8s, 'k8s-client'
@@ -13,6 +12,7 @@ autoload :Excon, 'excon'
 autoload :K8s, 'k8s-client'
 autoload :Open3, 'open3'
 autoload :Pathname, 'pathname'
+autoload :OpenSSL, 'openssl'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
@@ -61,12 +61,14 @@ module Pharos
     autoload :FilteredHosts, 'pharos/command_options/filtered_hosts'
     autoload :LoadConfig, 'pharos/command_options/load_config'
     autoload :Yes, 'pharos/command_options/yes'
+    autoload :TfJson, 'pharos/command_options/tf_json'
   end
 
   module CoreExt
     autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
     autoload :StringCasing, 'pharos/core-ext/string_casing'
+    autoload :Colorize, 'pharos/core-ext/colorize'
   end
 
   module Terraform
@@ -77,6 +79,8 @@ module Pharos
 
   module Configuration
     autoload :Host, 'pharos/configuration/host'
+    autoload :Route, 'pharos/configuration/route'
+    autoload :ResolvConf, 'pharos/configuration/resolv_conf'
     autoload :Taint, 'pharos/configuration/taint'
     autoload :OsRelease, 'pharos/configuration/os_release'
   end

@@ -4,4 +4,8 @@ module Pharos
   def self.version
     VERSION
   end
+
+  def self.oss?
+    false
+  end
 end

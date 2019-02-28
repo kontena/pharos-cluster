@@ -1,12 +1,15 @@
-require 'pharos/phases/validate_version'
+describe "Pharos::Phases::ValidateVersion", if: Pharos.oss? do
+  before :all do
+    Pharos::Phases.send(:remove_const, :ValidateVersion) if Pharos::Phases.const_defined?(:ValidateVersion)
+    load File.expand_path(File.join(__dir__, '../../../lib/pharos/phases/validate_version.rb'))
+  end
 
-describe Pharos::Phases::ValidateVersion do
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.1', role: 'master') }
   let(:network_config) { {} }
   let(:config) { Pharos::Config.new(hosts: [host]) }
   let(:ssh) { instance_double(Pharos::Transport::SSH) }
   let(:cluster_context) { Pharos::Context.new(config: config) }
-  subject { described_class.new(host, config: config, cluster_context: cluster_context) }
+  subject { Pharos::Phases::ValidateVersion.new(host, config: config, cluster_context: cluster_context) }
 
   before do
     allow(host).to receive(:transport).and_return(ssh)

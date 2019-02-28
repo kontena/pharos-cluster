@@ -120,24 +120,23 @@ module Pharos
         !!transport.file('/etc/resolv.conf').readlink && resolvconf_nameservers.include?('127.0.0.53')
       end
 
-      # @return [Pharos::Configuration::Host::ResolvConf]
+      # @return [Pharos::Configuration::ResolvConf]
       def read_resolvconf
-        Pharos::Configuration::Host::ResolvConf.new(
+        Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: resolvconf_nameserver_localhost?,
           systemd_resolved_stub: resolvconf_systemd_resolved_stub?
         )
       end
 
-      # @return [Array<Pharos::Configuration::Host::Route>]
+      # @return [Array<Pharos::Configuration::Route>]
       def read_routes
-        routes = []
-        transport.exec!("sudo ip route").each_line do |line|
-          routes << Pharos::Configuration::Host::Route.parse(line)
-        rescue RuntimeError => exc
-          logger.warn { exc }
+        [].tap do |routes|
+          transport.exec!("sudo ip route").each_line do |line|
+            routes << Pharos::Configuration::Route.parse(line)
+          rescue RuntimeError => exc
+            logger.warn { exc }
+          end
         end
-
-        routes
       end
     end
   end

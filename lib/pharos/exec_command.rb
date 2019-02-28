@@ -2,7 +2,8 @@
 
 module Pharos
   class ExecCommand < Pharos::Command
-    options :filtered_hosts
+    using Pharos::CoreExt::Colorize
+    options :filtered_hosts, :tf_json
 
     usage "[OPTIONS] -- [COMMANDS] ..."
     parameter "[COMMAND] ...", "Run command on host"
@@ -29,7 +30,7 @@ module Pharos
     def run_interactive
       filtered_hosts.map do |host|
         target = "#{host.user}@#{host.address}"
-        puts pastel.green("==> Opening a session to #{target} ..")
+        puts "==> Opening a session to #{target} ..".green
         host.transport.interactive_session
       end
     end
@@ -56,7 +57,7 @@ module Pharos
       end
       results = threads.map(&:value)
       results.each do |host, result|
-        puts pastel.send(result.exit_status.zero? ? :green : :red, "==> Result from #{host.user}@#{host.address}")
+        puts "==> Result from #{host.user}@#{host.address}".send(result.exit_status.zero? ? :green : :red)
         puts result.output.gsub(/^/, "  ")
       end
       results.all? { |_, result| result.success? } ? 0 : 1

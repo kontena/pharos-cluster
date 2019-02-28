@@ -57,7 +57,7 @@ module Pharos
       end
 
       # @param cidr [String]
-      # @return [nil, Array<Pharos::Configuration::Host::Route>]
+      # @return [nil, Array<Pharos::Configuration::Route>]
       def overlapping_host_routes?(cidr)
         routes = @config.network.filter_host_routes(@host.overlapping_routes(cidr))
 

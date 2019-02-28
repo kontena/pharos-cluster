@@ -8,8 +8,12 @@ variable "region" {
   default = "ams3"
 }
 
+variable "cluster_name" {
+  default = "pharos"
+}
+
 variable "master_count" {
-  default = 3
+  default = 1
 }
 
 variable "worker_count" {
@@ -30,8 +34,8 @@ provider "digitalocean" {
 
 resource "digitalocean_droplet" "pharos_master" {
   count              = "${var.master_count}"
-  image              = "ubuntu-16-04-x64"
-  name               = "pharos-master-${count.index}"
+  image              = "ubuntu-18-04-x64"
+  name               = "${var.cluster_name}-master-${count.index}"
   region             = "${var.region}"
   size               = "${var.master_size}"
   private_networking = true
@@ -40,8 +44,8 @@ resource "digitalocean_droplet" "pharos_master" {
 
 resource "digitalocean_droplet" "pharos_worker" {
   count              = "${var.worker_count}"
-  image              = "ubuntu-16-04-x64"
-  name               = "pharos-worker-${count.index}"
+  image              = "ubuntu-18-04-x64"
+  name               = "${var.cluster_name}-worker-${count.index}"
   region             = "${var.region}"
   size               = "${var.worker_size}"
   private_networking = true
@@ -49,7 +53,7 @@ resource "digitalocean_droplet" "pharos_worker" {
 }
 
 resource "digitalocean_loadbalancer" "pharos_master_lb" {
-  name   = "pharos-master-lb"
+  name   = "${var.cluster_name}-master-lb"
   region = "${var.region}"
 
   forwarding_rule {
@@ -73,6 +77,15 @@ output "pharos_api" {
     endpoint = "${digitalocean_loadbalancer.pharos_master_lb.ip}"
   }
 }
+
+output "pharos_addons" {
+  value = {
+      do-csi = {
+          token = "${var.do_token}"
+      }
+  }
+}
+
 
 output "pharos_hosts" {
   value = {
