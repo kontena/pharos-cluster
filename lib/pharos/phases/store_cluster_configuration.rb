@@ -43,7 +43,7 @@ module Pharos
       end
 
       def addons
-        Pharos::AddonManager.addons.values(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.map(&:deep_stringify_keys)
+        Pharos::AddonManager.addon_classes.map(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.map(&:deep_stringify_keys)
       end
     end
   end

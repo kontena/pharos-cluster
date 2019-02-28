@@ -27,6 +27,11 @@ module Pharos
       @addons ||= {}
     end
 
+    # @return [Array<Pharos::Addon>]
+    def self.addon_classes
+      addons.values
+    end
+
     # @param dirs [Array<String>]
     # @return [Array<Class<Pharos::Addon>>]
     def self.load_addons(*dirs)
@@ -81,7 +86,7 @@ module Pharos
 
     # @return [Array<Class<Pharos::Addon>>]
     def addon_classes
-      self.class.addons.values
+      self.class.addon_classes
     end
 
     # @param name [String]
