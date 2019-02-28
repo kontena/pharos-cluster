@@ -6,7 +6,7 @@ module Pharos
 
     options :load_config, :tf_json, :yes?
 
-    option %w(-f --force), '--force'], :flag, "force upgrade", default: false
+    option %w(-f --force), :flag, "force upgrade", default: false
 
     def execute
       puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
