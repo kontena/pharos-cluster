@@ -1,5 +1,3 @@
-require 'securerandom'
-
 describe Pharos::LicenseAssignCommand do
   subject { described_class.new('') }
 
