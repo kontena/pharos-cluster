@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 Pharos.addon 'pharos-license-enforcer' do
-  using Pharos::CoreExt::Colorize
-
   version '0.1.1'
   license 'Kontena License'
 

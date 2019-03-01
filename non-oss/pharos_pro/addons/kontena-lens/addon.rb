@@ -4,8 +4,6 @@ require 'bcrypt'
 require 'json'
 
 Pharos.addon 'kontena-lens' do
-  using Pharos::CoreExt::Colorize
-
   version '1.5.0-alpha.1'
   license 'Kontena License'
   priority 10
