@@ -5,6 +5,7 @@ require_relative 'cpu_arch'
 require_relative 'bastion'
 
 require 'ipaddr'
+require 'net/ssh/proxy/jump'
 
 module Pharos
   module Configuration
@@ -42,7 +43,7 @@ module Pharos
         {}.tap do |opts|
           opts[:keys] = [ssh_key_path] if ssh_key_path
           opts[:send_env] = [] # override default to not send LC_* envs
-          opts[:proxycommand] = ssh_proxy_command if ssh_proxy_command
+          opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
         end
       end
 
