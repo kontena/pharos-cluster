@@ -22,7 +22,10 @@ module Pharos
             }
           },
           'serverTLSBootstrap' => true,
-          'tlsCipherSuites' => ClusterConfig::TLS_CIPHERS.split(',')
+          'tlsCipherSuites' => ClusterConfig::TLS_CIPHERS.split(','),
+          'clusterDNS' => [
+            Pharos::Configuration::Network::CLUSTER_DNS
+          ]
         }
         if @config.kubelet&.read_only_port
           config['readOnlyPort'] = 10_255

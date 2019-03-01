@@ -6,4 +6,8 @@ module Pharos
   def self.version
     VERSION + "+oss"
   end
+
+  def self.oss?
+    true
+  end
 end

@@ -39,6 +39,7 @@ module Pharos
             rescue *RETRY_CONNECTION_ERRORS => exc
               logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to bastion host #{bastion.user}@#{bastion.host}" }
               raise if gw_opts[:non_interactive] == false || !$stdin.tty? # don't re-retry
+
               logger.debug { "Retrying in interactive mode" }
               gw_opts[:non_interactive] = false
               retry
@@ -51,6 +52,7 @@ module Pharos
             rescue *RETRY_CONNECTION_ERRORS => exc
               logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}" }
               raise if non_interactive == false || !$stdin.tty? # don't re-retry
+
               logger.debug { "Retrying in interactive mode" }
               non_interactive = false
               retry

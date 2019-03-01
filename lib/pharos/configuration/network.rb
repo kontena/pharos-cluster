@@ -5,6 +5,8 @@ require 'ipaddr'
 module Pharos
   module Configuration
     class Network < Pharos::Configuration::Struct
+      CLUSTER_DNS = '169.254.20.10'
+
       class Weave < Pharos::Configuration::Struct
         attribute :trusted_subnets, Pharos::Types::Array.of(Pharos::Types::String)
         attribute :no_masq_local, Pharos::Types::Strict::Bool.default(false)
