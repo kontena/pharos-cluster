@@ -27,14 +27,14 @@ module Pharos
           kind: cluster_info.kind,
           apiVersion: cluster_info.apiVersion,
           metadata: {
-            name: cluster_info.name,
-            namespace: cluster_info.namespace
+            name: cluster_info.metadata.name,
+            namespace: cluster_info.metadata.namespace
           },
           data: cluster_info.data.to_h
         )
         cm_client.create_resource(new_cluster_info)
       rescue K8s::Error::NotFound
-
+        logger.error { "cluster-info configmap has gone, skipping the migration ..." }
       end
     end
   end
