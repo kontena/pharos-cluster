@@ -8,8 +8,6 @@ module Pharos
       REMOTE_KUBECONFIG = "/etc/kubernetes/admin.conf"
 
       def call
-        Thread.current.abort_on_exception = true
-
         return unless kubeconfig?
 
         if @host.master_sort_score.positive?

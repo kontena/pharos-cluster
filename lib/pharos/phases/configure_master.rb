@@ -19,8 +19,6 @@ module Pharos
       end
 
       def call
-        Thread.current.abort_on_exception = true
-
         mutex.synchronize do
           push_kube_certs(cluster_context['master-certs']) if cluster_context['master-certs']
 

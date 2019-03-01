@@ -4,6 +4,7 @@ require_relative 'kube'
 
 module Pharos
   class PhaseManager
+    using Pharos::CoreExt::Colorize
     include Pharos::Logging
 
     RETRY_ERRORS = [
@@ -30,13 +31,20 @@ module Pharos
     # @param phases [Array<Pharos::Phases::Base>]
     # @return [Array<...>]
     def run(phases, &block)
-      threads = phases.map { |phase|
-        Thread.new do
-          Thread.current.report_on_exception = false
-          Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
-        end
-      }
-      threads.map(&:value)
+      begin
+        threads = phases.map { |phase|
+          Thread.new do
+            Thread.current.report_on_exception = false
+            Thread.current.abort_on_exception = true
+            Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
+          end
+        }
+        threads.map(&:value)
+      rescue StandardError
+        threads.map(&:kill)
+        sleep 0.5 until threads.all?(&:stop?)
+        raise
+      end
     end
 
     # @return [Pharos::Phase]

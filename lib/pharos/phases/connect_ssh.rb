@@ -6,8 +6,6 @@ module Pharos
       title "Open SSH connection"
 
       def call
-        Thread.current.abort_on_exception = true
-
         mutex.synchronize do
           host.transport.connect
         end
