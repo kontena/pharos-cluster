@@ -50,7 +50,7 @@ spec:
             value: <%= image_repository %>/lens-terminal:<%= version %>
           <%- end -%>
           - name: NODE_SHELL_DOCKER_IMAGE
-            value: <%= image_repository %>/nsenter:latest
+            value: <%= image_repository %>/alpine:3.9
           - name: LENS_VERSION
             value: "<%= version %>"
           <%- if config&.shell&.skip_refresh -%>
