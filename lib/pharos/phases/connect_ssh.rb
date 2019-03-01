@@ -7,6 +7,7 @@ module Pharos
 
       def call
         host.transport.connect
+        logger.info "Connected #{host.transport}"
       end
     end
   end
