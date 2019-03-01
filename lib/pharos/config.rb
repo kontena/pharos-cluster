@@ -133,7 +133,7 @@ module Pharos
 
     # @return [K8s::Client]
     def kube_client
-      master_hosts.find(&:kube_client?)&.kube_client || master_hosts.find(&:kube_client)&.kube_client || raise(Pharos::Error, 'no kube_client available')
+      (master_hosts.find(&:kube_client?) || master_hosts.find(&:kube_client))&.kube_client || raise(Pharos::Error, 'no kube_client available')
     end
 
     # @return [nil]
