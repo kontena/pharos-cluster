@@ -4,7 +4,7 @@ module Pharos
   module Transport
     class Local < Base
       def to_s
-        "#{ENV['USER'}}@localhost"
+        "#{ENV['USER']}@localhost"
       end
 
       def session

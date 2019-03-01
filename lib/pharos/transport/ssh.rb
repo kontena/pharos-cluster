@@ -24,7 +24,7 @@ module Pharos
       end
 
       def to_s
-        "SSH #{host.user}@#{host.address}:#{host.ssh_port}#{" using proxy command" if host.ssh_proxy_command}#{" via #{@gateway}->127.0.0.1:#{@port} " if @gateway}"
+        "SSH #{host.user}@#{host.address}:#{host.ssh_port}#{' using proxy command' if host.ssh_proxy_command}#{" via #{@gateway}->127.0.0.1:#{@port} " if @gateway}"
       end
 
       def connect
