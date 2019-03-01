@@ -100,7 +100,7 @@ output "pharos_hosts" {
       role              = "master"
       user              = "root"
       ssh_key_path      = "./ssh_key.pem"
-      ssh_proxy_command = "ssh -i ./ssh_key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -W %h:22 root@${digitalocean_droplet.pharos_worker.*.ipv4_address[0]}"
+      ssh_proxy_command = "ssh -i ./ssh_key.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -W %h:%p root@${digitalocean_droplet.pharos_worker.*.ipv4_address[0]}"
 
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"

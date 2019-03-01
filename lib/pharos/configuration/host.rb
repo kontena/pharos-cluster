@@ -43,7 +43,7 @@ module Pharos
         {}.tap do |opts|
           opts[:keys] = [ssh_key_path] if ssh_key_path
           opts[:send_env] = [] # override default to not send LC_* envs
-          opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command
+          opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command && !bastion
           opts[:port] = ssh_port
         end
       end
