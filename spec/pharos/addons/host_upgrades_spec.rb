@@ -1,7 +1,7 @@
-require 'pharos/addon'
-require "./addons/host-upgrades/addon"
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon "./addons/host-upgrades/addon.rb"
 
-describe Pharos::Addons::HostUpgrades do
+describe Pharos::AddonManager.addons['host-upgrades'] do
   let(:cluster_config) { Pharos::Config.load(
     hosts: [ {role: 'master', address: '192.0.2.1'} ],
   ) }
