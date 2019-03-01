@@ -34,7 +34,7 @@ module Pharos
         )
         cm_client.create_resource(new_cluster_info)
       rescue K8s::Error::NotFound
-        logger.error { "cluster-info configmap has gone, skipping the migration ..." }
+        logger.info "cluster-info configmap has gone, skipping the migration ..."
       end
     end
   end
