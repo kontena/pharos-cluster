@@ -36,6 +36,8 @@ module Pharos
 
       def local?
         IPAddr.new(address).loopback?
+      rescue IPAddr::InvalidAddressError
+        false
       end
 
       # Accessor to host transport which handles running commands and manipulating files on the
