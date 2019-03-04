@@ -54,7 +54,7 @@ Pharos.addon 'kontena-lens' do
 
     host = config.ingress&.host || config.host || "lens.#{gateway_node_ip}.nip.io"
     tls_email = config.ingress&.tls&.email || config.tls&.email
-    name = config.name || 'pharos-cluster'
+    name = config.name || cluster_config.name || 'pharos-cluster'
     charts_enabled = config.charts&.enabled != false
     helm_repositories = config.charts&.repositories || [stable_helm_repo]
     tiller_version = '2.12.2'
