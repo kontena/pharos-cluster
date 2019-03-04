@@ -27,6 +27,7 @@ module Pharos
             'cluster.yml' => data.to_yaml,
             'pharos-version' => Pharos.version,
             'pharos-components.yml' => components.to_yaml,
+            'pharos-cluster-name' => @config.name,
             'pharos-addons.yml' => addons.to_yaml
           }
         )
