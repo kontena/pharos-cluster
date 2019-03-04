@@ -6,6 +6,7 @@ module Pharos
 
     options :load_config, :tf_json, :yes?
 
+    option ['-n', '--name'], 'NAME', 'use as cluster name', attribute_name: :new_name
     option ['-f', '--force'], :flag, "force upgrade"
 
     def execute
@@ -14,6 +15,7 @@ module Pharos
       Pharos::Kube.init_logging!
 
       config = load_config
+      config.attributes[:name] = new_name
 
       # set workdir to the same dir where config was loaded from
       # so that the certs etc. can be referenced more easily
@@ -55,7 +57,7 @@ module Pharos
         end
       end
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options}> kubeconfig"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options} -n #{config.name} > kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
       manager.disconnect
     end

@@ -11,13 +11,12 @@ module Pharos
         changed?('network', 'provider', &DEFAULT_PROC)
         changed?('network', 'service_cidr', &DEFAULT_PROC)
         changed?('network', 'pod_network_cidr', &DEFAULT_PROC)
-        changed?('name', allow_set: true, &DEFAULT_PROC)
       end
 
-      def changed?(*config_keys, allow_set: false)
+      def changed?(*config_keys)
         old_value = previous_config&.dig(*config_keys)
         new_value = @config&.dig(*config_keys)
-        return false if old_value == new_value || (allow_set && old_value.nil?)
+        return false if old_value == new_value
         return true unless block_given?
 
         yield config_keys.map(&:to_s).join('.'), old_value, new_value

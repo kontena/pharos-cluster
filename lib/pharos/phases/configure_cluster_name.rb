@@ -41,7 +41,10 @@ module Pharos
 
         logger.info "Cluster name is #{existing_name.magenta}"
         if @config.name && @config.name != existing_name
-          raise Pharos::Error, "Cluster name mismatch, cluster: #{existing_name} configuration: #{@config.name}"
+          raise Pharos::Error, "Cluster name mismatch, cluster: #{existing_name} configuration: #{@config.name}" unless cluster_context['force']
+
+          logger.info "Cluster will be renamed to #{@config.name.magenta}"
+          @config.attributes[:name] = @config.name
         elsif !@config.name
           @config.set(:name, existing_name)
         end
