@@ -15,7 +15,7 @@ module Pharos
       Pharos::Kube.init_logging!
 
       config = load_config
-      config.attributes[:name] = new_name
+      config.attributes[:name] = new_name if new_name
 
       # set workdir to the same dir where config was loaded from
       # so that the certs etc. can be referenced more easily

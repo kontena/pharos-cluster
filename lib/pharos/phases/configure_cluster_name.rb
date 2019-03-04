@@ -32,7 +32,7 @@ module Pharos
       ).freeze
 
       def call
-        use_existing_name || use_config_name || generate_new_name
+        @config.attributes[:name] = use_existing_name || use_config_name || generate_new_name
       end
 
       def use_existing_name
@@ -44,18 +44,17 @@ module Pharos
           raise Pharos::Error, "Cluster name mismatch, cluster: #{existing_name} configuration: #{@config.name}" unless cluster_context['force']
 
           logger.info "Cluster will be renamed to #{@config.name.magenta}"
-          @config.attributes[:name] = @config.name
-        elsif !@config.name
-          @config.set(:name, existing_name)
+          @config.name
+        else
+          existing_name
         end
-
-        true
       end
 
       def use_config_name
         return false unless @config.name
 
         logger.info "Using cluster name #{@config.name.magenta} from configuration"
+        @config.name
       end
 
       # @return [K8s::Resource, nil]
@@ -64,11 +63,11 @@ module Pharos
       end
 
       def generate_new_name
-        return if @config.name
+        return false if @config.name
 
         new_name = "#{ADJECTIVES.sample}-#{NOUNS.sample}-#{'%04d' % rand(9999)}"
-        @config.set(:name, new_name)
         logger.info "Using generated random name #{new_name.magenta} as cluster name"
+        new_name
       end
     end
   end
