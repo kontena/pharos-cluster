@@ -53,9 +53,9 @@ module Pharos
       end
 
       def use_config_name
-        if @config.name
-          logger.info "Using cluster name #{@config.name.magenta} from configuration"
-        end
+        return false unless @config.name
+
+        logger.info "Using cluster name #{@config.name.magenta} from configuration"
       end
 
       # @return [K8s::Resource, nil]
@@ -66,7 +66,7 @@ module Pharos
       def generate_new_name
         return if @config.name
 
-        new_name = "#{ADJECTIVES.sample}-#{NOUNS.sample}-#{"%04d" % rand(9999)}"
+        new_name = "#{ADJECTIVES.sample}-#{NOUNS.sample}-#{'%04d' % rand(9999)}"
         @config.set(:name, new_name)
         logger.info "Using generated random name #{new_name.magenta} as cluster name"
       end
