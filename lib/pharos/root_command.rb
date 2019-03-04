@@ -8,7 +8,7 @@ require_relative 'exec_command'
 require_relative 'terraform_command'
 
 module Pharos
-  class RootCommand < Pharos::Command
+  class RootCommand < Clamp::Command
     banner "#{File.basename($PROGRAM_NAME)} - Kontena Pharos cluster manager"
 
     subcommand "up", "initialize/upgrade cluster", UpCommand

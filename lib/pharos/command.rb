@@ -12,9 +12,10 @@ module Pharos
       end
     end
 
-    def run(*_args)
+    def run(arguments)
+      parse(arguments) # we need to call this before we can actually use options
       Pharos::CoreExt::Colorize.disable! unless color?
-      super
+      execute
     rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
       raise
     rescue Errno::EPIPE => ex
@@ -38,8 +39,10 @@ module Pharos
       exit 0
     end
 
-    option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
+    option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do |debug|
       ENV["DEBUG"] = "true"
+
+      debug
     end
 
     def prompt
