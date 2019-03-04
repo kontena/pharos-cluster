@@ -175,6 +175,7 @@ describe Pharos::Configuration::Host do
     end
 
     it "return false if address is not valid" do
+      expect(Resolv).to receive(:getaddress).with('invalid').and_raise(Resolv::ResolvError)
       subject = described_class.new(
         address: 'invalid',
       )
