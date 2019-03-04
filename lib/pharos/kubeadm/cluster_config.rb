@@ -29,6 +29,7 @@ module Pharos
           'apiVersion' => 'kubeadm.k8s.io/v1alpha3',
           'kind' => 'ClusterConfiguration',
           'kubernetesVersion' => Pharos::KUBE_VERSION,
+          'clusterName' => @config.name,
           'imageRepository' => @config.image_repository,
           'apiServerCertSANs' => build_extra_sans,
           'networking' => {
