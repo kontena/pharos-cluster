@@ -13,4 +13,3 @@ image = "ubuntu-18-04-x64"
 
 region = "fra1"
 
-cluster_name = "e2e"
