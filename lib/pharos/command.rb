@@ -12,8 +12,14 @@ module Pharos
       end
     end
 
-    def run(*_args)
+    def parse(*_arguments)
+      result = super
       Pharos::CoreExt::Colorize.disable! unless color?
+      Pharos::Logging.debug! if debug?
+      result
+    end
+
+    def run(*_args)
       super
     rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
       raise
@@ -26,7 +32,7 @@ module Pharos
       warn "==> #{exc}"
       exit 11
     rescue StandardError => ex
-      raise if debug?
+      raise if Pharos::Logging.debug?
 
       signal_error "#{ex.class.name} : #{ex.message}"
     end
@@ -38,9 +44,7 @@ module Pharos
       exit 0
     end
 
-    option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
-      ENV["DEBUG"] = "true"
-    end
+    option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG"
 
     def prompt
       @prompt ||= TTY::Prompt.new(enable_color: color?)
