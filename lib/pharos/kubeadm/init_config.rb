@@ -13,9 +13,9 @@ module Pharos
       # @return [Hash]
       def generate
         config = {
-          'apiVersion' => 'kubeadm.k8s.io/v1alpha3',
+          'apiVersion' => 'kubeadm.k8s.io/v1beta1',
           'kind' => 'InitConfiguration',
-          'apiEndpoint' => {
+          'localApiEndpoint' => {
             'advertiseAddress' => advertise_address
           },
           'nodeRegistration' => {
