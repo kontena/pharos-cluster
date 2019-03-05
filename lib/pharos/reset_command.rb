@@ -4,7 +4,7 @@ module Pharos
   class ResetCommand < Pharos::Command
     using Pharos::CoreExt::Colorize
 
-    options :filtered_hosts, :yes?
+    options :filtered_hosts, :tf_json, :yes?
 
     def execute
       puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
