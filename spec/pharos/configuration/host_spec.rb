@@ -158,4 +158,28 @@ describe Pharos::Configuration::Host do
       expect(subject.overlapping_routes('172.16.0.0/24').map{|route| route.prefix}).to eq []
     end
   end
+
+  describe '#local?' do
+    it "return true if address is local" do
+      subject = described_class.new(
+        address: '127.0.0.1',
+      )
+      expect(subject.local?).to be_truthy
+    end
+
+    it "return false if address is not local" do
+      subject = described_class.new(
+        address: '8.8.8.8',
+      )
+      expect(subject.local?).to be_falsey
+    end
+
+    it "return false if address is not valid" do
+      expect(Resolv).to receive(:getaddress).with('invalid').and_raise(Resolv::ResolvError)
+      subject = described_class.new(
+        address: 'invalid',
+      )
+      expect(subject.local?).to be_falsey
+    end
+  end
 end
