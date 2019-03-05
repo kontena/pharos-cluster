@@ -36,10 +36,18 @@ module Pharos
           Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
         end
       end
+
+      until threads.none?(&:alive?)
+        # Thread status is false when terminated normally, nil when it terminated with exception
+        thread_with_exception = threads.find { |thr| thr.status.nil? }
+        if thread_with_exception
+          threads.map(&:kill) # kill other threads
+          thread_with_exception.value # raises the exception
+        end
+        Thread.pass
+      end
+
       threads.map(&:value)
-    rescue StandardError
-      threads&.map(&:kill)
-      raise
     end
 
     # @param phases [Array<Pharos::Phases::Base>]
