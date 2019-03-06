@@ -29,6 +29,7 @@ module Pharos
           'apiVersion' => 'kubeadm.k8s.io/v1beta1',
           'kind' => 'ClusterConfiguration',
           'kubernetesVersion' => Pharos::KUBE_VERSION,
+          'clusterName' => @config.name,
           'imageRepository' => @config.image_repository,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,

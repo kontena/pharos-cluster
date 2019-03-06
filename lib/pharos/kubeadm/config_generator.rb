@@ -58,7 +58,7 @@ module Pharos
           "preferences" => {},
           "clusters" => [
             {
-              "name" => webhook_config[:cluster][:name].to_s,
+              "name" => webhook_config.dig(:cluster, :name) || @config.name,
               "cluster" => {
                 "server" => webhook_config[:cluster][:server].to_s
               }
@@ -74,7 +74,7 @@ module Pharos
             {
               "name" => "webhook",
               "context" => {
-                "cluster" => webhook_config[:cluster][:name].to_s,
+                "cluster" => webhook_config.dig(:cluster, :name) || @config.name,
                 "user" => webhook_config[:user][:name].to_s
               }
             }
