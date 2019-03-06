@@ -132,9 +132,12 @@ module Pharos
       @regions ||= hosts.map(&:region).compact.uniq
     end
 
+    # @raise [Pharos::Error] when no master can create a kube client instance
     # @return [K8s::Client]
     def kube_client
-      master_hosts.find(&:kube_client?)&.kube_client || master_hosts.find(&:kube_client)&.kube_client || raise(Pharos::Error, 'no kube_client available')
+      # Return a kube_client instance from a master host that already has one initialized
+      # or return a kube_client instance from a master host that succeeds in creating one
+      (master_hosts.find(&:kube_client?) || master_hosts.find(&:kube_client))&.kube_client || raise(Pharos::Error, 'no kube_client available')
     end
 
     # @return [nil]
