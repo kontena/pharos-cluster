@@ -23,18 +23,18 @@ module Pharos
       end
 
       def to_s
-        "#{host.user}@#{host.address}:#{host.ssh_port}"
+        "#{'ssh_proxy_command => ' if host.ssh_proxy_command}gateway #{host.user}@#{host.address}:#{host.ssh_port}"
       end
 
       def connect
         synchronize do
           non_interactive = true
-          logger.debug { "Connecting gateway #{host.user}@#{host.address}:#{host.ssh_port}" }
-          @session = Net::SSH::Gateway.new(host.address, host.user, host.ssh_options.merge(non_interactive: non_interactive, port: host.ssh_port))
+          logger.debug { "Connecting #{self}" }
+          @session = Net::SSH::Gateway.new(host.address, host.user, host.ssh_options.merge(non_interactive: non_interactive))
           logger.debug { "Connected" }
           true
         rescue *Pharos::Transport::SSH::RETRY_CONNECTION_ERRORS => exc
-          logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{host.user}@#{host.address}" }
+          logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{self}" }
           raise if non_interactive == false || !$stdin.tty? # don't re-retry
 
           logger.debug { "Retrying in interactive mode.." }

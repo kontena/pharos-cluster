@@ -78,7 +78,7 @@ module Pharos
 
     # @return [Array<Pharos::Configuration::Bastion>]
     def bastions
-      hosts.reject { |h| h.bastion.nil? }.map(&:bastion)
+      hosts.map(&:bastion).compact
     end
 
     # @return [Integer]

@@ -78,15 +78,18 @@ module Pharos
                   required(:effect).filled(included_in?: ['NoSchedule', 'NoExecute'])
                 end
               end
-              optional(:user).filled
-              optional(:ssh_key_path).filled
-              optional(:ssh_proxy_command).filled
+              optional(:user).filled(:str?)
+              optional(:ssh_key_path).filled(:str?)
+              optional(:ssh_proxy_command).filled(:str?)
+              optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
               optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
               optional(:bastion).schema do
                 required(:address).filled(:str?)
                 optional(:user).filled(:str?)
                 optional(:ssh_key_path).filled(:str?)
+                optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
+                optional(:ssh_proxy_command).filled(:str?)
               end
             end
           end

@@ -3,6 +3,10 @@
 module Pharos
   module Transport
     class Local < Base
+      def to_s
+        "#{ENV['USER']}@localhost"
+      end
+
       def session
         nil
       end
@@ -11,7 +15,7 @@ module Pharos
         raise TypeError, "Non-SSH connections do not provide an ssh gateway"
       end
 
-      def connect(**_options)
+      def connect
         nil
       end
 

@@ -5,6 +5,8 @@ require 'net/ssh'
 module Pharos
   module Transport
     class SSH < Base
+      using Pharos::CoreExt::Colorize
+
       attr_reader :session
 
       RETRY_CONNECTION_ERRORS = [
@@ -24,7 +26,17 @@ module Pharos
       end
 
       def to_s
-        "#{"#{@gateway}->127.0.0.1:#{@port}->" if @gateway}#{host.user}@#{host.address}:#{host.ssh_port}"
+        "SSH #{via.dim}" + "#{host.user}@#{host.address}:#{host.ssh_port}"
+      end
+
+      def via
+        if @gateway
+          "#{@gateway} => 127.0.0.1:#{@port} => "
+        elsif host.ssh_proxy_command
+          "ssh_proxy_command => "
+        else
+          ""
+        end
       end
 
       def connect
