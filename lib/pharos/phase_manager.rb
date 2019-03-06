@@ -6,6 +6,16 @@ module Pharos
   class PhaseManager
     include Pharos::Logging
 
+    class Error < Pharos::Error
+      def initialize(errors)
+        @errors = errors
+      end
+
+      def to_s
+        "Phase failed#{" on #{@errors.size} hosts" if @errors.size > 1}:\n#{YAML.dump(@errors).delete_prefix("---\n")}"
+      end
+    end
+
     RETRY_ERRORS = [
       OpenSSL::SSL::SSLError,
       Excon::Error,
@@ -33,19 +43,23 @@ module Pharos
       threads = phases.map do |phase|
         Thread.new do
           Thread.current.report_on_exception = false
+          Thread.current[:host] = phase.host.to_s
           Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
         end
       end
 
-      until threads.none?(&:alive?)
-        # Thread status is false when terminated normally, nil when it terminated with exception
-        thread_with_exception = threads.find { |thr| thr.status.nil? }
-        if thread_with_exception
-          threads.map(&:kill) # kill other threads
-          thread_with_exception.value # raises the exception
+      Thread.pass until threads.none?(&:alive?)
+
+      # Thread status is false when terminated normally, nil when it terminated with exception
+      errors = threads.select { |t| t.status.nil? }.map do |thread|
+        begin
+          thread.value # raises the exception
+        rescue Exception => ex
+          { thread[:host] => { ex.class.name =>  ex.message } }
         end
-        Thread.pass
       end
+
+      raise Error, errors unless errors.empty?
 
       threads.map(&:value)
     end
