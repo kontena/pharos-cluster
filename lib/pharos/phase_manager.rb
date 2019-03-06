@@ -12,7 +12,7 @@ module Pharos
       end
 
       def to_s
-        "Phase failed#{" on #{@errors.size} hosts" if @errors.size > 1}:\n#{YAML.dump(@errors).delete_prefix("---\n")}"
+        "Phase failed on #{@errors.size} host#{'s' if @errors.size > 1}:\n#{YAML.dump(@errors).delete_prefix("---\n")}"
       end
     end
 
