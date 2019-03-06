@@ -73,7 +73,7 @@ module Pharos
           Pharos::YamlFile.new(
             StringIO.new(pharos_config_configmap),
             override_filename: "#{master_host.address}:kube-system/pharos-config"
-          ).load.dig('data','pharos-cluster-name')
+          ).load.dig('data', 'pharos-cluster-name')
         rescue StandardError => ex
           signal_error "Failed to parse cluster name from pharos-config.pharos-cluster-name: #{ex.class.name} : #{ex.message}"
         end
