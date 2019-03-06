@@ -19,6 +19,7 @@ module Pharos
 
     def execute
       warn '[DEPRECATED] the --description option is deprecated and will be ignored' if description
+      cluster_manager
       puts decorate_license
 
       unless jwt_token.valid? || force?

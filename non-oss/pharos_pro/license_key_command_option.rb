@@ -58,7 +58,7 @@ module Pharos
         end
 
         def cluster_manager
-          @cluster_manager ||= ClusterManager.new(load_config.tap { |c| c.hosts.keep_if(&:master?)}).tap do |cluster_manager|
+          @cluster_manager ||= ClusterManager.new(load_config.tap { |c| c.hosts.keep_if(&:master?) }).tap do |cluster_manager|
             puts "==> Sharpening tools ...".green
             cluster_manager.load
             cluster_manager.gather_facts
