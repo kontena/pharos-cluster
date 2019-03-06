@@ -21,7 +21,7 @@ describe Pharos::Kubeadm::InitConfig do
     it 'comes with correct master addresses' do
       config.hosts << master
       config = subject.generate
-      expect(config.dig('apiEndpoint', 'advertiseAddress')).to eq('private')
+      expect(config.dig('localApiEndpoint', 'advertiseAddress')).to eq('private')
     end
 
     context 'with cri-o configuration' do

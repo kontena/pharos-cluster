@@ -44,6 +44,12 @@ describe Pharos::Addon do
     end
   end
 
+  describe ".addon_location" do
+    it "returns path" do
+      expect(test_addon.addon_location).not_to eq('')
+    end
+  end
+
   describe ".version" do
     it "returns configured version" do
       expect(test_addon.version).to eq("0.2.2")

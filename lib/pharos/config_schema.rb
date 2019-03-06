@@ -91,6 +91,7 @@ module Pharos
             end
           end
         end
+        optional(:name).filled(:str?)
         optional(:api).schema do
           optional(:endpoint).filled(:str?)
         end

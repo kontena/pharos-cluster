@@ -24,7 +24,7 @@ module Pharos
 
     # @return [Boolean] true when token is valid
     def valid?
-      errors.empty?
+      errors.nil? || errors.empty?
     end
 
     # @return [Hash] license data

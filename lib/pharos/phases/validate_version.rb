@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
+require_relative "mixins/cluster_version"
+
 module Pharos
   module Phases
     class ValidateVersion < Pharos::Phase
       title "Validate cluster version"
 
+      include Pharos::Phases::Mixins::ClusterVersion
       REMOTE_KUBECONFIG = "/etc/kubernetes/admin.conf"
 
       def call
@@ -28,7 +31,7 @@ module Pharos
 
       # @param cluster_version [String]
       def validate_version(cluster_version)
-        cluster_version = Gem::Version.new(cluster_version.gsub(/\+.*/, ''))
+        cluster_version = build_version(cluster_version)
         raise "Downgrade not supported" if cluster_version > pharos_version
 
         if requirement.satisfied_by?(cluster_version)
@@ -77,10 +80,6 @@ module Pharos
       end
 
       private
-
-      def pharos_version
-        @pharos_version ||= Gem::Version.new(Pharos::VERSION)
-      end
 
       # Returns a requirement like "~>", "1.3.0"  which will match >= 1.3.0 && < 1.4.0
       def requirement

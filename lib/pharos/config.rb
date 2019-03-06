@@ -72,6 +72,7 @@ module Pharos
     attribute :addons, Pharos::Types::Hash.default(proc { {} })
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
+    attribute :name, Pharos::Types::String
 
     attr_accessor :data
 

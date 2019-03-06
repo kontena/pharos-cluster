@@ -5,6 +5,7 @@ require_relative 'cpu_arch'
 require_relative 'bastion'
 
 require 'ipaddr'
+require 'resolv'
 
 module Pharos
   module Configuration
@@ -96,7 +97,10 @@ module Pharos
 
       # @return [Boolean]
       def local?
-        IPAddr.new(address).loopback?
+        ip_address = Resolv.getaddress(address)
+        IPAddr.new(ip_address).loopback?
+      rescue Resolv::ResolvError, IPAddr::InvalidAddressError
+        false
       end
 
       # Accessor to host transport which handles running commands and manipulating files on the
