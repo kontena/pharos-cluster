@@ -51,13 +51,13 @@ module Pharos
       Thread.pass until threads.none?(&:alive?)
 
       # Thread status is false when terminated normally, nil when it terminated with exception
+      # rubocop:disable Lint/RescueException
       errors = threads.select { |t| t.status.nil? }.map do |thread|
-        begin
-          thread.value # raises the exception
-        rescue Exception => ex
-          { thread[:host] => { ex.class.name =>  ex.message } }
-        end
+        thread.value # raises the exception
+      rescue Exception => ex
+        { thread[:host] => { ex.class.name => ex.message } }
       end
+      # rubocop:enable Lint/RescueException
 
       raise Error, errors unless errors.empty?
 
