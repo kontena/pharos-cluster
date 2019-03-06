@@ -8,12 +8,5 @@ $LOAD_PATH.unshift lib_path unless $LOAD_PATH.include?(lib_path)
 
 STDOUT.sync = true
 
-# rubocop:disable Lint/HandleExceptions
-begin
-  require 'bundler/setup'
-rescue LoadError
-end
-# rubocop:enable Lint/HandleExceptions
-
 require 'pharos_cluster'
 Pharos::RootCommand.run
