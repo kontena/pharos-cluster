@@ -56,17 +56,26 @@ module Pharos
           signal_error "Failed to get cluster-info configmap: #{ex.message}"
         end
 
+        def pharos_config_configmap
+          Dir.chdir(config_yaml.dirname) do
+            master_host.transport.connect
+            master_host.transport.exec!('kubectl get configmap --namespace kube-system -o yaml pharos-config')
+          end
+        rescue Pharos::ExecError => ex
+          signal_error "Failed to get cluster-info configmap: #{ex.message}"
+        end
+
         def cluster_id
           cluster_info.dig('metadata', 'uid')
         end
 
         def cluster_name
           Pharos::YamlFile.new(
-            StringIO.new(cluster_info.dig('data', 'kubeconfig')),
-            override_filename: "#{master_host.address}:kube-public/cluster-info.data.kubeconfig"
-          ).load.dig('clusters', 0, 'name')
+            StringIO.new(pharos_config_configmap),
+            override_filename: "#{master_host.address}:kube-system/pharos-config"
+          ).load.dig('data','pharos-cluster-name')
         rescue StandardError => ex
-          signal_error "Failed to parse cluster name from cluster-info.kubeconfig: #{ex.class.name} : #{ex.message}"
+          signal_error "Failed to parse cluster name from pharos-config.pharos-cluster-name: #{ex.class.name} : #{ex.message}"
         end
 
         def subscription_token_request
@@ -77,8 +86,8 @@ module Pharos
             body: JSON.dump(
               data: {
                 attributes: {
-                  cluster_id: cluster_id,
-                  description: cluster_name
+                  'cluster-id' => cluster_id,
+                  'description' => cluster_name
                 }
               }
             ),

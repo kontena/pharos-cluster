@@ -21,14 +21,14 @@ describe Pharos::LicenseAssignCommand do
     stub_const("Excon", http_client)
     allow(ssh).to receive(:connect)
     allow(ssh).to receive(:exec!).with('kubectl get configmap --namespace kube-public -o yaml cluster-info').and_return(<<~EOS)
-      data:
-        kubeconfig: |
-          clusters:
-          - cluster:
-              server: https://localhost:6443
-            name: "foo"
       metadata:
         uid: 6c6289c0-1fb0-11e9-bac4-02f41f34da68
+    EOS
+    allow(ssh).to receive(:exec!).with('kubectl get configmap --namespace kube-system -o yaml pharos-config').and_return(<<~EOS)
+      data:
+        pharos-cluster-name: test-cluster
+      metadata:
+        uid: 6c6289c0-1fb0-11e9-bac4-02f41f34da67
     EOS
   end
 
@@ -38,7 +38,7 @@ describe Pharos::LicenseAssignCommand do
     end
 
     it 'runs kubectl on master' do
-      expect(ssh).to receive(:exec!).with("kubectl create secret generic pharos-cluster --namespace=kube-system --from-literal='license.jwt=123' --dry-run -o yaml | kubectl apply -f -")
+      expect(ssh).to receive(:exec!).with("kubectl create secret generic pharos-license --namespace=kube-system --from-literal='license.jwt=123' --dry-run -o yaml | kubectl apply -f -")
       subject.run([license_key])
     end
   end
