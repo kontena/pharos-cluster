@@ -3,6 +3,7 @@
 module Pharos
   module CommandOptions
     module LicenseKey
+      using Pharos::CoreExt::Colorize
       def self.included(base)
         base.prepend(InstanceMethods)
         base.parameter "[LICENSE_KEY]", "kontena pharos license key (default: <stdin>)"
@@ -56,13 +57,12 @@ module Pharos
           signal_error "Failed to get cluster-info configmap: #{ex.message}"
         end
 
-        def pharos_config_configmap
-          Dir.chdir(config_yaml.dirname) do
-            master_host.transport.connect
-            master_host.transport.exec!('kubectl get configmap --namespace kube-system -o yaml pharos-config')
+        def cluster_manager
+          @cluster_manager ||= ClusterManager.new(load_config.tap { |c| c.hosts.keep_if(&:master?)}).tap do |cluster_manager|
+            puts "==> Sharpening tools ...".green
+            cluster_manager.load
+            cluster_manager.gather_facts
           end
-        rescue Pharos::ExecError => ex
-          signal_error "Failed to get cluster-info configmap: #{ex.message}"
         end
 
         def cluster_id
@@ -70,10 +70,7 @@ module Pharos
         end
 
         def cluster_name
-          Pharos::YamlFile.new(
-            StringIO.new(pharos_config_configmap),
-            override_filename: "#{master_host.address}:kube-system/pharos-config"
-          ).load.dig('data', 'pharos-cluster-name')
+          load_config.name
         rescue StandardError => ex
           signal_error "Failed to parse cluster name from pharos-config.pharos-cluster-name: #{ex.class.name} : #{ex.message}"
         end
