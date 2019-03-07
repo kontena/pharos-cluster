@@ -4,7 +4,7 @@ require 'bcrypt'
 require 'json'
 
 Pharos.addon 'kontena-lens' do
-  version '1.5.0-alpha.1'
+  version '1.5.0-alpha.3'
   license 'Kontena License'
   priority 10
 
