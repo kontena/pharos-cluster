@@ -8,6 +8,7 @@ describe Pharos::LicenseAssignCommand do
   let(:config) { Pharos::Config.new(hosts: [host]) }
   let(:ssh) { instance_double(Pharos::Transport::SSH) }
   let(:http_client) { spy }
+  let(:cluster_manager) { instance_double(Pharos::ClusterManager) }
   let(:license_token) { 'abcd' }
   let(:success_response) { JSON.dump(data: { attributes: { 'license-token': { token: license_token, jwt: '123' } } }) }
   let(:token) { instance_double(Pharos::LicenseKey, valid?: true, token: '123') }
@@ -30,6 +31,10 @@ describe Pharos::LicenseAssignCommand do
       metadata:
         uid: 6c6289c0-1fb0-11e9-bac4-02f41f34da67
     EOS
+
+    allow(cluster_manager).to receive(:load).and_return true
+    allow(cluster_manager).to receive(:gather_facts).and_return true
+    allow(subject).to receive(:cluster_manager).and_return(cluster_manager)
   end
 
   describe '#execute' do

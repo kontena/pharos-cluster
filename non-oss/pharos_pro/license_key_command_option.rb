@@ -57,14 +57,6 @@ module Pharos
           signal_error "Failed to get cluster-info configmap: #{ex.message}"
         end
 
-        def cluster_manager
-          @cluster_manager ||= ClusterManager.new(load_config.tap { |c| c.hosts.keep_if(&:master?) }).tap do |cluster_manager|
-            puts "==> Sharpening tools ...".green
-            cluster_manager.load
-            cluster_manager.gather_facts
-          end
-        end
-
         def cluster_id
           cluster_info.dig('metadata', 'uid')
         end
