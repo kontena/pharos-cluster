@@ -65,19 +65,14 @@ module Pharos
     end
 
     def cluster_info
-      @cluster_info ||= Pharos::YamlFile.new(
-        StringIO.new(cluster_info_configmap),
-        override_filename: "#{master_host.address}:kube-public/cluster-info"
-      ).load
+      @cluster_info ||= cluster_info_configmap
+    rescue K8s::Error::NotFound => ex
+      signal_error "Failed to fetch cluster-info: #{ex.class.name} : #{ex.message}"
     end
 
     def cluster_info_configmap
-      Dir.chdir(config_yaml.dirname) do
-        master_host.transport.connect
-        master_host.transport.exec!('kubectl get configmap --namespace kube-public -o yaml cluster-info')
-      end
-    rescue Pharos::ExecError => ex
-      signal_error "Failed to get cluster-info configmap: #{ex.message}"
+      kube_client = load_config.kube_client(cluster_manager.context['kubeconfig'])
+      kube_client.api('v1').resource('configmaps', namespace: 'kube-public').get('cluster-info')
     end
 
     def cluster_id
