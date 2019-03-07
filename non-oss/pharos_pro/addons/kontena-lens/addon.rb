@@ -189,7 +189,7 @@ Pharos.addon 'kontena-lens' do
 
   # @return [String]
   def admin_password
-    @admin_password ||= ENV['LENS_ADMIN_PASSWORD'] || SecureRandom.hex(8)
+    @admin_password ||= ENV['LENS_ADMIN_PASSWORD'] || SecureRandom.hex(8)
   end
 
   def config_exists?
