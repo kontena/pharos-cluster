@@ -98,6 +98,7 @@ module Pharos
       apply_phase(Phases::PullMasterImages, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
       apply_phase(Phases::ConfigureClient, master_only, parallel: false)
+      apply_phase(Phases::ReconfigureKubelet, config.hosts, parallel: true)
 
       # master is now configured and can be used
       # configure essential services

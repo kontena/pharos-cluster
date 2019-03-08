@@ -94,6 +94,7 @@ module Pharos
         optional(:name).filled(:str?)
         optional(:api).schema do
           optional(:endpoint).filled(:str?)
+          optional(:feature_gates).filled
         end
         optional(:network).schema do
           optional(:provider).filled(included_in?: %w(weave calico custom))
@@ -184,6 +185,7 @@ module Pharos
         optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
+          optional(:feature_gates).filled
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
