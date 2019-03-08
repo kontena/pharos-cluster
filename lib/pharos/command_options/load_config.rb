@@ -17,6 +17,7 @@ module Pharos
       end
 
       module InstanceMethods
+        # @param context [Hash] extra keys to initialize cluster context with
         # @return [Pharos::ClusterManager]
         def cluster_manager(context = {})
           @cluster_manager ||= ClusterManager.new(load_config).tap do |manager|
