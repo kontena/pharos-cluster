@@ -2,6 +2,8 @@
 
 module Pharos
   class LicenseInspectCommand < Pharos::Command
+    using Pharos::CoreExt::Colorize
+
     options :load_config, :tf_json
 
     banner "Display information about the installed license on a Pharos Cluster or a license subscription token"
@@ -87,28 +89,28 @@ module Pharos
       data = valid_until_data
 
       if valid_until_data[:days].negative?
-        "Expired at %<valid_until>s (%<days>s days ago)" % data
+        "Expired at %<valid_until>s (%<days>s days ago)".red % data
       else
-        "Valid until %<valid_until>s (%<days>s days remaining)" % data
+        "Valid until %<valid_until>s (%<days>s days remaining)" % { valid_until: data[:valid_until].to_s.cyan, days: data[:days] }
       end
     end
 
     def license_type
-      return "Kontena Pharos PRO Evaluation License" if license_key.nil?
+      return "Kontena Pharos PRO Evaluation License".yellow if license_key.nil?
 
-      "%<name>s for up to %<max_nodes>d nodes" % { name: license_key.data['name'], max_nodes: license_key.data['max_nodes'] }
+      "%<name>s for up to %<max_nodes>d nodes" % { name: license_key.data['name'].green, max_nodes: license_key.data['max_nodes'] }
     end
 
     def owner
       return if license_key.nil?
 
-      "Licensed to #{license_key.owner}"
+      "Licensed to #{license_key.owner.cyan}"
     end
 
     def contact_note
       return if license_key
 
-      "Please contact sales@kontena.io to extend your evaluation"
+      "Please contact #{'sales@kontena.io'.cyan} to extend your evaluation"
     end
 
     def valid?
