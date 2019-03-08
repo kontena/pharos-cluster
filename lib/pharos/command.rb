@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'pry' if Gem.loaded_specs.has_key?('pry')
+require 'pry' if Gem.loaded_specs.key?('pry')
 
 module Pharos
   class Command < Clamp::Command
@@ -53,7 +53,7 @@ module Pharos
     end
 
     if Object.const_defined?(:Pry)
-      option ['--console'], :flag, "start console instead of execute" do
+      option ['--console'], :flag, "start console instead of execute", hidden: true do
         extend(Console)
       end
     end
