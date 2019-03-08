@@ -15,7 +15,7 @@ module Pharos
         config = {
           'apiVersion' => 'kubeadm.k8s.io/v1beta1',
           'kind' => 'InitConfiguration',
-          'localApiEndpoint' => {
+          'localAPIEndpoint' => {
             'advertiseAddress' => advertise_address
           },
           'nodeRegistration' => {
