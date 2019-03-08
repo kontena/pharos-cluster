@@ -23,7 +23,7 @@ module Pharos
         new_config = config.read
         return if new_config == org_config
 
-        transport.exec!("sudo systemctl restart kubelet")
+        transport.exec!('sudo systemctl restart kubelet')
       end
     end
   end
