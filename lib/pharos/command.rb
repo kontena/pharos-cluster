@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pry' if Gem.loaded_specs.has_key?('pry')
+
 module Pharos
   class Command < Clamp::Command
     include Pharos::Logging
@@ -40,6 +42,20 @@ module Pharos
 
     option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
       ENV["DEBUG"] = "true"
+    end
+
+    module Console
+      def execute
+        # rubocop:disable Lint/Debugger
+        binding.pry
+        # rubocop:enable Lint/Debugger
+      end
+    end
+
+    if Object.const_defined?(:Pry)
+      option ['--console'], :flag, "start console instead of execute" do
+        extend(Console)
+      end
     end
 
     def prompt
