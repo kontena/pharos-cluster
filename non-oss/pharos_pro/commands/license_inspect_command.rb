@@ -61,7 +61,7 @@ module Pharos
     end
 
     def evaluation_days_remaining
-      @evaluation_days_remaining ||= (Time.now.utc.to_date - evaluation_valid_until.to_date).to_i
+      @evaluation_days_remaining ||= (evaluation_valid_until.to_date - Time.now.utc.to_date).to_i
     end
 
     def evaluation_data
