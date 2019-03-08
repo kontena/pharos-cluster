@@ -60,8 +60,8 @@ module Pharos
           }
         }
 
-        if @config.api&.feature_gates
-          feature_gates = @config.api.feature_gates.map{ |k, v| "#{k}=#{v}" }.join(',')
+        if @config.control_plane&.feature_gates
+          feature_gates = @config.control_plane.feature_gates.map{ |k, v| "#{k}=#{v}" }.join(',')
           config['apiServer']['extraArgs']['feature-gates'] = feature_gates
           config['scheduler']['extraArgs']['feature-gates'] = feature_gates
           config['controllerManager']['extraArgs']['feature-gates'] = feature_gates

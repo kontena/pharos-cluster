@@ -94,7 +94,6 @@ module Pharos
         optional(:name).filled(:str?)
         optional(:api).schema do
           optional(:endpoint).filled(:str?)
-          optional(:feature_gates).filled
         end
         optional(:network).schema do
           optional(:provider).filled(included_in?: %w(weave calico custom))
@@ -189,6 +188,7 @@ module Pharos
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
+          optional(:feature_gates).filled
         end
         optional(:telemetry).schema do
           optional(:enabled).filled(:bool?)
