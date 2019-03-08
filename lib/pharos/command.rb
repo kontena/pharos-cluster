@@ -44,13 +44,13 @@ module Pharos
       ENV["DEBUG"] = "true"
     end
 
+    # rubocop:disable Lint/Debugger
     module Console
       def execute
-        # rubocop:disable Lint/Debugger
         binding.pry
-        # rubocop:enable Lint/Debugger
       end
     end
+    # rubocop:enable Lint/Debugger
 
     if Object.const_defined?(:Pry)
       option ['--console'], :flag, "start console instead of execute", hidden: true do
