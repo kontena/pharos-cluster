@@ -6,7 +6,7 @@ module Pharos
       title "Reconfigure kubelet"
 
       def call
-        return unless host.new?
+        return if host.new?
 
         logger.info { 'Reconfiguring kubelet ...' }
         reconfigure_kubelet
