@@ -108,7 +108,7 @@ module Pharos
     def contact_note
       return if license_key
 
-      "Please contact eval@kontena.io to extend your evaluation"
+      "Please contact sales@kontena.io to extend your evaluation"
     end
 
     def valid?
