@@ -31,7 +31,7 @@ module Pharos
           config['readOnlyPort'] = 10_255
         end
         if feature_gates = @config.kubelet&.feature_gates
-          config['featureGates'] = @config.kubelet.feature_gates
+          config['featureGates'] = feature_gates
         end
 
         config
