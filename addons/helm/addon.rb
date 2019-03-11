@@ -52,15 +52,23 @@ Pharos.addon 'helm' do
 
   # @param resource [K8s::Resource]
   def ensure_resource(resource)
-    old_or_error = kube_client.get_resource(resource) rescue $?
-    if old_or_error.is_a?(K8s::Resource)
+    old = fetch_resource(resource)
+    if old
       kube_client.delete_resource(old_or_error, propagationPolicy: 'Background')
-      while old_or_error.is_a?(K8s::Resource) do
+      until old.nil?
         sleep 1
-        old_or_error = kube_client.get_resource(resource) rescue $?
+        old = fetch_resource(resource)
       end
     end
     kube_client.create_resource(resource)
+  end
+
+  # @param resource [K8s::Resource]
+  # @return [K8s::Resource,NilClass]
+  def fetch_resource(resource)
+    kube_client.get_resource(resource)
+  rescue K8s::Error::NotFound
+    nil
   end
 
   # @param chart [RecursiveOpenStruct]
