@@ -54,7 +54,7 @@ Pharos.addon 'helm' do
   def ensure_resource(resource)
     old = fetch_resource(resource)
     if old
-      kube_client.delete_resource(old_or_error, propagationPolicy: 'Background')
+      kube_client.delete_resource(old, propagationPolicy: 'Background')
       until old.nil?
         sleep 1
         old = fetch_resource(resource)
