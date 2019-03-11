@@ -24,7 +24,7 @@ spec:
         image: <%= image_repository %>/pharos-license-enforcer:<%= version %>
         args:
           - -interval
-          - 30s
+          - 60m
         env:
           - name: NODE
             valueFrom:
