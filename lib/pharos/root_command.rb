@@ -15,7 +15,7 @@ module Pharos
     subcommand "kubeconfig", "fetch admin kubeconfig file", KubeconfigCommand
     subcommand "reset", "reset cluster", ResetCommand
     subcommand %w(exec ssh), "run a command or an interactive session on a host", ExecCommand
-    subcommand "tf", "terraform specific commands", TerraformCommand
+    subcommand %w(tf terraform), "terraform specific commands", TerraformCommand
     subcommand "version", "show version information", VersionCommand
   end
 end
