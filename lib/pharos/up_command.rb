@@ -27,14 +27,9 @@ module Pharos
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config)
-      manager = ClusterManager.new(config)
       start_time = Time.now
 
-      manager.context['force'] = force?
-
-      puts "==> Sharpening tools ...".green
-      manager.load
-      manager.validate
+      manager = cluster_manager('force' => force?)
       show_component_versions(config)
       show_addon_versions(manager)
       manager.apply_addons_cluster_config_modifications
