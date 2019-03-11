@@ -12,6 +12,7 @@ Pharos.addon 'helm' do
         optional(:version).filled(:str?)
         optional(:namespace).filled(:str?)
         optional(:values).filled(:str?)
+        optional(:set).filled(:hash?)
       end
     end
   end
@@ -22,6 +23,7 @@ Pharos.addon 'helm' do
     attribute :version, Pharos::Types::Strict::String.optional
     attribute :namespace, Pharos::Types::Strict::String.default('default')
     attribute :values, Pharos::Types::Strict::String.optional
+    attribute :set, Pharos::Types::Strict::Hash.optional
   end
 
   config do
@@ -99,7 +101,7 @@ Pharos.addon 'helm' do
             containers: [
               {
                 name: "helm",
-                image: "quay.io/jakolehm/helm-worker:latest",
+                image: "quay.io/kontena/pharos-helm-worker-amd64:2.12.3",
                 args: build_args(chart),
                 env: [
                   {
@@ -164,6 +166,8 @@ Pharos.addon 'helm' do
     ]
     args.concat(["--namespace", chart.namespace]) if chart.namespace
     args.concat(["--version", chart.version]) if chart.version
+
+    args.concat(chart.set.to_h.flat_map { |key, val| ["--set", "#{key}=#{val}"] }) if chart.set
 
     args
   end
