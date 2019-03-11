@@ -4,7 +4,7 @@ module Pharos
   class ResetCommand < Pharos::Command
     using Pharos::CoreExt::Colorize
 
-    options :filtered_hosts, :yes?
+    options :filtered_hosts, :tf_json, :yes?
 
     def execute
       puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
@@ -16,8 +16,8 @@ module Pharos
     end
 
     def reset_hosts
-      remaining_hosts = load_config.hosts - filtered_hosts
-      if remaining_hosts.none?(&:master?)
+      load_config.hosts.keep_if { |h| filtered_hosts.include?(h) }
+      if load_config.hosts.none?(&:master?)
         signal_error 'There would be no master hosts left in the cluster after the reset. Reset the whole cluster by running this command without host filters.'
       elsif filtered_hosts.size > 1
         confirm_yes!("==> Do you really want to reset #{filtered_hosts.size} hosts #{filtered_hosts.map(&:address).join(',')} (data may be lost)?".bright_yellow, default: false)
@@ -41,14 +41,6 @@ module Pharos
       cluster_manager.apply_reset_hosts(load_config.hosts)
       reset_time = Time.now - start_time
       puts "==> Cluster has been reset! (took #{humanize_duration(reset_time.to_i)})".green
-    end
-
-    def cluster_manager
-      @cluster_manager ||= ClusterManager.new(load_config).tap do |cluster_manager|
-        puts "==> Sharpening tools ...".green
-        cluster_manager.load
-        cluster_manager.gather_facts
-      end
     end
   end
 end

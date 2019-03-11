@@ -32,8 +32,8 @@ describe Pharos::Kubeadm::ClusterConfig do
 
       it 'comes with proper audit config' do
         config = subject.generate
-        expect(config.dig('apiServerExtraArgs', 'audit-webhook-config-file')).to eq('/etc/pharos/audit/webhook.yml')
-        expect(config.dig('apiServerExtraVolumes')).to include({
+        expect(config.dig('apiServer', 'extraArgs', 'audit-webhook-config-file')).to eq('/etc/pharos/audit/webhook.yml')
+        expect(config.dig('apiServer', 'extraVolumes')).to include({
           'name' => 'k8s-audit-webhook',
           'hostPath' => '/etc/pharos/audit',
           'mountPath' => '/etc/pharos/audit'
@@ -58,15 +58,15 @@ describe Pharos::Kubeadm::ClusterConfig do
 
       it 'comes with proper audit config' do
         config = subject.generate
-        expect(config.dig('apiServerExtraArgs', 'audit-log-path')).to eq('/var/log/kube_audit/audit.json')
-        expect(config.dig('apiServerExtraArgs', 'audit-log-maxage')).to eq('30')
-        expect(config.dig('apiServerExtraArgs', 'audit-log-maxbackup')).to eq('10')
-        expect(config.dig('apiServerExtraArgs', 'audit-log-maxsize')).to eq('200')
-        expect(config.dig('apiServerExtraVolumes')).to include({
+        expect(config.dig('apiServer', 'extraArgs', 'audit-log-path')).to eq('/var/log/kube_audit/audit.json')
+        expect(config.dig('apiServer', 'extraArgs', 'audit-log-maxage')).to eq('30')
+        expect(config.dig('apiServer', 'extraArgs', 'audit-log-maxbackup')).to eq('10')
+        expect(config.dig('apiServer', 'extraArgs', 'audit-log-maxsize')).to eq('200')
+        expect(config.dig('apiServer', 'extraVolumes')).to include({
           'name' => 'k8s-audit-file',
           'hostPath' => '/var/log/kube_audit',
           'mountPath' => '/var/log/kube_audit',
-          'writable' => true
+          'readOnly' => false
         })
       end
     end
@@ -93,7 +93,7 @@ describe Pharos::Kubeadm::ClusterConfig do
     it 'comes with correct master addresses' do
       config.hosts << master
       config = subject.generate
-      expect(config.dig('apiServerCertSANs')).to eq(['localhost', '127.0.0.1', 'test', 'private'])
+      expect(config.dig('apiServer', 'certSANs')).to eq(['localhost', '127.0.0.1', 'test', 'private'])
     end
 
     it 'comes with internal etcd config' do
@@ -105,8 +105,8 @@ describe Pharos::Kubeadm::ClusterConfig do
 
     it 'comes with secrets encryption config' do
       config = subject.generate
-      expect(config.dig('apiServerExtraArgs', 'experimental-encryption-provider-config')).to eq(described_class::SECRETS_CFG_FILE)
-      expect(config['apiServerExtraVolumes']).to include({'name' => 'k8s-secrets-config',
+      expect(config.dig('apiServer', 'extraArgs', 'experimental-encryption-provider-config')).to eq(described_class::SECRETS_CFG_FILE)
+      expect(config.dig('apiServer', 'extraVolumes')).to include({'name' => 'k8s-secrets-config',
         'hostPath' => described_class::SECRETS_CFG_DIR,
         'mountPath' => described_class::SECRETS_CFG_DIR
       })
@@ -156,8 +156,8 @@ describe Pharos::Kubeadm::ClusterConfig do
             'mountPath' => '/etc/pharos'
         }
         config = subject.generate
-        expect(config['apiServerExtraVolumes']).to include(pharos_volume_mount)
-        expect(config['controllerManagerExtraVolumes']).to include(pharos_volume_mount)
+        expect(config.dig('apiServer', 'extraVolumes')).to include(pharos_volume_mount)
+        expect(config.dig('controllerManager', 'extraVolumes')).to include(pharos_volume_mount)
       end
     end
 
@@ -173,13 +173,13 @@ describe Pharos::Kubeadm::ClusterConfig do
 
       it 'comes with proper cloud provider' do
         config = subject.generate
-        expect(config['apiServerExtraArgs']['cloud-provider']).to eq('aws')
+        expect(config.dig('apiServer', 'extraArgs', 'cloud-provider')).to eq('aws')
       end
 
       it 'comes with proper cloud config' do
         config = subject.generate
-        expect(config.dig('apiServerExtraArgs', 'cloud-config')).to be_nil
-        expect(config.dig('controllerManagerExtraArgs', 'cloud-config')).to be_nil
+        expect(config.dig('apiServer', 'extraArgs', 'cloud-config')).to be_nil
+        expect(config.dig('controllerManager', 'extraArgs', 'cloud-config')).to be_nil
       end
     end
 
@@ -196,13 +196,13 @@ describe Pharos::Kubeadm::ClusterConfig do
 
       it 'comes with proper cloud provider' do
         config = subject.generate
-        expect(config['apiServerExtraArgs']['cloud-provider']).to eq('aws')
+        expect(config.dig('apiServer', 'extraArgs', 'cloud-provider')).to eq('aws')
       end
 
       it 'comes with proper cloud config' do
         config = subject.generate
-        expect(config.dig('apiServerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
-        expect(config.dig('controllerManagerExtraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
+        expect(config.dig('apiServer', 'extraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
+        expect(config.dig('controllerManager', 'extraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
       end
     end
 
@@ -228,7 +228,7 @@ describe Pharos::Kubeadm::ClusterConfig do
 
       it 'comes with proper authentication webhook token config' do
         config = subject.generate
-        expect(config['apiServerExtraArgs']['authentication-token-webhook-config-file'])
+        expect(config.dig('apiServer', 'extraArgs', 'authentication-token-webhook-config-file'))
           .to eq('/etc/kubernetes/authentication/token-webhook-config.yaml')
       end
 
@@ -241,7 +241,7 @@ describe Pharos::Kubeadm::ClusterConfig do
           }
         ]
         config = subject.generate
-        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0])
+        expect(config.dig('apiServer', 'extraVolumes')).to include(valid_volume_mounts[0])
       end
     end
 
@@ -262,11 +262,11 @@ describe Pharos::Kubeadm::ClusterConfig do
 
       it 'comes with proper oidc flags for api-server' do
         config = subject.generate
-        expect(config['apiServerExtraArgs']['oidc-issuer-url'])
+        expect(config.dig('apiServer', 'extraArgs', 'oidc-issuer-url'))
           .to eq('https://accounts.google.com')
-          expect(config['apiServerExtraArgs']['oidc-client-id'])
+          expect(config.dig('apiServer', 'extraArgs', 'oidc-client-id'))
           .to eq('foobar')
-          expect(config['apiServerExtraArgs']['oidc-username-claim'])
+          expect(config.dig('apiServer', 'extraArgs', 'oidc-username-claim'))
           .to eq('email')
       end
 
@@ -279,9 +279,36 @@ describe Pharos::Kubeadm::ClusterConfig do
           }
         ]
         config = subject.generate
-        expect(config['apiServerExtraVolumes']).to include(valid_volume_mounts[0])
-        expect(config['apiServerExtraArgs']['oidc-ca-file'])
+        expect(config.dig('apiServer', 'extraVolumes')).to include(valid_volume_mounts[0])
+        expect(config.dig('apiServer', 'extraArgs', 'oidc-ca-file'))
           .to eq('/etc/kubernetes/authentication/oidc_ca.crt')
+      end
+    end
+
+    context 'with control plane feature gates' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        control_plane: {
+          feature_gates: {
+            foo: true
+          }
+        }
+      ) }
+
+      it 'adds feature gates in apiServer extraArgs' do
+        extra_args = subject.generate.dig('apiServer','extraArgs')
+        expect(extra_args['feature-gates']).to eq('foo=true')
+      end
+
+      it 'adds feature gates in scheduler extraArgs' do
+        extra_args = subject.generate.dig('scheduler','extraArgs')
+        expect(extra_args['feature-gates']).to eq('foo=true')
+      end
+
+      it 'adds feature gates in controllerManager extraArgs' do
+        extra_args = subject.generate.dig('controllerManager','extraArgs')
+        expect(extra_args['feature-gates']).to eq('foo=true')
       end
     end
 
@@ -298,7 +325,7 @@ describe Pharos::Kubeadm::ClusterConfig do
         ) }
 
         it 'configures enabled plugins to api server' do
-          extra_args = subject.generate['apiServerExtraArgs']
+          extra_args = subject.generate['apiServer']['extraArgs']
           expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages,NamespaceLifecycle,ServiceAccount')
           expect(extra_args['disable-admission-plugins']).to eq('Priority')
         end
@@ -311,7 +338,7 @@ describe Pharos::Kubeadm::ClusterConfig do
         ) }
 
         it 'configures default plugins to api server' do
-          extra_args = subject.generate['apiServerExtraArgs']
+          extra_args = subject.generate['apiServer']['extraArgs']
           expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
           plugins = extra_args['enable-admission-plugins'].split(',')
           expect(plugins).to include('PodSecurityPolicy')
@@ -328,7 +355,7 @@ describe Pharos::Kubeadm::ClusterConfig do
         ) }
 
         it 'configures default plugins to api server' do
-          extra_args = subject.generate['apiServerExtraArgs']
+          extra_args = subject.generate['apiServer']['extraArgs']
           expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
           plugins = extra_args['enable-admission-plugins'].split(',')
           expect(plugins).to include('PodSecurityPolicy')
@@ -348,7 +375,7 @@ describe Pharos::Kubeadm::ClusterConfig do
         ) }
 
         it 'configures enabled plugins to api server' do
-          extra_args = subject.generate['apiServerExtraArgs']
+          extra_args = subject.generate['apiServer']['extraArgs']
           expect(extra_args['enable-admission-plugins']).to eq('PodSecurityPolicy,NodeRestriction,AlwaysPullImages,NamespaceLifecycle,ServiceAccount')
           expect(extra_args.has_key?('disable-admission-plugins')).to be_falsey
         end
@@ -365,7 +392,7 @@ describe Pharos::Kubeadm::ClusterConfig do
         ) }
 
         it 'configures correct plugins to api server' do
-          extra_args = subject.generate['apiServerExtraArgs']
+          extra_args = subject.generate['apiServer']['extraArgs']
           expect(extra_args['disable-admission-plugins']).to eq('PodSecurityPolicy,AlwaysPullImages')
           expect(extra_args.has_key?('enable-admission-plugins')).to be_truthy
           expect(extra_args['enable-admission-plugins']).to eq('NodeRestriction,NamespaceLifecycle,ServiceAccount')

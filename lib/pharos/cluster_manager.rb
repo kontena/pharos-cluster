@@ -60,6 +60,7 @@ module Pharos
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
       apply_phase(Phases::WarmUpClientCache, %w(localhost)) if config.hosts.any?(&:master_healthy?)
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
+      apply_phase(Phases::ConfigureClusterName, %w(localhost))
     end
 
     def validate
@@ -97,6 +98,8 @@ module Pharos
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
 
       apply_phase(Phases::WarmUpClientCache, %w(localhost)) if config.hosts.any?(&:master_healthy?)
+
+      apply_phase(Phases::ReconfigureKubelet, config.hosts, parallel: true)
 
       # master is now configured and can be used
       # configure essential services

@@ -92,6 +92,12 @@ resource "digitalocean_volume_attachment" "pharos_storage" {
   volume_id               = "${element(digitalocean_volume.pharos_storage.*.id, count.index)}"
 }
 
+output "pharos_cluster" {
+  value = {
+    name = "${var.cluster_name}"
+  }
+}
+
 output "pharos_hosts" {
   value = {
     masters = {
