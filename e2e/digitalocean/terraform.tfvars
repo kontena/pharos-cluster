@@ -12,3 +12,4 @@ worker_size = "8gb"
 image = "ubuntu-18-04-x64"
 
 region = "fra1"
+

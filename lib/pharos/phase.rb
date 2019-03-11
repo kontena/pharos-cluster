@@ -4,6 +4,8 @@ require 'logger'
 
 module Pharos
   class Phase
+    using Pharos::CoreExt::Colorize
+
     RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
 
     # @return [String]
@@ -34,13 +36,29 @@ module Pharos
       @host.transport
     end
 
+    FORMATTER_COLOR = proc do |severity, _datetime, progname, msg|
+      color = case severity
+              when "DEBUG" then :dim
+              when "INFO" then :to_s
+              when "WARN" then :yellow
+              else :red
+              end
+      "    [%<progname>s] %<msg>s\n" % { progname: progname.send(color), msg: msg }
+    end
+
+    FORMATTER_NO_COLOR = proc do |severity, _datetime, progname, msg|
+      if severity == "INFO"
+        "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }
+      else
+        "    [%<progname>s] [%<severity>s] %<msg>s\n" % { progname: progname, severity: severity, msg: msg }
+      end
+    end
+
     def logger
       @logger ||= Logger.new($stdout).tap do |logger|
         logger.progname = @host.to_s
         logger.level = Pharos::Logging.log_level
-        logger.formatter = proc do |_severity, _datetime, progname, msg|
-          "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }
-        end
+        logger.formatter = Pharos::CoreExt::Colorize.enabled? ? FORMATTER_COLOR : FORMATTER_NO_COLOR
       end
     end
 
