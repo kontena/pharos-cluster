@@ -285,6 +285,33 @@ describe Pharos::Kubeadm::ClusterConfig do
       end
     end
 
+    context 'with control plane feature gates' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        control_plane: {
+          feature_gates: {
+            foo: true
+          }
+        }
+      ) }
+
+      it 'adds feature gates in apiServer extraArgs' do
+        extra_args = subject.generate.dig('apiServer','extraArgs')
+        expect(extra_args['feature-gates']).to eq('foo=true')
+      end
+
+      it 'adds feature gates in scheduler extraArgs' do
+        extra_args = subject.generate.dig('scheduler','extraArgs')
+        expect(extra_args['feature-gates']).to eq('foo=true')
+      end
+
+      it 'adds feature gates in controllerManager extraArgs' do
+        extra_args = subject.generate.dig('controllerManager','extraArgs')
+        expect(extra_args['feature-gates']).to eq('foo=true')
+      end
+    end
+
     context 'with admission plugins' do
       context 'with proper config' do
         let(:config) { Pharos::Config.new(

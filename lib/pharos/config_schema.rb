@@ -184,9 +184,11 @@ module Pharos
         optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
+          optional(:feature_gates).filled
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
+          optional(:feature_gates).filled
         end
         optional(:telemetry).schema do
           optional(:enabled).filled(:bool?)
