@@ -15,11 +15,13 @@ $ chpharos install --use latest
 
 ## Configure Terraform
 
+Copy [terraform.example.tfvars](./terraform.example.tfvars) example file to `terraform.tfvars`:
+
 ```
 $ cp terraform.example.tfvars terraform.tfvars
 ```
 
-Fill `project_id` & `auth_token` to `terraform.tfvars`.
+Edit `project_id` and `auth_token`. Optionally you can also configure number of machines and their types. Once done save the file.
 
 ## Create Cluster
 
