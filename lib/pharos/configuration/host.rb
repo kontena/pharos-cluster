@@ -44,16 +44,6 @@ module Pharos
         @gateway ||= Pharos::Transport::Gateway.new(self)
       end
 
-      # @return [Boolean]
-      def gateway?
-        !!@gateway
-      end
-
-      # @return [Boolean]
-      def kube_client?
-        !@kube_client.nil?
-      end
-
       # @return [K8s::Client,nil]
       def kube_client
         @kube_client ||= Pharos::Kube::Client.new(self)
@@ -61,10 +51,11 @@ module Pharos
         nil
       end
 
-      # @return [nil]
-      def disconnect_kube_client
-        @kube_client&.disconnect
-        @kube_client = nil
+      # Accessor to host transport which handles running commands and manipulating files on the
+      # target host
+      # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
+      def transport
+        @transport ||= Pharos::Transport.for(self)
       end
 
       # @return [Boolean]
@@ -75,18 +66,14 @@ module Pharos
         false
       end
 
-      # Accessor to host transport which handles running commands and manipulating files on the
-      # target host
-      # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
-      def transport
-        @transport ||= Pharos::Transport.for(self)
-      end
-
       # @return [nil]
       def disconnect
-        disconnect_kube_client
+        @kube_client&.disconnect
+        @kube_client = nil
+
         transport.disconnect if transport.connected?
         gateway.shutdown! if gateway?
+
         @transport = nil
         @gateway = nil
       end
@@ -234,6 +221,16 @@ module Pharos
         return if self.bastion
 
         attributes[:bastion] = bastion
+      end
+
+      # @return [Boolean]
+      def gateway?
+        !!@gateway
+      end
+
+      # @return [Boolean]
+      def kube_client?
+        !@kube_client.nil?
       end
     end
   end
