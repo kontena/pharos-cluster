@@ -12,8 +12,12 @@ describe Pharos::AddonManager.addons['helm'] do
   let(:kube_client) { instance_double(K8s::Client) }
   let(:cpu_arch) { double(:cpu_arch ) }
 
+  before do
+    allow(subject).to receive(:kube_client).and_return(kube_client)
+  end
+
   subject do
-    described_class.new(config, enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config)
+    described_class.new(config, enabled: true, cpu_arch: cpu_arch, cluster_config: cluster_config)
   end
 
   describe "#build_args" do
