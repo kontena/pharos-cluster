@@ -94,7 +94,7 @@ Pharos.addon 'helm' do
         }
       },
       spec: {
-        backoffLimit: 1000,
+        backoffLimit: 100,
         template: {
           metadata: {
             labels: {
