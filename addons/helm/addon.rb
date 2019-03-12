@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 Pharos.addon 'helm' do
-  version '2.12.1'
+  version '2.12.3'
   license 'Apache License 2.0'
+
+  LABEL_NAME = 'helm.kontena.io/chart'
 
   config_schema do
     optional(:charts).each do
@@ -84,7 +86,7 @@ Pharos.addon 'helm' do
         name: "helm-apply-#{chart.name.split('/').last}",
         namespace: "kube-system",
         labels: {
-          'helm.pharos.sh/chart': chart.name.split('/').last
+          LABEL_NAME => chart.name.split('/').last
         }
       },
       spec: {
@@ -92,7 +94,7 @@ Pharos.addon 'helm' do
         template: {
           metadata: {
             labels: {
-              'helm.pharos.sh/chart': chart.name.split('/').last
+              LABEL_NAME => chart.name.split('/').last
             }
           },
           spec: {
@@ -101,7 +103,7 @@ Pharos.addon 'helm' do
             containers: [
               {
                 name: "helm",
-                image: "quay.io/kontena/pharos-helm-worker-amd64:2.12.3",
+                image: "#{cluster_config.image_repository}/pharos-helm-worker:#{self.class.version}",
                 args: build_args(chart),
                 env: [
                   {
@@ -149,7 +151,7 @@ Pharos.addon 'helm' do
         name: "helm-apply-values-#{chart.name.split('/').last}",
         namespace: "kube-system",
         labels: {
-          'helm.pharos.sh/chart': chart.name.split('/').last
+          LABEL_NAME => chart.name.split('/').last
         }
       },
       data: {
