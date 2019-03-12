@@ -9,6 +9,15 @@ module Pharos
 
       attr_reader :session
 
+      def self.options_for(host)
+        {}.tap do |opts|
+          opts[:keys] = [host.ssh_key_path] if host.ssh_key_path
+          opts[:send_env] = [] # override default to not send LC_* envs
+          opts[:proxy] = Net::SSH::Proxy::Command.new(host.ssh_proxy_command) if host.ssh_proxy_command && !host.bastion
+          opts[:port] = host.ssh_port
+        end
+      end
+
       RETRY_CONNECTION_ERRORS = [
         Net::SSH::AuthenticationFailed,
         Net::SSH::Authentication::KeyManagerError,
@@ -25,10 +34,12 @@ module Pharos
         @port = port || host.ssh_port
       end
 
+      # @return [String]
       def to_s
         "SSH #{via.dim}" + "#{host.user}@#{host.address}:#{host.ssh_port}"
       end
 
+      # @return [String]
       def via
         if @gateway
           "#{@gateway} => 127.0.0.1:#{@port} => "
@@ -39,6 +50,8 @@ module Pharos
         end
       end
 
+      # @raise [multiple] when unsuccesful
+      # @return [Pharos::Transport::SSH] when successful
       def connect
         synchronize do
           connect_address = @gateway ? '127.0.0.1' : host.address
@@ -46,9 +59,16 @@ module Pharos
           non_interactive = true
           begin
             logger.debug { "connect #{self}" }
-            @session = Net::SSH.start(connect_address, host.user, host.ssh_options.merge(non_interactive: non_interactive, port: @port))
+            @session = Net::SSH.start(
+              connect_address,
+              host.user,
+              Pharos::Transport::SSH.options_for(host).merge(
+                non_interactive: non_interactive,
+                port: @port
+              )
+            )
             logger.debug { "connected" }
-            true
+            self
           rescue *RETRY_CONNECTION_ERRORS => exc
             logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{self}" }
             raise if non_interactive == false || !$stdin.tty? # don't re-retry

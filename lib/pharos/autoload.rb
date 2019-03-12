@@ -55,6 +55,7 @@ module Pharos
   module Kube
     autoload :Stack, 'pharos/kube/stack'
     autoload :Config, 'pharos/kube/config'
+    autoload :Client, 'pharos/kube/client'
   end
 
   module CommandOptions

@@ -39,16 +39,6 @@ module Pharos
         hostname.split('.').first
       end
 
-      # @return [Hash]
-      def ssh_options
-        {}.tap do |opts|
-          opts[:keys] = [ssh_key_path] if ssh_key_path
-          opts[:send_env] = [] # override default to not send LC_* envs
-          opts[:proxy] = Net::SSH::Proxy::Command.new(ssh_proxy_command) if ssh_proxy_command && !bastion
-          opts[:port] = ssh_port
-        end
-      end
-
       # @return [Pharos::Transport::Gateway]
       def gateway
         @gateway ||= Pharos::Transport::Gateway.new(self)
@@ -59,16 +49,6 @@ module Pharos
         !!@gateway
       end
 
-      # @return [Hash] kubernetes config
-      def kubeconfig
-        cfg_file = transport.file('/etc/kubernetes/admin.conf')
-        return nil unless cfg_file.exist?
-
-        cfg = Pharos::Kube::Config.new(cfg_file.read)
-        cfg.update_server_address(api_address)
-        cfg.to_h
-      end
-
       # @return [Boolean]
       def kube_client?
         !@kube_client.nil?
@@ -76,25 +56,15 @@ module Pharos
 
       # @return [K8s::Client,nil]
       def kube_client
-        return @kube_client if @kube_client
-
-        cfg = kubeconfig
-        return unless cfg
-
-        @kube_gw = bastion&.host&.gateway || gateway
-        @kube_gw_port = @kube_gw.open(api_address, 6443)
-
-        @kube_client = Pharos::Kube.client('localhost', cfg, @kube_gw_port)
+        @kube_client ||= Pharos::Kube::Client.new(self)
+      rescue Pharos::Kube::Client::ConfigurationFileMissing
+        nil
       end
 
       # @return [nil]
       def disconnect_kube_client
-        return unless kube_client?
-
+        @kube_client&.disconnect
         @kube_client = nil
-        @kube_gw.close(@kube_gw_port)
-        @kube_gw_port = nil
-        @kubw_gw = nil
       end
 
       # @return [Boolean]
@@ -114,11 +84,11 @@ module Pharos
 
       # @return [nil]
       def disconnect
-        disconnect_kube_client if kube_client?
+        disconnect_kube_client
         transport.disconnect if transport.connected?
         gateway.shutdown! if gateway?
-
-        nil
+        @transport = nil
+        @gateway = nil
       end
 
       # @return [String]

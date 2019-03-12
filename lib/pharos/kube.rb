@@ -13,13 +13,6 @@ module Pharos
       # rubocop:enable Style/GuardClause
     end
 
-    # @param host [String]
-    # @param config [Hash]
-    # @return [K8s::Client]
-    def self.client(host, config, port = 6443)
-      K8s::Client.config(K8s::Config.new(config), server: "https://#{host}:#{port}")
-    end
-
     # @param name [String]
     # @param path [String]
     # @param vars [Hash]

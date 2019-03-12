@@ -267,6 +267,7 @@ module Pharos
       )
     end
 
+    # @return [K8s::Client,nil]
     def kube_client
       @kube_client ||= @cluster_config.kube_client
     end
