@@ -46,8 +46,9 @@ module Pharos
 
     # @param file [String]
     def self.load_addon(file)
-      source = File.read(file)
-      Pharos::AddonContext.new.context.instance_eval(source, file)
+      require file
+      #source = File.read(file)
+      #Pharos::AddonContext.new.context.instance_eval(source, file)
     end
 
     # @param config [Pharos::Configuration]
