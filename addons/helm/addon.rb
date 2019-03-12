@@ -26,6 +26,10 @@ Pharos.addon 'helm' do
     attribute :namespace, Pharos::Types::Strict::String.default('default')
     attribute :values, Pharos::Types::Strict::String.optional
     attribute :set, Pharos::Types::Strict::Hash.optional
+
+    def release_name
+      @release_name ||= name.split('/').last
+    end
   end
 
   config do
@@ -83,10 +87,10 @@ Pharos.addon 'helm' do
       apiVersion: "batch/v1",
       kind: "Job",
       metadata: {
-        name: "helm-apply-#{chart.name.split('/').last}",
+        name: "helm-apply-#{chart.release_name}",
         namespace: "kube-system",
         labels: {
-          LABEL_NAME => chart.name.split('/').last
+          LABEL_NAME => chart.release_name
         }
       },
       spec: {
@@ -94,7 +98,7 @@ Pharos.addon 'helm' do
         template: {
           metadata: {
             labels: {
-              LABEL_NAME => chart.name.split('/').last
+              LABEL_NAME => chart.release_name
             }
           },
           spec: {
@@ -108,7 +112,7 @@ Pharos.addon 'helm' do
                 env: [
                   {
                     name: "NAME",
-                    value: chart.name.split('/').last
+                    value: chart.release_name
                   },
                   {
                     name: "VERSION",
@@ -148,10 +152,10 @@ Pharos.addon 'helm' do
       apiVersion: "v1",
       kind: "ConfigMap",
       metadata: {
-        name: "helm-apply-values-#{chart.name.split('/').last}",
+        name: "helm-apply-values-#{chart.release_name}",
         namespace: "kube-system",
         labels: {
-          LABEL_NAME => chart.name.split('/').last
+          LABEL_NAME => chart.release_name
         }
       },
       data: {
@@ -164,7 +168,7 @@ Pharos.addon 'helm' do
   # @return [Array<String>]
   def build_args(chart)
     args = [
-      "install", "--name", chart.name.split('/').last, chart.name
+      "install", "--name", chart.release_name, chart.name
     ]
     args.concat(["--namespace", chart.namespace]) if chart.namespace
     args.concat(["--version", chart.version]) if chart.version
