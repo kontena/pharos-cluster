@@ -22,12 +22,6 @@ module Pharos
     using Pharos::CoreExt::DeepTransformKeys
     include Pharos::Logging
 
-    class << self
-      def to_s
-        "#{addon_name.capitalize} Addon"
-      end
-    end
-
     # return class for use as superclass in Dry::Validation.Params
     Schema = Dry::Validation.Schema(build: false) do
       configure do
@@ -60,6 +54,10 @@ module Pharos
     class << self
       attr_reader :addon_name
       attr_writer :addon_location
+
+      def to_s
+        "#{addon_name&.capitalize || 'Base'} Addon"
+      end
 
       # @return [String]
       def addon_location
