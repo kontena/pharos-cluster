@@ -7,10 +7,11 @@
 - [Terraform](https://www.terraform.io/) installed locally
 - Packet.net credentials
 
-## Install the latest version
+## Clone this repository
 
 ```
-$ chpharos install --use latest
+$ git clone https://github.com/kontena/pharos-cluster.git
+$ cd pharos-cluster/examples/terraform-packet/
 ```
 
 ## Configure Terraform
@@ -28,6 +29,8 @@ Edit `project_id` and `auth_token`. Optionally you can also configure number of 
 ```
 $ pharos tf apply
 ```
+
+This command will first execute Terraform to create the infrastructure, collects host information and passes this information back to `pharos`. Finally it will configure
 
 ## Teardown Cluster
 
