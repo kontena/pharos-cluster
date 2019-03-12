@@ -18,13 +18,13 @@ module Pharos
       def camelcase
         return self if empty?
 
-        extend(StringCasing).underscore.split('_').map(&:capitalize).join
+        dup.extend(StringCasing).underscore.split('_').map(&:capitalize).join
       end
 
       def camelback
         return self if empty?
 
-        camelcased = extend(StringCasing).camelcase
+        camelcased = dup.extend(StringCasing).camelcase
         camelcased[0] = camelcased[0].downcase
         camelcased
       end

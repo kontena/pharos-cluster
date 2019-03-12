@@ -8,13 +8,19 @@ require_relative 'addons/struct'
 require_relative 'logging'
 
 module Pharos
+  using Pharos::CoreExt::StringCasing
+
   # @param name [String]
   # @return [Pharos::Addon]
   def self.addon(name, &block)
-    Class.new(Pharos::Addon, &block).tap do |addon|
-      addon.addon_location = File.dirname(block.source_location.first)
-      addon.addon_name = name
-    end
+    definition = <<~ADDON
+      class ::Pharos::Addons::#{name.camelcase} < ::Pharos::Addon
+        self.addon_location = '#{File.dirname(block.source_location.first)}'.freeze
+        self.addon_name = '#{name}'.freeze
+
+        #{File.read(block.source_location.first).lines[block.source_location.last+1..-1].tap { |lines| lines.last = "end\n" if lines.last.strip == '}' }.join}
+    ADDON
+    Pharos::Addons.module_eval(definition, block.source_location.first)
   end
 
   class Addon
@@ -54,10 +60,6 @@ module Pharos
     class << self
       attr_reader :addon_name
       attr_writer :addon_location
-
-      def to_s
-        "#{addon_name&.capitalize || 'Base'} Addon"
-      end
 
       # @return [String]
       def addon_location
@@ -154,18 +156,18 @@ module Pharos
 
         case hook.arity
         when 1
-          hook.call(new_config)
+          instance_exec(new_config, &hook)
         when 2
-          hook.call(old_config, new_config)
+          instance_exec(old_config, new_config, &hook)
         when 3
           HashDiff.diff(old_config, new_config).each do |changeset|
             case changeset.first
             when '-'
-              hook.call(changeset[1], changeset[2], nil)
+              instance_exec(changeset[1], changeset[2], nil, &hook)
             when '+'
-              hook.call(changeset[1], nil, changeset[2])
+              instance_exec(changeset[1], nil, changeset[2], &hook)
             when '~'
-              hook.call(changeset[1], changeset[2], changeset[3])
+              instance_exec(changeset[1], changeset[2], changeset[3], &hook)
             end
           end
         end
@@ -227,7 +229,7 @@ module Pharos
 
     def apply_install
       if hooks[:install]
-        instance_eval(&hooks[:install])
+        instance_exec(&hooks[:install])
       else
         apply_resources
       end
@@ -235,7 +237,7 @@ module Pharos
 
     def apply_uninstall
       if hooks[:uninstall]
-        instance_eval(&hooks[:uninstall])
+        instance_exec(&hooks[:uninstall])
       else
         delete_resources
       end
