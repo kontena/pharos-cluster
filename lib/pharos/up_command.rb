@@ -98,10 +98,10 @@ module Pharos
             puts
             puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this might cause downtime."
           else
-            error_message = <<~EOF
+            error_message = <<~ERROR_MSG
               Upgrading to version #{Pharos.version} might cause downtime. You may force the upgrade by running
               the command with --force or use the Kontena Pharos Pro version.
-            EOF
+            ERROR_MSG
             signal_error error_message
           end
         end
