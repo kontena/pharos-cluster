@@ -96,10 +96,13 @@ module Pharos
         if context['unsafe_upgrade']
           if force?
             puts
-            puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this can break your cluster."
+            puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this might cause downtime."
           else
-            signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" \
-                         "the command with --force or use the Kontena Pharos Pro version."
+            error_message = <<~ERROR_MSG
+              Upgrading to version #{Pharos.version} might cause downtime. You may force the upgrade by running
+              the command with --force or use the Kontena Pharos Pro version.
+            ERROR_MSG
+            signal_error error_message
           end
         end
         puts
