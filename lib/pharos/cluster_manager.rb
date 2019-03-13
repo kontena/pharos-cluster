@@ -58,23 +58,23 @@ module Pharos
     def gather_facts
       apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
-      apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
-      apply_phase(Phases::ConfigureClusterName, %w(localhost))
+      apply_phase(Phases::ConfigureClient, config.master_host, parallel: false, optional: true)
+      apply_phase(Phases::LoadClusterConfiguration, config.master_host) if config.master_host.master_sort_score.zero?
+      apply_phase(Phases::ConfigureClusterName, 'localhost')
     end
 
     def validate
-      apply_phase(Phases::UpgradeCheck, %w(localhost))
+      apply_phase(Phases::UpgradeCheck, 'localhost')
       addon_manager.validate
       gather_facts
-      apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
+      apply_phase(Phases::ValidateConfigurationChanges, 'localhost') if @context['previous-config']
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
-      apply_phase(Phases::ValidateVersion, [config.master_host], parallel: false)
+      apply_phase(Phases::ValidateVersion, config.master_host, parallel: false)
     end
 
     def apply_phases
       master_hosts = config.master_hosts
-      master_only = [config.master_host]
+      master_only = config.master_host
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
@@ -83,8 +83,8 @@ module Pharos
       unless @config.etcd&.endpoints
         etcd_hosts = config.etcd_hosts
         apply_phase(Phases::ConfigureCfssl, etcd_hosts, parallel: true)
-        apply_phase(Phases::ConfigureEtcdCa, [etcd_hosts.first], parallel: false)
-        apply_phase(Phases::ConfigureEtcdChanges, [etcd_hosts.first], parallel: false)
+        apply_phase(Phases::ConfigureEtcdCa, etcd_hosts.first, parallel: false)
+        apply_phase(Phases::ConfigureEtcdChanges, etcd_hosts.first, parallel: false)
         apply_phase(Phases::ConfigureEtcd, etcd_hosts, parallel: true)
       end
 
@@ -120,7 +120,7 @@ module Pharos
     end
 
     # @param hosts [Array<Pharos::Configuration::Host>]
-    def apply_reset_hosts(hosts)
+    def apply_reset_hosts(*hosts)
       master_hosts = config.master_hosts
       if master_hosts.first.master_sort_score.zero?
         apply_phase(Phases::Drain, hosts, parallel: false)
@@ -130,7 +130,7 @@ module Pharos
         next unless addon.enabled?
 
         puts "==> Resetting addon #{addon.name}".cyan
-        hosts.each do |host|
+        hosts.flatten.each do |host|
           addon.apply_reset_host(host)
         end
       end
@@ -148,7 +148,8 @@ module Pharos
 
     # @param phase_class [Pharos::Phase]
     # @param hosts [Array<Pharos::Configuration::Host>]
-    def apply_phase(phase_class, hosts, **options)
+    def apply_phase(phase_class, *hosts, **options)
+      hosts.flatten!
       return if hosts.empty?
 
       puts "==> #{phase_class.title} @ #{hosts.join(' ')}".cyan
@@ -171,7 +172,7 @@ module Pharos
 
     def save_config
       master_host = config.master_host
-      apply_phase(Phases::StoreClusterConfiguration, [master_host])
+      apply_phase(Phases::StoreClusterConfiguration, master_host)
     end
 
     def disconnect
