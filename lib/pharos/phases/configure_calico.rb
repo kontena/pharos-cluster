@@ -5,7 +5,7 @@ module Pharos
     class ConfigureCalico < Pharos::Phase
       title "Configure Calico network"
 
-      CALICO_VERSION = '3.5.1'
+      CALICO_VERSION = '3.6.0'
 
       register_component(
         name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
