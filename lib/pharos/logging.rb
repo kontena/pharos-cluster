@@ -5,11 +5,11 @@ require 'logger'
 module Pharos
   module Logging
     def self.format_exception(exc, severity = "ERROR")
-      return exc unless exc.kind_of?(Exception)
+      return exc unless exc.is_a?(Exception)
 
       if ENV["DEBUG"] || severity == "DEBUG"
         message = exc.message.strip
-        backtrace = "\n    #{exc.backtrace.join("\n    ") }"
+        backtrace = "\n    #{exc.backtrace.join("\n    ")}"
       else
         message = exc.message[/\A(.+?)$/m, 1]
         backtrace = nil
