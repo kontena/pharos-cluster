@@ -28,8 +28,7 @@ spec:
       serviceAccountName: calico-kube-controllers
       containers:
         - name: calico-kube-controllers
-          # TODO FIx image
-          image: calico/kube-controllers:v3.6.0
+          image: <%= image_repository %>/calico-kube-controllers:v<%= version %>
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS

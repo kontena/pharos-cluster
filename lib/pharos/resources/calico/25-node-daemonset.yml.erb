@@ -48,7 +48,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: docker.io/calico/cni:v3.6.0
+          image: <%= image_repository %>/calico-cni:v<%= version %>
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -68,7 +68,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: docker.io/calico/cni:v3.6.0
+          image: <%= image_repository %>/calico-cni:v<%= version %>
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -104,8 +104,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          #image: <%= image_repository %>/calico-node:v<%= version %>
-          image: docker.io/calico/node:v3.6.0
+          image: <%= image_repository %>/calico-node:v<%= version %>
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
