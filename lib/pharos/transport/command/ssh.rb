@@ -12,9 +12,12 @@ module Pharos
 
         # @return [Pharos::Transport::CommandResult]
         def run
+          retried ||= false
           raise Pharos::ExecError.new(@source || cmd, -127, "Connection not established") unless @client.connected?
 
           result.append(@source.nil? ? @cmd : "#{@cmd} < #{@source}", :cmd)
+          @client.connect unless @client.connected?
+
           response = @client.session.open_channel do |channel|
             channel.env('LC_ALL', 'C.UTF-8')
             channel.exec @cmd do |_, success|
@@ -43,6 +46,13 @@ module Pharos
           response.wait
 
           result
+        rescue IOError # Happens on a tunneled connection if the tunnel dies between commands
+          raise if retried
+
+          retried = true
+          @client.disconnect
+          @client.connect
+          retry
         end
       end
     end
