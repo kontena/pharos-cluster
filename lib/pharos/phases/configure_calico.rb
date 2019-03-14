@@ -63,7 +63,7 @@ module Pharos
           envs: @config.network.calico&.environment || {},
           metrics_enabled: metrics_enabled?,
           metrics_port: metrics_port,
-          mtu: @config.network.calico&.mtu || 1500,
+          mtu: @config.network.calico&.mtu || 1500
         )
       end
 
