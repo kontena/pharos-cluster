@@ -17,6 +17,11 @@ module Pharos
         enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
+      register_component(
+        name: 'calico-kube-controllers', version: CALICO_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.network&.provider == 'calico' }
+      )
+
       # @param name [String]
       # @return [K8s::Resource, nil]
       def get_ippool(name)
@@ -57,7 +62,8 @@ module Pharos
           firewalld_enabled: !!@config.network&.firewalld&.enabled,
           envs: @config.network.calico&.environment || {},
           metrics_enabled: metrics_enabled?,
-          metrics_port: metrics_port
+          metrics_port: metrics_port,
+          mtu: @config.network.calico&.mtu || 1500,
         )
       end
 

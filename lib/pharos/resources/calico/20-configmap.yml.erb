@@ -11,7 +11,8 @@ data:
   calico_backend: "bird"
 
   # Configure the MTU to use
-  veth_mtu: "1500"
+  veth_mtu: "<%= mtu %>"
+  felix_mtu: "<%= (mtu - 20) %>"
 
   # The CNI network configuration to install on each node.
   cni_network_config: |-
@@ -24,7 +25,7 @@ data:
           "log_level": "info",
           "datastore_type": "kubernetes",
           "nodename": "__KUBERNETES_NODE_NAME__",
-          "mtu": 1500,
+          "mtu": __CNI_MTU__,
           "ipam": {
             "type": "calico-ipam"
           },
