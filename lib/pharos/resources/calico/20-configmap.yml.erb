@@ -7,14 +7,11 @@ metadata:
 data:
   ipv4_pool_cidr: "<%= ipv4_pool_cidr %>"
 
-
-
   # Configure the Calico backend to use.
   calico_backend: "bird"
 
-  # TODO Do we need mtu setting?
   # Configure the MTU to use
-  veth_mtu: "1440"
+  veth_mtu: "1500"
 
   # The CNI network configuration to install on each node.
   cni_network_config: |-
