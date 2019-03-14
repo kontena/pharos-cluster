@@ -46,7 +46,6 @@ jobs:
         - NETWORK_PROVIDER=calico
     - stage: publish binary
       script: ./build/travis/macos.sh
-      rvm: 2.5.4
       os: osx
       install: ls -l
       deploy:
@@ -63,7 +62,6 @@ jobs:
           all_branches: true
     - stage: publish binary
       script: ./build/travis/macos_oss.sh
-      rvm: 2.5.4
       os: osx
       install: ls -l
       env:
