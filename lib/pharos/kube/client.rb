@@ -12,8 +12,8 @@ module Pharos
         cfg_file = host.transport.file('/etc/kubernetes/admin.conf')
         raise ConfigurationFileMissing unless cfg_file.exist?
 
-        @kube_gw = host.bastion&.host&.gateway || host.gateway
-        @kube_gw_port = @kube_gw.open(host.api_address, 6443)
+        @kube_gw = Pharos::Transport.gateway(host&.bastion&.host || host.gateway)
+        @kube_gw_port = @kube_gw.gateway.open(host.api_address, 6443)
 
         super(
           K8s::Transport.config(

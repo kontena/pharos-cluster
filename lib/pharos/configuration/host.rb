@@ -39,11 +39,6 @@ module Pharos
         hostname.split('.').first
       end
 
-      # @return [Pharos::Transport::Gateway]
-      def gateway
-        @gateway ||= Pharos::Transport::Gateway.new(self)
-      end
-
       # @return [K8s::Client,nil]
       def kube_client
         @kube_client ||= Pharos::Kube::Client.new(self)
@@ -55,7 +50,7 @@ module Pharos
       # target host
       # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
       def transport
-        @transport ||= Pharos::Transport.for(self)
+        @transport ||= Pharos::Transport.const_get(local? ? :Local : :SSH).new(self)
       end
 
       # @return [Boolean]
@@ -71,11 +66,13 @@ module Pharos
         @kube_client&.disconnect
         @kube_client = nil
 
-        transport.disconnect if transport.connected?
-        gateway.shutdown! if gateway?
-
+        @transport&.disconnect if @transport&.connected?
         @transport = nil
-        @gateway = nil
+
+        Pharos::Transport.gateways[self]&.shutdown!
+        Pharos::Transport.gateways[self] = nil
+
+        nil
       end
 
       # @return [String]
