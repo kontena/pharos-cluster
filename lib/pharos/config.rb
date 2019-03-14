@@ -52,8 +52,25 @@ module Pharos
         bastion.host = existing_host if existing_host
       end
 
+      config.hosts.each do |host|
+        if chain = loop?(host)
+          raise Pharos::ConfigError, "hosts" => ["infinite bastion loop for host #{host.address} (#{chain.join(' => ')})"]
+        end
+      end
+
       config
     end
+
+    # @return [Array<String>,false] an array of host addresses if there is an infinite loop, false when there's no loop
+    def self.loop?(host, chain = [])
+      return false if host.bastion.nil?
+
+      chain << host.address
+      return chain if chain.count(host.address) > 1
+
+      loop?(host.bastion.host, chain)
+    end
+    private_class_method :loop?
 
     attribute :hosts, Types::Coercible::Array.of(Pharos::Configuration::Host)
     attribute :network, Pharos::Configuration::Network
