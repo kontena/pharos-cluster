@@ -120,7 +120,7 @@ module Pharos
             Thread.current.report_on_exception = true
             logger.debug "Started SSH event loop"
             @session.loop(0.1) { @session.busy?(true) || !@session.forward.active_locals.empty? }
-          rescue Errno::EBADF => ex
+          rescue IOError, Errno::EBADF => ex
             logger.debug "Received #{ex.class.name} (expected when tunnel has been closed)"
           ensure
             logger.debug "Closed SSH event loop"
