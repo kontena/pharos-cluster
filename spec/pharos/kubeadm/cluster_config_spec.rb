@@ -161,7 +161,7 @@ describe Pharos::Kubeadm::ClusterConfig do
       end
     end
 
-    context 'with cloud provider' do
+    context 'with in-tree cloud provider' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
         network: {},
@@ -183,7 +183,7 @@ describe Pharos::Kubeadm::ClusterConfig do
       end
     end
 
-    context 'with cloud configuration' do
+    context 'with in-tree cloud configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
         network: {},
@@ -203,6 +203,27 @@ describe Pharos::Kubeadm::ClusterConfig do
         config = subject.generate
         expect(config.dig('apiServer', 'extraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
         expect(config.dig('controllerManager', 'extraArgs', 'cloud-config')).to eq('/etc/pharos/cloud/cloud-config')
+      end
+    end
+
+    context 'with out-tree cloud provider' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        addons: {},
+        cloud: {
+          provider: 'hcloud'
+        }
+      ) }
+
+      it 'comes with proper cloud provider' do
+        config = subject.generate
+        expect(config.dig('apiServer', 'extraArgs', 'cloud-provider')).to eq('external')
+      end
+
+      it 'comes with proper feature gates' do
+        config = subject.generate
+        expect(config.dig('apiServer', 'extraArgs', 'cloud-config')).not_to be_nil
       end
     end
 

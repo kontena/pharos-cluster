@@ -6,9 +6,17 @@ module Pharos
       attribute :provider, Pharos::Types::String
       attribute :config, Pharos::Types::String
 
-      INTREE_PROVIDERS = %w(aws azure cloudstack gce openstack ovirt photon vsphere)
-      EXTERNAL_PROVIDERS = %w(hcloud)
-      PROVIDERS = (INTREE_PROVIDERS + EXTERNAL_PROVIDERS).freeze
+      INTREE_PROVIDERS = %w( aws azure cloudstack gce openstack ovirt photon vsphere ).freeze
+
+      # @return [Array<String>]
+      def self.external_providers
+        Pharos::Cloud::ProviderRegistry.instance.providers.keys.map { |name| name.to_s }
+      end
+
+      # @return [Array<String>]
+      def self.providers
+        INTREE_PROVIDERS + external_providers
+      end
 
       # @return [Boolean]
       def intree_provider?
@@ -17,7 +25,7 @@ module Pharos
 
       # @return [Boolean]
       def outtree_provider?
-        EXTERNAL_PROVIDERS.include?(provider)
+        self.class.external_providers.include?(provider)
       end
 
       # @return [String]
