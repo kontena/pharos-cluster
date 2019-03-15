@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'net/ssh'
-require 'net/ssh/gateway'
 
 module Pharos
   module Transport
@@ -10,8 +9,7 @@ module Pharos
 
       RETRY_CONNECTION_ERRORS = [
         Net::SSH::AuthenticationFailed,
-        Net::SSH::Authentication::KeyManagerError,
-        ArgumentError # until the ED25519 passphrase is fixed
+        Net::SSH::Authentication::KeyManagerError
       ].freeze
 
       # @param host [String]
@@ -28,48 +26,72 @@ module Pharos
 
       # @param options [Hash] see Net::SSH#start
       def connect(**options)
+        session_factory = bastion&.transport || Net::SSH
+
         synchronize do
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
-          if bastion
-            gw_opts = {}
-            gw_opts[:keys] = [bastion.ssh_key_path] if bastion.ssh_key_path
-            gw_opts[:non_interactive] = true
-            begin
-              gateway = Net::SSH::Gateway.new(bastion.address, bastion.user, gw_opts)
-            rescue *RETRY_CONNECTION_ERRORS => exc
-              logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to bastion host #{bastion.user}@#{bastion.host}" }
-              raise if gw_opts[:non_interactive] == false || !$stdin.tty? # don't re-retry
+          non_interactive = true
+          begin
+            @session = session_factory.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
+            logger.debug "Connected"
+          rescue *RETRY_CONNECTION_ERRORS => exc
+            logger.debug "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}"
+            raise if non_interactive == false || !$stdin.tty? # don't re-retry
 
-              logger.debug { "Retrying in interactive mode" }
-              gw_opts[:non_interactive] = false
-              retry
-            end
-            @session = gateway.ssh(@host, @user, @opts.merge(options))
-          else
-            non_interactive = true
-            begin
-              @session = Net::SSH.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
-            rescue *RETRY_CONNECTION_ERRORS => exc
-              logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}" }
-              raise if non_interactive == false || !$stdin.tty? # don't re-retry
-
-              logger.debug { "Retrying in interactive mode" }
-              non_interactive = false
-              retry
-            end
+            logger.debug { "Retrying in interactive mode" }
+            non_interactive = false
+            retry
           end
         end
+
+        true
       end
 
       # @param host [String]
       # @param port [Integer]
       # @return [Integer] local port number
-      def gateway(host, port)
-        Net::SSH::Gateway.new(@host, @user, @opts).open(host, port)
+      def forward(host, port)
+        connect unless connected?
+
+        begin
+          local_port = next_port
+          @session.forward.local(local_port, host, port)
+          logger.debug "Opened port forward 127.0.0.1#{local_port} -> #{host}:#{port}"
+        rescue Errno::EADDRINUSE
+          retry
+        end
+
+        ensure_event_loop
+        local_port
+      rescue IOError
+        disconnect
+        retry
+      end
+
+      # Starts a tunnel and calls Net::SSH.start
+      # @param host [String]
+      # @param user [String]
+      # @param options [Hash]
+      # @return [Net::SSH::Connection::Session]
+      def start(host, user, options = {})
+        Net::SSH.start('127.0.0.1', user, options.merge(port: forward(host, options[:port] || 22)))
+      end
+
+      def close(local_port)
+        return unless connected?
+
+        synchronize do
+          @session.forward.cancel_local(local_port)
+          logger.debug "Closed port forward on #{local_port}"
+        end
+      rescue IOError
+        disconnect
       end
 
       def interactive_session
         synchronize { Pharos::Transport::InteractiveSSH.new(self).run }
+      rescue IOError
+        disconnect
       end
 
       def connected?
@@ -77,13 +99,45 @@ module Pharos
       end
 
       def disconnect
-        synchronize { @session.close if @session && !@session.closed? }
+        synchronize do
+          bastion&.transport&.close(@session.options[:port]) if @session&.host == "127.0.0.1"
+          @session&.forward&.active_locals&.each do |local_port, _host|
+            @session&.forward&.cancel_local(local_port)
+          end
+          @session&.close unless @session&.closed?
+        end
       end
 
       private
 
       def command(cmd, **options)
         Pharos::Transport::Command::SSH.new(self, cmd, **options)
+      end
+
+      def ensure_event_loop
+        synchronize do
+          @event_loop ||= Thread.new do
+            Thread.current.report_on_exception = true
+            logger.debug "Started SSH event loop"
+            @session.loop(0.1) { @session.busy?(true) || !@session.forward.active_locals.empty? }
+          rescue Errno::EBADF => ex
+            logger.debug "Received #{ex.class.name} (expected when tunnel has been closed)"
+          ensure
+            logger.debug "Closed SSH event loop"
+            synchronize do
+              @event_loop = nil
+            end
+          end
+        end
+      end
+
+      def next_port
+        synchronize do
+          @next_port ||= 65_535
+          @next_port -= 1
+          @next_port = 65_535 if @next_port <= 1025
+          @next_port
+        end
       end
     end
   end

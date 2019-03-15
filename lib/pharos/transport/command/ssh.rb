@@ -12,7 +12,7 @@ module Pharos
 
         # @return [Pharos::Transport::CommandResult]
         def run
-          raise Pharos::ExecError, "Connection not established" unless @client.connected?
+          @client.connect unless @client.connected?
 
           result.append(@source.nil? ? @cmd : "#{@cmd} < #{@source}", :cmd)
           response = @client.session.open_channel do |channel|
@@ -43,6 +43,9 @@ module Pharos
           response.wait
 
           result
+        rescue IOError
+          @client.disconnect
+          retry
         end
       end
     end

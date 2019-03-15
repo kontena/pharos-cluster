@@ -119,6 +119,11 @@ output "pharos_hosts" {
       role              = "worker"
       user              = "root"
       ssh_key_path      = "./ssh_key.pem"
+      bastion = {
+        address           = "${digitalocean_droplet.pharos_master.*.ipv4_address[0]}"
+        ssh_key_path      = "./ssh_key.pem"
+        user              = "root"
+      }
 
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
