@@ -31,7 +31,7 @@ module Pharos
           config['readOnlyPort'] = 10_255
         end
         feature_gates = @config.kubelet&.feature_gates || {}
-        if @config.cloud.outtree_provider?
+        if @config.cloud&.outtree_provider?
           feature_gates.merge!(@config.cloud.cloud_provider.feature_gates)
         end
 

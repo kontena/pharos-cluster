@@ -216,14 +216,14 @@ describe Pharos::Kubeadm::ClusterConfig do
         }
       ) }
 
-      it 'comes with proper cloud provider' do
+      it 'does not' do
         config = subject.generate
-        expect(config.dig('apiServer', 'extraArgs', 'cloud-provider')).to eq('external')
+        expect(config.dig('apiServer', 'extraArgs', 'cloud-provider')).to be_nil
       end
 
       it 'comes with proper feature gates' do
         config = subject.generate
-        expect(config.dig('apiServer', 'extraArgs', 'cloud-config')).not_to be_nil
+        expect(config.dig('apiServer', 'extraArgs', 'feature-gates')).not_to be_nil
       end
     end
 
