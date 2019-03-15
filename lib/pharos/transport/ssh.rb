@@ -56,7 +56,7 @@ module Pharos
         begin
           local_port = next_port
           @session.forward.local(local_port, host, port)
-          logger.debug "Opened port forward 127.0.0.1#{local_port} -> #{host}:#{port}"
+          logger.debug "Opened port forward 127.0.0.1:#{local_port} -> #{host}:#{port}"
         rescue Errno::EADDRINUSE
           retry
         end
@@ -117,7 +117,7 @@ module Pharos
       def ensure_event_loop
         synchronize do
           @event_loop ||= Thread.new do
-            Thread.current.report_on_exception = true
+            Thread.current.report_on_exception = logger.level == Logger::DEBUG
             logger.debug "Started SSH event loop"
             @session.loop(0.1) { @session.busy?(true) || !@session.forward.active_locals.empty? }
           rescue IOError, Errno::EBADF => ex
