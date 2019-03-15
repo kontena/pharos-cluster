@@ -91,3 +91,5 @@ module Pharos
     autoload :Configurer, 'pharos/host/configurer'
   end
 end
+
+Dir.glob(File.join(__dir__, '/cloud/*.rb')).each { |f| require(f) }

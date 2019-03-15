@@ -164,7 +164,7 @@ module Pharos
           end
         end
         optional(:cloud).schema do
-          required(:provider).filled(:str?)
+          required(:provider).filled(included_in?: Pharos::Configuration::Cloud::PROVIDERS)
           optional(:config).filled(:str?)
         end
         optional(:audit).schema do

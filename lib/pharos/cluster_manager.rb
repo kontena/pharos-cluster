@@ -104,6 +104,7 @@ module Pharos
       # configure essential services
       apply_phase(Phases::ConfigurePriorityClasses, master_only)
       apply_phase(Phases::ConfigurePSP, master_only)
+      apply_phase(Phases::ConfigureCloudProvider, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
       apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'
