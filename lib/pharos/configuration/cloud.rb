@@ -6,11 +6,11 @@ module Pharos
       attribute :provider, Pharos::Types::String
       attribute :config, Pharos::Types::String
 
-      INTREE_PROVIDERS = %w( aws azure cloudstack gce openstack ovirt photon vsphere ).freeze
+      INTREE_PROVIDERS = %w(aws azure cloudstack gce openstack ovirt photon vsphere).freeze
 
       # @return [Array<String>]
       def self.external_providers
-        Pharos::Cloud::ProviderRegistry.instance.providers.keys.map { |name| name.to_s }
+        Pharos::Cloud::ProviderRegistry.instance.providers.keys.map(&:to_s)
       end
 
       # @return [Array<String>]

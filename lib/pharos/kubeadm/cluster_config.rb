@@ -74,7 +74,7 @@ module Pharos
           config['controllerManager']['extraArgs']['feature-gates'] = feature_gates
         end
 
-        if @config.cloud && @config.cloud.intree_provider?
+        if @config.cloud&.intree_provider?
           config['apiServer']['extraArgs']['cloud-provider'] = @config.cloud.provider
           config['controllerManager']['extraArgs']['cloud-provider'] = @config.cloud.provider
           if @config.cloud.config

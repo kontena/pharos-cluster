@@ -5,7 +5,6 @@ require_relative "provider"
 module Pharos
   module Cloud
     class HCloud < Provider
-
       register_as :hcloud
 
       # @return [Hash]

@@ -16,9 +16,9 @@ module Pharos
         push_authentication_token_webhook_config if @config.authentication&.token_webhook
         push_oidc_certs if @config.authentication&.oidc&.ca_file
 
-        if @config.cloud.intree_provider? && @config.cloud&.config
-          push_intree_cloud_config
-        end
+        return unless @config.cloud&.intree_provider? && @config.cloud&.config
+
+        push_intree_cloud_config
       end
 
       # TODO: lock down permissions on key
