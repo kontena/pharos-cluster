@@ -12,6 +12,54 @@ pipeline:
     commands:
       - apk update && apk add bash
       - bash -c 'shopt -s globstar; shellcheck **/*.sh'
+  # E2E steps
+  setup-bionic-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
+    commands:
+      - ./e2e/drone_setup.sh ubuntu-18-04-x64
+    when:
+      event: [ push ]
+  bionic-e2e:
+    image: ruby:2.5
+    commands:
+      - gem install bundler -Nf
+      - bundle install --path bundler
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  teardown-bionic-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
+
+  setup-centos-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
+    commands:
+      - ./e2e/drone_setup.sh centos-7-x64
+    when:
+      event: [ push ]
+  centos-e2e:
+    image: ruby:2.5
+    commands:
+      - gem install bundler -Nf
+      - bundle install --path bundler
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  teardown-centos-e2e:
+    image: docker.io/hashicorp/terraform:0.11.10
+    secrets: [ digitalocean_token ]
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
 
   # Release steps
   create_gh_release:
@@ -57,10 +105,3 @@ pipeline:
     target: /
     when:
       event: tag
-  build_appimage_oss:
-    image: ubuntu:xenial
-    secrets: [ github_token ]
-    commands:
-      - ./build/drone/appimage.sh
-    when:
-      branch: package/appimage
