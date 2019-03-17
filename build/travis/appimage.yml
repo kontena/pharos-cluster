@@ -17,6 +17,7 @@ script:
   - export PATH=usr/bin/:$PATH
   - ./usr/bin/gem build ../../*.gemspec
   - ./usr/bin/gem install --no-doc ../../*.gem
+  - cp ../../build/appimage/wrapper.sh usr/bin/pharos-wrapper
   - ./usr/bin/gem pristine executable-hooks
   - DEPS=$(ldd ./usr/lib/ruby/**/*.so | grep "=> /" | cut -d ">" -f 2 | cut -d " " -f 2 | sort | uniq)
   - mkdir -p usr/lib/x86_64-linux-gnu/
@@ -27,7 +28,7 @@ script:
   - Type=Application
   - Terminal=true
   - Name=pharos
-  - Exec=pharos-cluster
+  - Exec=pharos-wrapper
   - Categories=Development;
   - Icon=kontena
   - EOF
