@@ -15,6 +15,7 @@ jobs:
     - stage: e2e
       name: "e2e: appimage"
       before_install: []
+      install: []
       script: ./build/travis/appimage.sh
       dist: xenial
       env:
