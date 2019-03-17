@@ -105,3 +105,10 @@ pipeline:
     target: /
     when:
       event: tag
+  build_appimage_oss:
+    image: ubuntu:xenial
+    secrets: [ github_token ]
+    commands:
+      - ./build/drone/appimage.sh
+    when:
+      branch: package/appimage

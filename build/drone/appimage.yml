@@ -1,0 +1,35 @@
+app: pharos
+
+ingredients:
+  script:
+    - wget -c http://rubies.travis-ci.org/ubuntu/16.04/x86_64/ruby-2.6.2.tar.bz2
+
+script:
+  - unset GEM_HOME
+  - unset MY_RUBY_HOME
+  - unset GEM_HOME
+  - unset GEM_PATH
+  - unset RUBY_VERSION
+  - unset IRBRC
+  - shopt -s globstar
+  - tar xf ../ruby-*.tar.bz2 --strip-components=1 -C usr/
+  - rm -rf usr/lib/ruby/gems/*/cache
+  - export PATH=usr/bin/:$PATH
+  - ./usr/bin/gem build ../../*.gemspec
+  - ./usr/bin/gem install --no-doc ../../*.gem
+  - ./usr/bin/gem pristine executable-hooks
+  - DEPS=$(ldd ./usr/lib/ruby/**/*.so | grep "=> /" | cut -d ">" -f 2 | cut -d " " -f 2 | sort | uniq)
+  - mkdir -p usr/lib/x86_64-linux-gnu/
+  - cp $DEPS usr/lib/x86_64-linux-gnu/
+  - wget -c "https://landscape.cncf.io/logos/kontena-pharos.svg" -O kontena.svg
+  - cat > pharos.desktop <<\EOF
+  - [Desktop Entry]
+  - Type=Application
+  - Terminal=true
+  - Name=pharos
+  - Exec=pharos-cluster
+  - Categories=Development;
+  - Icon=kontena
+  - EOF
+  - rm -rf usr/lib/ruby/gems/*/cache
+  - ls usr/lib/ruby/gems/*/gems/ | grep "pharos-cluster-" | head -n 1 | cut -d "-" -f 2 > ../VERSION
