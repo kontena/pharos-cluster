@@ -6,9 +6,11 @@ module Pharos
       attribute :address, Pharos::Types::Strict::String
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
+      attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
+      attribute :ssh_proxy_command, Pharos::Types::Strict::String
 
       def host
-        @host ||= Host.new(address: address, user: user, ssh_key_path: ssh_key_path)
+        @host ||= Host.new(attributes)
       end
 
       def method_missing(meth, *args)
