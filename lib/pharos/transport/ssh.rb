@@ -51,18 +51,20 @@ module Pharos
         end
       end
 
+      # @param options [Hash] see Net::SSH#start
       # @raise [multiple] when unsuccesful
-      # @return [Pharos::Transport::SSH] when successful
-      def connect
+      # @return [true] when successful
+      def connect(**options)
+        session_factory = bastion&.transport || Net::SSH
+
         synchronize do
+          logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           non_interactive = true
           begin
-            logger.debug { "connect #{self}" }
-            @session = Net::SSH.start(host.address, host.user, self.class.options_for(host).merge(non_interactive: non_interactive))
-            logger.debug { "connected #{self}" }
-            self
+            @session = session_factory.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
+            logger.debug "Connected"
           rescue *RETRY_CONNECTION_ERRORS => exc
-            logger.debug { "Received #{exc.class.name} : #{exc.message} when connecting to #{self}" }
+            logger.debug "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}"
             raise if non_interactive == false || !$stdin.tty? # don't re-retry
 
             logger.debug { "Retrying in interactive mode" }
@@ -70,12 +72,57 @@ module Pharos
             retry
           end
         end
+
+        true
+      end
+
+      # @param host [String]
+      # @param port [Integer]
+      # @return [Integer] local port number
+      def forward(host, port)
+        connect unless connected?
+
+        begin
+          local_port = next_port
+          @session.forward.local(local_port, host, port)
+          logger.debug "Opened port forward 127.0.0.1:#{local_port} -> #{host}:#{port}"
+        rescue Errno::EADDRINUSE
+          retry
+        end
+
+        ensure_event_loop
+        local_port
+      rescue IOError
+        disconnect
+        retry
+      end
+
+      # Starts a tunnel and calls Net::SSH.start
+      # @param host [String]
+      # @param user [String]
+      # @param options [Hash]
+      # @return [Net::SSH::Connection::Session]
+      def start(host, user, options = {})
+        Net::SSH.start('127.0.0.1', user, options.merge(port: forward(host, options[:port] || 22)))
+      end
+
+      def close(local_port)
+        return unless connected?
+
+        synchronize do
+          @session.forward.cancel_local(local_port)
+          logger.debug "Closed port forward on #{local_port}"
+        end
+      rescue IOError
+        disconnect
       end
 
       def interactive_session
         connect unless connected?
 
         synchronize { Pharos::Transport::InteractiveSSH.new(self).run }
+      rescue IOError
+        disconnect
       end
 
       def connected?
@@ -85,8 +132,11 @@ module Pharos
       def disconnect
         synchronize do
           logger.debug { "disconnect SSH #{self}" }
-          @session.close if connected?
-          @session = nil
+          bastion&.transport&.close(@session.options[:port]) if @session&.host == "127.0.0.1"
+          @session&.forward&.active_locals&.each do |local_port, _host|
+            @session&.forward&.cancel_local(local_port)
+          end
+          @session&.close unless @session&.closed?
         end
       end
 
@@ -96,6 +146,32 @@ module Pharos
         logger.debug "Encountered IOError, retrying"
         disconnect
         retry
+      end
+
+      def ensure_event_loop
+        synchronize do
+          @event_loop ||= Thread.new do
+            Thread.current.report_on_exception = logger.level == Logger::DEBUG
+            logger.debug "Started SSH event loop"
+            @session.loop(0.1) { @session.busy?(true) || !@session.forward.active_locals.empty? }
+          rescue IOError, Errno::EBADF => ex
+            logger.debug "Received #{ex.class.name} (expected when tunnel has been closed)"
+          ensure
+            logger.debug "Closed SSH event loop"
+            synchronize do
+              @event_loop = nil
+            end
+          end
+        end
+      end
+
+      def next_port
+        synchronize do
+          @next_port ||= 65_535
+          @next_port -= 1
+          @next_port = 65_535 if @next_port <= 1025
+          @next_port
+        end
       end
     end
   end

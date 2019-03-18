@@ -7,6 +7,10 @@ module Pharos
         "LOCAL #{ENV['USER']}@localhost"
       end
 
+      def forward
+        raise TypeError, "Non-SSH connections do not provide port forwarding"
+      end
+
       def session
         nil
       end

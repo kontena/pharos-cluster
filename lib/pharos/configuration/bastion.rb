@@ -20,6 +20,14 @@ module Pharos
       def host
         @host ||= Host.new(attributes)
       end
+
+      def method_missing(meth, *args)
+        host.respond_to?(meth) ? host.send(meth, *args) : super
+      end
+
+      def respond_to_missing?(meth, include_private = false)
+        host.respond_to?(meth) || super
+      end
     end
   end
 end

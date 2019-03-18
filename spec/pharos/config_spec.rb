@@ -203,8 +203,7 @@ describe Pharos::Config do
         end
 
         it 'creates a kube client tunneled via the bastion host ssh' do
-          expect(bastion_host).to receive(:gateway).and_return(gateway)
-          expect(gateway).to receive(:open).with('192.0.2.1', 6443).and_return(1234)
+          expect(bastion_host).to receive(:forward).with('192.0.2.1', 6443).and_return(1234)
           expect(K8s::Transport).to receive(:config).with(instance_of(K8s::Config), server: "https://localhost:1234").and_return(true)
           subject.kube_client
         end

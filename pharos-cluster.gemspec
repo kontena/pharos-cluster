@@ -29,7 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "clamp", "1.2.1"
   spec.add_runtime_dependency "pastel", "~> 0.7"
   spec.add_runtime_dependency "net-ssh", "~> 5.2.0"
-  spec.add_runtime_dependency "net-ssh-proxy-gateway", "~> 0.2"
   spec.add_runtime_dependency "ed25519", "~> 1.2"
   spec.add_runtime_dependency "bcrypt", "~> 3.1"
   spec.add_runtime_dependency "bcrypt_pbkdf", "~> 1.0"

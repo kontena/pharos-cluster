@@ -127,6 +127,7 @@ module Pharos
             optional(:ipip_mode).filled(included_in?: %w(Always CrossSubnet Never))
             optional(:nat_outgoing).filled(:bool?)
             optional(:environment).filled(:hash?)
+            optional(:mtu).filled(:int?, gt?: 0)
           end
           optional(:custom).schema do
             required(:manifest_path).filled(:str?)

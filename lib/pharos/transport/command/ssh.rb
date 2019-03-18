@@ -6,14 +6,8 @@ module Pharos
       class SSH < Pharos::Transport::Command::Local
         attr_reader :cmd, :result
 
-        def hostname
-          @client.host.to_s
-        end
-
         # @return [Pharos::Transport::CommandResult]
         def run
-          retried ||= false
-
           @client.connect unless @client.connected?
 
           raise Pharos::ExecError.new(@source || cmd, -127, "Connection not established") unless @client.connected?
@@ -48,12 +42,8 @@ module Pharos
           response.wait
 
           result
-        rescue IOError # Happens on a tunneled connection if the tunnel dies between commands
-          raise if retried
-
-          retried = true
+        rescue IOError
           @client.disconnect
-          @client.connect
           retry
         end
       end
