@@ -10,6 +10,8 @@ module Pharos
         check_role
         logger.info { "Validating distro and version ..." }
         check_distro_version
+        logger.info { "Validate required packages ..." }
+        check_installed
         logger.info { "Validating host configuration ..." }
         check_cpu_arch
         logger.info { "Validating hostname uniqueness ..." }
@@ -50,10 +52,18 @@ module Pharos
         raise Pharos::InvalidHostError, "Duplicate hostname #{@host.hostname} for hosts #{duplicates.map(&:address).join(',')}"
       end
 
-      def validate_localhost_resolve
-        return if transport.exec?("ping -c 1 -r -w 1 localhost")
+      def check_installed
+        %w(ip grep curl uname hostname head cut sed).each do |cmd|
+          logger.debug { "Checking if command '#{cmd}' exists" }
+          raise Pharos::InvalidHostError, "Host does not seem to have the required binary '#{cmd}' installed." unless transport.exec?("command -v \"#{cmd}\" &> /dev/null")
+        end
+      end
 
-        raise Pharos::InvalidHostError, "Hostname 'localhost' does not seem to resolve to an address on the local host"
+      def validate_localhost_resolve
+        return if transport.exec?('command -v ping &> /dev/null && ping -c 1 -r -w 1 localhost')
+        return if transport.exec?('command -v getent &> /dev/null && ip -4 address |  grep -q "inet $(getent ahostsv4 localhost | grep STREAM | head -1 | cut -d" " -f1)"')
+
+        raise Pharos::InvalidHostError, "Hostname 'localhost' does not seem to resolve to an address on the local host or the host does not have the required packages for validation installed (inetutils-ping)."
       end
 
       # @param cidr [String]
