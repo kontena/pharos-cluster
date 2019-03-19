@@ -4,6 +4,14 @@ require 'logger'
 
 module Pharos
   module Logging
+    def self.debug?
+      !!@debug
+    end
+
+    def self.debug!
+      @debug = true
+    end
+
     def self.format_exception(exc, severity = "ERROR")
       return exc unless exc.is_a?(Exception)
 
@@ -18,23 +26,18 @@ module Pharos
       "Error: #{message}#{backtrace}"
     end
 
-    def self.initialize_logger(log_target = $stdout, log_level = Logger::INFO)
-      @logger = Logger.new(log_target)
-      @logger.progname = 'API'
-      @logger.level = ENV["DEBUG"] ? Logger::DEBUG : log_level
-      logger.formatter = proc do |severity, _datetime, _progname, msg|
-        "    %<msg>s\n" % { msg: Pharos::Logging.format_exception(msg, severity) }
-      end
-
-      @logger
+    def self.log_level
+      @log_level ||= debug? ? Logger::DEBUG : Logger::INFO
     end
 
     def self.logger
-      defined?(@logger) ? @logger : initialize_logger
-    end
-
-    def self.logger=(log)
-      @logger = log || Logger.new('/dev/null')
+      @logger ||= Logger.new($stdout).tap do |logger|
+        logger.progname = 'API'
+        logger.level = Pharos::Logging.log_level
+        logger.formatter = proc do |_severity, _datetime, _progname, msg|
+          "    %<msg>s\n" % { msg: msg }
+        end
+      end
     end
 
     def logger
