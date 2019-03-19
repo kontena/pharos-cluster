@@ -52,6 +52,7 @@ module Pharos
 
       def validate_localhost_resolve
         return if transport.exec?("ping -c 1 -r -w 1 localhost")
+        raise Pharos::InvalidHostError, "Host does not have the 'ping' command installed" unless transport.exec?('command -v ping')
 
         raise Pharos::InvalidHostError, "Hostname 'localhost' does not seem to resolve to an address on the local host"
       end
