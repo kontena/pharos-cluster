@@ -4,6 +4,8 @@ require 'logger'
 
 module Pharos
   class Phase
+    using Pharos::CoreExt::Colorize
+
     RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
 
     # @return [String]
@@ -30,17 +32,35 @@ module Pharos
       @cluster_context = cluster_context
     end
 
-    def ssh
-      @host.ssh
+    def transport
+      @host.transport
+    end
+
+    FORMATTER_COLOR = proc do |severity, _datetime, progname, msg|
+      message = Pharos::Logging.format_exception(msg, severity)
+      color = case severity
+              when "DEBUG" then :dim
+              when "INFO" then :to_s
+              when "WARN" then :yellow
+              else :red
+              end
+      "    [%<progname>s] %<msg>s\n" % { progname: progname.send(color), msg: message }
+    end
+
+    FORMATTER_NO_COLOR = proc do |severity, _datetime, progname, msg|
+      message = Pharos::Logging.format_exception(msg, severity)
+      if severity == "INFO"
+        "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: message }
+      else
+        "    [%<progname>s] [%<severity>s] %<msg>s\n" % { progname: progname, severity: severity, msg: message }
+      end
     end
 
     def logger
       @logger ||= Logger.new($stdout).tap do |logger|
         logger.progname = @host.to_s
         logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
-        logger.formatter = proc do |_severity, _datetime, progname, msg|
-          "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }
-        end
+        logger.formatter = Pharos::CoreExt::Colorize.enabled? ? FORMATTER_COLOR : FORMATTER_NO_COLOR
       end
     end
 
@@ -57,7 +77,7 @@ module Pharos
     # @param script [String] name of file under ../scripts/
     # @param vars [Hash]
     def exec_script(script, vars = {})
-      ssh.exec_script!(
+      transport.exec_script!(
         script,
         env: vars,
         path: script_path(script)
@@ -76,10 +96,9 @@ module Pharos
       @host_configurer ||= @host.configurer
     end
 
-    # @return [Pharos::SSH::Client]
-    def master_ssh
-      return cluster_context['master-ssh'] if cluster_context['master-ssh']
-      fail "Phase #{self.class.name} does not have master ssh"
+    # @return [Pharos::Configuration::Host]
+    def master_host
+      @config.master_host
     end
 
     # @return [K8s::Client]

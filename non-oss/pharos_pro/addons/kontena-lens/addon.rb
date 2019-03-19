@@ -4,7 +4,7 @@ require 'bcrypt'
 require 'json'
 
 Pharos.addon 'kontena-lens' do
-  version '1.4.0'
+  version '1.5.0-rc.2'
   license 'Kontena License'
   priority 10
 
@@ -54,7 +54,7 @@ Pharos.addon 'kontena-lens' do
 
     host = config.ingress&.host || config.host || "lens.#{gateway_node_ip}.nip.io"
     tls_email = config.ingress&.tls&.email || config.tls&.email
-    name = config.name || 'pharos-cluster'
+    name = config.name || cluster_config.name || 'pharos-cluster'
     charts_enabled = config.charts&.enabled != false
     helm_repositories = config.charts&.repositories || [stable_helm_repo]
     tiller_version = '2.12.2'
@@ -68,7 +68,7 @@ Pharos.addon 'kontena-lens' do
       helm_repositories: helm_repositories.map{ |repo| "#{repo[:name]}=#{repo[:url]}" }.join(',')
     )
     protocol = tls_enabled? ? 'https' : 'http'
-    message = "Kontena Lens is configured to respond at: " + pastel.cyan("#{protocol}://#{host}")
+    message = "Kontena Lens is configured to respond at: " + "#{protocol}://#{host}".cyan
     message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
     if config_exists?
       update_lens_name(name) if configmap.data.clusterName != name
@@ -77,7 +77,7 @@ Pharos.addon 'kontena-lens' do
     end
     if user_management_enabled? && !admin_exists?
       create_admin_user(admin_password)
-      message << "\nYou can sign in with the following admin credentials (you won't see these again): " + pastel.cyan("admin / #{admin_password}")
+      message << "\nYou can sign in with the following admin credentials (you won't see these again): " + "admin / #{admin_password}".cyan
     end
     message << "\nWarning: `config.host` option is deprecated in favor of `config.ingress.host` option and will be removed in future." if config.host
     message << "\nWarning: `config.tls` option is deprecated in favor of `config.ingress.tls` option and will be removed in future." if config.tls
@@ -147,10 +147,6 @@ Pharos.addon 'kontena-lens' do
       }
     )
     kube_client.api('v1').resource('configmaps').create_resource(config)
-  end
-
-  def pastel
-    @pastel ||= Pastel.new
   end
 
   # @return [Pharos::Configuration::Host]

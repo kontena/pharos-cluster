@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-backup' do
-  using Pharos::CoreExt::DeepTransformKeys
-
-  ark_version = '0.9.6'
+  ark_version = '0.9.11'
 
   version "#{ark_version}+kontena.1"
   license 'Kontena License'

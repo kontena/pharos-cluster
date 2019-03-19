@@ -19,22 +19,25 @@ module Pharos
       begin
         yield yield_object
       rescue *(exceptions || DEFAULT_RETRY_ERRORS) => exc
-        raise exc if Time.now - start_time > seconds
+        if Time.now - start_time > seconds
+          logger&.error "Retry time limit exceeded"
+          raise
+        end
+
+        retry_count += 1
 
         if logger
-          logger.error { "got error (#{exc.class.name}): #{exc.message.strip}" }
-          logger.debug { exc.backtrace.join("\n") }
-          logger.error { "retrying after #{wait} seconds ..." }
+          logger.warn "Retried 5 times, increasing verbosity" if retry_count == 5
+          logger.send(retry_count >= 5 ? :error : :debug, exc)
+          logger.warn { "Retrying after #{wait} second#{'s' if wait > 1} (##{retry_count}) ..." }
         end
+
         sleep wait
-        retry_count += 1
         retry
       rescue StandardError => exc
-        if logger
-          logger.debug { "got error (#{exc.class.name}): #{exc.message.strip}" }
-          logger.debug { exc.backtrace.join("\n") }
-        end
-        raise exc
+        logger&.debug "Unretriable exception, reraising"
+        logger&.debug exc
+        raise
       end
     end
   end

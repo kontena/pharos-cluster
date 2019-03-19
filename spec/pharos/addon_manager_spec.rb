@@ -2,7 +2,7 @@ require 'tmpdir'
 require 'fileutils'
 
 describe Pharos::AddonManager do
-  describe 'load addons' do
+  describe '.load_addons' do
     let(:tmpdir_1) { Dir.mktmpdir }
     let(:tmpdir_2) { Dir.mktmpdir }
 
@@ -17,8 +17,16 @@ describe Pharos::AddonManager do
     end
 
     it 'loads files from symlinked subdirectories' do
-      expect(described_class).to receive(:require).with(File.join(tmpdir_1, 'linked-addon', 'addon.rb'))
+      expect(described_class).to receive(:load_addon).with(File.join(tmpdir_1, 'linked-addon', 'addon.rb'))
       described_class.load_addons(tmpdir_1)
+    end
+  end
+
+  describe '.load_addon' do
+    it 'loads addon' do
+      addon = described_class.load_addon('./addons/ingress-nginx/addon.rb')
+      expect(addon.addon_name).to eq('ingress-nginx')
+      expect(addon.addon_location).to eq('./addons/ingress-nginx')
     end
   end
 
@@ -38,7 +46,7 @@ describe Pharos::AddonManager do
     end
 
     before do
-      allow(subject).to receive(:addon_classes).and_return([enabled_addon])
+      allow(described_class).to receive(:addons).and_return({'enabled_addon' => enabled_addon})
     end
 
     subject { described_class.new(config, {}) }

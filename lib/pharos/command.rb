@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pry' if Gem.loaded_specs.key?('pry')
+
 module Pharos
   class Command < Clamp::Command
     include Pharos::Logging
@@ -13,6 +15,7 @@ module Pharos
     end
 
     def run(*_args)
+      Pharos::CoreExt::Colorize.disable! unless color?
       super
     rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
       raise
@@ -41,8 +44,18 @@ module Pharos
       ENV["DEBUG"] = "true"
     end
 
-    def pastel
-      @pastel ||= Pastel.new(enabled: color?)
+    if Object.const_defined?(:Pry)
+      # rubocop:disable Lint/Debugger
+      module Console
+        def execute
+          binding.pry
+        end
+      end
+      # rubocop:enable Lint/Debugger
+
+      option ['--console'], :flag, "start console instead of execute", hidden: true do
+        extend(Console)
+      end
     end
 
     def prompt
@@ -66,8 +79,10 @@ module Pharos
     def humanize_duration(secs)
       [[60, :second], [60, :minute], [24, :hour], [1000, :day]].map{ |count, name|
         next unless secs.positive?
+
         secs, n = secs.divmod(count).map(&:to_i)
         next if n.zero?
+
         "#{n} #{name}#{'s' unless n == 1}"
       }.compact.reverse.join(' ')
     end

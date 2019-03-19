@@ -10,8 +10,9 @@ module Pharos
       OpenSSL::SSL::SSLError,
       Excon::Error,
       K8s::Error,
-      Pharos::SSH::RemoteCommand::ExecError,
-      Errno::ECONNRESET
+      Pharos::ExecError,
+      Errno::ECONNRESET,
+      Errno::ECONNREFUSED
     ].freeze
 
     # @param dirs [Array<String>]
@@ -32,7 +33,7 @@ module Pharos
       threads = phases.map { |phase|
         Thread.new do
           Thread.current.report_on_exception = false
-          Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
+          Retry.perform(yield_object: phase, logger: phase.logger, exceptions: RETRY_ERRORS, &block)
         end
       }
       threads.map(&:value)
@@ -42,7 +43,7 @@ module Pharos
     # @return [Array<...>]
     def run_serial(phases, &block)
       phases.map do |phase|
-        Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
+        Retry.perform(yield_object: phase, logger: phase.logger, exceptions: RETRY_ERRORS, &block)
       end
     end
 

@@ -5,6 +5,14 @@ module Pharos
     class ConfigureDNS < Pharos::Phase
       title "Configure DNS"
 
+      register_component(
+        name: 'coredns', version: Pharos::COREDNS_VERSION, license: 'Apache License 2.0'
+      )
+
+      register_component(
+        name: 'dns-node-cache', version: Pharos::DNS_NODE_CACHE_VERSION, license: 'Apache License 2.0'
+      )
+
       def call
         patch_deployment(
           'coredns',
@@ -12,6 +20,8 @@ module Pharos
           max_surge: max_surge,
           max_unavailable: max_unavailable
         )
+
+        deploy_node_dns_cache
       end
 
       # @return [Integer]
@@ -60,7 +70,7 @@ module Pharos
             type: "RollingUpdate",
             rollingUpdate: {
               maxSurge: max_surge, # must be zero for a two-node cluster
-              maxUnavailable: max_unavailable, # must be at least one, even for a single-node cluster
+              maxUnavailable: max_unavailable # must be at least one, even for a single-node cluster
             }
           },
           template: {
@@ -90,6 +100,22 @@ module Pharos
           name,
           spec: spec
         )
+      end
+
+      def deploy_node_dns_cache
+        logger.info { "Deploying node dns cache ..." }
+        apply_stack(
+          'node_local_dns',
+          version: Pharos::DNS_NODE_CACHE_VERSION,
+          image_repository: @config.image_repository,
+          nodelocal_dns: Pharos::Configuration::Network::CLUSTER_DNS,
+          forward_target: dns_forward_target
+        )
+      end
+
+      # @return [String]
+      def dns_forward_target
+        @config.network.service_cidr.gsub(%r{\.(\d+\/\d+)}, '.10')
       end
     end
   end

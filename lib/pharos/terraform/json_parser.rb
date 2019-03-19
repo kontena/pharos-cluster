@@ -47,6 +47,11 @@ module Pharos
         @api ||= data.dig('pharos_api', 'value')
       end
 
+      # @return [String,NilClass]
+      def cluster_name
+        @cluster_name ||= data.dig('pharos_cluster', 'value', 'name')
+      end
+
       # @param bundle [Hash]
       # @param host [Hash]
       # @param index [Integer]

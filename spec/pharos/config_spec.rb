@@ -139,6 +139,41 @@ describe Pharos::Config do
       end
     end
 
+    context 'ssh_port' do
+      context 'using default port' do
+        let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'user' => 'test', 'role' => 'master' } ] } }
+
+        it 'uses port 22' do
+          expect(Net::SSH).to receive(:start).with('192.0.2.1', 'test', hash_including(port: 22))
+          subject.hosts.first.transport.connect
+        end
+      end
+
+      context 'using custom port' do
+        let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'user' => 'test', 'role' => 'master', 'ssh_port' => 2345 } ] } }
+
+        it 'uses the defined custom port' do
+          expect(Net::SSH).to receive(:start).with('192.0.2.1', 'test', hash_including(port: 2345))
+          subject.hosts.first.transport.connect
+        end
+      end
+
+      context 'using bastion' do
+        let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'user' => 'test', 'role' => 'master', 'ssh_port' => 2345, 'bastion' => { 'address' => '192.0.2.3', 'user' => 'bastion', 'ssh_port' => 4567 } } ] } }
+        let(:local_forward) { double }
+        let(:forward_session) { double(forward: local_forward) }
+
+        it 'uses port of bastion host on bastion and forwards custom port and connects to local port on localhost' do
+          expect(subject.hosts.first.bastion.host.transport).to receive(:next_port).and_return(9999)
+          expect(subject.hosts.first.bastion.host.transport).to receive(:ensure_event_loop)
+          expect(local_forward).to receive(:local).with(9999, '192.0.2.1', 2345)
+          expect(Net::SSH).to receive(:start).with('192.0.2.3', 'bastion', hash_including(port: 4567)).and_return(forward_session)
+          expect(Net::SSH).to receive(:start).with('127.0.0.1', 'test', hash_including(port: 9999))
+          subject.hosts.first.transport.connect
+        end
+      end
+    end
+
     context 'kube_client' do
       let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'role' => 'master' } ] } }
       let(:kubeconfig) { {}  }
@@ -153,19 +188,19 @@ describe Pharos::Config do
         let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'role' => 'master', 'bastion' => { 'address' => '192.0.2.2', 'user' => 'bastion' } } ] } }
         let(:bastion) { Pharos::Configuration::Bastion.new('address' => '192.0.2.2', 'user' => 'bastion') }
         let(:bastion_host) { instance_double(Pharos::Configuration::Host) }
-        let(:ssh) { instance_double(Pharos::SSH::Client) }
+        let(:ssh) { instance_double(Pharos::Transport::SSH) }
 
         before do
           allow(subject).to receive(:master_host).and_return(master)
           allow(master).to receive(:bastion).and_return(bastion)
           allow(bastion).to receive(:host).and_return(bastion_host)
-          allow(bastion_host).to receive(:ssh).and_return(ssh)
+          allow(bastion_host).to receive(:transport).and_return(ssh)
           allow(master).to receive(:api_address).and_return('api.example.com')
         end
 
         it 'creates a kube client through ssh' do
           expect(Pharos::Kube).to receive(:client).with('localhost', kubeconfig, 9999)
-          expect(ssh).to receive(:gateway).with('api.example.com', 6443).and_return(9999)
+          expect(ssh).to receive(:forward).with('api.example.com', 6443).and_return(9999)
           subject.kube_client(kubeconfig)
         end
       end

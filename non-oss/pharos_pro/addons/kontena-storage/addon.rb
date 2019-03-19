@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-storage' do
-  using Pharos::CoreExt::DeepTransformKeys
   version '0.8.3+kontena.1'
   license 'Kontena License'
 
@@ -110,7 +109,7 @@ Pharos.addon 'kontena-storage' do
 
   reset_host { |host|
     data_dir = config.data_dir.strip
-    host.ssh.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
+    host.transport.exec("sudo rm -rf #{data_dir}/*") unless data_dir.empty?
   }
 
   def set_defaults

@@ -2,10 +2,10 @@ require 'pharos/phases/migrate_master'
 
 describe Pharos::Phases::MigrateMaster do
   let(:host) { instance_double(Pharos::Configuration::Host) }
-  let(:ssh) { instance_double(Pharos::SSH::Client) }
+  let(:ssh) { instance_double(Pharos::Transport::SSH) }
   subject { described_class.new(host) }
 
   before do
-    allow(host).to receive(:ssh).and_return(ssh)
+    allow(host).to receive(:transport).and_return(ssh)
   end
 end

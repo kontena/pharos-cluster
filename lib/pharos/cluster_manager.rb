@@ -5,6 +5,7 @@ require 'pathname'
 module Pharos
   class ClusterManager
     include Pharos::Logging
+    using Pharos::CoreExt::Colorize
 
     attr_reader :config, :context
 
@@ -22,10 +23,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    # @param pastel [Pastel]
-    def initialize(config, pastel: Pastel.new)
+    def initialize(config)
       @config = config
-      @pastel = pastel
       @context = {
         'post_install_messages' => {}
       }
@@ -57,11 +56,11 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::ConnectSSH, config.hosts, parallel: true)
-      apply_phase(Phases::AuthenticateSSH, config.hosts.reject(&:ssh?), parallel: false)
+      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
+      apply_phase(Phases::ConfigureClusterName, %w(localhost))
     end
 
     def validate
@@ -99,6 +98,7 @@ module Pharos
       apply_phase(Phases::PullMasterImages, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
       apply_phase(Phases::ConfigureClient, master_only, parallel: false)
+      apply_phase(Phases::ReconfigureKubelet, config.hosts, parallel: true)
 
       # master is now configured and can be used
       # configure essential services
@@ -129,7 +129,7 @@ module Pharos
       addon_manager.each do |addon|
         next unless addon.enabled?
 
-        puts @pastel.cyan("==> Resetting addon #{addon.name}")
+        puts "==> Resetting addon #{addon.name}".cyan
         hosts.each do |host|
           addon.apply_reset_host(host)
         end
@@ -151,14 +151,14 @@ module Pharos
     def apply_phase(phase_class, hosts, **options)
       return if hosts.empty?
 
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      puts "==> #{phase_class.title} @ #{hosts.join(' ')}".cyan
 
       phase_manager.apply(phase_class, hosts, **options)
     end
 
     def apply_addons
       addon_manager.each do |addon|
-        puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
+        puts "==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}".cyan
 
         addon.apply
         post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
@@ -175,7 +175,7 @@ module Pharos
     end
 
     def disconnect
-      config.hosts.map(&:ssh).select(&:connected?).each(&:disconnect)
+      config.hosts.map { |host| host.transport.disconnect }
     end
   end
 end
