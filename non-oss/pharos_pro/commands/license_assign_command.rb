@@ -10,7 +10,11 @@ module Pharos
     option '--description', 'DESCRIPTION', "license description [DEPRECATED]", hidden: true
     option '--print-subscription-token', :flag, 'only output subscription token'
 
-    option '--cluster-id', '[ID]', 'request for a specified cluster id (requires --cluster-name)'
+    option '--cluster-id', '[ID]', 'request for a specified cluster id (requires --cluster-name)' do |cluster_id|
+      @cluster_id_given = true
+      cluster_id
+    end
+
     option '--cluster-name', '[NAME]', 'request for a specified cluster name (requires --cluster-id)' do |cluster_name|
       @cluster_name_given = true
       cluster_name
@@ -20,6 +24,8 @@ module Pharos
 
     def execute
       warn '[DEPRECATED] the --description option is deprecated and will be ignored' if description
+      signal_usage_error '--cluster-name required when --cluster-id given' if @cluster_id_given && !@cluster_name_given
+      signal_usage_error '--cluster-id required when --cluster-name given' if @cluster_name_given && !@cluster_id_given
 
       if print_subscription_token?
         puts jwt_token.token
@@ -64,14 +70,10 @@ module Pharos
     end
 
     def default_cluster_id
-      signal_usage_error '--cluster-id required when --cluster-name given' if @cluster_name_given
-
       cluster_manager('force' => force?, 'no-generate-name' => true).context['cluster-id'] || signal_error('Failed to get cluster id')
     end
 
     def default_cluster_name
-      signal_usage_error '--cluster-name required when --cluster-id given'
-
       load_config.name || signal_error('Failed to get cluster name')
     end
 
