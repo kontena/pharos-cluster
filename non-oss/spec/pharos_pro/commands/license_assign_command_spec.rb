@@ -50,7 +50,7 @@ describe Pharos::LicenseAssignCommand do
         expect(http_client).to receive(:post).and_return(double(body: success_response))
         expect(subject).not_to receive(:cluster_manager)
         expect(subject).not_to receive(:load_config)
-        expect{subject.run(%w(--print-subscription-token --cluster-id 6c6289c0-1fb0-11e9-bac4-02f41f34da68 --cluster-name defg) + [license_key])}.to output("123\n").to_stdout
+        expect{subject.run(%w(--cluster-id 6c6289c0-1fb0-11e9-bac4-02f41f34da68 --cluster-name defg) + [license_key])}.to output("123\n").to_stdout
       end
     end
 
