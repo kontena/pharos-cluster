@@ -20,52 +20,52 @@ Pharos.addon 'pharos-license-enforcer' do
   end
 
   def enforcer_pod
-    <<-EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: pharos-license-enforcer
-  namespace: kube-system
-spec:
-  terminationGracePeriodSeconds: 30
-  hostNetwork: true
-  priorityClassName: system-cluster-critical
-  containers:
-  - name: enforcer
-    image: #{cluster_config.image_repository}/pharos-license-enforcer:#{self.class.version}
-    args:
-      - -interval
-      - 30s
-      - -kube-config
-      - /etc/kubeconfig
-    env:
-      - name: NODE
-        valueFrom:
-          fieldRef:
-            fieldPath: spec.nodeName
-    resources:
-      limits:
-        memory: 20Mi
-      requests:
-        cpu: 100m
-        memory: 10Mi
-    volumeMounts:
-    - name: manifests
-      mountPath: /etc/kubernetes/manifests
-    - name: icebox
-      mountPath: /etc/pharos/icebox
-    - name: kubeconfig
-      mountPath: /etc/kubeconfig
-  volumes:
-    - name: manifests
-      hostPath:
-        path: /etc/kubernetes/manifests
-    - name: icebox
-      hostPath:
-        path: /etc/pharos/icebox
-    - name: kubeconfig
-      hostPath:
-        path: /etc/kubernetes/admin.conf
-    EOF
+    <<-POD
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pharos-license-enforcer
+    namespace: kube-system
+  spec:
+    terminationGracePeriodSeconds: 30
+    hostNetwork: true
+    priorityClassName: system-cluster-critical
+    containers:
+    - name: enforcer
+      image: #{cluster_config.image_repository}/pharos-license-enforcer:#{self.class.version}
+      args:
+        - -interval
+        - 30s
+        - -kube-config
+        - /etc/kubeconfig
+      env:
+        - name: NODE
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+      resources:
+        limits:
+          memory: 20Mi
+        requests:
+          cpu: 100m
+          memory: 10Mi
+      volumeMounts:
+      - name: manifests
+        mountPath: /etc/kubernetes/manifests
+      - name: icebox
+        mountPath: /etc/pharos/icebox
+      - name: kubeconfig
+        mountPath: /etc/kubeconfig
+    volumes:
+      - name: manifests
+        hostPath:
+          path: /etc/kubernetes/manifests
+      - name: icebox
+        hostPath:
+          path: /etc/pharos/icebox
+      - name: kubeconfig
+        hostPath:
+          path: /etc/kubernetes/admin.conf
+    POD
   end
 end
