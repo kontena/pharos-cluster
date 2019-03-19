@@ -112,7 +112,7 @@ Pharos.addon 'helm' do
                 env: [
                   {
                     name: "NAME",
-                    value: chart.release_name
+                    value: chart.name
                   },
                   {
                     name: "VERSION",
