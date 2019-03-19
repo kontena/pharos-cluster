@@ -165,7 +165,7 @@ describe Pharos::Config do
 
         it 'creates a kube client through ssh' do
           expect(Pharos::Kube).to receive(:client).with('localhost', kubeconfig, 9999)
-          expect(ssh).to receive(:gateway).with('api.example.com', 6443).and_return(9999)
+          expect(ssh).to receive(:forward).with('api.example.com', 6443).and_return(9999)
           subject.kube_client(kubeconfig)
         end
       end

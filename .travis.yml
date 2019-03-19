@@ -15,7 +15,7 @@ jobs:
     - stage: e2e
       name: "e2e: docker with weave"
       script: ./e2e/travis.sh
-      rvm: 2.5
+      rvm: 2.5.4
       dist: xenial
       env:
         - CONTAINER_RUNTIME=docker
@@ -23,7 +23,7 @@ jobs:
     - stage: e2e
       name: "e2e: docker with calico"
       script: ./e2e/travis.sh
-      rvm: 2.5
+      rvm: 2.5.4
       dist: xenial
       env:
         - CONTAINER_RUNTIME=docker
@@ -31,7 +31,7 @@ jobs:
     - stage: e2e
       name: "e2e: cri-o with weave"
       script: ./e2e/travis.sh
-      rvm: 2.5
+      rvm: 2.5.4
       dist: xenial
       env:
         - CONTAINER_RUNTIME=cri-o
@@ -39,14 +39,13 @@ jobs:
     - stage: e2e
       name: "e2e: cri-o with calico"
       script: ./e2e/travis.sh
-      rvm: 2.5
+      rvm: 2.5.4
       dist: xenial
       env:
         - CONTAINER_RUNTIME=cri-o
         - NETWORK_PROVIDER=calico
     - stage: publish binary
       script: ./build/travis/macos.sh
-      rvm: 2.5
       os: osx
       install: ls -l
       deploy:
@@ -63,7 +62,6 @@ jobs:
           all_branches: true
     - stage: publish binary
       script: ./build/travis/macos_oss.sh
-      rvm: 2.5
       os: osx
       install: ls -l
       env:

@@ -12,6 +12,20 @@ module Pharos
       @debug = true
     end
 
+    def self.format_exception(exc, severity = "ERROR")
+      return exc unless exc.is_a?(Exception)
+
+      if ENV["DEBUG"] || severity == "DEBUG"
+        message = exc.message.strip
+        backtrace = "\n    #{exc.backtrace.join("\n    ")}"
+      else
+        message = exc.message[/\A(.+?)$/m, 1]
+        backtrace = nil
+      end
+
+      "Error: #{message}#{backtrace}"
+    end
+
     def self.log_level
       @log_level ||= debug? ? Logger::DEBUG : Logger::INFO
     end

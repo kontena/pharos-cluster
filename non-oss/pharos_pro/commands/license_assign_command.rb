@@ -9,18 +9,10 @@ module Pharos
     parameter "[LICENSE_KEY]", "kontena pharos license key (default: <stdin>)"
     option '--description', 'DESCRIPTION', "license description [DEPRECATED]", hidden: true
     option %w(-f --force), :flag, "force assign invalid/expired token"
-    option '--token', :flag, "display license subscription token" do
-      if jwt_token.valid?
-        puts jwt_token.token
-        exit
-      end
-
-      signal_error "Token invalid: #{jwt_token.errors.join('. ')}"
-    end
 
     def execute
       warn '[DEPRECATED] the --description option is deprecated and will be ignored' if description
-      cluster_manager
+      cluster_manager('force' => force?, 'no-generate-name' => true)
       puts decorate_license
 
       unless jwt_token.valid? || force?
@@ -50,13 +42,7 @@ module Pharos
       @jwt_token ||= if license_key.match?(/^\h{8}-(?:\h{4}-){3}\h{12}$/)
                        Pharos::LicenseKey.new(subscription_token, cluster_id: cluster_id)
                      else
-                       begin
-                         load_config
-                         c_id = cluster_id
-                       rescue StandardError
-                         c_id = nil
-                       end
-                       Pharos::LicenseKey.new(license_key, cluster_id: c_id)
+                       Pharos::LicenseKey.new(license_key, cluster_id: cluster_id)
                      end
     end
 
@@ -64,25 +50,12 @@ module Pharos
       @master_host ||= load_config.master_host
     end
 
-    def cluster_info
-      @cluster_info ||= cluster_info_configmap
-    rescue K8s::Error::NotFound => ex
-      signal_error "Failed to fetch cluster-info: #{ex.class.name} : #{ex.message}"
-    end
-
-    def cluster_info_configmap
-      kube_client = load_config.kube_client(cluster_manager.context['kubeconfig'])
-      kube_client.api('v1').resource('configmaps', namespace: 'kube-public').get('cluster-info')
-    end
-
     def cluster_id
-      cluster_info.dig('metadata', 'uid')
+      cluster_manager.context['cluster-id'] || signal_error('Failed to get cluster id')
     end
 
     def cluster_name
-      load_config.name
-    rescue StandardError => ex
-      signal_error "Failed to parse cluster name from pharos-config.pharos-cluster-name: #{ex.class.name} : #{ex.message}"
+      load_config.name || signal_error('Failed to get cluster name')
     end
 
     def subscription_token_request
@@ -118,14 +91,6 @@ module Pharos
         rouge.format(lexer.lex(jwt_token.to_h.to_yaml.delete_prefix("---\n")))
       else
         jwt_token.to_h.to_yaml.delete_prefix("---\n")
-      end
-    end
-
-    def cluster_manager
-      @cluster_manager ||= ClusterManager.new(load_config.tap { |c| c.hosts.keep_if(&:master?) }).tap do |cluster_manager|
-        puts "==> Sharpening tools ...".green
-        cluster_manager.load
-        cluster_manager.gather_facts
       end
     end
   end

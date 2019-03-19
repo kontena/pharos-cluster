@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pry' if Gem.loaded_specs.key?('pry')
+
 module Pharos
   class Command < Clamp::Command
     include Pharos::Logging
@@ -45,6 +47,20 @@ module Pharos
     end
 
     option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG"
+
+    if Object.const_defined?(:Pry)
+      # rubocop:disable Lint/Debugger
+      module Console
+        def execute
+          binding.pry
+        end
+      end
+      # rubocop:enable Lint/Debugger
+
+      option ['--console'], :flag, "start console instead of execute", hidden: true do
+        extend(Console)
+      end
+    end
 
     def prompt
       @prompt ||= TTY::Prompt.new(enable_color: color?)

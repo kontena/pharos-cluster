@@ -44,7 +44,7 @@ module Pharos
         Thread.new do
           Thread.current.report_on_exception = false
           Thread.current[:host] = phase.host.to_s
-          Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
+          Retry.perform(yield_object: phase, logger: phase.logger, exceptions: RETRY_ERRORS, &block)
         end
       end
 
@@ -68,7 +68,7 @@ module Pharos
     # @return [Array<...>]
     def run_serial(phases, &block)
       phases.map do |phase|
-        Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
+        Retry.perform(yield_object: phase, logger: phase.logger, exceptions: RETRY_ERRORS, &block)
       end
     end
 

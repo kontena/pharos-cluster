@@ -1,0 +1,5 @@
+hosts:
+  - address: 192.0.2.1
+    role: master
+  - address: 192.0.2.2
+    role: worker

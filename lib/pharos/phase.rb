@@ -37,20 +37,22 @@ module Pharos
     end
 
     FORMATTER_COLOR = proc do |severity, _datetime, progname, msg|
+      message = Pharos::Logging.format_exception(msg, severity)
       color = case severity
               when "DEBUG" then :dim
               when "INFO" then :to_s
               when "WARN" then :yellow
               else :red
               end
-      "    [%<progname>s] %<msg>s\n" % { progname: progname.send(color), msg: msg }
+      "    [%<progname>s] %<msg>s\n" % { progname: progname.send(color), msg: message }
     end
 
     FORMATTER_NO_COLOR = proc do |severity, _datetime, progname, msg|
+      message = Pharos::Logging.format_exception(msg, severity)
       if severity == "INFO"
-        "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: msg }
+        "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: message }
       else
-        "    [%<progname>s] [%<severity>s] %<msg>s\n" % { progname: progname, severity: severity, msg: msg }
+        "    [%<progname>s] [%<severity>s] %<msg>s\n" % { progname: progname, severity: severity, msg: message }
       end
     end
 

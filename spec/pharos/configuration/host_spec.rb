@@ -51,13 +51,26 @@ describe Pharos::Configuration::Host do
         expect(subject.labels).to include(foo: 'bar', baz: 'baf')
       end
 
-      it 'returns default worker label' do
+      it 'returns default worker label if no custom roles defined' do
         subject = described_class.new(
           address: '192.168.100.100',
           role: 'worker',
           user: 'root'
         )
         expect(subject.labels).to include('node-role.kubernetes.io/worker' => "")
+      end
+
+      it 'returns custom role label if one defined' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          role: 'worker',
+          user: 'root',
+          labels: {
+            'node-role.kubernetes.io/my-precious' => ''
+          }
+        )
+        expect(subject.labels).not_to include('node-role.kubernetes.io/worker' => "")
+        expect(subject.labels).to include('node-role.kubernetes.io/my-precious' => "")
       end
     end
   end
