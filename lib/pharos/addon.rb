@@ -55,6 +55,10 @@ module Pharos
       attr_reader :addon_name
       attr_writer :addon_location
 
+      def to_s
+        "#{addon_name&.capitalize || self.class.name} Addon"
+      end
+
       # @return [String]
       def addon_location
         @addon_location || __dir__
