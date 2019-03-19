@@ -10,7 +10,7 @@ module Pharos
 
     option '--subscription-token', '[TOKEN]', 'pharos license subscription token'
     option '--cluster-id', '[ID]', 'pharos cluster id'
-    option '--print-cluster-info', :flag, "output cluster information only"
+    option '--cluster-info', :flag, "output cluster information only", attribute_name: :print_cluster_info
 
     def prepare_config
       return if @prepared_config

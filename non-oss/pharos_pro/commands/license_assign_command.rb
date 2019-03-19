@@ -8,9 +8,8 @@ module Pharos
 
     parameter "[LICENSE_KEY]", "kontena pharos license key (default: <stdin>)"
     option '--description', 'DESCRIPTION', "license description [DEPRECATED]", hidden: true
-    option '--print-subscription-token', :flag, 'only output subscription token'
 
-    option '--cluster-id', '[ID]', 'request for a specified cluster id (requires --cluster-name)' do |cluster_id|
+    option '--cluster-id', '[ID]', 'request for a specified cluster id. outputs the subscription token. (requires --cluster-name)' do |cluster_id|
       @cluster_id_given = true
       cluster_id
     end
@@ -27,7 +26,7 @@ module Pharos
       signal_usage_error '--cluster-name required when --cluster-id given' if @cluster_id_given && !@cluster_name_given
       signal_usage_error '--cluster-id required when --cluster-name given' if @cluster_name_given && !@cluster_id_given
 
-      if print_subscription_token?
+      if @cluster_id_given
         puts jwt_token.token
         return
       end
