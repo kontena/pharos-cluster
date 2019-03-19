@@ -7,7 +7,7 @@ Pharos.addon 'pharos-license-enforcer' do
   enable!
 
   install do
-    # To get all needed RBAC in place
+    # Does now "empty" stack deploy --> prunes everything from this addon, e.g. previous versions rbac etc.
     apply_resources
 
     @cluster_config.master_hosts.each do |m|
