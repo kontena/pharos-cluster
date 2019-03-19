@@ -67,6 +67,7 @@ module Pharos
         host[:taints] = bundle['taint'] if bundle['taint']
         host[:environment] = bundle['environment'] if bundle['environment']
         host[:user] = bundle['user'] if bundle['user']
+        host[:ssh_port] = bundle['ssh_port'] if bundle['ssh_port']
         host[:ssh_key_path] = bundle['ssh_key_path'] if bundle['ssh_key_path']
         host[:bastion] = bundle['bastion'][0] if bundle['bastion']
         host[:ssh_proxy_command] = bundle['ssh_proxy_command'] if bundle['ssh_proxy_command']
