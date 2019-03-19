@@ -45,7 +45,7 @@ describe Pharos::LicenseAssignCommand do
       end
     end
 
-    context '--print-subscription-token, --cluster-name and --cluster-id given' do
+    context '--cluster-name and --cluster-id given' do
       it 'assigns a license without loading configuration and outputs jwt' do
         expect(http_client).to receive(:post).and_return(double(body: success_response))
         expect(subject).not_to receive(:cluster_manager)
@@ -65,13 +65,6 @@ describe Pharos::LicenseAssignCommand do
     it 'runs kubectl on master' do
       expect(ssh).to receive(:exec!).with("kubectl create secret generic pharos-license --namespace=kube-system --from-literal='license.jwt=123' --dry-run -o yaml | kubectl apply -f -")
       expect{subject.run([license_key])}.to output(/Assigned the subscription token/).to_stdout
-    end
-
-    context '--print-subscription-token given' do
-      it 'outputs the subscription token jwt' do
-        allow(ssh).to receive(:exec!).with("kubectl create secret generic pharos-license --namespace=kube-system --from-literal='license.jwt=123' --dry-run -o yaml | kubectl apply -f -")
-        expect{subject.run(['--print-subscription-token', license_key])}.to output(/^123$/m).to_stdout
-      end
     end
   end
 end
