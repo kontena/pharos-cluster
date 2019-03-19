@@ -36,23 +36,26 @@ module Pharos
       @host.transport
     end
 
-    FORMATTER_COLOR = proc do |severity, _datetime, progname, msg|
-      message = Pharos::Logging.format_exception(msg, severity)
+    FORMATTER_COLOR = proc do |severity, _datetime, hostname, msg|
+      message = msg.is_a?(Exception) ? Pharos::Logging.format_exception(msg, severity) : msg
+
       color = case severity
               when "DEBUG" then :dim
               when "INFO" then :to_s
               when "WARN" then :yellow
               else :red
               end
-      "    [%<progname>s] %<msg>s\n" % { progname: progname.send(color), msg: message }
+
+      message.gsub(/^/m) { "    [#{hostname.send(color)}] " } + "\n"
     end
 
-    FORMATTER_NO_COLOR = proc do |severity, _datetime, progname, msg|
-      message = Pharos::Logging.format_exception(msg, severity)
+    FORMATTER_NO_COLOR = proc do |severity, _datetime, hostname, msg|
+      message = msg.is_a?(Exception) ? Pharos::Logging.format_exception(msg, severity) : msg
+
       if severity == "INFO"
-        "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: message }
+        message.gsub(/^/m) { "    [#{hostname}] " } + "\n"
       else
-        "    [%<progname>s] [%<severity>s] %<msg>s\n" % { progname: progname, severity: severity, msg: message }
+        message.gsub(/^/m) { "    [#{hostname}] [#{severity}] " } + "\n"
       end
     end
 
