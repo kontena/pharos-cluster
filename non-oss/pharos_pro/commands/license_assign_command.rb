@@ -8,11 +8,24 @@ module Pharos
 
     parameter "[LICENSE_KEY]", "kontena pharos license key (default: <stdin>)"
     option '--description', 'DESCRIPTION', "license description [DEPRECATED]", hidden: true
+    option '--print-subscription-token', :flag, 'only output subscription token'
+
+    option '--cluster-id', '[ID]', 'request for a specified cluster id (requires --cluster-name)'
+    option '--cluster-name', '[NAME]', 'request for a specified cluster name (requires --cluster-id)' do |cluster_name|
+      @cluster_name_given = true
+      cluster_name
+    end
+
     option %w(-f --force), :flag, "force assign invalid/expired token"
 
     def execute
       warn '[DEPRECATED] the --description option is deprecated and will be ignored' if description
-      cluster_manager('force' => force?, 'no-generate-name' => true)
+
+      if print_subscription_token?
+        puts jwt_token.token
+        return
+      end
+
       puts decorate_license
 
       unless jwt_token.valid? || force?
@@ -50,16 +63,20 @@ module Pharos
       @master_host ||= load_config.master_host
     end
 
-    def cluster_id
-      cluster_manager.context['cluster-id'] || signal_error('Failed to get cluster id')
+    def default_cluster_id
+      signal_usage_error '--cluster-id required when --cluster-name given' if @cluster_name_given
+
+      cluster_manager('force' => force?, 'no-generate-name' => true).context['cluster-id'] || signal_error('Failed to get cluster id')
     end
 
-    def cluster_name
+    def default_cluster_name
+      signal_usage_error '--cluster-name required when --cluster-id given'
+
       load_config.name || signal_error('Failed to get cluster name')
     end
 
     def subscription_token_request
-      logger.info "Exchanging license key for a subscription token" if $stdout.tty?
+      logger.info "Exchanging license key for a subscription token" if $stdout.tty? && !print_subscription_token?
 
       Excon.post(
         'https://get.pharos.sh/api/licenses/%<key>s/assign' % { key: license_key },
