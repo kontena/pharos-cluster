@@ -33,6 +33,27 @@ describe Pharos::LicenseAssignCommand do
       allow(http_client).to receive(:post).and_return(double(body: success_response))
     end
 
+    context '--cluster-name given' do
+      it 'signals error unless --cluster-id also given' do
+        expect{subject.run(%w(--cluster-name abcd))}.to raise_error(Clamp::UsageError, /cluster-id required/)
+      end
+    end
+
+    context '--cluster-id given' do
+      it 'signals error unless --cluster-name also given' do
+        expect{subject.run(%w(--cluster-id abcd))}.to raise_error(Clamp::UsageError, /cluster-name required/)
+      end
+    end
+
+    context '--cluster-name and --cluster-id given' do
+      it 'assigns a license without loading configuration and outputs jwt' do
+        expect(http_client).to receive(:post).and_return(double(body: success_response))
+        expect(subject).not_to receive(:cluster_manager)
+        expect(subject).not_to receive(:load_config)
+        expect{subject.run(%w(--cluster-id 6c6289c0-1fb0-11e9-bac4-02f41f34da68 --cluster-name defg) + [license_key])}.to output("123\n").to_stdout
+      end
+    end
+
     context 'cluster-info not found' do
       let(:cluster_context) { { } }
 
@@ -43,7 +64,7 @@ describe Pharos::LicenseAssignCommand do
 
     it 'runs kubectl on master' do
       expect(ssh).to receive(:exec!).with("kubectl create secret generic pharos-license --namespace=kube-system --from-literal='license.jwt=123' --dry-run -o yaml | kubectl apply -f -")
-      subject.run([license_key])
+      expect{subject.run([license_key])}.to output(/Assigned the subscription token/).to_stdout
     end
   end
 end
