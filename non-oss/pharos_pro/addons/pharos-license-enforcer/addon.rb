@@ -35,7 +35,7 @@ Pharos.addon 'pharos-license-enforcer' do
       image: #{cluster_config.image_repository}/pharos-license-enforcer:#{self.class.version}
       args:
         - -interval
-        - 30s
+        - 60m
         - -kube-config
         - /etc/kubeconfig
       env:
