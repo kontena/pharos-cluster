@@ -65,11 +65,16 @@ module Pharos
       def forward(host, port)
         connect unless connected?
 
+        local_port = next_port
+
         begin
-          local_port = next_port
-          @session.forward.local(local_port, host, port)
-          logger.debug "Opened port forward 127.0.0.1:#{local_port} -> #{host}:#{port}"
+          synchronize do
+            @session.forward.local(local_port, host, port)
+            logger.debug "Opened port forward 127.0.0.1:#{local_port} -> #{host}:#{port}"
+          end
         rescue Errno::EADDRINUSE
+          logger.debug "Port #{local_port} in use, trying next one"
+          local_port = next_port
           retry
         end
 
