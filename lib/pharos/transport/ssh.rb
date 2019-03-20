@@ -9,7 +9,8 @@ module Pharos
 
       RETRY_CONNECTION_ERRORS = [
         Net::SSH::AuthenticationFailed,
-        Net::SSH::Authentication::KeyManagerError
+        Net::SSH::Authentication::KeyManagerError,
+        Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::DecryptError
       ].freeze
 
       # @param host [String]
