@@ -13,6 +13,7 @@ autoload :K8s, 'k8s-client'
 autoload :Open3, 'open3'
 autoload :Pathname, 'pathname'
 autoload :OpenSSL, 'openssl'
+autoload :Pastel, 'pastel'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
@@ -34,7 +35,6 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
-  autoload :Transport, 'pharos/transport'
 
   module Transport
     autoload :TransportFile, 'pharos/transport/transport_file'
@@ -73,15 +73,16 @@ module Pharos
     autoload :JsonParser, 'pharos/terraform/json_parser'
   end
 
-  autoload :Configuration, 'pharos/configuration'
-
   module Configuration
+    autoload :Struct, 'pharos/configuration'
     autoload :Host, 'pharos/configuration/host'
     autoload :Route, 'pharos/configuration/route'
     autoload :ResolvConf, 'pharos/configuration/resolv_conf'
     autoload :Taint, 'pharos/configuration/taint'
     autoload :OsRelease, 'pharos/configuration/os_release'
   end
+
+  autoload :Configuration, 'pharos/configuration'
 
   module Etcd
     autoload :Client, 'pharos/etcd/client'
