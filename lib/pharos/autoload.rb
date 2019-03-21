@@ -72,7 +72,7 @@ module Pharos
   end
 
   module Configuration
-    autoload :Struct, 'pharos/configuration'
+    autoload :Struct, 'pharos/configuration/struct'
     autoload :Host, 'pharos/configuration/host'
     autoload :Route, 'pharos/configuration/route'
     autoload :ResolvConf, 'pharos/configuration/resolv_conf'
