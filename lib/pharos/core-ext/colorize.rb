@@ -4,7 +4,7 @@ module Pharos
   module CoreExt
     module Colorize
       ATTRIBUTES = %i(
-        clear reset bold dark dim italic underline underscore inverse hidden
+        clear reset bold dark dim italic underline inverse hidden
         strikethrough black red green yellow blue magenta cyan white on_black
         on_red on_green on_yellow on_blue on_magenta on_cyan on_white bright_black
         bright_red bright_green bright_yellow bright_blue bright_magenta bright_cyan
@@ -26,8 +26,6 @@ module Pharos
 
       refine String do
         ATTRIBUTES.each do |meth|
-          next if meth == :underscore
-
           define_method(meth) do
             Pharos::CoreExt::Colorize.pastel.send(meth, self)
           end

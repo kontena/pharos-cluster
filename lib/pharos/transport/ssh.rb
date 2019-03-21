@@ -13,7 +13,7 @@ module Pharos
       ].freeze
 
       def to_s
-        @to_s ||= "SSH #{host.user}@#{host.address}:#{host.ssh_port}#{" via #{host.bastion.host.transport}" if bastion}#{' via ssh_proxy_command' if host.ssh_proxy_command}"
+        @to_s ||= "SSH #{host.user}@#{host.address}:#{host.ssh_port}#{" via #{host.bastion.host.transport}" if host.bastion}#{' via ssh_proxy_command' if host.ssh_proxy_command}"
       end
 
       def host_options
@@ -25,13 +25,8 @@ module Pharos
         end
       end
 
-      # @return [Hash,NilClass]
-      def bastion
-        @bastion ||= host.bastion
-      end
-
       def connect
-        session_factory = bastion&.transport || Net::SSH
+        session_factory = host.bastion&.transport || Net::SSH
 
         synchronize do
           logger.debug { "connect: #{self}" }
@@ -105,7 +100,7 @@ module Pharos
 
       def disconnect
         synchronize do
-          bastion&.transport&.close(@session.options[:port]) if @session&.host == "127.0.0.1"
+          host.bastion&.transport&.close(@session.options[:port]) if @session&.host == "127.0.0.1"
           @session&.forward&.active_locals&.each do |local_port, _host|
             @session&.forward&.cancel_local(local_port)
           end
