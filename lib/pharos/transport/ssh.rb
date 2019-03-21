@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'net/ssh'
+require 'net/ssh/proxy/command'
 
 module Pharos
   module Transport
@@ -12,30 +13,31 @@ module Pharos
         Net::SSH::Authentication::KeyManagerError
       ].freeze
 
-      def to_s
-        @to_s ||= "SSH #{host.user}@#{host.address}:#{host.ssh_port}#{" via #{host.bastion.host.transport}" if host.bastion}#{' via ssh_proxy_command' if host.ssh_proxy_command}"
+      # @param host [String]
+      # @param opts [Hash]
+      def initialize(host, **opts)
+        super(host, opts)
+        @user = @opts.delete(:user)
+        @opts[:proxy] = Net::SSH::Proxy::Command.new(@opts.delete(:ssh_proxy_command)) if @opts.key?(:ssh_proxy_command)
       end
 
-      def host_options
-        @host_options ||= {}.tap do |opts|
-          opts[:keys] = [host.ssh_key_path] if host.ssh_key_path
-          opts[:send_env] = [] # override default to not send LC_* envs
-          opts[:proxy] = Net::SSH::Proxy::Command.new(host.ssh_proxy_command) if host.ssh_proxy_command
-          opts[:port] = host.ssh_port
-        end
+      # @return [Hash,NilClass]
+      def bastion
+        @bastion ||= @opts.delete(:bastion)
       end
 
-      def connect
-        session_factory = host.bastion&.transport || Net::SSH
+      # @param options [Hash] see Net::SSH#start
+      def connect(**options)
+        session_factory = bastion&.transport || Net::SSH
 
         synchronize do
-          logger.debug { "connect: #{self}" }
+          logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           non_interactive = true
           begin
-            @session = session_factory.start(host.address, host.user, host_options.merge(non_interactive: non_interactive))
+            @session = session_factory.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
             logger.debug "Connected"
           rescue *RETRY_CONNECTION_ERRORS => exc
-            logger.debug "Received #{exc.class.name} : #{exc.message} when connecting to #{self}"
+            logger.debug "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}"
             raise if non_interactive == false || !$stdin.tty? # don't re-retry
 
             logger.debug { "Retrying in interactive mode" }
@@ -100,7 +102,7 @@ module Pharos
 
       def disconnect
         synchronize do
-          host.bastion&.transport&.close(@session.options[:port]) if @session&.host == "127.0.0.1"
+          bastion&.transport&.close(@session.options[:port]) if @session&.host == "127.0.0.1"
           @session&.forward&.active_locals&.each do |local_port, _host|
             @session&.forward&.cancel_local(local_port)
           end

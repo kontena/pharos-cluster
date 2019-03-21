@@ -20,10 +20,12 @@ module Pharos
 
       attr_reader :host
 
-      # @param host [Pharos::Configuration::Host]
-      def initialize(host)
+      # @param host [String]
+      # @param opts [Hash]
+      def initialize(host, **opts)
         super()
         @host = host
+        @opts = opts
       end
 
       def logger

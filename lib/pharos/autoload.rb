@@ -36,6 +36,8 @@ module Pharos
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
 
+  autoload :Transport, 'pharos/transport'
+
   module Transport
     autoload :TransportFile, 'pharos/transport/transport_file'
     autoload :Tempfile, 'pharos/transport/tempfile'
@@ -81,8 +83,6 @@ module Pharos
     autoload :Taint, 'pharos/configuration/taint'
     autoload :OsRelease, 'pharos/configuration/os_release'
   end
-
-  autoload :Configuration, 'pharos/configuration'
 
   module Etcd
     autoload :Client, 'pharos/etcd/client'

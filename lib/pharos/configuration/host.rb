@@ -47,7 +47,7 @@ module Pharos
       # target host
       # @return [Pharos::Transport::Local,Pharos::Transport::SSH]
       def transport
-        @transport ||= Pharos::Transport.const_get(local? ? :Local : :SSH).new(self)
+        @transport ||= Pharos::Transport.for(self)
       end
 
       def api_address
