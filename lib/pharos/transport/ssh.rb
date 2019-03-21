@@ -13,7 +13,7 @@ module Pharos
       ].freeze
 
       def to_s
-        @to_s ||= "SSH #{host.user}@#{host.address}:#{host.ssh_port}#{" via #{host.bastion.host.transport}" if bastion}#{" via ssh_proxy_command" if host.ssh_proxy_command}"
+        @to_s ||= "SSH #{host.user}@#{host.address}:#{host.ssh_port}#{" via #{host.bastion.host.transport}" if bastion}#{' via ssh_proxy_command' if host.ssh_proxy_command}"
       end
 
       def host_options
