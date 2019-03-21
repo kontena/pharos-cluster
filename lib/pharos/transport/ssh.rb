@@ -18,7 +18,7 @@ module Pharos
       def initialize(host, **opts)
         super(host, opts)
         @user = @opts.delete(:user)
-        @opts[:proxy] = Net::SSH::Proxy::Command.new(@opts.delete(:ssh_proxy_command)) if @opts.key?(:ssh_proxy_command)
+        @opts[:proxy] = Net::SSH::Proxy::Command.new(@opts.delete(:proxy_command)) if @opts.key?(:proxy_command)
       end
 
       # @return [Hash,NilClass]
