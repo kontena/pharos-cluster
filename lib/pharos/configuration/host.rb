@@ -3,6 +3,7 @@
 require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
+require_relative '../transport'
 
 require 'ipaddr'
 require 'resolv'
