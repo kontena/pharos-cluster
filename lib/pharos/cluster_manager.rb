@@ -56,7 +56,7 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
+      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: true)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?

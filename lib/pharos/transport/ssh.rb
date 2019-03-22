@@ -7,6 +7,14 @@ module Pharos
     class SSH < Base
       attr_reader :session
 
+      def self.class_mutex
+        @class_mutex ||= Mutex.new
+      end
+
+      def class_mutex
+        self.class.class_mutex
+      end
+
       RETRY_CONNECTION_ERRORS = [
         Net::SSH::AuthenticationFailed,
         Net::SSH::Authentication::KeyManagerError,
@@ -35,12 +43,15 @@ module Pharos
           begin
             @session = session_factory.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
             logger.debug "Connected"
+            class_mutex.unlock if class_mutex.locked? && class_mutex.owned?
           rescue *RETRY_CONNECTION_ERRORS => exc
             logger.debug "Received #{exc.class.name} : #{exc.message} when connecting to #{@user}@#{@host}"
             raise if non_interactive == false || !$stdin.tty? # don't re-retry
 
             logger.debug { "Retrying in interactive mode" }
             non_interactive = false
+
+            sleep 0.1 until class_mutex.try_lock
             retry
           end
         end
