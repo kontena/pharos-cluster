@@ -1,12 +1,13 @@
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   labels:
     k8s-app: pharos-cloud-controller
   name: pharos-cloud-controller
   namespace: kube-system
 spec:
+  replicas: 1
   selector:
     matchLabels:
       k8s-app: pharos-cloud-controller
@@ -27,6 +28,7 @@ spec:
         command:
         - /usr/local/bin/pharos-cloud-controller
         - --cloud-provider=pharos
+        - --node-status-update-frequency=60s
         - --allow-untagged-cloud
         - --leader-elect=true
         - --use-service-account-credentials
@@ -43,5 +45,3 @@ spec:
       # the node selector may vary depending on your cluster setup
       nodeSelector:
         node-role.kubernetes.io/master: ""
-  updateStrategy:
-    type: RollingUpdate
