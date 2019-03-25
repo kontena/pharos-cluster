@@ -13,6 +13,10 @@ module Pharos
         @pastel = Pastel.new(enabled: false)
       end
 
+      def self.enabled?
+        pastel.enabled?
+      end
+
       refine String do
         Pastel::ANSI::ATTRIBUTES.each_key do |meth|
           next if meth == :underscore

@@ -10,6 +10,6 @@ baseurl=https://dl.bintray.com/kontena/pharos-rpm
 gpgcheck=0
 repo_gpgcheck=1
 enabled=1
-gpgkey=https://bintray.com/user/downloadSubjectPublicKey?username=bintray
+gpgkey=https://bintray-pk.pharos.sh?username=bintray
 EOF
 fi

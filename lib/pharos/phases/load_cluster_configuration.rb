@@ -6,13 +6,19 @@ module Pharos
       title "Load cluster configuration"
 
       def call
-        config_map = previous_config_map
-        return unless config_map
+        logger.info { "Loading cluster configuration configmap ..." }
 
-        logger.info { "Loading previous cluster configuration from configmap ..." }
+        pharos_config_map = pharos_config_configmap
+        return unless pharos_config_map
 
-        cluster_context.previous_configmap = config_map
-        cluster_context.previous_config = build_config(config_map)
+        cluster_context.previous_configmap = pharos_config_map
+        cluster_context.previous_config = build_config(pharos_config_map)
+
+        logger.info { "Loading cluster-info configmap ..." }
+        info_config = cluster_info_configmap
+
+        cluster_context.cluster_id = info_config&.metadata&.uid
+        cluster_context['cluster-created-at'] = info_config&.metadata&.creationTimestamp
       end
 
       # @param configmap [K8s::Resource]
@@ -25,9 +31,17 @@ module Pharos
       end
 
       # @return [K8s::Resource, nil]
-      def previous_config_map
-        kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config').tap { |pvc| puts "-------------------"; puts pvc.inspect; puts "--------------" }
+      def pharos_config_configmap
+        kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config')
       rescue K8s::Error::NotFound
+        logger.error { "pharos-config configmap was not found" }
+        nil
+      end
+
+      def cluster_info_configmap
+        kube_client.api('v1').resource('configmaps', namespace: 'kube-public').get('cluster-info')
+      rescue K8s::Error::NotFound
+        logger.error { "cluster-info configmap was not found" }
         nil
       end
     end

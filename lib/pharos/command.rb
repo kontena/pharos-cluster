@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pry' if Gem.loaded_specs.key?('pry')
+
 module Pharos
   class Command < Clamp::Command
     include Pharos::Logging
@@ -12,8 +14,14 @@ module Pharos
       end
     end
 
-    def run(*_args)
+    def parse(*_arguments)
+      result = super
       Pharos::CoreExt::Colorize.disable! unless color?
+      Pharos::Logging.debug! if debug?
+      result
+    end
+
+    def run(*_args)
       super
     rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
       raise
@@ -26,7 +34,7 @@ module Pharos
       warn "==> #{exc}"
       exit 11
     rescue StandardError => ex
-      raise if debug?
+      raise if Pharos::Logging.debug?
 
       signal_error "#{ex.class.name} : #{ex.message}"
     end
@@ -38,8 +46,20 @@ module Pharos
       exit 0
     end
 
-    option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG" do
-      ENV["DEBUG"] = "true"
+    option ['-d', '--debug'], :flag, "enable debug output", environment_variable: "DEBUG"
+
+    if Object.const_defined?(:Pry)
+      # rubocop:disable Lint/Debugger
+      module Console
+        def execute
+          binding.pry
+        end
+      end
+      # rubocop:enable Lint/Debugger
+
+      option ['--console'], :flag, "start console instead of execute", hidden: true do
+        extend(Console)
+      end
     end
 
     def prompt

@@ -5,14 +5,11 @@ require 'ipaddr'
 module Pharos
   module Phases
     class GatherFacts < Pharos::Phase
-      using Pharos::CoreExt::IPAddrLoopback if RUBY_VERSION < '2.5.0'
-
       title "Gather host facts"
 
       FULL_HOSTNAME_CLOUD_PROVIDERS = %w(aws vsphere).freeze
 
       def call
-        Thread.current.abort_on_exception = true
         logger.info { "Checking sudo access ..." }
         check_sudo
         logger.info { "Gathering host facts ..." }

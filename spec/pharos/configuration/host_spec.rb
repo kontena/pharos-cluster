@@ -51,13 +51,26 @@ describe Pharos::Configuration::Host do
         expect(subject.labels).to include(foo: 'bar', baz: 'baf')
       end
 
-      it 'returns default worker label' do
+      it 'returns default worker label if no custom roles defined' do
         subject = described_class.new(
           address: '192.168.100.100',
           role: 'worker',
           user: 'root'
         )
         expect(subject.labels).to include('node-role.kubernetes.io/worker' => "")
+      end
+
+      it 'returns custom role label if one defined' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          role: 'worker',
+          user: 'root',
+          labels: {
+            'node-role.kubernetes.io/my-precious' => ''
+          }
+        )
+        expect(subject.labels).not_to include('node-role.kubernetes.io/worker' => "")
+        expect(subject.labels).to include('node-role.kubernetes.io/my-precious' => "")
       end
     end
   end
@@ -156,6 +169,30 @@ describe Pharos::Configuration::Host do
 
     it "does not find any overlapping routes for 172.16.0.0/24" do
       expect(subject.overlapping_routes('172.16.0.0/24').map{|route| route.prefix}).to eq []
+    end
+  end
+
+  describe '#local?' do
+    it "return true if address is local" do
+      subject = described_class.new(
+        address: '127.0.0.1',
+      )
+      expect(subject.local?).to be_truthy
+    end
+
+    it "return false if address is not local" do
+      subject = described_class.new(
+        address: '8.8.8.8',
+      )
+      expect(subject.local?).to be_falsey
+    end
+
+    it "return false if address is not valid" do
+      expect(Resolv).to receive(:getaddress).with('invalid').and_raise(Resolv::ResolvError)
+      subject = described_class.new(
+        address: 'invalid',
+      )
+      expect(subject.local?).to be_falsey
     end
   end
 end

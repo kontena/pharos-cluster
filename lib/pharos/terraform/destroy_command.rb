@@ -12,7 +12,7 @@ module Pharos
 
       def tf_destroy
         cmd = ["terraform", "destroy"]
-        cmd << "-auto-approve" if yes?
+        cmd += common_tf_options
 
         run_cmd!(cmd.join(' '))
         unless workspace == 'default'

@@ -7,6 +7,7 @@ module Pharos
     options :load_config, :tf_json, :yes?
 
     option %w(-f --force), :flag, "force upgrade", default: false
+    option %w(-n --name), 'NAME', 'use as cluster name', attribute_name: :new_name
 
     def execute
       puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
@@ -14,6 +15,7 @@ module Pharos
       Pharos::Kube.init_logging!
 
       config = load_config
+      config.attributes[:name] = new_name if new_name
 
       # set workdir to the same dir where config was loaded from
       # so that the certs etc. can be referenced more easily
@@ -25,11 +27,9 @@ module Pharos
     # @param config [Pharos::Config]
     # @param config_content [String]
     def configure(config)
-      manager = ClusterManager.new(Pharos::Context.new(config: config, force: force?))
       start_time = Time.now
-      puts "==> Sharpening tools ...".green
-      manager.load
-      manager.validate
+
+      manager = cluster_manager('force' => force?)
       show_component_versions(config)
       show_addon_versions(manager)
       manager.apply_addons_cluster_config_modifications
@@ -50,7 +50,7 @@ module Pharos
         puts message.gsub(/^/, '      ')
       end
       puts "    To configure kubectl for connecting to the cluster, use:"
-      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options}> kubeconfig"
+      puts "      #{File.basename($PROGRAM_NAME)} kubeconfig #{"#{@config_options.join(' ')} " if @config_options} -n #{config.name} > kubeconfig"
       puts "      export KUBECONFIG=./kubeconfig"
       manager.disconnect
     end
@@ -94,10 +94,13 @@ module Pharos
         if context.unsafe_upgrade?
           if force?
             puts
-            puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this can break your cluster."
+            puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this might cause downtime."
           else
-            signal_error "Unsupported upgrade path. You may try to force the upgrade by running\n" \
-                         "the command with --force or use the Kontena Pharos Pro version."
+            error_message = <<~ERROR_MSG
+              Upgrading to version #{Pharos.version} might cause downtime. You may force the upgrade by running
+              the command with --force or use the Kontena Pharos Pro version.
+            ERROR_MSG
+            signal_error error_message
           end
         end
         puts

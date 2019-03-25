@@ -3,8 +3,10 @@
 require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
+require_relative '../transport'
 
 require 'ipaddr'
+require 'resolv'
 
 module Pharos
   module Configuration
@@ -17,6 +19,7 @@ module Pharos
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
+      attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
       attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :environment, Pharos::Types::Strict::Hash
@@ -35,7 +38,10 @@ module Pharos
       end
 
       def local?
-        IPAddr.new(address).loopback?
+        ip_address = Resolv.getaddress(address)
+        IPAddr.new(ip_address).loopback?
+      rescue Resolv::ResolvError, IPAddr::InvalidAddressError
+        false
       end
 
       # Accessor to host transport which handles running commands and manipulating files on the
@@ -74,7 +80,7 @@ module Pharos
         labels = @attributes[:labels] || {}
 
         labels['node-address.kontena.io/external-ip'] = address
-        labels['node-role.kubernetes.io/worker'] = '' if worker?
+        labels['node-role.kubernetes.io/worker'] = '' if worker? && !labels.find{ |k, _| k.to_s.start_with?("node-role.kubernetes.io") }
 
         labels
       end

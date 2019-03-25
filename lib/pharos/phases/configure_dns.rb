@@ -3,16 +3,16 @@
 module Pharos
   module Phases
     class ConfigureDNS < Pharos::Phase
-      title "Configure DNS"
+      DNS_CACHE_STACK_NAME = 'node_local_dns'
 
-      DNS_NODE_CACHE_VERSION = '1.5.1'
+      title "Configure DNS"
 
       register_component(
         name: 'coredns', version: Pharos::COREDNS_VERSION, license: 'Apache License 2.0'
       )
 
       register_component(
-        name: 'dns-node-cache', version: DNS_NODE_CACHE_VERSION, license: 'Apache License 2.0'
+        name: 'dns-node-cache', version: Pharos::DNS_NODE_CACHE_VERSION, license: 'Apache License 2.0'
       )
 
       def call
@@ -23,7 +23,12 @@ module Pharos
           max_unavailable: max_unavailable
         )
 
-        deploy_node_dns_cache
+        if @config.network.node_local_dns_cache
+          deploy_node_dns_cache
+        else
+          logger.info { "Removing node dns cache ..." }
+          delete_stack(DNS_CACHE_STACK_NAME)
+        end
       end
 
       # @return [Integer]
@@ -107,8 +112,8 @@ module Pharos
       def deploy_node_dns_cache
         logger.info { "Deploying node dns cache ..." }
         apply_stack(
-          'node_local_dns',
-          version: DNS_NODE_CACHE_VERSION,
+          DNS_CACHE_STACK_NAME,
+          version: Pharos::DNS_NODE_CACHE_VERSION,
           image_repository: @config.image_repository,
           nodelocal_dns: Pharos::Configuration::Network::CLUSTER_DNS,
           forward_target: dns_forward_target

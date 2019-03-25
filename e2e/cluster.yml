@@ -15,7 +15,7 @@ addons:
   helm:
     enabled: true
   # TODO: fix cert-manager on travis
-  #cert-manager:
+  # cert-manager:
   #  enabled: true
   #  issuer:
   #    name: letsencrypt-staging
