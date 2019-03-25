@@ -56,7 +56,7 @@ module Pharos
         begin
           yield
         rescue Excon::Error::Socket => ex
-          raise if kube_client.transport.options[:ssl_verify_peer] ==  false # don't re-retry
+          raise if kube_client.transport.options[:ssl_verify_peer] == false # don't re-retry
 
           kube_client.transport.options[:ssl_verify_peer] = false
           logger.warn { "Encountered #{ex.class.name} : #{ex.message} - retrying with ssl verify peer disabled" }

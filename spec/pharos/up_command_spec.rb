@@ -14,7 +14,7 @@ describe Pharos::UpCommand do
   describe '#prompt_continue' do
     let(:prompt) { double(:prompt) }
     let(:config) { double(:config) }
-    let(:cluster_context) { Pharos::Context.new(existing_pharos_version: Pharos.version) }
+    let(:cluster_context) { Pharos::ClusterContext.new(existing_pharos_version: Pharos.version) }
 
     it 'prompts' do
       allow($stdin).to receive(:tty?).and_return(true)

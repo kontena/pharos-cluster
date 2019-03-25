@@ -29,7 +29,7 @@ module Pharos
     def initialize(host, config: nil, cluster_context: nil)
       @host = host
       @config = config
-      @cluster_context = (cluster_context.is_a?(Hash) ? Pharos::Context.new(cluster_context) : cluster_context) if cluster_context
+      @cluster_context = (cluster_context.is_a?(Hash) ? Pharos::ClusterContext.new(cluster_context) : cluster_context) if cluster_context
     end
 
     def transport

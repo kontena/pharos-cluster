@@ -4,7 +4,7 @@ describe Pharos::ClusterManager do
   end
 
   let(:subject) do
-    described_class.new(Pharos::Context.new(config: Pharos::Config.new(hosts: hosts)))
+    described_class.new(Pharos::ClusterContext.new(config: Pharos::Config.new(hosts: hosts)))
   end
 
   let(:transport) do

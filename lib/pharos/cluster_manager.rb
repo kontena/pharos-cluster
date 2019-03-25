@@ -22,7 +22,7 @@ module Pharos
       ]
     end
 
-    # @param context [Pharos::Context]
+    # @param context [Pharos::ClusterContext]
     def initialize(context)
       @context = context
       @config = context.config

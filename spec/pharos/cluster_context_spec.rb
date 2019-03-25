@@ -1,4 +1,4 @@
-describe Pharos::Context do
+describe Pharos::ClusterContext do
   context 'boolean aliases' do
     it 'return the value of boolean field' do
       expect(described_class.new(force: true).force?).to be_truthy

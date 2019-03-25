@@ -20,7 +20,7 @@ module Pharos
         # @param extra_context [Hash] extra settings to initialize cluster context with
         # @return [Pharos::ClusterManager]
         def cluster_manager(extra_context = {})
-          @cluster_manager ||= ClusterManager.new(Pharos::Context.new({ config: load_config }.merge(extra_context))).tap do |manager|
+          @cluster_manager ||= ClusterManager.new(Pharos::ClusterContext.new({ config: load_config }.merge(extra_context))).tap do |manager|
             puts "==> Sharpening tools ...".green
             manager.load
             manager.validate

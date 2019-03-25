@@ -8,7 +8,7 @@ describe "Pharos::Phases::ValidateVersion", if: Pharos.oss? do
   let(:network_config) { {} }
   let(:config) { Pharos::Config.new(hosts: [host]) }
   let(:ssh) { instance_double(Pharos::Transport::SSH) }
-  let(:cluster_context) { Pharos::Context.new(config: config) }
+  let(:cluster_context) { Pharos::ClusterContext.new(config: config) }
   subject { Pharos::Phases::ValidateVersion.new(host, config: config, cluster_context: cluster_context) }
 
   before do

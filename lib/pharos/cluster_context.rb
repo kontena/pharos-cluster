@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Pharos
-  class Context < Pharos::Configuration::Struct
+  class ClusterContext < Pharos::Configuration::Struct
     def self.settable_attribute(name, type, &block)
       attribute(name, type, &block)
 

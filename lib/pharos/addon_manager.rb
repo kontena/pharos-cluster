@@ -51,10 +51,10 @@ module Pharos
     end
 
     # @param config [Pharos::Configuration]
-    # @param cluster_context [Pharos::Context,Hash]
+    # @param cluster_context [Pharos::ClusterContext,Hash]
     def initialize(config, cluster_context)
       @config = config
-      @cluster_context = cluster_context.is_a?(Hash) ? Pharos::Context.new(cluster_context) : cluster_context
+      @cluster_context = cluster_context.is_a?(Hash) ? Pharos::ClusterContext.new(cluster_context) : cluster_context
       enable_default_addons
     end
 
