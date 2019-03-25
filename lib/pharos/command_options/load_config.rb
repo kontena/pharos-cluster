@@ -17,12 +17,11 @@ module Pharos
       end
 
       module InstanceMethods
-        # @param context [Hash] extra keys to initialize cluster context with
+        # @param extra_context [Hash] extra settings to initialize cluster context with
         # @return [Pharos::ClusterManager]
-        def cluster_manager(context = {})
-          @cluster_manager ||= ClusterManager.new(load_config).tap do |manager|
+        def cluster_manager(extra_context = {})
+          @cluster_manager ||= ClusterManager.new(Pharos::Context.new({ config: load_config }.merge(extra_context))).tap do |manager|
             puts "==> Sharpening tools ...".green
-            manager.context.merge!(context)
             manager.load
             manager.validate
           end
@@ -36,9 +35,9 @@ module Pharos
         def kube_client
           return @kube_client if @kube_client
 
-          signal_error 'no usable master for k8s api client' unless cluster_manager.context['kubeconfig']
+          signal_error 'no usable master for k8s api client' unless cluster_context.kubeconfig
 
-          @kube_client = load_config.kube_client(cluster_manager.context['kubeconfig'])
+          @kube_client = cluster_context.kube_client
         end
 
         private

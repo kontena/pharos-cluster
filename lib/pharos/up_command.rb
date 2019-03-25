@@ -29,7 +29,7 @@ module Pharos
     def configure(config)
       start_time = Time.now
 
-      manager = cluster_manager('force' => force?)
+      manager = cluster_manager(force: force?)
       show_component_versions(config)
       show_addon_versions(manager)
       manager.apply_addons_cluster_config_modifications

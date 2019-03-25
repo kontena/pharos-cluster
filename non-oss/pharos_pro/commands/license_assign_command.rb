@@ -69,7 +69,7 @@ module Pharos
     end
 
     def default_cluster_id
-      cluster_manager('force' => force?, 'no-generate-name' => true).context['cluster-id'] || signal_error('Failed to get cluster id')
+      cluster_manager(force: force?, generate_name: false).context.cluster_id || signal_error('Failed to get cluster id')
     end
 
     def default_cluster_name

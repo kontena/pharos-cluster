@@ -114,11 +114,6 @@ module Pharos
       @regions ||= hosts.map(&:region).compact.uniq
     end
 
-    # @return [K8s::Client]
-    def kube_client
-      @cluster_context.kube_client
-    end
-
     # @param key [Symbol]
     # @param value [Pharos::Configuration::Struct]
     # @raise [Pharos::ConfigError]

@@ -16,7 +16,7 @@ module Pharos
       return if @prepared_config
 
       load_config(master_only: true)
-      cluster_manager('no-generate-name' => true)
+      cluster_manager(generate_name: false)
       @prepared_config = true
     end
 
@@ -30,7 +30,7 @@ module Pharos
 
     def default_cluster_id
       prepare_config
-      cluster_context['cluster-id'] || signal_error('Failed to get cluster id')
+      cluster_context.cluster_id || signal_error('Failed to get cluster id')
     end
 
     def execute
@@ -55,13 +55,11 @@ module Pharos
     end
 
     def cluster_created_at
-      Time.parse(cluster_context['cluster-created-at'])
+      cluster_context.created_at
     end
 
     def evaluation_since
-      return Time.now.utc unless cluster_manager.context['cluster-created-at']
-
-      Time.parse(cluster_manager.context['cluster-created-at'])
+      cluster_context.created_at || Time.now.utc
     end
 
     def evaluation_valid_until

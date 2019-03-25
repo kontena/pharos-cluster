@@ -77,13 +77,28 @@ describe Pharos::CommandOptions::LoadConfig do
   end
 
   describe '#cluster_manager' do
-    let(:cm_instance) { instance_double(Pharos::ClusterManager, context: {}, validate: true) }
+    let(:c_context) { Pharos::Context.new(config: subject.config) }
+    let(:cm_instance) { instance_double(Pharos::ClusterManager, context: c_context) }
     let(:arguments) { ["--config=#{fixtures_path('cluster.yml')}"] }
 
     it 'instantiates a loaded cluster manager based on the loaded configuration' do
-      expect(Pharos::ClusterManager).to receive(:new).with(subject.config).and_return(cm_instance)
+      expect(Pharos::Context).to receive(:new).with(config: subject.config).and_return(c_context)
+      expect(Pharos::ClusterManager).to receive(:new).with(c_context).and_return(cm_instance)
       expect(cm_instance).to receive(:load)
+      expect(cm_instance).to receive(:validate)
       subject.cluster_manager
+    end
+
+    context 'extra context args' do
+      let(:c_context) { Pharos::Context.new(config: subject.config, force: true) }
+
+      it 'instantiates a loaded cluster manager based on the loaded configuration and extra context' do
+        expect(Pharos::Context).to receive(:new).with(config: subject.config, force: true).and_return(c_context)
+        expect(Pharos::ClusterManager).to receive(:new).with(c_context).and_return(cm_instance)
+        expect(cm_instance).to receive(:load)
+        expect(cm_instance).to receive(:validate)
+        expect(subject.cluster_manager(force: true).context.force).to be_truthy
+      end
     end
   end
 end

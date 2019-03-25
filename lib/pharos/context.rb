@@ -12,6 +12,9 @@ module Pharos
 
     attribute :config, Pharos::Types::Instance(Pharos::Config)
     attribute :force, Pharos::Types::Strict::Bool.default(false)
+    attribute :generate_name, Pharos::Types::Strict::Bool.default(true)
+    settable_attribute :cluster_id, Pharos::Types::Strict::String
+    settable_attribute :created_at, Pharos::Types::Strict::Time
     settable_attribute :previous_config, Pharos::Config
     settable_attribute :previous_configmap, Pharos::Types::Instance(K8s::Resource)
     settable_attribute :existing_pharos_version, Pharos::Types::Strict::String
@@ -28,6 +31,7 @@ module Pharos
     alias force? force
     alias api_upgraded? api_upgraded
     alias unsafe_upgrade? unsafe_upgrade
+    alias generate_name? generate_name
 
     def master_ssh
       config.master_host.ssh

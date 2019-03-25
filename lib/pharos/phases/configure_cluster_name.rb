@@ -41,7 +41,7 @@ module Pharos
 
         logger.info "Cluster name is #{existing_name.magenta}"
         if @config.name && @config.name != existing_name
-          unless cluster_context['force']
+          unless cluster_context.force?
             logger.error "Current cluster name is #{existing_name.cyan} but the configuration defines #{@config.name.cyan}."
             logger.info "  To keep the current name, change #{'name:'.cyan} in the configuration, or use #{"--name #{existing_name}".cyan}."
             logger.info "  To rename the cluster use the #{'--force'.cyan} option."
@@ -64,12 +64,12 @@ module Pharos
 
       # @return [K8s::Resource, nil]
       def config_map
-        cluster_context['previous-config-map']
+        cluster_context.previous_configmap
       end
 
       def generate_new_name
         return false if @config.name
-        return nil if cluster_context['no-generate-name']
+        return nil unless cluster_context.generate_name?
 
         new_name = "#{ADJECTIVES.sample}-#{NOUNS.sample}-#{'%04d' % rand(9999)}"
         logger.info "Using generated random name #{new_name.magenta} as cluster name"

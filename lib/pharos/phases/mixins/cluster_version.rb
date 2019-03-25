@@ -6,7 +6,7 @@ module Pharos
       module ClusterVersion
         # @return [Gem::Version]
         def existing_version
-          if cluster_version = cluster_context['existing-pharos-version']
+          if cluster_version = cluster_context.existing_pharos_version
             build_version(cluster_version)
           else
             build_version('0.0.1')
