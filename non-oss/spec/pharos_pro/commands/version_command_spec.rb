@@ -1,4 +1,4 @@
-describe Pharos::VersionCommand do
+describe Pharos::VersionCommand, unless: Pharos.oss? do
   subject { described_class.new('') }
 
   it 'outputs pharos version' do

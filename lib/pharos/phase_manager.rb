@@ -6,11 +6,23 @@ module Pharos
   class PhaseManager
     include Pharos::Logging
 
+    class Error < Pharos::Error
+      def initialize(errors)
+        @errors = errors
+      end
+
+      def to_s
+        "Phase failed on #{@errors.size} host#{'s' if @errors.size > 1}:\n#{YAML.dump(@errors).delete_prefix("---\n")}"
+      end
+    end
+
     RETRY_ERRORS = [
       OpenSSL::SSL::SSLError,
       Excon::Error,
       K8s::Error,
-      Pharos::SSH::RemoteCommand::ExecError
+      Pharos::ExecError,
+      Errno::ECONNRESET,
+      Errno::ECONNREFUSED
     ].freeze
 
     # @param dirs [Array<String>]
@@ -28,32 +40,28 @@ module Pharos
     # @param phases [Array<Pharos::Phases::Base>]
     # @return [Array<...>]
     def run(phases, &block)
-      return yield_phase_with_retry(phases.first, &block) if phases.size == 1
-
-      threads = phases.map { |phase|
+      threads = phases.map do |phase|
         Thread.new do
-          yield_phase_with_retry(phase, &block)
+          Thread.current.report_on_exception = false
+          Thread.current[:host] = phase.host.to_s
+          Retry.perform(yield_object: phase, logger: phase.logger, exceptions: RETRY_ERRORS, &block)
         end
-      }
-      threads.map(&:value)
-    end
-
-    # @param phase [Pharos::Phases::Base]
-    # @param retry_times [Integer]
-    def yield_phase_with_retry(phase, retry_times = 10)
-      retries = 0
-      begin
-        yield phase
-      rescue *RETRY_ERRORS => exc
-        raise if retries >= retry_times
-
-        logger.error { "[#{phase.host}] got error (#{exc.class.name}): #{exc.message.strip}" }
-        logger.debug { exc.backtrace.join("\n") }
-        logger.error { "[#{phase.host}] retrying after #{2**retries} seconds ..." }
-        sleep 2**retries
-        retries += 1
-        retry
       end
+
+      Thread.pass until threads.none?(&:alive?)
+
+      # Thread status is false when terminated normally, nil when it terminated with exception
+      # rubocop:disable Lint/RescueException
+      errors = threads.select { |t| t.status.nil? }.map do |thread|
+        thread.value # raises the exception
+      rescue Exception => ex
+        { thread[:host] => { ex.class.name => ex.message } }
+      end
+      # rubocop:enable Lint/RescueException
+
+      raise Error, errors unless errors.empty?
+
+      threads.map(&:value)
     end
 
     # @return [Pharos::Phase]
@@ -70,7 +78,7 @@ module Pharos
 
         phase.call
 
-        logger.debug { "Completed #{phase} in #{'%.3fs' % [Time.now - start]}" }
+        phase.logger.info 'Completed phase in %<duration>.2fs' % { duration: Time.now - start }
       end
     end
   end

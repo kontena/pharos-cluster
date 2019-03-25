@@ -6,14 +6,19 @@ module Pharos
       title "Load cluster configuration"
 
       def call
-        config_map = previous_config_map
+        logger.info { "Loading cluster configuration configmap ..." }
 
-        return unless config_map
+        pharos_config_map = pharos_config_configmap
+        return unless pharos_config_map
 
-        logger.info { "Loading previous cluster configuration from configmap ..." }
+        cluster_context['previous-config-map'] = pharos_config_map
+        cluster_context['previous-config'] = build_config(pharos_config_map)
 
-        cluster_context['previous-config-map'] = config_map
-        cluster_context['previous-config'] = build_config(config_map)
+        logger.info { "Loading cluster-info configmap ..." }
+        info_config = cluster_info_configmap
+
+        cluster_context['cluster-id'] = info_config&.metadata&.uid
+        cluster_context['cluster-created-at'] = info_config&.metadata&.creationTimestamp
       end
 
       # @param configmap [K8s::Resource]
@@ -26,10 +31,39 @@ module Pharos
       end
 
       # @return [K8s::Resource, nil]
-      def previous_config_map
-        kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config')
+      def pharos_config_configmap
+        with_ssl_retry do
+          kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config')
+        end
       rescue K8s::Error::NotFound
+        logger.error { "pharos-config configmap was not found" }
         nil
+      end
+
+      def cluster_info_configmap
+        with_ssl_retry do
+          kube_client.api('v1').resource('configmaps', namespace: 'kube-public').get('cluster-info')
+        end
+      rescue K8s::Error::NotFound
+        logger.error { "cluster-info configmap was not found" }
+        nil
+      end
+
+      private
+
+      def with_ssl_retry
+        original_ssl_verify_peer = kube_client.transport.options[:ssl_verify_peer]
+        begin
+          yield
+        rescue Excon::Error::Socket => ex
+          raise if kube_client.transport.options[:ssl_verify_peer] == false # don't re-retry
+
+          kube_client.transport.options[:ssl_verify_peer] = false
+          logger.warn { "Encountered #{ex.class.name} : #{ex.message} - retrying with ssl verify peer disabled" }
+          retry
+        ensure
+          kube_client.transport.options[:ssl_verify_peer] = original_ssl_verify_peer
+        end
       end
     end
   end

@@ -5,7 +5,7 @@ module Pharos
     def execute
       puts "Kontena Pharos:"
       puts "  - #{File.basename($PROGRAM_NAME)} version #{Pharos.version}"
-      ClusterManager.new(Pharos::Config.new({}), pastel: false).load
+      ClusterManager.new(Pharos::Config.new({})).load
 
       phases.each do |os, phases|
         title = (os || 'Common').capitalize
@@ -15,8 +15,8 @@ module Pharos
         end
       end
       puts "Add-ons:"
-      addons.each do |c|
-        puts "  - #{c.addon_name} #{c.version} (#{c.license})"
+      addons.each do |name, c|
+        puts "  - #{name} #{c.version} (#{c.license})"
       end
     end
 
@@ -32,7 +32,7 @@ module Pharos
 
     # @return [Array<Pharos::Addon>]
     def addons
-      Pharos::AddonManager.addons.sort_by(&:name)
+      Pharos::AddonManager.addons.sort_by { |name, _klass| name }
     end
   end
 end

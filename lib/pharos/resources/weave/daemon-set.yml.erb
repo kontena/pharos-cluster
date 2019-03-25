@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         name: weave-net
+      annotations:
+        kontena.io/firewalld: "<%= firewalld_enabled %>"
     spec:
       containers:
         - name: weave
@@ -27,9 +29,17 @@ spec:
               value: "0"
             - name: CHECKPOINT_DISABLE
               value: "1"
-            <% if !trusted_subnets.empty? %>
+            <% unless extra_args.empty? %>
             - name: EXTRA_ARGS
-              value: "--no-discovery --trusted-subnets <%= trusted_subnets.join(',') %>"
+              value: "<%= extra_args.join(' ') %>"
+            <% end %>
+            <% if initial_known_peers %>
+            - name: KUBE_PEERS
+              value: "<%= initial_known_peers.join(' ') %>"
+            <% end %>
+            <% if no_masq_local %>
+            - name: NO_MASQ_LOCAL
+              value: '1'
             <% end %>
             - name: IPALLOC_RANGE
               value: "<%= ipalloc_range %>"
@@ -82,6 +92,7 @@ spec:
           volumeMounts:
             - name: xtables-lock
               mountPath: /run/xtables.lock
+        <% if flying_shuttle_enabled %>
         - name: weave-flying-shuttle
           env:
             - name: HOSTNAME
@@ -93,6 +104,7 @@ spec:
           resources:
             requests:
               cpu: 10m
+        <% end %>
       hostNetwork: true
       hostPID: true
       restartPolicy: Always

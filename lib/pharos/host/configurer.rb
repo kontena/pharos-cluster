@@ -30,8 +30,8 @@ module Pharos
         host.config
       end
 
-      def ssh
-        host.ssh
+      def transport
+        host.transport
       end
 
       def install_essentials
@@ -78,6 +78,10 @@ module Pharos
         abstract_method!
       end
 
+      def configure_firewalld
+        abstract_method!
+      end
+
       def reset
         abstract_method!
       end
@@ -94,15 +98,15 @@ module Pharos
       end
 
       def configure_script_library
-        ssh.exec("sudo mkdir -p #{script_library_install_path}")
-        ssh.file("#{script_library_install_path}/util.sh").write(
+        transport.exec("sudo mkdir -p #{script_library_install_path}")
+        transport.file("#{script_library_install_path}/util.sh").write(
           File.read(SCRIPT_LIBRARY)
         )
       end
 
       # @param script [String] name of file under ../scripts/
       def exec_script(script, vars = {})
-        ssh.exec_script!(
+        transport.exec_script!(
           script,
           env: vars,
           path: script_path(script)
@@ -134,9 +138,9 @@ module Pharos
         end
       end
 
-      # @return [Pharos::SSH::File]
+      # @return [Pharos::Transport::TransportFile]
       def env_file
-        ssh.file('/etc/environment')
+        transport.file('/etc/environment')
       end
 
       def update_env_file
@@ -150,18 +154,46 @@ module Pharos
             next if line.start_with?('#')
 
             key, val = line.split('=', 2)
+            val&.delete_suffix!('"') if val&.delete_prefix!('"')
             val = nil if val.to_s.empty?
             original_data[key] = val
           end
         end
 
         new_content = host.environment.merge(original_data) { |_key, old_val, _new_val| old_val }.compact.map do |key, val|
-          "#{key}=#{val}"
-        end.join("\n")
-        new_content << "\n" unless new_content.end_with?("\n")
+          "#{key}=\"#{val.shellescape}\""
+        end
+        host_env_file.write(new_content.join("\n") + "\n")
+        new_content.each do |kv_pair|
+          transport.exec!("export #{kv_pair}")
+        end
+      end
 
-        host_env_file.write(new_content)
-        ssh.disconnect; ssh.connect # reconnect to reread env
+      # @return [String, NilClass]
+      def current_crio_cgroup_manager
+        file = transport.file('/etc/crio/crio.conf')
+        return unless file.exist?
+
+        match = file.read.match(/^cgroup_manager = "(.+)"/)
+        return unless match
+
+        match[1]
+      end
+
+      # @return [Boolean]
+      def can_pull?
+        return true if current_crio_cgroup_manager.nil?
+
+        transport.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
+      end
+
+      def cleanup_crio!
+        transport.exec!("sudo systemctl stop kubelet")
+        transport.exec!("sudo crictl stopp $(crictl pods -q)")
+        transport.exec!("sudo crictl rmp $(crictl pods -q)")
+        transport.exec!("sudo crictl rmi $(crictl images -q)")
+      ensure
+        transport.exec!("sudo systemctl start kubelet")
       end
 
       class << self

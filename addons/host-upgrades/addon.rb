@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'host-upgrades' do
-  version '0.3.0'
+  version '0.3.1'
   license 'Apache License 2.0'
 
   config {
@@ -40,7 +40,7 @@ Pharos.addon 'host-upgrades' do
       schedule_window: schedule_window, # only supports h, m, s; not D, M, Y
       reboot: config.reboot,
       drain: config.reboot && config.drain,
-      journal: false, # disabled due to https://github.com/kontena/pharos-host-upgrades/issues/15
+      journal: false # disabled due to https://github.com/kontena/pharos-host-upgrades/issues/15
     )
   }
 end

@@ -20,10 +20,11 @@ spec:
       <%- unless node_selector.empty? -%>
       nodeSelector:
       <%- node_selector.each do |key, value| -%>
-        <%= key %>: <%= value %>
+        <%= key %>: "<%= value %>"
       <%- end -%>
       <%- end -%>
       serviceAccountName: nginx-ingress-serviceaccount
+      priorityClassName: pharos-cluster-critical
       hostNetwork: true
       <%- unless config.tolerations.empty? -%>
       tolerations:

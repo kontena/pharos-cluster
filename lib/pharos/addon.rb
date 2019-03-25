@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'hashdiff'
 require 'dry-validation'
 require 'fugit'
 
@@ -10,18 +11,15 @@ module Pharos
   # @param name [String]
   # @return [Pharos::Addon]
   def self.addon(name, &block)
-    klass = Class.new(Pharos::Addon, &block).tap do |addon|
+    Class.new(Pharos::Addon, &block).tap do |addon|
       addon.addon_location = File.dirname(block.source_location.first)
       addon.addon_name = name
     end
-
-    # Magic to create Pharos::Addons::IngressNginx etc so that specs still work
-    Pharos::Addons.const_set(name.split(/[-_ ]/).map(&:capitalize).join, klass)
-    Pharos::AddonManager.addons << klass
-    klass
   end
 
   class Addon
+    using Pharos::CoreExt::Colorize
+    using Pharos::CoreExt::DeepTransformKeys
     include Pharos::Logging
 
     # return class for use as superclass in Dry::Validation.Params
@@ -54,12 +52,20 @@ module Pharos
     end
 
     class << self
-      attr_accessor :addon_name
+      attr_reader :addon_name
       attr_writer :addon_location
+
+      def to_s
+        "#{addon_name&.capitalize || self.class.name} Addon"
+      end
 
       # @return [String]
       def addon_location
         @addon_location || __dir__
+      end
+
+      def addon_name=(name)
+        Pharos::AddonManager.addons[@addon_name = name] = self
       end
 
       def priority(priority = nil)
@@ -133,6 +139,37 @@ module Pharos
 
       def modify_cluster_config(&block)
         hooks[:modify_cluster_config] = block
+      end
+
+      def validate_configuration(&block)
+        hooks[:validate_configuration] = block
+      end
+
+      # @param old_config [Hash,Pharos::Configuration]
+      # @param new_config [Hash,Pharos::Configuration]
+      # @return [nil]
+      def apply_validate_configuration(old_config, new_config)
+        hook = hooks[:validate_configuration]
+        return unless hook
+
+        case hook.arity
+        when 1
+          hook.call(new_config)
+        when 2
+          hook.call(old_config, new_config)
+        when 3
+          HashDiff.diff(old_config, new_config).each do |changeset|
+            case changeset.first
+            when '-'
+              hook.call(changeset[1], changeset[2], nil)
+            when '+'
+              hook.call(changeset[1], nil, changeset[2])
+            when '~'
+              hook.call(changeset[1], changeset[2], changeset[3])
+            end
+          end
+        end
+        nil
       end
 
       def validation

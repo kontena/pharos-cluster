@@ -12,6 +12,7 @@ require_relative 'configuration/file_audit'
 require_relative 'configuration/webhook_audit'
 require_relative 'configuration/kube_proxy'
 require_relative 'configuration/kubelet'
+require_relative 'configuration/control_plane'
 require_relative 'configuration/pod_security_policy'
 require_relative 'configuration/telemetry'
 require_relative 'configuration/admission_plugin'
@@ -50,13 +51,15 @@ module Pharos
     attribute :authentication, Pharos::Configuration::Authentication
     attribute :audit, Pharos::Configuration::Audit
     attribute :kubelet, Pharos::Configuration::Kubelet
+    attribute :control_plane, Pharos::Configuration::ControlPlane
     attribute :telemetry, Pharos::Configuration::Telemetry
     attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
     attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
-    attribute :addon_paths, Pharos::Types::Array.default([])
-    attribute :addons, Pharos::Types::Hash.default({})
+    attribute :addon_paths, Pharos::Types::Array.default(proc { [] })
+    attribute :addons, Pharos::Types::Hash.default(proc { {} })
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
+    attribute :name, Pharos::Types::String
 
     attr_accessor :data
 
@@ -121,7 +124,7 @@ module Pharos
         api_port = 6443
       else
         api_address = 'localhost'
-        api_port = host.ssh.gateway(master_host.api_address, 6443)
+        api_port = master_host.bastion.host.transport.forward(master_host.api_address, 6443)
       end
 
       @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)
@@ -139,6 +142,20 @@ module Pharos
     # @return [String]
     def to_yaml
       YAML.dump(to_h.deep_stringify_keys)
+    end
+
+    # @example dig network provider
+    #   config.dig("network", "provider")
+    # @param keys [String,Symbol]
+    # @return [Object,nil] returns nil when any part of the chain is unreachable
+    def dig(*keys)
+      keys.inject(self) do |memo, item|
+        if memo.is_a?(Array) && item.is_a?(Integer)
+          memo.send(:[], item)
+        elsif memo.respond_to?(item.to_sym)
+          memo.send(item.to_sym)
+        end
+      end
     end
   end
 end

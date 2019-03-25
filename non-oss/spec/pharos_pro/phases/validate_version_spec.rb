@@ -1,11 +1,14 @@
-require 'pharos/phases/validate_version'
-require 'pharos_pro/phases/validate_version'
+describe "Pharos::Phases::ValidateVersion", unless: Pharos.oss? do
+  before :all do
+    Pharos::Phases.send(:remove_const, :ValidateVersion) if Pharos::Phases.const_defined?(:ValidateVersion)
+    load File.expand_path(File.join(__dir__, '../../../../lib/pharos/phases/validate_version.rb'))
+    load File.expand_path(File.join(__dir__, '../../../pharos_pro/phases/validate_version.rb'))
+  end
 
-describe Pharos::Phases::ValidateVersion do
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.1', role: 'master') }
   let(:network_config) { {} }
   let(:config) { Pharos::Config.new(hosts: [host]) }
-  subject { described_class.new(host, config: config) }
+  subject { Pharos::Phases::ValidateVersion.new(host, config: config) }
 
   describe '#validate_version' do
     it 'allows re-up for stable releases' do
@@ -26,6 +29,11 @@ describe Pharos::Phases::ValidateVersion do
     it 'allows upgrade from patch-release to development patch-release' do
       stub_const('Pharos::VERSION', '2.0.1-alpha.1')
       expect{subject.validate_version('2.0.0')}.not_to raise_error
+    end
+
+    it 'allows upgrade from oss to non-oss' do
+      stub_const('Pharos::VERSION', '2.0.1-alpha.1')
+      expect{subject.validate_version('2.0.1-alpha.1+oss')}.not_to raise_error
     end
 
     it 'does not allow downgrade on development releases' do

@@ -56,6 +56,7 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
+          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
@@ -64,6 +65,7 @@ module Pharos
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
+          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
@@ -73,11 +75,12 @@ module Pharos
         return true if custom_docker?
 
         if docker?
-          return true if ssh.exec("rpm -qi docker").error? # docker not installed
-          return true if ssh.exec("rpm -qi docker-#{DOCKER_VERSION}").success?
+          return true if transport.exec("rpm -qi docker").error? # docker not installed
+          return true if transport.exec("rpm -qi docker-#{DOCKER_VERSION}").success?
         elsif crio?
-          return true if ssh.exec("rpm -qi cri-o").error? # cri-o not installed
-          return true if ssh.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
+          bin_exist = transport.file('/usr/local/bin/crio').exist?
+          return true if transport.exec("rpm -qi cri-o").error? && !bin_exist # cri-o not installed
+          return true if transport.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
         end
 
         false
@@ -103,6 +106,10 @@ module Pharos
           VERSION: version,
           ARCH: host.cpu_arch.name
         )
+      end
+
+      def configure_firewalld
+        exec_script("configure-firewalld.sh")
       end
 
       def reset
