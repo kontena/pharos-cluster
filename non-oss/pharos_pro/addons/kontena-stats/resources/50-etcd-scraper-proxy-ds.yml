@@ -24,7 +24,7 @@ spec:
         node-role.kubernetes.io/master: ""
       containers:
         - name: scraper-proxy-etcd
-          image: docker.io/jnummelin/scaper-proxy:latest
+          image: <%= image_repository %>/pharos-scraper-proxy-amd64:0.1.2
           ports:
             - containerPort: 80
           env:
