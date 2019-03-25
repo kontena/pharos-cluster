@@ -12,7 +12,7 @@ describe Pharos::LicenseAssignCommand do
   let(:license_token) { 'abcd' }
   let(:success_response) { JSON.dump(data: { attributes: { 'license-token': { token: license_token, jwt: '123' } } }) }
   let(:token) { instance_double(Pharos::LicenseKey, valid?: true, token: '123') }
-  let(:cluster_context) { { 'cluster-id' => '6c6289c0-1fb0-11e9-bac4-02f41f34da68' } }
+  let(:cluster_context) { Pharos::ClusterContext.new(cluster_id: '6c6289c0-1fb0-11e9-bac4-02f41f34da68') }
 
   before do
     allow(subject).to receive(:decorate_license).and_return('')
@@ -55,7 +55,7 @@ describe Pharos::LicenseAssignCommand do
     end
 
     context 'cluster-info not found' do
-      let(:cluster_context) { { } }
+      let(:cluster_context) { Pharos::ClusterContext.new() }
 
       it 'signals error' do
         expect{subject.run([license_key])}.to raise_error(Clamp::ExecutionError, /Fail.*cluster id/)
