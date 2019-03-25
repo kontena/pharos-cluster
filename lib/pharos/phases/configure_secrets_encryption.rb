@@ -10,7 +10,7 @@ module Pharos
       SECRETS_CFG_FILE = (SECRETS_CFG_DIR + '/config.yml').freeze
 
       def call
-        keys = synchronize do
+        keys = mutex.synchronize do
           cluster_context['secrets_encryption'] ||= read_config_keys || generate_keys
         end
 
