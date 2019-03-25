@@ -15,8 +15,5 @@ addons:
     name: pharos-do
     persistence:
       enabled: true
-  kontena-storage:
+  do-csi:
     enabled: true
-    data_dir: /var/lib/kontena-storage
-    storage:
-      use_all_nodes: true

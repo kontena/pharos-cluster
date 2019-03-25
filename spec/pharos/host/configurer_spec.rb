@@ -8,7 +8,7 @@ describe Pharos::Host::Configurer do
     end
   end
 
-  let(:host) { double(:host) }
+  let(:host) { instance_double(Pharos::Configuration::Host) }
 
   before do
     Pharos::Host::Configurer.configurers.delete_if { |c| c.supported_os_releases&.first&.id == 'test' }
@@ -58,17 +58,15 @@ describe Pharos::Host::Configurer do
 
   describe '#update_env_file' do
     let(:host) { instance_double(Pharos::Configuration::Host) }
-    let(:ssh) { instance_double(Pharos::SSH::Client) }
-    let(:file) { instance_double(Pharos::SSH::RemoteFile) }
+    let(:ssh) { instance_double(Pharos::Transport::SSH) }
+    let(:file) { instance_double(Pharos::Transport::TransportFile) }
     let(:host_env_content) { "PATH=/bin:/usr/local/bin\n" }
 
     subject { described_class.new(host) }
 
     before do
-      allow(host).to receive(:ssh).and_return(ssh)
+      allow(host).to receive(:transport).and_return(ssh)
       allow(ssh).to receive(:file).with('/etc/environment').and_return(file)
-      allow(ssh).to receive(:disconnect)
-      allow(ssh).to receive(:connect)
       allow(file).to receive(:exist?).and_return(true)
       allow(file).to receive(:read).and_return(host_env_content)
       allow(host).to receive(:environment).and_return(config_environment)
@@ -168,6 +166,46 @@ describe Pharos::Host::Configurer do
 
         expect(subject.insecure_registries).to eq("\"\"")
       end
+    end
+  end
+
+  describe '#current_crio_cgroup_manager' do
+    let(:ssh) { instance_double(Pharos::Transport::SSH) }
+    let(:file) { instance_double(Pharos::Transport::TransportFile) }
+    let(:config) {
+      %{
+# cgroup_manager is the cgroup management implementation to be used
+# for the runtime.
+cgroup_manager = "foobar"
+
+# hooks_dir_path is the oci hooks directory for automatically executed hooks
+hooks_dir_path = "/usr/share/containers/oci/hooks.d"
+      }
+    }
+
+    before(:each) do
+      allow(host).to receive(:transport).and_return(ssh)
+      allow(ssh).to receive(:file).and_return(file)
+    end
+
+    it 'returns nil by default' do
+      expect(file).to receive(:exist?).and_return(false)
+
+      expect(subject.current_crio_cgroup_manager).to be_nil
+    end
+
+    it 'returns nil if config exists but cgroup_manager is not set' do
+      expect(file).to receive(:exist?).and_return(true)
+      expect(file).to receive(:read).and_return(config.gsub('cgroup_manager', '#cgroup_manager'))
+
+      expect(subject.current_crio_cgroup_manager).to be_nil
+    end
+
+    it 'returns configured cgroup managed if config exists' do
+      expect(file).to receive(:exist?).and_return(true)
+      expect(file).to receive(:read).and_return(config)
+
+      expect(subject.current_crio_cgroup_manager).to eq('foobar')
     end
   end
 end

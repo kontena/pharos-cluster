@@ -62,12 +62,14 @@ configure_container_runtime_proxy() {
   systemd_proxy_config_file="${systemd_runtime_dir}/http-proxy.conf"
   mkdir -p "${systemd_runtime_dir}"
   # shellcheck disable=SC2154
-  if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ] || [ -n "$NO_PROXY" ] || [ -n "$http_proxy" ] ||  [ -n "$FTP_PROXY" ]; then
+  if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ] || [ -n "$NO_PROXY" ] || [ -n "$http_proxy" ] || [ -n "$https_proxy" ] || [ -n "$no_proxy" ] || [ -n "$FTP_PROXY" ]; then
       echo "[Service]" > "${systemd_proxy_config_file}"
       [ -n "$HTTP_PROXY" ] && echo "Environment=\"HTTP_PROXY=${HTTP_PROXY}\"" >> "${systemd_proxy_config_file}"
       [ -n "$HTTPS_PROXY" ] && echo "Environment=\"HTTPS_PROXY=${HTTPS_PROXY}\"" >> "${systemd_proxy_config_file}"
       [ -n "$NO_PROXY" ] && echo "Environment=\"NO_PROXY=${NO_PROXY}\"" >> "${systemd_proxy_config_file}"
       [ -n "$http_proxy" ] && echo "Environment=\"http_proxy=${http_proxy}\"" >> "${systemd_proxy_config_file}"
+      [ -n "$https_proxy" ] && echo "Environment=\"https_proxy=${https_proxy}\"" >> "${systemd_proxy_config_file}"
+      [ -n "$no_proxy" ] && echo "Environment=\"no_proxy=${no_proxy}\"" >> "${systemd_proxy_config_file}"
       [ -n "$FTP_PROXY" ] && echo "Environment=\"FTP_PROXY=${FTP_PROXY}\"" >> "${systemd_proxy_config_file}"
       reload_systemd_daemon "${daemon}"
   else

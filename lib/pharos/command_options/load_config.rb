@@ -3,22 +3,44 @@
 module Pharos
   module CommandOptions
     module LoadConfig
+      using Pharos::CoreExt::Colorize
+
       def self.included(base)
         base.prepend(InstanceMethods)
         base.option ['-c', '--config'], 'PATH', 'path to config file (default: cluster.yml)', attribute_name: :config_yaml do |config_file|
+          @config_options ||= []
+          @config_options.concat(['-c', config_file])
           Pharos::YamlFile.new(File.realpath(config_file))
         rescue Errno::ENOENT
           signal_usage_error 'File does not exist: %<path>s' % { path: config_file }
         end
-
-        base.option '--tf-json', 'PATH', 'path to terraform output json' do |config_path|
-          File.realpath(config_path)
-        rescue Errno::ENOENT
-          signal_usage_error 'File does not exist: %<path>s' % { path: config_path }
-        end
       end
 
       module InstanceMethods
+        # @param context [Hash] extra keys to initialize cluster context with
+        # @return [Pharos::ClusterManager]
+        def cluster_manager(context = {})
+          @cluster_manager ||= ClusterManager.new(load_config).tap do |manager|
+            puts "==> Sharpening tools ...".green
+            manager.context.merge!(context)
+            manager.load
+            manager.validate
+          end
+        end
+
+        def cluster_context
+          cluster_manager.context
+        end
+
+        # @return [K8s::Client]
+        def kube_client
+          return @kube_client if @kube_client
+
+          signal_error 'no usable master for k8s api client' unless cluster_manager.context['kubeconfig']
+
+          @kube_client = load_config.kube_client(cluster_manager.context['kubeconfig'])
+        end
+
         private
 
         # @return [Pharos::YamlFile]
@@ -33,41 +55,28 @@ module Pharos
         end
 
         # @return [Pharos::Config]
-        def load_config
+        def load_config(master_only: false)
           return @config if @config
 
-          puts(pastel.green("==> Reading instructions ...")) if $stdout.tty?
+          puts("==> Reading instructions ...".green) if $stdout.tty?
 
           config_hash = config_yaml.load(ENV.to_h)
 
-          load_terraform(tf_json, config_hash) if tf_json
+          load_external_config(config_hash)
 
           config = Pharos::Config.load(config_hash)
 
           signal_usage_error 'No master hosts defined' if config.master_hosts.empty?
 
+          config.hosts.keep_if(&:master?) if master_only
+
           @config = config
         end
 
-        # @param file [String]
-        # @param config [Hash]
-        # @return [Hash]
-        def load_terraform(file, config)
-          puts(pastel.green("==> Importing configuration from Terraform ...")) if $stdout.tty?
-
-          tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
-          config['hosts'] ||= []
-          config['api'] ||= {}
-          config['addons'] ||= {}
-          config['hosts'] += tf_parser.hosts
-          config['api'].merge!(tf_parser.api) if tf_parser.api
-          config['addons'].each do |name, conf|
-            if addon_config = tf_parser.addons[name]
-              conf.merge!(addon_config)
-            end
-          end
-          config
-        end
+        # Config extension point mainly for terraform
+        #
+        # @param config_hash [Hash]
+        def load_external_config(config_hash); end
       end
     end
   end

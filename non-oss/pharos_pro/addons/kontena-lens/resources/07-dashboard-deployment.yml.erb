@@ -15,6 +15,7 @@ spec:
         app: dashboard
     spec:
       serviceAccountName: lens-operator
+      priorityClassName: pharos-cluster-critical
       restartPolicy: Always
       containers:
         - image: <%= image_repository %>/lens:<%= version %>
@@ -28,7 +29,9 @@ spec:
             - name: REDIS_CLIENT_HOST
               value: redis
             - name: USER_MANAGEMENT_ENABLED
-              value: "<%=  user_management ? "true" : "false" %>"
+              value: "<%=  user_management %>"
+            - name: CHARTS_ENABLED
+              value: "<%=  charts_enabled %>"
           resources:
             requests:
               memory: "256Mi"
@@ -46,6 +49,8 @@ spec:
           <%- else -%>
             value: <%= image_repository %>/lens-terminal:<%= version %>
           <%- end -%>
+          - name: NODE_SHELL_DOCKER_IMAGE
+            value: <%= image_repository %>/alpine:3.9
           - name: LENS_VERSION
             value: "<%= version %>"
           <%- if config&.shell&.skip_refresh -%>

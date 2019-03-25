@@ -5,6 +5,7 @@ require 'pathname'
 module Pharos
   class ClusterManager
     include Pharos::Logging
+    using Pharos::CoreExt::Colorize
 
     attr_reader :config, :context
 
@@ -22,10 +23,8 @@ module Pharos
     end
 
     # @param config [Pharos::Config]
-    # @param pastel [Pastel]
-    def initialize(config, pastel: Pastel.new)
+    def initialize(config)
       @config = config
-      @pastel = pastel
       @context = {
         'post_install_messages' => {}
       }
@@ -33,7 +32,7 @@ module Pharos
 
     # @return [Pharos::AddonManager]
     def phase_manager
-      @phase_manager = Pharos::PhaseManager.new(
+      @phase_manager ||= Pharos::PhaseManager.new(
         config: @config,
         cluster_context: @context
       )
@@ -57,25 +56,29 @@ module Pharos
     end
 
     def gather_facts
-      apply_phase(Phases::ConnectSSH, config.hosts, parallel: true)
-      apply_phase(Phases::AuthenticateSSH, config.hosts.reject(&:ssh?), parallel: false)
+      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: false)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [config.master_host], master: config.master_host, parallel: false, optional: true)
+      apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
+      apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
+      apply_phase(Phases::ConfigureClusterName, %w(localhost))
     end
 
     def validate
       apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
+      apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
-      apply_phase(Phases::ValidateVersion, [config.master_host], master: config.master_host, parallel: false)
+      apply_phase(Phases::ValidateVersion, [config.master_host], parallel: false)
     end
 
     def apply_phases
       master_hosts = config.master_hosts
+      master_only = [config.master_host]
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
-      apply_phase(Phases::ConfigureHost, config.hosts, master: master_hosts.first, parallel: true)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false, optional: true)
+      apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
+      apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
+      apply_phase(Phases::ConfigureClient, master_only, parallel: false, optional: true)
 
       unless @config.etcd&.endpoints
         etcd_hosts = config.etcd_hosts
@@ -87,31 +90,33 @@ module Pharos
 
       apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, parallel: false)
       apply_phase(Phases::SetupMaster, master_hosts, parallel: true)
-      apply_phase(Phases::UpgradeMaster, master_hosts, master: master_hosts.first, parallel: false) # requires optional early ConfigureClient
+      apply_phase(Phases::UpgradeMaster, master_hosts, parallel: false) # requires optional early ConfigureClient
 
-      apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true, master: master_hosts.first)
+      apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true)
       apply_phase(Phases::ConfigureKubelet, config.hosts, parallel: true)
 
+      apply_phase(Phases::PullMasterImages, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureMaster, master_hosts, parallel: false)
-      apply_phase(Phases::ConfigureClient, [master_hosts.first], master: master_hosts.first, parallel: false)
+      apply_phase(Phases::ConfigureClient, master_only, parallel: false)
+      apply_phase(Phases::ReconfigureKubelet, config.hosts, parallel: true)
 
       # master is now configured and can be used
-      apply_phase(Phases::LoadClusterConfiguration, [master_hosts.first], master: master_hosts.first)
       # configure essential services
-      apply_phase(Phases::ConfigurePSP, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureDNS, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureWeave, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'weave'
-      apply_phase(Phases::ConfigureCalico, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureCustomNetwork, [master_hosts.first], master: master_hosts.first) if config.network.provider == 'custom'
-
-      apply_phase(Phases::ConfigureBootstrap, [master_hosts.first]) # using `kubeadm token`, not the kube API
+      apply_phase(Phases::ConfigurePriorityClasses, master_only)
+      apply_phase(Phases::ConfigurePSP, master_only)
+      apply_phase(Phases::ConfigureDNS, master_only)
+      apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
+      apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'
+      apply_phase(Phases::ConfigureCustomNetwork, master_only) if config.network.provider == 'custom'
+      apply_phase(Phases::ConfigureKubeletCsrApprover, master_only)
+      apply_phase(Phases::ConfigureBootstrap, master_only) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
-      apply_phase(Phases::LabelNode, config.hosts, master: master_hosts.first, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode, config.hosts, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
 
       # configure services that need workers
-      apply_phase(Phases::ConfigureMetrics, [master_hosts.first], master: master_hosts.first)
-      apply_phase(Phases::ConfigureTelemetry, [master_hosts.first], master: master_hosts.first)
+      apply_phase(Phases::ConfigureMetrics, master_only)
+      apply_phase(Phases::ConfigureTelemetry, master_only)
     end
 
     # @param hosts [Array<Pharos::Configuration::Host>]
@@ -119,12 +124,12 @@ module Pharos
       master_hosts = config.master_hosts
       if master_hosts.first.master_sort_score.zero?
         apply_phase(Phases::Drain, hosts, parallel: false)
-        apply_phase(Phases::DeleteHost, hosts, parallel: false, master: master_hosts.first)
+        apply_phase(Phases::DeleteHost, hosts, parallel: false)
       end
       addon_manager.each do |addon|
         next unless addon.enabled?
 
-        puts @pastel.cyan("==> Resetting addon #{addon.name}")
+        puts "==> Resetting addon #{addon.name}".cyan
         hosts.each do |host|
           addon.apply_reset_host(host)
         end
@@ -146,14 +151,14 @@ module Pharos
     def apply_phase(phase_class, hosts, **options)
       return if hosts.empty?
 
-      puts @pastel.cyan("==> #{phase_class.title} @ #{hosts.join(' ')}")
+      puts "==> #{phase_class.title} @ #{hosts.join(' ')}".cyan
 
       phase_manager.apply(phase_class, hosts, **options)
     end
 
     def apply_addons
       addon_manager.each do |addon|
-        puts @pastel.cyan("==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}")
+        puts "==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}".cyan
 
         addon.apply
         post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
@@ -166,11 +171,11 @@ module Pharos
 
     def save_config
       master_host = config.master_host
-      apply_phase(Phases::StoreClusterConfiguration, [master_host], master: master_host)
+      apply_phase(Phases::StoreClusterConfiguration, [master_host])
     end
 
     def disconnect
-      config.hosts.map(&:ssh).select(&:connected?).each(&:disconnect)
+      config.hosts.map { |host| host.transport.disconnect }
     end
   end
 end

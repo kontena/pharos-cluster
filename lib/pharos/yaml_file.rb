@@ -3,10 +3,13 @@
 require 'yaml'
 require 'erb'
 require_relative 'yaml_file/namespace'
+require 'yaml/safe_load_stream'
 
 module Pharos
   # Reads YAML files and optionally performs ERB evaluation
   class YamlFile
+    using YAMLSafeLoadStream
+
     ParseError = Class.new(StandardError)
 
     attr_reader :content, :filename
@@ -31,7 +34,18 @@ module Pharos
       if result.is_a?(String)
         raise ParseError, "File #{"#{@filename} " if @filename}does not appear to be in YAML format"
       end
+
       result
+    rescue Psych::SyntaxError => ex
+      raise ParseError, ex.message
+    end
+
+    def load_stream(variables = {}, &block)
+      if block_given?
+        YAML.safe_load_stream(read(variables), @filename, &block)
+      else
+        YAML.safe_load_stream(read(variables), @filename)
+      end
     rescue Psych::SyntaxError => ex
       raise ParseError, ex.message
     end

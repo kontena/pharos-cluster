@@ -30,8 +30,8 @@ spec:
         env:
         # Rook Agent toleration. Will tolerate all taints with all keys.
         # Choose between NoSchedule, PreferNoSchedule and NoExecute:
-        # - name: AGENT_TOLERATION
-        #  value: "NoSchedule"
+        - name: AGENT_TOLERATION
+          value: "NoSchedule"
         # (Optional) Rook Agent toleration key. Set this to the key of the taint you want to tolerate
         # - name: AGENT_TOLERATION_KEY
         #  value: "<KeyOfTheTaintToTolerate>"

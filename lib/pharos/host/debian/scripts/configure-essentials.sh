@@ -11,6 +11,11 @@ if ! dpkg -l apt-transport-https software-properties-common curl > /dev/null; th
     apt-get install -y apt-transport-https software-properties-common curl
 fi
 
+if ! dpkg -l firewalld > /dev/null; then
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get install -y firewalld ipset
+fi
+
 autoupgrade_file="/etc/apt/apt.conf.d/20auto-upgrades"
 if [ ! -f "$autoupgrade_file" ]; then
     touch "$autoupgrade_file"

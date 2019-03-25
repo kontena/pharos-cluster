@@ -1,6 +1,7 @@
-require "./addons/ingress-nginx/addon"
+require 'pharos/addon_manager'
+Pharos::AddonManager.load_addon "./addons/ingress-nginx/addon.rb"
 
-describe Pharos::Addons::IngressNginx do
+describe Pharos::AddonManager.addons['ingress-nginx'] do
   let(:cluster_config) { Pharos::Config.new(
     hosts: [Pharos::Configuration::Host.new(role: 'worker')],
     network: {},

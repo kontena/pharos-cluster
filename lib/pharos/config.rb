@@ -55,10 +55,11 @@ module Pharos
     attribute :telemetry, Pharos::Configuration::Telemetry
     attribute :pod_security_policy, Pharos::Configuration::PodSecurityPolicy
     attribute :image_repository, Pharos::Types::String.default('registry.pharos.sh/kontenapharos')
-    attribute :addon_paths, Pharos::Types::Array.default([])
-    attribute :addons, Pharos::Types::Hash.default({})
+    attribute :addon_paths, Pharos::Types::Array.default(proc { [] })
+    attribute :addons, Pharos::Types::Hash.default(proc { {} })
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
+    attribute :name, Pharos::Types::String
 
     attr_accessor :data
 
@@ -66,6 +67,7 @@ module Pharos
     def dns_replicas
       return network.dns_replicas if network.dns_replicas
       return 1 if hosts.length == 1
+
       1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
     end
 
@@ -122,7 +124,7 @@ module Pharos
         api_port = 6443
       else
         api_address = 'localhost'
-        api_port = master_host.bastion.host.ssh.gateway(master_host.api_address, 6443)
+        api_port = master_host.bastion.host.transport.forward(master_host.api_address, 6443)
       end
 
       @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)
@@ -133,12 +135,27 @@ module Pharos
     # @raise [Pharos::ConfigError]
     def set(key, value)
       raise Pharos::Error, "Cannot override #{key}." if data[key.to_s]
+
       attributes[key] = value
     end
 
     # @return [String]
     def to_yaml
       YAML.dump(to_h.deep_stringify_keys)
+    end
+
+    # @example dig network provider
+    #   config.dig("network", "provider")
+    # @param keys [String,Symbol]
+    # @return [Object,nil] returns nil when any part of the chain is unreachable
+    def dig(*keys)
+      keys.inject(self) do |memo, item|
+        if memo.is_a?(Array) && item.is_a?(Integer)
+          memo.send(:[], item)
+        elsif memo.respond_to?(item.to_sym)
+          memo.send(item.to_sym)
+        end
+      end
     end
   end
 end

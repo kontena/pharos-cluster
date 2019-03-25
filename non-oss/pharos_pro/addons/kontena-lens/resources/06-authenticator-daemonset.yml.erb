@@ -1,3 +1,4 @@
+<%- if user_management -%>
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
@@ -24,6 +25,7 @@ spec:
         - effect: NoSchedule
           operator: Exists
       serviceAccountName: lens-operator
+      priorityClassName: pharos-cluster-critical
       containers:
         - image: <%= image_repository %>/lens-authenticator:<%= version %>
           name: user-authenticator
@@ -45,3 +47,4 @@ spec:
               memory: "256Mi"
               cpu: "50m"
       hostNetwork: true
+<%- end -%>

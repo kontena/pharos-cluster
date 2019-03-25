@@ -3,7 +3,7 @@ require 'pharos/phases/label_node'
 describe Pharos::Phases::LabelNode do
   let(:master) { Pharos::Configuration::Host.new(address: '192.0.2.1') }
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.2', labels: { foo: 'bar' } ) }
-  let(:subject) { described_class.new(host, master: master) }
+  let(:subject) { described_class.new(host) }
 
   let(:kube_client) { instance_double(K8s::Client) }
   let(:kube_api_v1) { instance_double(K8s::APIClient) }

@@ -30,6 +30,7 @@ module Pharos
 
       def check_cpu_arch
         return if @host.cpu_arch.supported?
+
         raise Pharos::InvalidHostError, "Cpu architecture not supported: #{@host.cpu_arch.id}"
       end
 
@@ -50,12 +51,14 @@ module Pharos
       end
 
       def validate_localhost_resolve
-        return if ssh.exec?("ping -c 1 -r -w 1 localhost")
+        return if transport.exec?("ping -c 1 -r -w 1 localhost")
+        raise Pharos::InvalidHostError, "Host does not have the 'ping' command installed" unless transport.exec?('command -v ping')
+
         raise Pharos::InvalidHostError, "Hostname 'localhost' does not seem to resolve to an address on the local host"
       end
 
       # @param cidr [String]
-      # @return [nil, Array<Pharos::Configuration::Host::Route>]
+      # @return [nil, Array<Pharos::Configuration::Route>]
       def overlapping_host_routes?(cidr)
         routes = @config.network.filter_host_routes(@host.overlapping_routes(cidr))
 
@@ -79,7 +82,7 @@ module Pharos
       def validate_peer_address
         return unless @host.master?
 
-        host_addresses = ssh.exec!("sudo hostname --all-ip-addresses").split(" ")
+        host_addresses = transport.exec!("sudo hostname --all-ip-addresses").split(" ")
 
         fail "Peer address #{@host.peer_address} does not seem to be a node local address" unless host_addresses.include?(@host.peer_address)
 

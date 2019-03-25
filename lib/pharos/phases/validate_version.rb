@@ -1,14 +1,18 @@
 # frozen_string_literal: true
 
+require_relative "mixins/cluster_version"
+
 module Pharos
   module Phases
     class ValidateVersion < Pharos::Phase
       title "Validate cluster version"
 
+      include Pharos::Phases::Mixins::ClusterVersion
       REMOTE_KUBECONFIG = "/etc/kubernetes/admin.conf"
 
       def call
         return unless kubeconfig?
+
         if @host.master_sort_score.positive?
           logger.warn { "Master seems unhealthy, can't detect cluster version." }
           return
@@ -27,7 +31,7 @@ module Pharos
 
       # @param cluster_version [String]
       def validate_version(cluster_version)
-        cluster_version = Gem::Version.new(cluster_version.gsub(/\+.*/, ''))
+        cluster_version = build_version(cluster_version)
         raise "Downgrade not supported" if cluster_version > pharos_version
 
         if requirement.satisfied_by?(cluster_version)
@@ -40,12 +44,12 @@ module Pharos
 
       # @return [String]
       def kubeconfig?
-        ssh.file(REMOTE_KUBECONFIG).exist?
+        transport.file(REMOTE_KUBECONFIG).exist?
       end
 
       # @return [String]
       def read_kubeconfig
-        ssh.file(REMOTE_KUBECONFIG).read
+        transport.file(REMOTE_KUBECONFIG).read
       end
 
       # @return [Hash]
@@ -60,16 +64,22 @@ module Pharos
 
       # @return [K8s::Resource, nil]
       def previous_config_map
+        original_ssl_verify_peer = kube_client.transport.options[:ssl_verify_peer]
+
         kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config')
+      rescue Excon::Error::Socket => ex
+        raise if !kube_client.transport.options[:ssl_verify_peer] # don't retry if ssl verify is false
+
+        kube_client.transport.options[:ssl_verify_peer] = false
+        logger.warn { "Encountered #{ex.class.name} : #{ex.message} - retrying with ssl verify peer disabled" }
+        retry
       rescue K8s::Error::NotFound
         nil
+      ensure
+        kube_client.transport.options[:ssl_verify_peer] = original_ssl_verify_peer
       end
 
       private
-
-      def pharos_version
-        @pharos_version ||= Gem::Version.new(Pharos::VERSION)
-      end
 
       # Returns a requirement like "~>", "1.3.0"  which will match >= 1.3.0 && < 1.4.0
       def requirement

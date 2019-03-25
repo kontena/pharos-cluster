@@ -2,7 +2,7 @@ require "pharos/host/configurer"
 require "pharos/phases/configure_kubelet"
 
 describe Pharos::Phases::ConfigureKubelet do
-  let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+  let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
       nameserver_localhost: false,
       systemd_resolved_stub: false,
   ) }
@@ -54,7 +54,7 @@ describe Pharos::Phases::ConfigureKubelet do
       it "returns a systemd unit" do
         expect(subject.build_systemd_dropin).to eq <<~EOM
           [Service]
-          Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+          Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
           ExecStartPre=-/sbin/swapoff -a
         EOM
       end
@@ -69,7 +69,7 @@ describe Pharos::Phases::ConfigureKubelet do
         it "returns a systemd unit" do
           expect(subject.build_systemd_dropin).to eq <<~EOM
             [Service]
-            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+            Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
             Environment='http_proxy=proxy.example.com'
             Environment='NO_PROXY=127.0.0.1'
             ExecStartPre=-/sbin/swapoff -a
@@ -81,7 +81,7 @@ describe Pharos::Phases::ConfigureKubelet do
         it "returns a systemd unit" do
           expect(subject.build_systemd_dropin).to eq <<~EOM
             [Service]
-            Environment='KUBELET_EXTRA_ARGS=--node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
+            Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=registry.pharos.sh/kontenapharos/pause:3.1'
             ExecStartPre=-/sbin/swapoff -a
           EOM
         end
@@ -133,7 +133,7 @@ describe Pharos::Phases::ConfigureKubelet do
     end
 
     context "with a systemd-resolved stub" do
-      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+      let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: true,
       ) }
@@ -144,7 +144,7 @@ describe Pharos::Phases::ConfigureKubelet do
     end
 
     context "with a non-systemd-resolved localhost resolver" do
-      let(:host_resolvconf) { Pharos::Configuration::Host::ResolvConf.new(
+      let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,
           systemd_resolved_stub: false,
       ) }
