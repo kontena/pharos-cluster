@@ -7,6 +7,8 @@ metadata:
   name: pharos-cloud-controller
   namespace: kube-system
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:
@@ -20,13 +22,8 @@ spec:
       hostNetwork: true
       containers:
       - name: pharos-cloud-controller
-        # for in-tree providers we use k8s.gcr.io/cloud-controller-manager
-        # this can be replaced with any other image for out-of-tree providers
-        image: docker.io/jnummelin/pharos-cloud-controller:dev
-        imagePullPolicy: Always
-        #image: <%= image_repository %>/pharos-cloud-controller:v<%= version %>
-        command:
-        - /usr/local/bin/pharos-cloud-controller
+        image: <%= image_repository %>/pharos-cloud-controller:<%= version %>
+        args:
         - --cloud-provider=pharos
         - --node-status-update-frequency=60s
         - --allow-untagged-cloud
