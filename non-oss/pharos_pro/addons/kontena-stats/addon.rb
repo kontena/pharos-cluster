@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon('kontena-stats') do
-  prometheus_version = '2.6.1'
+  prometheus_version = '2.8.0'
   version "#{prometheus_version}+kontena.1"
   license 'Kontena License'
 
