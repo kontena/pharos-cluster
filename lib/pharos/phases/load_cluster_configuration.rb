@@ -5,6 +5,8 @@ module Pharos
     class LoadClusterConfiguration < Pharos::Phase
       title "Load cluster configuration"
 
+      apply_if { |config| config.master_host.master_sort_score.zero? }
+
       def call
         logger.info { "Loading cluster configuration configmap ..." }
 

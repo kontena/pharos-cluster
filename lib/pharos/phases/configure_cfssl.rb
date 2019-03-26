@@ -5,6 +5,8 @@ module Pharos
     class ConfigureCfssl < Pharos::Phase
       title "Configure cfssl"
 
+      apply_if { |config| !config.etcd&.endpoints }
+
       def call
         logger.info { 'Installing cfssl ...' }
         host_configurer.configure_cfssl

@@ -59,7 +59,7 @@ module Pharos
       apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: true)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
-      apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
+      apply_phase(Phases::LoadClusterConfiguration, [config.master_host])
       apply_phase(Phases::ConfigureClusterName, %w(localhost))
     end
 
@@ -67,7 +67,7 @@ module Pharos
       apply_phase(Phases::UpgradeCheck, %w(localhost))
       addon_manager.validate
       gather_facts
-      apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
+      apply_phase(Phases::ValidateConfigurationChanges, %w(localhost))
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
       apply_phase(Phases::ValidateVersion, [config.master_host], parallel: false)
     end
@@ -105,9 +105,9 @@ module Pharos
       apply_phase(Phases::ConfigurePriorityClasses, master_only)
       apply_phase(Phases::ConfigurePSP, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
-      apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
-      apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'
-      apply_phase(Phases::ConfigureCustomNetwork, master_only) if config.network.provider == 'custom'
+      apply_phase(Phases::ConfigureWeave, master_only)
+      apply_phase(Phases::ConfigureCalico, master_only)
+      apply_phase(Phases::ConfigureCustomNetwork, master_only)
       apply_phase(Phases::ConfigureKubeletCsrApprover, master_only)
       apply_phase(Phases::ConfigureBootstrap, master_only) # using `kubeadm token`, not the kube API
 
@@ -150,6 +150,7 @@ module Pharos
     # @param hosts [Array<Pharos::Configuration::Host>]
     def apply_phase(phase_class, hosts, **options)
       return if hosts.empty?
+      return unless phase_class.apply?(config, context)
 
       puts "==> #{phase_class.title} @ #{hosts.join(' ')}".cyan
 

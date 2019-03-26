@@ -7,6 +7,8 @@ module Pharos
     class ConfigureEtcdChanges < Pharos::Phase
       title 'Configure etcd member changes'
 
+      apply_if { |config| !config.etcd&.endpoints }
+
       def call
         store_initial_cluster_state
 

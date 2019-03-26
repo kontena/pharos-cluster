@@ -18,6 +18,13 @@ describe Pharos::Phases::ValidateConfigurationChanges do
 
   let(:subject) { described_class.new(config.hosts.first, cluster_context: cluster_context, config: config) }
 
+  describe '#apply?' do
+    it 'should only be applied when cluster context contains a previous config' do
+      expect(described_class.apply?(nil, { 'previous-config' => 'test' })).to be_truthy
+      expect(described_class.apply?(nil, {})).to be_falsey
+    end
+  end
+
   describe '#call' do
     it 'detects network provider change' do
       expect{subject.call}.to raise_error(Pharos::ConfigError, /can't change network.provider from old to new/)

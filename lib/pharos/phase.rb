@@ -14,6 +14,22 @@ module Pharos
       @title || name
     end
 
+    # @return [proc]
+    def self.apply_if(&block)
+      @apply_if ||= block_given? ? block : proc { true }
+    end
+
+    # @return [Boolean]
+    def self.apply?(config, cluster_context)
+      case apply_if.arity
+      when 0 then apply_if.call
+      when 1 then apply_if.call(config)
+      when 2 then apply_if.call(config, cluster_context)
+      else
+        raise ArgumentError, "apply_if expects 0..2 block arguments"
+      end
+    end
+
     def to_s
       "#{self.class.title} @ #{@host}"
     end

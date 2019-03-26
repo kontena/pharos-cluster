@@ -13,6 +13,13 @@ describe Pharos::Phases::ConfigureCalico do
 
   subject { described_class.new(host, config: config) }
 
+  describe '#apply?' do
+    it 'should only be applied when network provider is calico' do
+      expect(described_class.apply?(Pharos::Config.new(network: { provider: 'calico' }), nil)).to be_truthy
+      expect(described_class.apply?(Pharos::Config.new(network: { provider: 'weave' }), nil)).to be_falsey
+    end
+  end
+
   describe '#get_ippool' do
     let(:kube_client) { instance_double(K8s::Client) }
     let(:kube_api_client) { instance_double(K8s::APIClient) }

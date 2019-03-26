@@ -5,6 +5,8 @@ module Pharos
     class ConfigureCalico < Pharos::Phase
       title "Configure Calico network"
 
+      apply_if { |config| config.network.provider == 'calico' }
+
       CALICO_VERSION = '3.6.0'
 
       register_component(

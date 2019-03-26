@@ -6,6 +6,8 @@ module Pharos
       title 'Configure etcd'
       CA_PATH = '/etc/pharos/pki'
 
+      apply_if { |config| !config.etcd&.endpoints }
+
       register_component(
         name: 'etcd', version: Pharos::ETCD_VERSION, license: 'Apache License 2.0',
         enabled: proc { |c| !c.etcd&.endpoints }
