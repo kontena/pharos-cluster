@@ -46,10 +46,10 @@ module Pharos
       # @param contents [String]
       def write_config(file, contents)
         remote_file = transport.file(File.join('/etc/firewalld/', file))
-        if !remote_file.exist? || remote_file.read.strip != contents.strip
-          @firewalld_reload = true
-          remote_file.write(contents)
-        end
+        return if remote_file.exist? && remote_file.read.strip == contents.strip
+
+        @firewalld_reload = true
+        remote_file.write(contents)
       end
 
       # @return [Array<String>]
