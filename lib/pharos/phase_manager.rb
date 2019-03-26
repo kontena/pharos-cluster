@@ -48,7 +48,7 @@ module Pharos
         end
       end
 
-      Thread.pass until threads.none?(&:alive?)
+      sleep 0.1 until threads.none?(&:alive?)
 
       # Thread status is false when terminated normally, nil when it terminated with exception
       # rubocop:disable Lint/RescueException
