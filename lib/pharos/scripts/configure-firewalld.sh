@@ -7,6 +7,7 @@ if ! systemctl is-active --quiet firewalld; then
     systemctl start firewalld
 fi
 
+# reload only if this is first run
 if ! firewall-cmd --info-service pharos-worker 2&>1 /dev/null ; then
     flock /var/run/xtables.lock -c "firewall-cmd --reload"
     sleep 10
@@ -25,4 +26,7 @@ if ! firewall-cmd --query-masquerade 2&>1 /dev/null ; then
     firewall-cmd --add-masquerade --permanent
 fi
 
-flock /var/run/xtables.lock -c "firewall-cmd --reload"
+# reload only if this is first run
+if ! firewall-cmd --info-service pharos-worker 2&>1 /dev/null ; then
+    flock /var/run/xtables.lock -c "firewall-cmd --reload"
+fi
