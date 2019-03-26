@@ -13,7 +13,7 @@ spec:
       labels:
         name: weave-net
       annotations:
-        kontena.io/firewalld: "<%= firewalld_enabled %>"
+        kontena.io/firewalld: "<%= reload_iptables ? Time.now.to_f : firewalld_enabled %>"
     spec:
       containers:
         - name: weave

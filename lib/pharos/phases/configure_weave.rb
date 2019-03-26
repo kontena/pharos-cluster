@@ -62,6 +62,7 @@ module Pharos
           arch: @host.cpu_arch,
           version: WEAVE_VERSION,
           firewalld_enabled: firewalld?,
+          reload_iptables: reload_iptables?,
           known_peers: known_peers,
           initial_known_peers: initial_known_peers,
           flying_shuttle_enabled: flying_shuttle?,
@@ -104,6 +105,11 @@ module Pharos
       # @return [Boolean]
       def firewalld?
         !!@config.network&.firewalld&.enabled
+      end
+
+      # @return [Boolean]
+      def reload_iptables?
+        !!cluster_context['reload-iptables']
       end
 
       # @return [Boolean]
