@@ -5,6 +5,8 @@ module Pharos
     class ConfigureBootstrap < Pharos::Phase
       title "Configure bootstrap tokens"
 
+      on :master_host
+
       def call
         if new_hosts?
           logger.info { "Creating node bootstrap token ..." }

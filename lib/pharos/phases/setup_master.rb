@@ -5,6 +5,8 @@ module Pharos
     class SetupMaster < Pharos::Phase
       title "Setup master configuration files"
 
+      on :master_hosts
+
       def kubeadm
         Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
       end

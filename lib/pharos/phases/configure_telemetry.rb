@@ -5,6 +5,8 @@ module Pharos
     class ConfigureTelemetry < Pharos::Phase
       title "Configure telemetry"
 
+      on :master_host
+
       TOKEN_FILE = File.join(Dir.home, '.chpharosrc').freeze
 
       def call

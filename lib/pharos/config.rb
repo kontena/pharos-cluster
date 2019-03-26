@@ -61,6 +61,8 @@ module Pharos
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
     attribute :name, Pharos::Types::String
 
+    alias all_hosts hosts
+
     attr_accessor :data
 
     # @return [Integer]
@@ -71,22 +73,22 @@ module Pharos
       1 + (hosts.length / HOSTS_PER_DNS_REPLICA.to_f).ceil
     end
 
-    # @return [Array<Pharos::Configuration::Node>]
+    # @return [Array<Pharos::Configuration::Host>]
     def master_hosts
       hosts.select { |h| h.role == 'master' }.sort_by(&:master_sort_score)
     end
 
-    # @return [Pharos::Configuration::Node]
+    # @return [Pharos::Configuration::Host]
     def master_host
       master_hosts.first
     end
 
-    # @return [Array<Pharos::Configuration::Node>]
+    # @return [Array<Pharos::Configuration::Host>]
     def worker_hosts
       @worker_hosts ||= hosts.select { |h| h.role == 'worker' }
     end
 
-    # @return [Array<Pharos::Configuration::Node>]
+    # @return [Array<Pharos::Configuration::Host>]
     def etcd_hosts
       return [] if etcd&.endpoints
 
@@ -96,6 +98,19 @@ module Pharos
       else
         etcd_hosts.sort_by(&:etcd_sort_score)
       end
+    end
+
+    # @return [Pharos::Configuration::Host]
+    def etcd_host
+      etcd_hosts.first
+    end
+
+    def local_host
+      @local_host ||= hosts.select(&:local?).first || Pharos::Configuration::Host.new(address: '127.0.0.1').tap { |h| h.hostname = ENV['HOST'] || 'localhost' }
+    end
+
+    def remote_hosts
+      hosts.reject(&:local?)
     end
 
     # @param peer [Pharos::Configuration::Host]

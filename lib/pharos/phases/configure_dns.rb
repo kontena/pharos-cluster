@@ -5,6 +5,8 @@ module Pharos
     class ConfigureDNS < Pharos::Phase
       DNS_CACHE_STACK_NAME = 'node_local_dns'
 
+      on :master_host
+
       title "Configure DNS"
 
       register_component(

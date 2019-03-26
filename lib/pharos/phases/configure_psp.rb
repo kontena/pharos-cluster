@@ -8,6 +8,8 @@ module Pharos
       include Pharos::Phases::Mixins::PSP
       title "Configure pod security policies"
 
+      on :master_host
+
       def call
         logger.info { "Configuring default pod security policies ..." }
         apply_psp_stack

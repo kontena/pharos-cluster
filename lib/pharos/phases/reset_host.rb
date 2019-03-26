@@ -5,6 +5,8 @@ module Pharos
     class ResetHost < Pharos::Phase
       title "Reset hosts"
 
+      on nil
+
       def call
         logger.info { "Removing all traces of Kontena Pharos ..." }
         host_configurer.reset

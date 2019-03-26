@@ -5,6 +5,8 @@ module Pharos
     class DeleteHost < Pharos::Phase
       title "Delete node"
 
+      on nil
+
       def call
         logger.info { "deleting node from kubernetes api ..." }
         master_host.transport.exec!("kubectl delete node #{@host.hostname}")

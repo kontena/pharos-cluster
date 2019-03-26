@@ -7,6 +7,8 @@ module Pharos
     class GatherFacts < Pharos::Phase
       title "Gather host facts"
 
+      on :all_hosts
+
       FULL_HOSTNAME_CLOUD_PROVIDERS = %w(aws vsphere).freeze
 
       def call

@@ -5,6 +5,8 @@ module Pharos
     class ValidateConfigurationChanges < Pharos::Phase
       title "Validate configuration changes"
 
+      on :local_host
+
       DEFAULT_PROC = proc { |key, old_val, new_val| raise Pharos::ConfigError, key => "can't change #{key} from #{old_val} to #{new_val}" }
 
       def call

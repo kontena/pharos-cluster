@@ -5,6 +5,8 @@ module Pharos
     class LoadClusterConfiguration < Pharos::Phase
       title "Load cluster configuration"
 
+      on :master_host
+
       def call
         return unless cluster_context['kubeconfig']
 

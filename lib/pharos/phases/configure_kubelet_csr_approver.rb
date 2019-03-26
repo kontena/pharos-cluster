@@ -5,6 +5,8 @@ module Pharos
     class ConfigureKubeletCsrApprover < Pharos::Phase
       title "Configure kubelet csr auto-approver"
 
+      on :master_host
+
       RUBBER_STAMP_VERSION = '0.1.0'
 
       register_component(

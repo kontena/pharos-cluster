@@ -4,6 +4,8 @@ module Pharos
   module Phases
     class JoinNode < Pharos::Phase
       title "Join nodes"
+      on :worker_hosts
+
       def already_joined?
         transport.file("/etc/kubernetes/kubelet.conf").exist?
       end

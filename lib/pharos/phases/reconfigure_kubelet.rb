@@ -5,6 +5,8 @@ module Pharos
     class ReconfigureKubelet < Pharos::Phase
       title "Reconfigure kubelet"
 
+      on :all_hosts
+
       def call
         return if host.new?
 

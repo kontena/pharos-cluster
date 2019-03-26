@@ -5,6 +5,8 @@ module Pharos
     class StoreClusterConfiguration < Pharos::Phase
       using Pharos::CoreExt::DeepTransformKeys
 
+      on :master_host
+
       title "Store cluster configuration"
 
       def call

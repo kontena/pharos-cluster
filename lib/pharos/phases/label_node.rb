@@ -5,6 +5,8 @@ module Pharos
     class LabelNode < Pharos::Phase
       title "Label nodes"
 
+      on :all_hosts
+
       def call
         if @host.labels.empty? && @host.taints.nil?
           logger.info { "No labels or taints set ... " }

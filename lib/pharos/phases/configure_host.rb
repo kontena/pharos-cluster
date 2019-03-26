@@ -5,6 +5,8 @@ module Pharos
     class ConfigureHost < Pharos::Phase
       title "Configure hosts"
 
+      on :all_hosts
+
       def call
         unless @host.environment.nil? || @host.environment.empty?
           logger.info "Updating environment file ..."

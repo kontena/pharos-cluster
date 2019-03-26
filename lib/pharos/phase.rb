@@ -14,6 +14,33 @@ module Pharos
       @title || name
     end
 
+    # Define which hosts to run on, :master_host is equivalent to @config.master_host.
+    #
+    # @example phase runs on the primary master host
+    #   on :master_host
+    # @example phase runs on all the master hosts
+    #   on :master_hosts
+    # @example phase runs on all hosts
+    #   on :hosts
+    # @example phase runs on all hosts
+    #   on :hosts # it is the default and can be omitted
+    # @param [*Symbol]
+    # @return [Array<Symbol,Proc>]
+    def self.on(*hosts)
+      return @on if @on
+      return [:hosts] if hosts.empty?
+
+      @on = hosts.flatten.compact
+    end
+
+    # @param config [Pharos::Config]
+    # @return [Array<Pharos::Phase>]
+    def self.hosts_for(config)
+      on.map do |getter|
+        config.send(getter)
+      end.flatten.compact
+    end
+
     def to_s
       "#{self.class.title} @ #{@host}"
     end

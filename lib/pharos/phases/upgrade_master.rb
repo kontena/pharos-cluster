@@ -8,6 +8,8 @@ module Pharos
       include Pharos::Phases::Mixins::PSP
       title "Upgrade master"
 
+      on :master_hosts
+
       def kubeadm
         Pharos::Kubeadm::ConfigGenerator.new(@config, @host)
       end

@@ -5,6 +5,8 @@ module Pharos
     class ConfigureMaster < Pharos::Phase
       title "Configure master"
 
+      on :master_hosts
+
       KUBE_DIR = '/etc/kubernetes'
       SHARED_CERT_FILES = %w(ca.crt ca.key sa.key sa.pub front-proxy-ca.key front-proxy-ca.crt).freeze
       APISERVER_CERT = '/etc/kubernetes/pki/apiserver.crt'

@@ -5,6 +5,8 @@ module Pharos
     class ConfigureMetrics < Pharos::Phase
       title "Configure metrics"
 
+      on :master_host
+
       METRICS_SERVER_VERSION = '0.3.1'
 
       register_component(

@@ -7,6 +7,8 @@ module Pharos
     class ConfigureEtcdChanges < Pharos::Phase
       title 'Configure etcd member changes'
 
+      on :etcd_host
+
       def call
         store_initial_cluster_state
 

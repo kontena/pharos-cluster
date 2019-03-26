@@ -5,6 +5,8 @@ module Pharos
     class ConfigureFirewalld < Pharos::Phase
       title "Configure firewalld"
 
+      on :all_hosts
+
       def call
         if @config.network&.firewalld&.enabled
           configure_firewalld

@@ -7,6 +7,8 @@ module Pharos
     class ValidateVersion < Pharos::Phase
       title "Validate cluster version"
 
+      on :master_host
+
       include Pharos::Phases::Mixins::ClusterVersion
 
       def call

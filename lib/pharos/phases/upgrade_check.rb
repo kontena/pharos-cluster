@@ -5,6 +5,8 @@ module Pharos
     class UpgradeCheck < Pharos::Phase
       title "Check for Pharos upgrade"
 
+      on :local_host
+
       VERSION_URL = ENV["PHAROS_UPGRADE_CHECK_URL"] || 'https://get.pharos.sh/versions/latest'
 
       def call
