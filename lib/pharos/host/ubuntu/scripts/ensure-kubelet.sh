@@ -12,10 +12,10 @@ mkdir -p /etc/systemd/system/kubelet.service.d
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=
-ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
+ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause:3.1
 EOF
 
 export DEBIAN_FRONTEND=noninteractive
-apt-mark unhold kubelet || echo "Nothing to unhold"
-apt-get install -y "kubelet=${KUBE_VERSION}-00"
-apt-mark hold kubelet
+apt-mark unhold kubelet kubernetes-cni || echo "Nothing to unhold"
+apt-get install -y "kubelet=${KUBE_VERSION}-00" "kubernetes-cni=${CNI_VERSION}-00"
+apt-mark hold kubelet kubernetes-cni
