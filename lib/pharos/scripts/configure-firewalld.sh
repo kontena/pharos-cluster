@@ -7,11 +7,26 @@ if ! systemctl is-active --quiet firewalld; then
     systemctl start firewalld
 fi
 
-firewall-cmd --reload
+# reload only if this is first run
+if ! firewall-cmd --info-service pharos-worker > /dev/null 2>&1 ; then
+    flock /var/run/xtables.lock -c "firewall-cmd --reload"
+    sleep 10
+fi
+
 if [ "$ROLE" = "master" ]; then
     firewall-cmd --permanent --add-service pharos-master
 fi
-firewall-cmd --permanent --add-service pharos-worker
-firewall-cmd --permanent --add-source ipset:pharos --zone trusted
-firewall-cmd --add-masquerade --permanent
-firewall-cmd --reload
+if ! firewall-cmd --info-service pharos-worker > /dev/null 2>&1 ; then
+    firewall-cmd --permanent --add-service pharos-worker
+fi
+if ! firewall-cmd --info-ipset pharos > /dev/null 2>&1 ; then
+    firewall-cmd --permanent --add-source ipset:pharos --zone trusted
+fi
+if ! firewall-cmd --query-masquerade > /dev/null 2>&1 ; then
+    firewall-cmd --add-masquerade --permanent
+fi
+
+# reload only if this is first run
+if ! firewall-cmd --info-service pharos-worker > /dev/null 2>&1 ; then
+    flock /var/run/xtables.lock -c "firewall-cmd --reload"
+fi
