@@ -17,9 +17,10 @@ mkdir -p /etc/systemd/system/kubelet.service.d
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=
-ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause-${ARCH}:3.1
+ExecStart=/usr/bin/kubelet ${KUBELET_ARGS} --pod-infra-container-image=${IMAGE_REPO}/pause:3.1
 EOF
 
+yum_install_with_lock "kubernetes-cni" "$CNI_VERSION"
 yum_install_with_lock "kubelet" "$KUBE_VERSION"
 
 if ! systemctl is-active --quiet kubelet; then
