@@ -27,6 +27,6 @@ if ! firewall-cmd --query-masquerade > /dev/null 2>&1 ; then
 fi
 
 # reload only if this is first run
-if ! firewall-cmd --info-service pharos-worker 2&>1 /dev/null ; then
+if ! firewall-cmd --info-service pharos-worker > /dev/null 2>&1 ; then
     flock /var/run/xtables.lock -c "firewall-cmd --reload"
 fi
