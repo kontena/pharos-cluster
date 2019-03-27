@@ -112,7 +112,7 @@ module Pharos
       apply_phase(Phases::ConfigureBootstrap, master_only) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
-      apply_phase(Phases::LabelNode, config.hosts, parallel: false) # NOTE: uses the @master kube API for each node, not threadsafe
+      apply_phase(Phases::LabelNode, %w(localhost))
 
       # configure services that need workers
       apply_phase(Phases::ConfigureMetrics, master_only)
