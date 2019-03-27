@@ -62,6 +62,7 @@ module Pharos
         host_configurer.ensure_kubelet(
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          CNI_VERSION: Pharos::CNI_VERSION,
           ARCH: @host.cpu_arch.name,
           IMAGE_REPO: @config.image_repository
         )
