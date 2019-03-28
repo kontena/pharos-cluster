@@ -55,6 +55,7 @@ module Pharos
       end
 
       def configure_kubelet_proxy
+        logger.info { 'Configuring kubelet proxy ...' }
         exec_script(
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
@@ -63,6 +64,8 @@ module Pharos
           VERSION: Pharos::KUBELET_PROXY_VERSION,
           MASTER_HOSTS: master_addresses.join(',')
         )
+
+        logger.info { 'Configuring packages ...' }
         host_configurer.ensure_kubelet(
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           KUBE_VERSION: Pharos::KUBE_VERSION,
@@ -70,6 +73,8 @@ module Pharos
           ARCH: @host.cpu_arch.name,
           IMAGE_REPO: @config.image_repository
         )
+
+        logger.info { 'Waiting for kubelet proxy to start ...' }
         exec_script(
           'wait-kubelet-proxy.sh'
         )

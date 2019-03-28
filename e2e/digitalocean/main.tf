@@ -77,6 +77,17 @@ resource "digitalocean_droplet" "pharos_worker" {
   tags               = ["e2e", "airgap"]
 }
 
+resource "digitalocean_droplet" "pharos_worker_up" {
+  count              = "1"
+  image              = "${var.image}"
+  name               = "${var.cluster_name}-worker-up"
+  region             = "${var.region}"
+  size               = "${var.worker_size}"
+  private_networking = true
+  ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
+  tags               = ["e2e", "airgap"]
+}
+
 output "pharos_cluster" {
   value = {
     name = "${var.cluster_name}"
@@ -98,12 +109,12 @@ output "pharos_hosts" {
       }
 
       environment = {
-		"HTTP_PROXY" = "http://10.133.37.156:8888"
-		"HTTPS_PROXY" = "http://10.133.37.156:8888"
-		"http_proxy" = "http://10.133.37.156:8888"
-		"https_proxy" = "http://10.133.37.156:8888"
-		"NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
-		"no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "HTTP_PROXY" = "http://10.133.37.156:8888"
+        "HTTPS_PROXY" = "http://10.133.37.156:8888"
+        "http_proxy" = "http://10.133.37.156:8888"
+        "https_proxy" = "http://10.133.37.156:8888"
+        "NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
       }
     }
 
@@ -125,12 +136,25 @@ output "pharos_hosts" {
       }
 
       environment = {
-		"HTTP_PROXY" = "http://10.133.37.156:8888"
-		"HTTPS_PROXY" = "http://10.133.37.156:8888"
-		"http_proxy" = "http://10.133.37.156:8888"
-		"https_proxy" = "http://10.133.37.156:8888"
-		"NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
-		"no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "HTTP_PROXY" = "http://10.133.37.156:8888"
+        "HTTPS_PROXY" = "http://10.133.37.156:8888"
+        "http_proxy" = "http://10.133.37.156:8888"
+        "https_proxy" = "http://10.133.37.156:8888"
+        "NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
+      }
+    }
+
+    worker_up = {
+      address           = "${digitalocean_droplet.pharos_worker_up.*.ipv4_address}"
+      private_address   = "${digitalocean_droplet.pharos_worker_up.*.ipv4_address_private}"
+      role              = "worker_up"
+      user              = "root"
+      ssh_key_path      = "./ssh_key.pem"
+
+      label = {
+        "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
+        "failure-domain.beta.kubernetes.io/region" = "${var.region}"
       }
     }
   }
