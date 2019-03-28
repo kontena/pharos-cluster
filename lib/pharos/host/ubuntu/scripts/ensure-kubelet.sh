@@ -17,5 +17,5 @@ EOF
 
 export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold kubelet kubernetes-cni || echo "Nothing to unhold"
-apt-get install -y "kubelet=${KUBE_VERSION}-00" "kubernetes-cni=${CNI_VERSION}-00"
+apt-get install -y "kubelet=${KUBE_VERSION}*" "kubernetes-cni=${CNI_VERSION}*"
 apt-mark hold kubelet kubernetes-cni
