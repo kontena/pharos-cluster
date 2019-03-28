@@ -12,7 +12,7 @@ describe Pharos::AddonManager.addons['openebs'] do
   let(:kube_client) { instance_double(K8s::Client) }
   let(:cpu_arch) { double(:cpu_arch ) }
 
-  subject { described_class.new(config, enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config) }
+  subject { described_class.new(config, enabled: true, cpu_arch: cpu_arch, cluster_config: cluster_config, cluster_context: { 'kube_client' => kube_client }) }
 
   describe '#validate' do
     context 'with more replicas than workers' do

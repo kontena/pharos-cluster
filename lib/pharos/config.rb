@@ -114,22 +114,6 @@ module Pharos
       @regions ||= hosts.map(&:region).compact.uniq
     end
 
-    # @param kubeconfig [Hash]
-    # @return [K8s::Client]
-    def kube_client(kubeconfig)
-      return @kube_client if @kube_client
-
-      if master_host.bastion.nil?
-        api_address = master_host.api_address
-        api_port = 6443
-      else
-        api_address = 'localhost'
-        api_port = master_host.bastion.host.transport.forward(master_host.api_address, 6443)
-      end
-
-      @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)
-    end
-
     # @param key [Symbol]
     # @param value [Pharos::Configuration::Struct]
     # @raise [Pharos::ConfigError]
