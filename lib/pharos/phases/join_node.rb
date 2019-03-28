@@ -4,8 +4,6 @@ module Pharos
   module Phases
     class JoinNode < Pharos::Phase
       title "Join nodes"
-      PROXY_ADDRESS = '127.0.0.1:6443'
-
       def already_joined?
         transport.file("/etc/kubernetes/kubelet.conf").exist?
       end
