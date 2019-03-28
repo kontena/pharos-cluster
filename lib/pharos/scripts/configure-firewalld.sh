@@ -9,7 +9,7 @@ fi
 
 # reload only if this is first run
 if ! firewall-cmd --info-service pharos-worker > /dev/null 2>&1 ; then
-    flock /var/run/xtables.lock -c "firewall-cmd --reload"
+    flock -w 5 /var/run/xtables.lock firewall-cmd --reload
     sleep 10
 fi
 
@@ -26,4 +26,4 @@ if ! firewall-cmd --query-masquerade > /dev/null 2>&1 ; then
     firewall-cmd --add-masquerade --permanent
 fi
 
-flock /var/run/xtables.lock -c "firewall-cmd --reload"
+flock -w 5 /var/run/xtables.lock firewall-cmd --reload
