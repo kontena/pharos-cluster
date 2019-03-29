@@ -93,11 +93,14 @@ module Pharos
       phases = hosts.map { |host| prepare_phase(phase_class, host, **options) }
 
       run(phases, parallel: parallel) do |phase|
+        Pharos::Logging.debug!  if ENV['DEBUG'].to_s == phase.class.name.split('::').last
+
         start = Time.now
 
         phase.call
 
         phase.logger.info 'Completed phase in %<duration>.2fs' % { duration: Time.now - start }
+        Pharos::Logging.no_debug! if ENV['DEBUG'].to_s == phase.class.name.split('::').last
       end
     end
   end
