@@ -3,7 +3,7 @@
 
 set -ue
 
-source ./util.sh
+source ./e2e/util.sh
 
 ssh-keygen -t rsa -f ~/.ssh/id_rsa_travis -N ""
 cat ~/.ssh/id_rsa_travis.pub > ~/.ssh/authorized_keys
