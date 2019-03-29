@@ -106,6 +106,9 @@ spec:
             # Prevents the container from sleeping forever.
             - name: SLEEP
               value: "false"
+            # Prevents the container from updating installed CNI binaries
+            - name: UPDATE_CNI_BINARIES
+              value: "false"
           volumeMounts:
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir
