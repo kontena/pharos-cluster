@@ -8,7 +8,7 @@ require_relative "pharos/error"
 require_relative "pharos/root_command"
 
 module Pharos
-  CNI_VERSION = '0.6.0'
+  CNI_VERSION = '0.7.5'
   COREDNS_VERSION = '1.2.2'
   CRIO_VERSION = '1.13.3'
   DNS_NODE_CACHE_VERSION = '1.15.1'
