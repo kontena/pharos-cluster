@@ -3,6 +3,12 @@
 
 set -u
 
+if [ ! -f e2e/digitalocean/tf.json ]
+then
+    echo "TF output not found, skipping."
+    exit 0
+fi
+
 source ./e2e/util.sh
 
 export PHAROS_NON_OSS=true
@@ -28,7 +34,9 @@ chmod +x ./kubectl
 mv kubectl /usr/local/bin/
 export KUBECONFIG=./kubeconfig.e2e
 
+echo "Checking that ingress-nginx is running:"
 (retry 30 pods_running "app=ingress-nginx" "ingress-nginx") || exit $?
+echo "Checking that kontena-lens is running:"
 (retry 30 pods_running "app=dashboard" "kontena-lens") || exit $?
 
 # Rerun up to confirm that non-initial run goes through
