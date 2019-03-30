@@ -96,6 +96,11 @@ output "pharos_hosts" {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
       }
+
+      environment = {
+          "HTTP_PROXY" = "http://10.133.37.156:8888"
+          "HTTPS_PROXY" = "http://10.133.37.156:8888"
+      }
     }
 
     workers = {
@@ -113,6 +118,11 @@ output "pharos_hosts" {
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
+      }
+
+      environment = {
+          "HTTP_PROXY" = "http://10.133.37.156:8888"
+          "HTTPS_PROXY" = "http://10.133.37.156:8888"
       }
     }
   }
