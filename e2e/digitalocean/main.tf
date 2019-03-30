@@ -97,10 +97,10 @@ output "pharos_hosts" {
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
       }
 
-      environment = {
-          "HTTP_PROXY" = "http://10.133.37.156:8888"
-          "HTTPS_PROXY" = "http://10.133.37.156:8888"
-      }
+      environment = [
+		"HTTP_PROXY=http://10.133.37.156:8888",
+		"HTTPS_PROXY=http://10.133.37.156:8888"
+	  ]
     }
 
     workers = {
@@ -120,10 +120,10 @@ output "pharos_hosts" {
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
       }
 
-      environment = {
-          "HTTP_PROXY" = "http://10.133.37.156:8888"
-          "HTTPS_PROXY" = "http://10.133.37.156:8888"
-      }
+      environment = [
+		"HTTP_PROXY=http://10.133.37.156:8888",
+		"HTTPS_PROXY=http://10.133.37.156:8888"
+	  ]
     }
   }
 }
