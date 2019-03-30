@@ -99,7 +99,9 @@ output "pharos_hosts" {
 
       environment = {
           "HTTP_PROXY" = "http://10.133.37.156:8888"
-          "HTTPS_PROXY" = "http://10.133.37.156:8888"
+		  "HTTPS_PROXY" = "http://10.133.37.156:8888"
+		  "http_proxy" = "http://10.133.37.156:8888"
+          "https_proxy" = "http://10.133.37.156:8888"
       }
     }
 
@@ -121,8 +123,10 @@ output "pharos_hosts" {
       }
 
       environment = {
-          "HTTP_PROXY" = "http://10.133.37.156:8888"
-          "HTTPS_PROXY" = "http://10.133.37.156:8888"
+		  "HTTP_PROXY" = "http://10.133.37.156:8888"
+		  "HTTPS_PROXY" = "http://10.133.37.156:8888"
+		  "http_proxy" = "http://10.133.37.156:8888"
+          "https_proxy" = "http://10.133.37.156:8888"
       }
     }
   }
