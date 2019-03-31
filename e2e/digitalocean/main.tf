@@ -56,7 +56,7 @@ resource "digitalocean_droplet" "pharos_master" {
   size               = "${var.master_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
-  tags               = ["e2e"]
+  tags               = ["e2e", "airgap"]
 }
 
 resource "random_pet" "pharos_worker" {
@@ -74,7 +74,7 @@ resource "digitalocean_droplet" "pharos_worker" {
   size               = "${var.worker_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
-  tags               = ["e2e"]
+  tags               = ["e2e", "airgap"]
 }
 
 output "pharos_cluster" {
