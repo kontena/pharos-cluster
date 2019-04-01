@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 set -eu
 
 if [ "$UNSET_PROXY" = "true" ]; then
-  (env | cut -d"=" -f1|grep -i -- "_proxy$") | while read -r var; do unset "$var"; done
+  while read -r var; do unset "$var"; done < <(env | grep -i _proxy | sed 's/=.*//g')
 fi
 
 kubeadm init phase control-plane all --config "${CONFIG}"
