@@ -20,7 +20,7 @@ module Pharos
 
       attr_reader :host
 
-      # @param host [String]
+      # @param host [Pharos::Configuration::Host]
       # @param opts [Hash]
       def initialize(host, **opts)
         super()
@@ -53,18 +53,20 @@ module Pharos
       end
 
       # @param cmd [String] command to execute
+      # @param set_env [Boolean] set environment before execution
       # @param options [Hash]
       # @return [Pharos::Command::Result]
-      def exec(cmd, **options)
-        synchronize { command(cmd, **options).run }
+      def exec(cmd, set_env: true, **options)
+        synchronize { command(set_env ? command_environment(cmd) : cmd, **options).run }
       end
 
       # @param cmd [String] command to execute
+      # @param set_env [Boolean] set environment before execution
       # @param options [Hash]
       # @raise [Pharos::ExecError]
       # @return [String] stdout
-      def exec!(cmd, **options)
-        synchronize { command(cmd, **options).run!.stdout }
+      def exec!(cmd, set_env: true, **options)
+        synchronize { command(set_env ? command_environment(cmd) : cmd, **options).run!.stdout }
       end
 
       # @param name [String] name of script
@@ -79,7 +81,9 @@ module Pharos
         cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
         cmd.concat(%w(bash --norc --noprofile -x -s))
         logger.debug { "exec: #{cmd}" }
-        exec!(cmd, stdin: script, source: name, **options)
+        synchronize do
+          command(cmd, stdin: script, source: name, **options).run!.stdout
+        end
       end
 
       # @param cmd [String] command to execute
@@ -123,6 +127,19 @@ module Pharos
 
       def abstract_method!
         raise NotImplementedError, 'This is an abstract base method. Implement in your subclass.'
+      end
+
+      def command_environment(cmd)
+        input = cmd.is_a?(Array) ? cmd.join(' ') : cmd.to_s
+        [].tap do |result|
+          if input.start_with?('sudo ')
+            result << 'sudo'
+            input = input.delete_prefix('sudo ')
+          end
+          result.concat(%w(env -i -))
+          result.concat(EXPORT_ENVS.merge(host.respond_to?(:environment) ? host.environment : {}).map { |k, v| "#{k}=\"#{v.gsub(/"/, '\\"')}\"" })
+          result << input
+        end.flatten.map(&:strip).reject(&:empty?).join(' ')
       end
     end
   end

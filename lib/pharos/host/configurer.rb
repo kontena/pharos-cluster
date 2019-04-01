@@ -164,9 +164,6 @@ module Pharos
           "#{key}=\"#{val.shellescape}\""
         end
         host_env_file.write(new_content.join("\n") + "\n")
-        new_content.each do |kv_pair|
-          transport.exec!("export #{kv_pair}")
-        end
       end
 
       # @return [String, NilClass]

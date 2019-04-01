@@ -17,7 +17,7 @@ module Pharos
       end
 
       def check_sudo
-        transport.exec!('sudo -n true')
+        transport.exec!('sudo -n true', set_env: false)
       rescue Pharos::ExecError => exc
         raise Pharos::InvalidHostError, "Unable to sudo: #{exc.output}"
       end
