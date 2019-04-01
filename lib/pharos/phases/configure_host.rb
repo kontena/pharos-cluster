@@ -33,12 +33,6 @@ module Pharos
       end
 
       def coordinated_reconnect
-        bastioned_hosts = @config.hosts.select { |host| host.bastion && host.bastion.address == @host.address }
-        if bastioned_hosts.size > 0
-          logger.info "Waiting for bastioned hosts to disconnect ..."
-          sleep 0.1 until bastioned_hosts.all? { |host| !host.transport.connected? }
-          logger.info "All bastioned hosts are disconnected."
-        end
         @host.transport.disconnect
 
         if @config.hosts.any? { |host| !host.bastion.nil? }

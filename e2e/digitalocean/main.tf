@@ -55,7 +55,7 @@ resource "digitalocean_droplet" "pharos_master" {
   region             = "${var.region}"
   size               = "${var.master_size}"
   private_networking = true
-  ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
+  ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}", "80:bc:11:21:10:bc:3d:9a:ed:99:53:bf:5d:04:41:62"]
   tags               = ["e2e", "airgap"]
 }
 
@@ -73,7 +73,7 @@ resource "digitalocean_droplet" "pharos_worker" {
   region             = "${var.region}"
   size               = "${var.worker_size}"
   private_networking = true
-  ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
+  ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}", "80:bc:11:21:10:bc:3d:9a:ed:99:53:bf:5d:04:41:62"]
   tags               = ["e2e", "airgap"]
 }
 
