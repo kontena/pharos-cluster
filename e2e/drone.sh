@@ -29,13 +29,15 @@ timeout 600 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitaloc
 (pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide) || exit $?
 
 # Verify that workloads start running
-curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.13.4/bin/linux/amd64/kubectl
+echo "Downloading kubectl ..."
+curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 mv kubectl /usr/local/bin/
 export KUBECONFIG=./kubeconfig.e2e
 
 echo "Checking that ingress-nginx is running:"
 (retry 30 pods_running "app=ingress-nginx" "ingress-nginx") || exit $?
+
 echo "Checking that kontena-lens is running:"
 (retry 30 pods_running "app=dashboard" "kontena-lens") || exit $?
 
