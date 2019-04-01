@@ -38,10 +38,10 @@ module Pharos
         session_factory = bastion&.transport || Net::SSH
 
         synchronize do
-          logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
+          logger.debug { "connect: #{@user}@#{host} (#{@opts})" }
           non_interactive = true
           begin
-            @session = session_factory.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
+            @session = session_factory.start(@host.address, @user, @opts.merge(options).merge(non_interactive: non_interactive))
             logger.debug "Connected"
             class_mutex.unlock if class_mutex.locked? && class_mutex.owned?
           rescue *RETRY_CONNECTION_ERRORS => exc
