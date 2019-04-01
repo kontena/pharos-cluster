@@ -2,8 +2,8 @@
 
 set -eu
 
-if [ "$SKIP_UNSET_PROXY" = "true" ]; then
-  (env | cut -d"=" -f1|grep -i -- "_proxy$") | while read -r var; do unset "$var"; done
+if [ "$UNSET_PROXY" = "true" ]; then
+  while read var; do unset $var; done < <(env | grep -i _proxy | sed 's/=.*//g')
 fi
 
 kubeadm alpha certs renew apiserver --config "${CONFIG}"
