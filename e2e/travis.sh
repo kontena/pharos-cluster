@@ -18,7 +18,7 @@ bundle exec bin/pharos -v
 bundle exec bin/pharos version
 bundle exec bin/pharos up -d -y -c cluster.yml
 bundle exec bin/pharos kubeconfig -c cluster.yml > kubeconfig.e2e
-bundle exec bin/pharos ssh --role master -c cluster.yml -- kubectl --kubeconfig=$PWD/kubeconfig.e2e get nodes
+bundle exec bin/pharos ssh --role master -c cluster.yml -- kubectl --kubeconfig="$PWD"/kubeconfig.e2e get nodes
 
 # Verify that workloads start running
 curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kubectl
