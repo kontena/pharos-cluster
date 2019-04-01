@@ -36,7 +36,7 @@ resource "tls_private_key" "ssh_key" {
 }
 
 resource "local_file" "ssh_key" {
-  content     = "${tls_private_key.ssh_key.private_key_pem}"
+  sensitive_content     = "${tls_private_key.ssh_key.private_key_pem}"
   filename    = "ssh_key.pem"
   provisioner "local-exec" {
     command = "chmod 0600 ${local_file.ssh_key.filename}"
