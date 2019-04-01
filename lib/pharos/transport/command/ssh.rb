@@ -17,6 +17,9 @@ module Pharos
           result.append(@source.nil? ? @cmd : "#{@cmd} < #{@source}", :cmd)
           response = @client.session.open_channel do |channel|
             channel.env('LC_ALL', 'C.UTF-8')
+            @client.host.environment&.each do |key, value|
+              channel.env(key, value)
+            end
             channel.exec @cmd do |_, success|
               raise Pharos::ExecError, "Failed to exec #{cmd}" unless success
 
