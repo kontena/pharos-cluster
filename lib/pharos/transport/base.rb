@@ -56,6 +56,7 @@ module Pharos
       # @param options [Hash]
       # @return [Pharos::Command::Result]
       def exec(cmd, **options)
+        cmd = host.environment.map { |key, value| "#{key}=#{value.shellescape}" }.join(' ') + " " + cmd
         synchronize { command(cmd, **options).run }
       end
 
@@ -64,6 +65,7 @@ module Pharos
       # @raise [Pharos::ExecError]
       # @return [String] stdout
       def exec!(cmd, **options)
+        cmd = host.environment.map { |key, value| "#{key}=#{value.shellescape}" }.join(' ') + " " + cmd
         synchronize { command(cmd, **options).run!.stdout }
       end
 
@@ -76,10 +78,9 @@ module Pharos
         script = ::File.read(path || name)
         cmd = %w(sudo env -i -)
 
-        cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
+        cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=#{host.environment.fetch(key, value).shellescape}" })
         cmd.concat(%w(bash --norc --noprofile -x -s))
-        logger.debug { "exec: #{cmd}" }
-        exec!(cmd, stdin: script, source: name, **options)
+        synchronize { command(cmd, stdin: script, source: name, **options).run!.stdout }
       end
 
       # @param cmd [String] command to execute
