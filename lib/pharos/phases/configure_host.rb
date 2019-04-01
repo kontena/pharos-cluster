@@ -9,9 +9,7 @@ module Pharos
         unless @host.environment.nil? || @host.environment.empty?
           logger.info { "Updating environment file ..." }
           host_configurer.update_env_file
-          host.transport.disconnect
-          sleep 0.1 until @config.hosts.all? { |host| !host.transport.connected? }
-          host.transport.connect
+          coordinated_reconnect
         end
 
         logger.info { "Configuring script helpers ..." }
@@ -32,6 +30,30 @@ module Pharos
       def configure_container_runtime
         logger.info { "Configuring container runtime (#{@host.container_runtime}) packages ..." }
         host_configurer.configure_container_runtime
+      end
+
+      def coordinated_reconnect
+        bastioned_hosts = @config.hosts.select { |host| host.bastion && host.bastion.address == @host.address }
+        if bastioned_hosts.size > 0
+          logger.info "Waiting for bastioned hosts to disconnect ..."
+          sleep 0.1 until bastioned_hosts.all? { |host| !host.transport.connected? }
+          logger.info "All bastioned hosts are disconnected."
+        end
+        @host.transport.disconnect
+
+        if @config.hosts.any? { |host| !host.bastion.nil? }
+          mutex.synchronize do
+            unless cluster_context['configure-host:all-disconnected']
+              logger.info "Coordinating reconnect..."
+              sleep 0.1 until @config.hosts.all? { |host| !host.transport.connected? }
+            end
+
+            cluster_context['configure-host:all-disconnected'] = true
+          end
+        end
+
+        logger.info "Reconnecting ..."
+        @host.transport.connect
       end
     end
   end
