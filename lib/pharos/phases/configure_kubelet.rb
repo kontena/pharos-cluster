@@ -84,6 +84,7 @@ module Pharos
         host_configurer.install_kube_packages(
           KUBE_VERSION: Pharos::KUBE_VERSION,
           KUBEADM_VERSION: Pharos::KUBEADM_VERSION,
+          CNI_VERSION: Pharos::CNI_VERSION,
           ARCH: @host.cpu_arch.name
         )
       end
