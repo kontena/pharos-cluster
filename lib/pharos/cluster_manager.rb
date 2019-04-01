@@ -76,6 +76,9 @@ module Pharos
       master_hosts = config.master_hosts
       master_only = [config.master_host]
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
+      apply_phase(Phases::ConfigureHostEnvironment, config.hosts, parallel: true)
+      apply_phase(Phases::DisconnectSSH, config.hosts.reject(&:local?), parallel: true)
+      apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureClient, master_only, parallel: false, optional: true)

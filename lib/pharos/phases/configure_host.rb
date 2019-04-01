@@ -6,14 +6,6 @@ module Pharos
       title "Configure hosts"
 
       def call
-        unless @host.environment.nil? || @host.environment.empty?
-          logger.info { "Updating environment file ..." }
-          host_configurer.update_env_file
-          host.transport.disconnect
-          sleep 0.1 until @config.hosts.all? { |host| !host.transport.connected? }
-          host.transport.connect
-        end
-
         logger.info { "Configuring script helpers ..." }
         host_configurer.configure_script_library
 
