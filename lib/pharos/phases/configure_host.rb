@@ -10,7 +10,7 @@ module Pharos
           logger.info { "Updating environment file ..." }
           host_configurer.update_env_file
           host.transport.disconnect
-          sleep 0.1 until @config.hosts.all? { |host| host.transport.closed? }
+          sleep 0.1 until @config.hosts.all? { |host| !host.transport.connected? }
           host.transport.connect
         end
 
