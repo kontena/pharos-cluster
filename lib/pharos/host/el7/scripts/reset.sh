@@ -21,7 +21,7 @@ fi
 
 kubeadm reset --force
 
-yum remove -y kubeadm kubelet kubectl docker cri-o
+yum remove -y kubeadm kubelet kubectl kubernetes-cni docker cri-o
 
 sudo rm -rf /etc/kubernetes \
     /etc/pharos \
