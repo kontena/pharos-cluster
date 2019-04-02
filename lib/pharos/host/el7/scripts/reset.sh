@@ -46,7 +46,7 @@ sudo rm -rf /etc/kubernetes \
     /usr/local/bin/pharos-kubeadm-*
 
 # reset versionlock
-sudo echo '' > /etc/yum/pluginconf.d/versionlock.list
+echo '' | sudo tee /etc/yum/pluginconf.d/versionlock.list
 
 systemctl daemon-reload
 systemctl reset-failed
