@@ -166,6 +166,8 @@ name: github-release
 depends_on:
 - e2e-bionic
 - e2e-centos
+- e2e-xenial
+- e2e-stretch
 platform:
   os: linux
   arch: amd64
