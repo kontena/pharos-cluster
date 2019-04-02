@@ -136,5 +136,9 @@ module Pharos
     def self.mutex
       @mutex ||= Mutex.new
     end
+
+    def checkpoint
+      Thread.main[:checkpoint]
+    end
   end
 end

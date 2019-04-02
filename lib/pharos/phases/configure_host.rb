@@ -33,21 +33,12 @@ module Pharos
       end
 
       def coordinated_reconnect
-        @host.transport.disconnect
-
-        if @config.hosts.any? { |host| !host.bastion.nil? }
-          mutex.synchronize do
-            unless cluster_context['configure-host:all-disconnected']
-              logger.info "Coordinating reconnect..."
-              sleep 0.1 until @config.hosts.all? { |host| !host.transport.connected? }
-            end
-
-            cluster_context['configure-host:all-disconnected'] = true
-          end
-        end
-
+        logger.info "Disconnecting ..."
+        checkpoint.wait
+        transport.disconnect
+        checkpoint.wait
         logger.info "Reconnecting ..."
-        @host.transport.connect
+        transport.connect
       end
     end
   end

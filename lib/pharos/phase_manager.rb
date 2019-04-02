@@ -40,6 +40,8 @@ module Pharos
     # @param phases [Array<Pharos::Phases::Base>]
     # @return [Array<...>]
     def run_parallel(phases, &block)
+      Thread.main[:checkpoint] = Concurrent::CyclicBarrier.new(phases.size)
+
       threads = phases.map do |phase|
         Thread.new do
           Thread.current.report_on_exception = false
