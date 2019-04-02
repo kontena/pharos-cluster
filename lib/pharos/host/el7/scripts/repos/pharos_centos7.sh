@@ -6,7 +6,7 @@ if [ ! -e /etc/yum.repos.d/kontena-pharos.repo ]; then
     cat <<EOF >/etc/yum.repos.d/kontena-pharos.repo
 [kontena-pharos]
 name=kontena-pharos
-baseurl=http://dl.bintray.com/kontena/pharos-rpm
+baseurl=https://dl.bintray.com/kontena/pharos-rpm
 gpgcheck=0
 repo_gpgcheck=1
 enabled=1
