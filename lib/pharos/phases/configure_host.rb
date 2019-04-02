@@ -10,8 +10,8 @@ module Pharos
           logger.info "Updating environment file ..."
           host_configurer.update_env_file
           logger.info "Reconnecting ..."
-          @host.disconnect
-          @host.connect
+          @host.transport.disconnect
+          @host.transport.connect
         end
 
         logger.info "Configuring script helpers ..."
