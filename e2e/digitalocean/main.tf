@@ -98,12 +98,12 @@ output "pharos_hosts" {
       }
 
       environment = {
-          "HTTP_PROXY" = "http://10.133.37.156:8888"
-		  "HTTPS_PROXY" = "http://10.133.37.156:8888"
-		  "http_proxy" = "http://10.133.37.156:8888"
-		  "https_proxy" = "http://10.133.37.156:8888"
-		  "NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
-		  "no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "HTTP_PROXY" = "http://10.133.37.156:8888"
+        "HTTPS_PROXY" = "http://10.133.37.156:8888"
+        "http_proxy" = "http://10.133.37.156:8888"
+        "https_proxy" = "http://10.133.37.156:8888"
+        "NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
       }
     }
 
@@ -125,12 +125,12 @@ output "pharos_hosts" {
       }
 
       environment = {
-		  "HTTP_PROXY" = "http://10.133.37.156:8888"
-		  "HTTPS_PROXY" = "http://10.133.37.156:8888"
-		  "http_proxy" = "http://10.133.37.156:8888"
-		  "https_proxy" = "http://10.133.37.156:8888"
-		  "NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
-		  "no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "HTTP_PROXY" = "http://10.133.37.156:8888"
+        "HTTPS_PROXY" = "http://10.133.37.156:8888"
+        "http_proxy" = "http://10.133.37.156:8888"
+        "https_proxy" = "http://10.133.37.156:8888"
+        "NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+        "no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
       }
     }
   }
