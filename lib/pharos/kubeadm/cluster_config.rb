@@ -136,7 +136,7 @@ module Pharos
         # let's put locally running etcd peer first
         # see: https://github.com/kubernetes/kubernetes/issues/72102
         endpoints = ["https://localhost:2379"]
-        endpoints += @config.etcd_hosts.select { |peer| peer != @host }.map { |h|
+        endpoints += @config.etcd_hosts.reject { |peer| peer == @host }.map { |h|
           "https://#{@config.etcd_peer_address(h)}:2379"
         }
         config['etcd'] = {
