@@ -43,6 +43,11 @@ module Pharos
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
       end
+
+      predicate(:unique_address?) do |value|
+        addresses = value.map { |v| v[:address] }
+        addresses.uniq.size == addresses.size
+      end
     end
 
     # @return [Dry::Validation::Schema]
@@ -55,14 +60,17 @@ module Pharos
               en: {
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
-                  hostname_or_ip?: "is invalid"
+                  hostname_or_ip?: "is invalid",
+                  unique_address?: "address is not unique"
                 }
               }
             )
           end
         end
 
-        required(:hosts).filled(min_size?: 1) do
+        predicates(CustomPredicates)
+
+        required(:hosts).filled(:unique_address?, min_size?: 1) do
           each do
             schema do
               predicates(CustomPredicates)
