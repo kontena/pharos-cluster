@@ -112,6 +112,26 @@ describe Pharos::Kubeadm::ClusterConfig do
       })
     end
 
+    context 'with internal etcd configuration' do
+      let(:config) {
+        Pharos::Config.new(
+          hosts: (1..3).map { |i| Pharos::Configuration::Host.new(
+            address: "10.10.0.#{i}", role: "master"
+          ) },
+          network: {},
+          addons: {}
+        )
+      }
+      subject { described_class.new(config, config.hosts.last) }
+
+      it 'sets etcd to localhost by default' do
+        config = subject.generate
+        expect(config.dig('etcd', 'external', 'endpoints')).to eq([
+          'https://localhost:2379', 'https://10.10.0.1:2379', 'https://10.10.0.2:2379',
+        ])
+      end
+    end
+
     context 'with etcd endpoint configuration' do
       let(:config) { Pharos::Config.new(
         hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
