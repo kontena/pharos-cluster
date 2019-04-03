@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'shellwords'
+
 module Pharos
   module Transport
     module Command
@@ -12,7 +14,7 @@ module Pharos
         # @param source [String]
         def initialize(client, cmd, stdin: nil, source: nil)
           @client = client
-          @cmd = cmd.is_a?(Array) ? cmd.join(' ') : cmd
+          @cmd = "env bash --noprofile --norc -x -c #{(cmd.is_a?(Array) ? cmd.join(' ') : cmd).shellescape}"
           @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
           @source = source
           @result = Pharos::Transport::Command::Result.new(hostname)
