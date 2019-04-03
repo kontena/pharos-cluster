@@ -144,6 +144,11 @@ module Pharos
         end
       end
 
+      # @return [Boolean]
+      def master_valid?
+        master? && master_sort_score.zero?
+      end
+
       # @return [Integer]
       def etcd_sort_score
         if checks['etcd_healthy']
