@@ -44,9 +44,16 @@ module Pharos
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
       end
 
+      def self.addresses
+        @addresses ||= Set.new
+      end
+
       predicate(:unique_address?) do |value|
-        addresses = value.map { |v| v[:address] }
-        addresses.uniq.size == addresses.size
+        if CustomPredicates.addresses.include?(value)
+          false
+        else
+          CustomPredicates.addresses << value
+        end
       end
     end
 
@@ -55,26 +62,26 @@ module Pharos
       # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Params do
         configure do
+          CustomPredicates.addresses.clear
+
           def self.messages
             super.merge(
               en: {
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
-                  unique_address?: "address is not unique"
+                  unique_address?: "is not unique"
                 }
               }
             )
           end
         end
 
-        predicates(CustomPredicates)
-
-        required(:hosts).filled(:unique_address?, min_size?: 1) do
+        required(:hosts).filled(min_size?: 1) do
           each do
             schema do
               predicates(CustomPredicates)
-              required(:address).filled(:str?, :hostname_or_ip?)
+              required(:address).filled(:str?, :hostname_or_ip?, :unique_address?)
               optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])

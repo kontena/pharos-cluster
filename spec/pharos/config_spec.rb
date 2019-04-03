@@ -53,7 +53,10 @@ describe Pharos::Config do
       ] }
       it 'fails to load' do
         expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
-          expect(exc.errors[:hosts]).to match array_including("address is not unique")
+          expect(exc.errors[:hosts]).to match hash_including(
+            0 => hash_including(address: array_including("is not unique")),
+            1 => hash_including(address: array_including("is not unique"))
+          )
         end
       end
     end
