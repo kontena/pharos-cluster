@@ -1,7 +1,14 @@
 describe Pharos::ResetCommand do
   subject { described_class.new('') }
 
-  let(:hosts) { [] }
+  let(:hosts) do
+    [
+      { address: '10.0.0.1', role: 'master' },
+      { address: '10.0.0.2', role: 'master' },
+      { address: '10.0.0.3', role: 'worker' }
+    ]
+  end
+
   let(:data) { { hosts: hosts } }
   let(:config) { Pharos::Config.new(data) }
 
@@ -13,14 +20,6 @@ describe Pharos::ResetCommand do
 
   describe '#execute' do
     context 'confirmations' do
-      let(:hosts) do
-        [
-          { address: '10.0.0.1', role: 'master' },
-          { address: '10.0.0.2', role: 'master' },
-          { address: '10.0.0.3', role: 'worker' }
-        ]
-      end
-
       context 'reset all' do
         it 'prompts and resets all' do
           expect(subject.prompt).to receive(:yes?).with(/Do you really want to reset all/, default: false).and_return(true)
