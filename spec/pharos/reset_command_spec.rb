@@ -16,6 +16,7 @@ describe Pharos::ResetCommand do
     allow(subject).to receive(:load_config).and_return(config)
     allow(subject).to receive(:config_yaml).and_return(double(dirname: __dir__))
     allow(subject).to receive_message_chain("cluster_manager.disconnect")
+    allow($stdin).to receive(:tty?).and_return(true)
   end
 
   describe '#execute' do
