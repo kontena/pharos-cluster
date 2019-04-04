@@ -86,7 +86,7 @@ kubernetes   ClusterIP      172.32.0.1      <none>            443/TCP        4m4
 nginx        LoadBalancer   172.32.34.151   192.168.110.110   80:30464/TCP   11s
 ```
 
-We cna use the service address directly to access our Nginx deployment:
+We can use the service address directly to access our Nginx deployment:
 ```sh
 $ curl 192.168.110.110
 <!DOCTYPE html>
