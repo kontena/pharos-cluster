@@ -7,6 +7,7 @@
 
 set -e
 
+yum_install_with_lock "kubelet" "$KUBE_VERSION"
 yum_install_with_lock "kubectl" "$KUBE_VERSION"
 yum_install_with_lock "kubeadm" "$KUBE_VERSION"
 
