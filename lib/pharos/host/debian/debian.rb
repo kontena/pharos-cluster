@@ -9,11 +9,6 @@ module Pharos
         )
       end
 
-      def configure_repos
-        exec_script('repos/kube.sh')
-        exec_script('repos/update.sh')
-      end
-
       def configure_netfilter
         exec_script('configure-netfilter.sh')
       end
@@ -59,6 +54,7 @@ module Pharos
         host_repositories.each do |repo|
           repo_path = "/etc/apt/sources.list.d/#{repo.name}"
           next if transport.file(repo_path).exist?
+
           transport.exec!("curl -fsSL #{repo.key} | apt-key add -")
           transport.file(repo_path).write(repo.contents)
         end

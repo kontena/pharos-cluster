@@ -74,6 +74,19 @@ describe Pharos::CommandOptions::LoadConfig do
         expect(subject.config.hosts.last.worker?).to be_truthy
       end
     end
+
+    context 'repos configured' do
+      let(:arguments) { ["--config=#{fixtures_path('cluster_with_repos.yml')}"] }
+
+      it 'loads host with repos' do
+        expect(subject.config.hosts[0].repositories.size).to eq 1
+        repo = subject.config.hosts[0].repositories[0]
+        expect(repo.key).to eq("URL_TO_KEY")
+        expect(repo.name).to eq("test")
+        expect(repo.contents).to eq("REPO_CONTENTS\n")
+      end
+    end
+
   end
 
   describe '#cluster_manager' do

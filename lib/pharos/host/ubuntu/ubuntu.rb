@@ -80,6 +80,7 @@ module Pharos
         host_repositories.each do |repo|
           repo_path = "/etc/apt/sources.list.d/#{repo.name}"
           next if transport.file(repo_path).exist?
+
           transport.exec!("curl -fsSL #{repo.key} | apt-key add -")
           transport.file(repo_path).write(repo.contents)
         end
