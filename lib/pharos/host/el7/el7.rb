@@ -36,7 +36,7 @@ module Pharos
             gpgcheck=0
             repo_gpgcheck=1
             enabled=1
-            gpgkey=#{repo.key}
+            gpgkey=https://bintray-pk.pharos.sh?username=bintray
           CONTENTS
         )]
       end
