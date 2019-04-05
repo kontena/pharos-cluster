@@ -86,6 +86,17 @@ module Pharos
         abstract_method!
       end
 
+      # @return [Array<Pharos::Config::Repository>]
+      def default_repositories
+        abstract_method!
+      end
+
+      # @return [Array<Pharos::Config::Repository>]
+      def host_repositories
+        return host.repositories if !host.repositories.nil? && host.repositories.empty?
+        return default_repositories
+      end
+
       # @param path [Array]
       # @return [String]
       def script_path(*path)

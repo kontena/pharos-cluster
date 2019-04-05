@@ -79,6 +79,14 @@ module Pharos
           CRIO_VERSION: CRIO_VERSION
         )
       end
+
+      def default_repositories
+        return [Pharos::Configuration::Repository.new(
+          name: "pharos-kubernetes.list",
+          key: "https://bintray-pk.pharos.sh/?username=bintray",
+          contents: "deb https://dl.bintray.com/kontena/pharos-debian stretch main\n"
+        )]
+      end
     end
   end
 end

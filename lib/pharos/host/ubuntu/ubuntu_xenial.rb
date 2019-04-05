@@ -25,10 +25,10 @@ module Pharos
         enabled: proc { |c| !c.etcd&.endpoints }
       )
 
-      def configure_repos
-        exec_script("repos/pharos_xenial.sh")
-        exec_script('repos/update.sh')
-      end
+      # def configure_repos
+      #   exec_script("repos/pharos_xenial.sh")
+      #   exec_script('repos/update.sh')
+      # end
 
       def configure_container_runtime
         if docker?
@@ -65,6 +65,14 @@ module Pharos
           "reset.sh",
           CRIO_VERSION: CRIO_VERSION
         )
+      end
+
+      def default_repositories
+        return [Pharos::Configuration::Repository.new(
+          name: "pharos-kubernetes.list",
+          key: "https://bintray-pk.pharos.sh/?username=bintray",
+          contents: "deb https://dl.bintray.com/kontena/pharos-debian xenial main\n"
+        )]
       end
     end
   end

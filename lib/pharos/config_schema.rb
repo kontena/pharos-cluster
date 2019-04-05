@@ -106,6 +106,13 @@ module Pharos
                 optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
                 optional(:ssh_proxy_command).filled(:str?)
               end
+              optional(:repositories).each do
+                schema do
+                  required(:name).filled(:str?)
+                  required(:contents).filled(:str?)
+                  optional(:key).filled(:str?)
+                end
+              end
             end
           end
         end
