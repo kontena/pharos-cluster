@@ -25,11 +25,6 @@ module Pharos
         enabled: proc { |c| !c.etcd&.endpoints }
       )
 
-      # def configure_repos
-      #   exec_script("repos/pharos_bionic.sh")
-      #   exec_script('repos/update.sh')
-      # end
-
       # @return [Array<String>]
       def kubelet_args
         kubelet_args = super

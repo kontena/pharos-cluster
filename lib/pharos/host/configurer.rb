@@ -93,9 +93,9 @@ module Pharos
 
       # @return [Array<Pharos::Config::Repository>]
       def host_repositories
-        return host.repositories if !host.repositories.nil? && host.repositories.empty?
+        return default_repositories if host.repositories.nil? || host.repositories.empty?
 
-        default_repositories
+        host.repositories
       end
 
       # @param path [Array]

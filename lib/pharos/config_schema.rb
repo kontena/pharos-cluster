@@ -110,7 +110,7 @@ module Pharos
                 schema do
                   required(:name).filled(:str?)
                   required(:contents).filled(:str?)
-                  optional(:key).filled(:str?)
+                  optional(:key_url).filled(:str?)
                 end
               end
             end
