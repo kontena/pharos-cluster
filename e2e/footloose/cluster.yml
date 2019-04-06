@@ -1,0 +1,13 @@
+hosts:
+  - address: localhost
+    private_interface: eth0
+    user: root
+    ssh_key_path: ./cluster-key
+    ssh_port: 2222
+    role: master
+    taints: []
+telemetry:
+  enabled: false
+kubelet:
+  extra_args:
+   - "--fail-swap-on=false"
