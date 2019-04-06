@@ -18,6 +18,3 @@ machines:
     - type: bind
       source: /lib/modules
       destination: /lib/modules
-    - type: bind
-      source: /proc/swaps
-      destination: /proc/swaps
