@@ -190,6 +190,7 @@ module Pharos
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
           optional(:feature_gates).filled
+          optional(:extra_args).each(type?: String)
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
