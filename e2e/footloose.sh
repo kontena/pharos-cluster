@@ -12,4 +12,4 @@ docker build -t footloose:bionic .
 footloose create
 popd
 
-bundle exec bin/pharos -c e2e/footloose/cluster.yml
+bundle exec bin/pharos up -c e2e/footloose/cluster.yml
