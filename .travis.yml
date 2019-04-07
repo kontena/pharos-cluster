@@ -13,68 +13,73 @@ stages:
 jobs:
   include:
     - stage: e2e
-      name: "e2e: docker with weave"
-      script: ./e2e/travis.sh
+      name: "e2e: footloose bionic"
+      script: ./e2e/footloose.sh
       rvm: 2.5.4
       dist: xenial
-      env:
-        - CONTAINER_RUNTIME=docker
-        - NETWORK_PROVIDER=weave
-    - stage: e2e
-      name: "e2e: docker with calico"
-      script: ./e2e/travis.sh
-      rvm: 2.5.4
-      dist: xenial
-      env:
-        - CONTAINER_RUNTIME=docker
-        - NETWORK_PROVIDER=calico
-    - stage: e2e
-      name: "e2e: cri-o with weave"
-      script: ./e2e/travis.sh
-      rvm: 2.5.4
-      dist: xenial
-      env:
-        - CONTAINER_RUNTIME=cri-o
-        - NETWORK_PROVIDER=weave
-    - stage: e2e
-      name: "e2e: cri-o with calico"
-      script: ./e2e/travis.sh
-      rvm: 2.5.4
-      dist: xenial
-      env:
-        - CONTAINER_RUNTIME=cri-o
-        - NETWORK_PROVIDER=calico
-    - stage: publish binary
-      script: ./build/travis/macos.sh
-      os: osx
-      install: ls -l
-      deploy:
-        provider: s3
-        access_key_id:
-          secure: "OHjLg4bzJBUdwmw42XK5s/+5tHUy7SO32/NzV5qCETIw+lr0lEhHIUeGUDGEqsMKvB3X1rIyFhhYJcRUCkJHfDUM2uRyIxYl/HUNNHCnZttwBHsn517Wt8sSzx5mSHuqXl54hoI47vvx0yfKrvW70/AF0aNufEde5tQePzsgghZ0FIPKx29CiG0QAufTgJ3B3tXJtDywDXO6kyQmmpjSTO+Rne8YEx4MvyoGH1DhHiiSsggSMrYUy80mZP967AvQ6cCQNS7d9A1ThNjJVNGQ9jzTGW8vWRsvI1Y5583sWwAwVbKSYtcaO2t5IC1q62PnYu9xVyy6D5QZ4uJ4jQk8at00348nj059CosNEE9IdqRaTJi5TIiX9H1nU8y3P/c/2dYpsQIKch0Ji/cQhl4RCe+QQuOpCzggElf8GeD/tg9GJFhX+uPPWFJMl4zvrH5EascRm+PHJsr7UFL0Lv4Q0x85qdCa/0Oh1XA+f+WaLpSkUUiLUUB27+2dLupD3VyuSZ0IferiDHHgIG0teXoSvI6hgSBg85ZYZKls72seTuGG0icrn+U/iz+7ywtaaS5yVmrelUiYq4ElZr3N9SPaWUxUGXo734B60AIJ9dPQQJY8e+TJ2jjX3OCAd//Z3Kh2+O+nbcHUUMY4OfUVp4wcRy2LKlNqPC5DevZij2uVmKM="
-        secret_access_key:
-          secure: "HCnQTlTJ3jo4oX2ZLXZUUWHOL7yiV/z2dVNTmiQYGJ8Xsf34zLnwRvPTymq4nA7elCmO0J6G2ub1wqBLZqyYHhbhI//9txPpRJmgFf7C3R0c9j5HRG2lxRJ8PNHuOzT5e2Zx1Aq9Aawy2+zXTuNMnTF0gtXg2tO3oHzs2h99mk5qeoLDAbu1HUd+W7ymalbhw+GH3D6X4mHuv/AUowOJuieIMpg/FPvu0/SXh4/KpSV54hlfSDYIqaBlMDxdAJsoJi/tKBegNMkLeXyaFf9PYF6U83P8RABdBkhinatN0b6EJB21mmaRkfVam4gNhEgB+SobZVelmLLAsTZU9kEkt2V4zBgUYUbNI32ZXMhMFsOZtPfInbGAzqZPmKGRh39yFnN92uQjxWJXocGFrk43K3d2lviAntP05+xPpBjO4CDXuC8mqyRZf6vg/Cysu3OuxrUGMru0EHePG6DZDcH8yNq7GcBbarA5+w+hupnfHD8SoRtnSuyPdyPsjGb25vikkgeLN8J8d2FxcUH9NBgeBJXhMcXCKCxmIgCcMtJ1NElip6MktTYMl2nkxDmgpPljUG0QL95fVq88jwWhyxTvpASJvUSDbq0AUWNP5xJ4R+4vlWkSkVrtLhn4IaJ4ou6PATmgzyaw+0EG4JeAT2TfP8z6ILv5NNb/4YThwg08fVA="
-        bucket: "pharos-cluster-binaries"
-        region: "eu-west-1"
-        local-dir: upload
-        skip_cleanup: true
-        on:
-          all_branches: true
-    - stage: publish binary
-      script: ./build/travis/macos_oss.sh
-      os: osx
-      install: ls -l
-      env:
-        - secure: "FLhmFZTMyXwngw9dZgi5X2I+6z5RwjMO0x+MeqG1ujniFEloONUsJHxSu7al9KPQECp9fZC4+GewaR088PXd00bCGYVvSiIn+S+ZbNqkOtv0QFPllvZooTZtMS+inqocr6pv4BJfALytcZQuaKrJ6iVdN7bu62n3/IBDfyvtBZYnWakeVe2k1mW1XUld/YuCjHe7wRFfAMOYu4+9LAhFyJgrpPRkhPMXkuvYaxGoeqcamc5AbMrRnDapTkLJBUc1TlmSY0wMEAhX4+yL8zehihEU6wGq05BGNfigJIpQkuj62zmQZdZkE3y9x4DGZauPDXNPhyYWqdxRm3KExHhJwLrY6d4L8l6snYAG7STPIziqNfotPzcTvM5/hhUkD65JpxO7rNq7BcYjV2fYfN8IgAHR/+wgDo7p4v+Y7fh6QsJ1oOujTsvIZDRE/Ly/Q2CKsdY2HqJfoROWh8/NWBEGcx+aRQekj9h7jbLqpML2LNa8Y9FOx86GFOskEi8tPmZ+drokxhakd+P6pdfdzwjHr1RwOH9z115tkG0HDKk6WnjTosGctBrUSzQGozv5HHEU3hRdnLLgyLZKdr+GRa6jHCnP/8qq3DjXey7RGOXI/b1okhgnAOJK38do65UIaJncijmWOl0w0pfrRuk/KA5QhwUWJTf/VGnnGgYg/dF9xhY=" # GITHUB_TOKEN
-      deploy:
-        provider: s3
-        access_key_id:
-          secure: "OHjLg4bzJBUdwmw42XK5s/+5tHUy7SO32/NzV5qCETIw+lr0lEhHIUeGUDGEqsMKvB3X1rIyFhhYJcRUCkJHfDUM2uRyIxYl/HUNNHCnZttwBHsn517Wt8sSzx5mSHuqXl54hoI47vvx0yfKrvW70/AF0aNufEde5tQePzsgghZ0FIPKx29CiG0QAufTgJ3B3tXJtDywDXO6kyQmmpjSTO+Rne8YEx4MvyoGH1DhHiiSsggSMrYUy80mZP967AvQ6cCQNS7d9A1ThNjJVNGQ9jzTGW8vWRsvI1Y5583sWwAwVbKSYtcaO2t5IC1q62PnYu9xVyy6D5QZ4uJ4jQk8at00348nj059CosNEE9IdqRaTJi5TIiX9H1nU8y3P/c/2dYpsQIKch0Ji/cQhl4RCe+QQuOpCzggElf8GeD/tg9GJFhX+uPPWFJMl4zvrH5EascRm+PHJsr7UFL0Lv4Q0x85qdCa/0Oh1XA+f+WaLpSkUUiLUUB27+2dLupD3VyuSZ0IferiDHHgIG0teXoSvI6hgSBg85ZYZKls72seTuGG0icrn+U/iz+7ywtaaS5yVmrelUiYq4ElZr3N9SPaWUxUGXo734B60AIJ9dPQQJY8e+TJ2jjX3OCAd//Z3Kh2+O+nbcHUUMY4OfUVp4wcRy2LKlNqPC5DevZij2uVmKM="
-        secret_access_key:
-          secure: "HCnQTlTJ3jo4oX2ZLXZUUWHOL7yiV/z2dVNTmiQYGJ8Xsf34zLnwRvPTymq4nA7elCmO0J6G2ub1wqBLZqyYHhbhI//9txPpRJmgFf7C3R0c9j5HRG2lxRJ8PNHuOzT5e2Zx1Aq9Aawy2+zXTuNMnTF0gtXg2tO3oHzs2h99mk5qeoLDAbu1HUd+W7ymalbhw+GH3D6X4mHuv/AUowOJuieIMpg/FPvu0/SXh4/KpSV54hlfSDYIqaBlMDxdAJsoJi/tKBegNMkLeXyaFf9PYF6U83P8RABdBkhinatN0b6EJB21mmaRkfVam4gNhEgB+SobZVelmLLAsTZU9kEkt2V4zBgUYUbNI32ZXMhMFsOZtPfInbGAzqZPmKGRh39yFnN92uQjxWJXocGFrk43K3d2lviAntP05+xPpBjO4CDXuC8mqyRZf6vg/Cysu3OuxrUGMru0EHePG6DZDcH8yNq7GcBbarA5+w+hupnfHD8SoRtnSuyPdyPsjGb25vikkgeLN8J8d2FxcUH9NBgeBJXhMcXCKCxmIgCcMtJ1NElip6MktTYMl2nkxDmgpPljUG0QL95fVq88jwWhyxTvpASJvUSDbq0AUWNP5xJ4R+4vlWkSkVrtLhn4IaJ4ou6PATmgzyaw+0EG4JeAT2TfP8z6ILv5NNb/4YThwg08fVA="
-        bucket: "pharos-cluster-binaries"
-        region: "eu-west-1"
-        local-dir: upload
-        skip_cleanup: true
-        on:
-          all_branches: true
+    # - stage: e2e
+    #   name: "e2e: docker with weave"
+    #   script: ./e2e/travis.sh
+    #   rvm: 2.5.4
+    #   dist: xenial
+    #   env:
+    #     - CONTAINER_RUNTIME=docker
+    #     - NETWORK_PROVIDER=weave
+    # - stage: e2e
+    #   name: "e2e: docker with calico"
+    #   script: ./e2e/travis.sh
+    #   rvm: 2.5.4
+    #   dist: xenial
+    #   env:
+    #     - CONTAINER_RUNTIME=docker
+    #     - NETWORK_PROVIDER=calico
+    # - stage: e2e
+    #   name: "e2e: cri-o with weave"
+    #   script: ./e2e/travis.sh
+    #   rvm: 2.5.4
+    #   dist: xenial
+    #   env:
+    #     - CONTAINER_RUNTIME=cri-o
+    #     - NETWORK_PROVIDER=weave
+    # - stage: e2e
+    #   name: "e2e: cri-o with calico"
+    #   script: ./e2e/travis.sh
+    #   rvm: 2.5.4
+    #   dist: xenial
+    #   env:
+    #     - CONTAINER_RUNTIME=cri-o
+    #     - NETWORK_PROVIDER=calico
+    # - stage: publish binary
+    #   script: ./build/travis/macos.sh
+    #   os: osx
+    #   install: ls -l
+    #   deploy:
+    #     provider: s3
+    #     access_key_id:
+    #       secure: "OHjLg4bzJBUdwmw42XK5s/+5tHUy7SO32/NzV5qCETIw+lr0lEhHIUeGUDGEqsMKvB3X1rIyFhhYJcRUCkJHfDUM2uRyIxYl/HUNNHCnZttwBHsn517Wt8sSzx5mSHuqXl54hoI47vvx0yfKrvW70/AF0aNufEde5tQePzsgghZ0FIPKx29CiG0QAufTgJ3B3tXJtDywDXO6kyQmmpjSTO+Rne8YEx4MvyoGH1DhHiiSsggSMrYUy80mZP967AvQ6cCQNS7d9A1ThNjJVNGQ9jzTGW8vWRsvI1Y5583sWwAwVbKSYtcaO2t5IC1q62PnYu9xVyy6D5QZ4uJ4jQk8at00348nj059CosNEE9IdqRaTJi5TIiX9H1nU8y3P/c/2dYpsQIKch0Ji/cQhl4RCe+QQuOpCzggElf8GeD/tg9GJFhX+uPPWFJMl4zvrH5EascRm+PHJsr7UFL0Lv4Q0x85qdCa/0Oh1XA+f+WaLpSkUUiLUUB27+2dLupD3VyuSZ0IferiDHHgIG0teXoSvI6hgSBg85ZYZKls72seTuGG0icrn+U/iz+7ywtaaS5yVmrelUiYq4ElZr3N9SPaWUxUGXo734B60AIJ9dPQQJY8e+TJ2jjX3OCAd//Z3Kh2+O+nbcHUUMY4OfUVp4wcRy2LKlNqPC5DevZij2uVmKM="
+    #     secret_access_key:
+    #       secure: "HCnQTlTJ3jo4oX2ZLXZUUWHOL7yiV/z2dVNTmiQYGJ8Xsf34zLnwRvPTymq4nA7elCmO0J6G2ub1wqBLZqyYHhbhI//9txPpRJmgFf7C3R0c9j5HRG2lxRJ8PNHuOzT5e2Zx1Aq9Aawy2+zXTuNMnTF0gtXg2tO3oHzs2h99mk5qeoLDAbu1HUd+W7ymalbhw+GH3D6X4mHuv/AUowOJuieIMpg/FPvu0/SXh4/KpSV54hlfSDYIqaBlMDxdAJsoJi/tKBegNMkLeXyaFf9PYF6U83P8RABdBkhinatN0b6EJB21mmaRkfVam4gNhEgB+SobZVelmLLAsTZU9kEkt2V4zBgUYUbNI32ZXMhMFsOZtPfInbGAzqZPmKGRh39yFnN92uQjxWJXocGFrk43K3d2lviAntP05+xPpBjO4CDXuC8mqyRZf6vg/Cysu3OuxrUGMru0EHePG6DZDcH8yNq7GcBbarA5+w+hupnfHD8SoRtnSuyPdyPsjGb25vikkgeLN8J8d2FxcUH9NBgeBJXhMcXCKCxmIgCcMtJ1NElip6MktTYMl2nkxDmgpPljUG0QL95fVq88jwWhyxTvpASJvUSDbq0AUWNP5xJ4R+4vlWkSkVrtLhn4IaJ4ou6PATmgzyaw+0EG4JeAT2TfP8z6ILv5NNb/4YThwg08fVA="
+    #     bucket: "pharos-cluster-binaries"
+    #     region: "eu-west-1"
+    #     local-dir: upload
+    #     skip_cleanup: true
+    #     on:
+    #       all_branches: true
+    # - stage: publish binary
+    #   script: ./build/travis/macos_oss.sh
+    #   os: osx
+    #   install: ls -l
+    #   env:
+    #     - secure: "FLhmFZTMyXwngw9dZgi5X2I+6z5RwjMO0x+MeqG1ujniFEloONUsJHxSu7al9KPQECp9fZC4+GewaR088PXd00bCGYVvSiIn+S+ZbNqkOtv0QFPllvZooTZtMS+inqocr6pv4BJfALytcZQuaKrJ6iVdN7bu62n3/IBDfyvtBZYnWakeVe2k1mW1XUld/YuCjHe7wRFfAMOYu4+9LAhFyJgrpPRkhPMXkuvYaxGoeqcamc5AbMrRnDapTkLJBUc1TlmSY0wMEAhX4+yL8zehihEU6wGq05BGNfigJIpQkuj62zmQZdZkE3y9x4DGZauPDXNPhyYWqdxRm3KExHhJwLrY6d4L8l6snYAG7STPIziqNfotPzcTvM5/hhUkD65JpxO7rNq7BcYjV2fYfN8IgAHR/+wgDo7p4v+Y7fh6QsJ1oOujTsvIZDRE/Ly/Q2CKsdY2HqJfoROWh8/NWBEGcx+aRQekj9h7jbLqpML2LNa8Y9FOx86GFOskEi8tPmZ+drokxhakd+P6pdfdzwjHr1RwOH9z115tkG0HDKk6WnjTosGctBrUSzQGozv5HHEU3hRdnLLgyLZKdr+GRa6jHCnP/8qq3DjXey7RGOXI/b1okhgnAOJK38do65UIaJncijmWOl0w0pfrRuk/KA5QhwUWJTf/VGnnGgYg/dF9xhY=" # GITHUB_TOKEN
+    #   deploy:
+    #     provider: s3
+    #     access_key_id:
+    #       secure: "OHjLg4bzJBUdwmw42XK5s/+5tHUy7SO32/NzV5qCETIw+lr0lEhHIUeGUDGEqsMKvB3X1rIyFhhYJcRUCkJHfDUM2uRyIxYl/HUNNHCnZttwBHsn517Wt8sSzx5mSHuqXl54hoI47vvx0yfKrvW70/AF0aNufEde5tQePzsgghZ0FIPKx29CiG0QAufTgJ3B3tXJtDywDXO6kyQmmpjSTO+Rne8YEx4MvyoGH1DhHiiSsggSMrYUy80mZP967AvQ6cCQNS7d9A1ThNjJVNGQ9jzTGW8vWRsvI1Y5583sWwAwVbKSYtcaO2t5IC1q62PnYu9xVyy6D5QZ4uJ4jQk8at00348nj059CosNEE9IdqRaTJi5TIiX9H1nU8y3P/c/2dYpsQIKch0Ji/cQhl4RCe+QQuOpCzggElf8GeD/tg9GJFhX+uPPWFJMl4zvrH5EascRm+PHJsr7UFL0Lv4Q0x85qdCa/0Oh1XA+f+WaLpSkUUiLUUB27+2dLupD3VyuSZ0IferiDHHgIG0teXoSvI6hgSBg85ZYZKls72seTuGG0icrn+U/iz+7ywtaaS5yVmrelUiYq4ElZr3N9SPaWUxUGXo734B60AIJ9dPQQJY8e+TJ2jjX3OCAd//Z3Kh2+O+nbcHUUMY4OfUVp4wcRy2LKlNqPC5DevZij2uVmKM="
+    #     secret_access_key:
+    #       secure: "HCnQTlTJ3jo4oX2ZLXZUUWHOL7yiV/z2dVNTmiQYGJ8Xsf34zLnwRvPTymq4nA7elCmO0J6G2ub1wqBLZqyYHhbhI//9txPpRJmgFf7C3R0c9j5HRG2lxRJ8PNHuOzT5e2Zx1Aq9Aawy2+zXTuNMnTF0gtXg2tO3oHzs2h99mk5qeoLDAbu1HUd+W7ymalbhw+GH3D6X4mHuv/AUowOJuieIMpg/FPvu0/SXh4/KpSV54hlfSDYIqaBlMDxdAJsoJi/tKBegNMkLeXyaFf9PYF6U83P8RABdBkhinatN0b6EJB21mmaRkfVam4gNhEgB+SobZVelmLLAsTZU9kEkt2V4zBgUYUbNI32ZXMhMFsOZtPfInbGAzqZPmKGRh39yFnN92uQjxWJXocGFrk43K3d2lviAntP05+xPpBjO4CDXuC8mqyRZf6vg/Cysu3OuxrUGMru0EHePG6DZDcH8yNq7GcBbarA5+w+hupnfHD8SoRtnSuyPdyPsjGb25vikkgeLN8J8d2FxcUH9NBgeBJXhMcXCKCxmIgCcMtJ1NElip6MktTYMl2nkxDmgpPljUG0QL95fVq88jwWhyxTvpASJvUSDbq0AUWNP5xJ4R+4vlWkSkVrtLhn4IaJ4ou6PATmgzyaw+0EG4JeAT2TfP8z6ILv5NNb/4YThwg08fVA="
+    #     bucket: "pharos-cluster-binaries"
+    #     region: "eu-west-1"
+    #     local-dir: upload
+    #     skip_cleanup: true
+    #     on:
+    #       all_branches: true

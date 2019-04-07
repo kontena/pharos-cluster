@@ -18,3 +18,17 @@ machines:
     - type: bind
       source: /lib/modules
       destination: /lib/modules
+- count: 1
+  spec:
+    image: footloose:bionic
+    name: pharos-worker%d
+    portMappings:
+    - containerPort: 22
+      hostPort: 2223
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
+    - type: bind
+      source: /lib/modules
+      destination: /lib/modules
