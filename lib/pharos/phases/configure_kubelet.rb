@@ -10,6 +10,10 @@ module Pharos
       )
 
       register_component(
+        name: 'kubernetes-cni', version: Pharos::CNI_VERSION, license: 'Apache License 2.0'
+      )
+
+      register_component(
         name: 'coredns', version: Pharos::COREDNS_VERSION, license: 'Apache License 2.0'
       )
 
