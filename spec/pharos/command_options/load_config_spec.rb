@@ -81,7 +81,7 @@ describe Pharos::CommandOptions::LoadConfig do
       it 'loads host with repos' do
         expect(subject.config.hosts[0].repositories.size).to eq 1
         repo = subject.config.hosts[0].repositories[0]
-        expect(repo.key).to eq("URL_TO_KEY")
+        expect(repo.key_url).to eq("URL_TO_KEY")
         expect(repo.name).to eq("test")
         expect(repo.contents).to eq("REPO_CONTENTS\n")
       end

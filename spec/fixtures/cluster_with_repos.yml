@@ -3,6 +3,6 @@ hosts:
     role: master
     repositories:
     - name: test
-      key: URL_TO_KEY
+      key_url: URL_TO_KEY
       contents:  |
         REPO_CONTENTS
