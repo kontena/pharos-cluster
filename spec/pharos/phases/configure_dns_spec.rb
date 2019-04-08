@@ -18,6 +18,7 @@ describe Pharos::Phases::ConfigureDNS do
   before do
     allow(master).to receive(:cpu_arch).and_return(cpu_arch)
     allow(subject).to receive(:deploy_node_dns_cache)
+    allow(subject).to receive(:verify_version)
   end
 
   subject { described_class.new(master, config: config) }
