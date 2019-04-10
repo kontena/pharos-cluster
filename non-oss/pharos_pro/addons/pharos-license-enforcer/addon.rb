@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'pharos-license-enforcer' do
-  version '0.3.0'
+  version '0.3.1'
   license 'Kontena License'
 
   enable!
