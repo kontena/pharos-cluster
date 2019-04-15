@@ -38,7 +38,7 @@ module Pharos
       end
 
       def local?
-        return false if ssh_key_path || ssh_port || user
+        return false if ssh_key_path || user
 
         ip_address = Resolv.getaddress(address)
         IPAddr.new(ip_address).loopback?
