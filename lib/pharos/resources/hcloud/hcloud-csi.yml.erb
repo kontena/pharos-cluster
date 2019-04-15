@@ -175,6 +175,9 @@ spec:
     spec:
       serviceAccount: hcloud-csi
       hostNetwork: true
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          effect: NoSchedule
       containers:
         - name: csi-node-driver-registrar
           image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.1
