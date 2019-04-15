@@ -10,6 +10,7 @@ module Pharos
 
     option '--subscription-token', '[TOKEN]', 'pharos license subscription token'
     option '--cluster-id', '[ID]', 'pharos cluster id'
+    option '--cluster-info', :flag, "output cluster information only", attribute_name: :print_cluster_info
 
     def prepare_config
       return if @prepared_config
@@ -33,6 +34,11 @@ module Pharos
     end
 
     def execute
+      if print_cluster_info?
+        puts cluster_info
+        return
+      end
+
       puts [license_type, owner, valid_until, contact_note].compact
 
       exit 1 unless valid?
@@ -105,6 +111,10 @@ module Pharos
       return if license_key.nil?
 
       "Licensed to #{license_key.owner.cyan}"
+    end
+
+    def cluster_info
+      "Cluster ID: #{cluster_id.cyan}\nCluster name: #{load_config.name.cyan}"
     end
 
     def contact_note

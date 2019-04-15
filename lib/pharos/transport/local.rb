@@ -3,8 +3,8 @@
 module Pharos
   module Transport
     class Local < Base
-      def gateway
-        raise TypeError, "Non-SSH connections do not provide an ssh gateway"
+      def forward
+        raise TypeError, "Non-SSH connections do not provide port forwarding"
       end
 
       def connect(**_options)

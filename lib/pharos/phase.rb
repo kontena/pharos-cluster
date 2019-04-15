@@ -36,30 +36,33 @@ module Pharos
       @host.transport
     end
 
-    FORMATTER_COLOR = proc do |severity, _datetime, progname, msg|
-      message = Pharos::Logging.format_exception(msg, severity)
+    FORMATTER_COLOR = proc do |severity, _datetime, hostname, msg|
+      message = msg.is_a?(Exception) ? Pharos::Logging.format_exception(msg, severity) : msg
+
       color = case severity
               when "DEBUG" then :dim
               when "INFO" then :to_s
               when "WARN" then :yellow
               else :red
               end
-      "    [%<progname>s] %<msg>s\n" % { progname: progname.send(color), msg: message }
+
+      message.gsub(/^/m) { "    [#{hostname.send(color)}] " } + "\n"
     end
 
-    FORMATTER_NO_COLOR = proc do |severity, _datetime, progname, msg|
-      message = Pharos::Logging.format_exception(msg, severity)
+    FORMATTER_NO_COLOR = proc do |severity, _datetime, hostname, msg|
+      message = msg.is_a?(Exception) ? Pharos::Logging.format_exception(msg, severity) : msg
+
       if severity == "INFO"
-        "    [%<progname>s] %<msg>s\n" % { progname: progname, msg: message }
+        message.gsub(/^/m) { "    [#{hostname}] " } + "\n"
       else
-        "    [%<progname>s] [%<severity>s] %<msg>s\n" % { progname: progname, severity: severity, msg: message }
+        message.gsub(/^/m) { "    [#{hostname}] [#{severity}] " } + "\n"
       end
     end
 
     def logger
       @logger ||= Logger.new($stdout).tap do |logger|
         logger.progname = @host.to_s
-        logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
+        logger.level = Pharos::Logging.log_level
         logger.formatter = Pharos::CoreExt::Colorize.enabled? ? FORMATTER_COLOR : FORMATTER_NO_COLOR
       end
     end

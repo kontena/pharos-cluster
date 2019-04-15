@@ -45,7 +45,7 @@ module Pharos
           exec_script(
             'kubeadm-init.sh',
             CONFIG: tmp_file,
-            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
+            UNSET_PROXY: @config.control_plane&.use_proxy ? 'false' : 'true'
           )
         end
 
@@ -65,7 +65,7 @@ module Pharos
           exec_script(
             'kubeadm-renew-certs.sh',
             CONFIG: tmp_file,
-            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
+            UNSET_PROXY: @config.control_plane&.use_proxy ? 'false' : 'true'
           )
         end
 
@@ -77,7 +77,7 @@ module Pharos
           exec_script(
             'kubeadm-reconfigure.sh',
             CONFIG: tmp_file,
-            SKIP_UNSET_PROXY: @config.control_plane&.use_proxy ? 'true' : 'false'
+            UNSET_PROXY: @config.control_plane&.use_proxy ? 'false' : 'true'
           )
         end
       end

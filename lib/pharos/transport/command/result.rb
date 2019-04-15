@@ -115,14 +115,8 @@ module Pharos
 
         private
 
-        if !ENV['DEBUG'].to_s.empty?
-          def debug(&block)
-            instance_exec(&block)
-          end
-        else
-          def debug(&_block)
-            nil
-          end
+        def debug(&block)
+          Pharos::Logging.debug? ? instance_exec(&block) : nil
         end
 
         def synchronize(&block)
@@ -130,7 +124,7 @@ module Pharos
         end
 
         def initialize_debug
-          return if ENV['DEBUG'].to_s.empty?
+          return unless Pharos::Logging.debug?
 
           @debug_prefix = "    #{"#{hostname}:".dim} "
         end

@@ -10,6 +10,10 @@ module Pharos
       )
 
       register_component(
+        name: 'kubernetes-cni', version: Pharos::CNI_VERSION, license: 'Apache License 2.0'
+      )
+
+      register_component(
         name: 'coredns', version: Pharos::COREDNS_VERSION, license: 'Apache License 2.0'
       )
 
@@ -62,6 +66,7 @@ module Pharos
         host_configurer.ensure_kubelet(
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          CNI_VERSION: Pharos::CNI_VERSION,
           ARCH: @host.cpu_arch.name,
           IMAGE_REPO: @config.image_repository
         )
@@ -83,6 +88,7 @@ module Pharos
         host_configurer.install_kube_packages(
           KUBE_VERSION: Pharos::KUBE_VERSION,
           KUBEADM_VERSION: Pharos::KUBEADM_VERSION,
+          CNI_VERSION: Pharos::CNI_VERSION,
           ARCH: @host.cpu_arch.name
         )
       end

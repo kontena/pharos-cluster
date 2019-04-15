@@ -140,11 +140,15 @@ module Pharos
 
       # @param config [Pharos::Config]
       def configure_internal_etcd(config)
+        # let's put locally running etcd peer first
+        # see: https://github.com/kubernetes/kubernetes/issues/72102
+        endpoints = ["https://localhost:2379"]
+        endpoints += @config.etcd_hosts.reject { |peer| peer == @host }.map { |h|
+          "https://#{@config.etcd_peer_address(h)}:2379"
+        }
         config['etcd'] = {
           'external' => {
-            'endpoints' => @config.etcd_hosts.map { |h|
-              "https://#{@config.etcd_peer_address(h)}:2379"
-            },
+            'endpoints' => endpoints,
             'certFile' => '/etc/pharos/pki/etcd/client.pem',
             'caFile' => '/etc/pharos/pki/ca.pem',
             'keyFile' => '/etc/pharos/pki/etcd/client-key.pem'

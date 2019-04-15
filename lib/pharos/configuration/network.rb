@@ -75,6 +75,7 @@ module Pharos
       attribute :dns_replicas, Pharos::Types::Integer
       attribute :service_cidr, Pharos::Types::String.default('10.96.0.0/12')
       attribute :pod_network_cidr, Pharos::Types::String.default('10.32.0.0/12')
+      attribute :node_local_dns_cache, Pharos::Types::Bool.default(true)
       attribute :firewalld, Firewalld
       attribute :weave, Weave
       attribute :calico, Calico

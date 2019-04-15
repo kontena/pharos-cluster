@@ -3,6 +3,7 @@
 require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
+require_relative '../transport'
 
 require 'ipaddr'
 require 'resolv'
@@ -18,6 +19,7 @@ module Pharos
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
+      attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
       attribute :ssh_proxy_command, Pharos::Types::Strict::String
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :environment, Pharos::Types::Strict::Hash

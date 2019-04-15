@@ -4,37 +4,35 @@ require 'logger'
 
 module Pharos
   module Logging
-    def self.format_exception(exc, severity = "ERROR")
-      return exc unless exc.is_a?(Exception)
-
-      if ENV["DEBUG"] || severity == "DEBUG"
-        message = exc.message.strip
-        backtrace = "\n    #{exc.backtrace.join("\n    ")}"
-      else
-        message = exc.message[/\A(.+?)$/m, 1]
-        backtrace = nil
-      end
-
-      "Error: #{message}#{backtrace}"
+    def self.debug?
+      !!@debug
     end
 
-    def self.initialize_logger(log_target = $stdout, log_level = Logger::INFO)
-      @logger = Logger.new(log_target)
-      @logger.progname = 'API'
-      @logger.level = ENV["DEBUG"] ? Logger::DEBUG : log_level
-      logger.formatter = proc do |severity, _datetime, _progname, msg|
-        "    %<msg>s\n" % { msg: Pharos::Logging.format_exception(msg, severity) }
+    def self.debug!
+      @debug = true
+    end
+
+    def self.format_exception(exc, severity = "ERROR")
+      if !ENV['DEBUG'].to_s.empty? || severity == "DEBUG"
+        backtrace = "\n    #{exc.backtrace.join("\n    ")}"
       end
 
-      @logger
+      "Error: #{exc.message.strip}#{backtrace}"
+    end
+
+    def self.log_level
+      @log_level ||= debug? ? Logger::DEBUG : Logger::INFO
     end
 
     def self.logger
-      defined?(@logger) ? @logger : initialize_logger
-    end
-
-    def self.logger=(log)
-      @logger = log || Logger.new('/dev/null')
+      @logger ||= Logger.new($stdout).tap do |logger|
+        logger.progname = 'API'
+        logger.level = Pharos::Logging.log_level
+        logger.formatter = proc do |severity, _datetime, _progname, msg|
+          message = msg.is_a?(Exception) ? Pharos::Logging.format_exception(msg, severity) : msg
+          "    %<msg>s\n" % { msg: message }
+        end
+      end
     end
 
     def logger
