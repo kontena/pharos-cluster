@@ -38,6 +38,8 @@ module Pharos
       end
 
       def local?
+        return false if ssh_key_path || user
+
         ip_address = Resolv.getaddress(address)
         IPAddr.new(ip_address).loopback?
       rescue Resolv::ResolvError, IPAddr::InvalidAddressError
