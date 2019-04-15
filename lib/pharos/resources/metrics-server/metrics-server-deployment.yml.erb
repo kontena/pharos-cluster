@@ -29,7 +29,7 @@ spec:
         command:
         - /metrics-server
         - --logtostderr=true
-        - --kubelet-preferred-address-types=InternalIP
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP
         resources:
           requests:
             cpu: 10m
