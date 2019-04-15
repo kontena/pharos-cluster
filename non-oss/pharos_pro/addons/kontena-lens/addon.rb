@@ -208,7 +208,7 @@ Pharos.addon 'kontena-lens' do
   # @param cluster_url [String]
   # @return [K8s::Resource]
   def update_configmap(name, cluster_url)
-    configmap.data.clusterName = new_name
+    configmap.data.clusterName = name
     configmap.data.clusterUrl = cluster_url
     kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').update_resource(configmap)
   end
