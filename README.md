@@ -1,6 +1,6 @@
 # Pharos Cluster
 
-[![Build Status](https://cloud-drone-07.kontena.io/api/badges/kontena/pharos-cluster/status.svg)](https://cloud-drone-07.kontena.io/kontena/pharos-cluster)
+[![Build Status](https://drone-1-0.hel-1.pharos.sh/api/badges/kontena/pharos-cluster/status.svg)](https://drone-1-0.hel-1.pharos.sh/kontena/pharos-cluster)
 [![Build Status](https://travis-ci.org/kontena/pharos-cluster.svg?branch=master)](https://travis-ci.org/kontena/pharos-cluster)
 [![Join the chat at https://slack.kontena.io](https://img.shields.io/badge/chat-on%20slack-green.svg?logo=slack&longCache=true&style=flat-square)](https://slack.kontena.io)
 
