@@ -183,7 +183,7 @@ module Pharos
           end
         end
         optional(:cloud).schema do
-          required(:provider).filled(:str?)
+          required(:provider).filled(included_in?: (Pharos::Configuration::Cloud.providers + ['external']))
           optional(:config).filled(:str?)
         end
         optional(:audit).schema do

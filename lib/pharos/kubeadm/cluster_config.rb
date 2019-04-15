@@ -60,14 +60,21 @@ module Pharos
           }
         }
 
+        feature_gates = {}
         if @config.control_plane&.feature_gates
-          feature_gates = @config.control_plane.feature_gates.map{ |k, v| "#{k}=#{v}" }.join(',')
+          feature_gates = @config.control_plane.feature_gates
+        end
+        if @config.cloud&.outtree_provider?
+          feature_gates.merge!(@config.cloud.cloud_provider.feature_gates)
+        end
+        unless feature_gates.empty?
+          feature_gates = feature_gates.map{ |k, v| "#{k}=#{v}" }.join(',')
           config['apiServer']['extraArgs']['feature-gates'] = feature_gates
           config['scheduler']['extraArgs']['feature-gates'] = feature_gates
           config['controllerManager']['extraArgs']['feature-gates'] = feature_gates
         end
 
-        if @config.cloud && @config.cloud.provider != 'external'
+        if @config.cloud&.intree_provider?
           config['apiServer']['extraArgs']['cloud-provider'] = @config.cloud.provider
           config['controllerManager']['extraArgs']['cloud-provider'] = @config.cloud.provider
           if @config.cloud.config
