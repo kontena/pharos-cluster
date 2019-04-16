@@ -27,7 +27,7 @@ module Pharos
           stack = Pharos::Kube::Stack.load("#{@config.cloud.provider}-cloud-config", @config.cloud.config)
           stack.apply(kube_client)
         end
-        apply_stack(@config.cloud.provider)
+        apply_stack(@config.cloud.provider, image_repository: @config.image_repository)
       end
     end
   end

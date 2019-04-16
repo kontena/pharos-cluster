@@ -19,7 +19,8 @@ describe Pharos::Configuration::Host do
           user: 'root'
         )
         expect(subject.labels).to eq({
-          'node-address.kontena.io/external-ip' => '192.168.100.100'
+          'node-address.kontena.io/external-ip' => '192.168.100.100',
+          'node-address.kontena.io/internal-ip' => '192.168.100.100'
         })
       end
 

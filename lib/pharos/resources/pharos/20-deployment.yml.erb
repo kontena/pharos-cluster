@@ -22,13 +22,20 @@ spec:
       hostNetwork: true
       containers:
       - name: pharos-cloud-controller
-        image: <%= image_repository %>/pharos-cloud-controller:<%= version %>
+        image: <%= image_repository %>/pharos-cloud-controller:0.1.0
         args:
-        - --cloud-provider=pharos
-        - --node-status-update-frequency=60s
-        - --allow-untagged-cloud
-        - --leader-elect=true
-        - --use-service-account-credentials
+          - --cloud-provider=pharos
+          - --node-status-update-frequency=60s
+          - --allow-untagged-cloud
+          - --leader-elect=true
+          - --use-service-account-credentials
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+          requests:
+            cpu: 50m
+            memory: 30Mi
       tolerations:
       # this is required so CCM can bootstrap itself
       - key: node.cloudprovider.kubernetes.io/uninitialized
@@ -39,6 +46,5 @@ spec:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       # this is to restrict CCM to only run on master nodes
-      # the node selector may vary depending on your cluster setup
       nodeSelector:
         node-role.kubernetes.io/master: ""
