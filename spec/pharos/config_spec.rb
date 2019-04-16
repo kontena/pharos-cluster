@@ -46,6 +46,20 @@ describe Pharos::Config do
       end
     end
 
+    context 'non unique ip' do
+      let(:hosts) { [
+        { 'address' => ' 192.0.2.1', 'role' => 'master' },
+        { 'address' => ' 192.0.2.1', 'role' => 'worker' }
+      ] }
+      it 'fails to load' do
+        expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
+          expect(exc.errors[:hosts]).to match hash_including(
+            0 => hash_including(address: array_including("is not unique")),
+            1 => hash_including(address: array_including("is not unique"))
+          )
+        end
+      end
+    end
 
     context 'without hosts' do
       let(:data) { {} }
