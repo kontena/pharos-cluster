@@ -16,7 +16,9 @@ fi
 
 firewall-cmd --permanent --add-service pharos-worker
 firewall-cmd --permanent --add-source ipset:pharos --zone trusted
-firewall-cmd --add-masquerade --permanent
+if firewall-cmd --query-masquerade > /dev/null 2>&1 ; then
+    firewall-cmd --remove-masquerade --permanent
+fi
 
 if [[ "${RELOAD}" = "true" ]]; then
     firewall-cmd --reload
