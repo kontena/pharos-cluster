@@ -15,7 +15,10 @@ module Pharos
         push_audit_config if @config.audit&.webhook&.server
         push_authentication_token_webhook_config if @config.authentication&.token_webhook
         push_oidc_certs if @config.authentication&.oidc&.ca_file
-        push_cloud_config if @config.cloud&.config
+
+        return unless @config.cloud&.intree_provider? && @config.cloud&.config
+
+        push_intree_cloud_config
       end
 
       # TODO: lock down permissions on key
@@ -63,7 +66,7 @@ module Pharos
         push_authentication_token_webhook_certs(webhook_config)
       end
 
-      def push_cloud_config
+      def push_intree_cloud_config
         logger.info { "Pushing cloud-config to master ..." }
         transport.exec!('sudo mkdir -p /etc/pharos/cloud')
         transport.file('/etc/pharos/cloud/cloud-config').write(File.open(File.expand_path(@config.cloud.config)))

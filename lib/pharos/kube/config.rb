@@ -85,6 +85,7 @@ module Pharos
         # Rename cluster in context
         context = config['contexts'].first
         context['context']['cluster'] = new_name
+        rename_context(context['name'].split('@').first + '@' + new_name)
 
         self
       end

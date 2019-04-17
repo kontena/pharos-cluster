@@ -4,9 +4,7 @@ require 'bcrypt'
 require 'json'
 
 Pharos.addon 'kontena-lens' do
-  using Pharos::CoreExt::Colorize
-
-  version '1.4.1'
+  version '1.5.0'
   license 'Kontena License'
   priority 10
 
@@ -56,7 +54,8 @@ Pharos.addon 'kontena-lens' do
 
     host = config.ingress&.host || config.host || "lens.#{gateway_node_ip}.nip.io"
     tls_email = config.ingress&.tls&.email || config.tls&.email
-    name = config.name || 'pharos-cluster'
+    name = config.name || cluster_config.name || 'pharos-cluster'
+    cluster_url = kubernetes_api_url
     charts_enabled = config.charts&.enabled != false
     helm_repositories = config.charts&.repositories || [stable_helm_repo]
     tiller_version = '2.12.2'
@@ -72,11 +71,7 @@ Pharos.addon 'kontena-lens' do
     protocol = tls_enabled? ? 'https' : 'http'
     message = "Kontena Lens is configured to respond at: " + "#{protocol}://#{host}".cyan
     message << "\nStarting up Kontena Lens the first time might take couple of minutes, until that you'll see 503 with the address given above."
-    if config_exists?
-      update_lens_name(name) if configmap.data.clusterName != name
-    else
-      create_config(name, "https://#{master_host_ip}:6443")
-    end
+    create_or_update_configmap(name, cluster_url)
     if user_management_enabled? && !admin_exists?
       create_admin_user(admin_password)
       message << "\nYou can sign in with the following admin credentials (you won't see these again): " + "admin / #{admin_password}".cyan
@@ -107,6 +102,23 @@ Pharos.addon 'kontena-lens' do
     false
   end
 
+  # @param name [String]
+  # @param cluster_url [String]
+  # @return [K8s::Resource]
+  def create_or_update_configmap(name, cluster_url)
+    if config_exists?
+      update_configmap(name, cluster_url)
+    else
+      create_configmap(name, cluster_url)
+    end
+  end
+
+  # @return [String]
+  def kubernetes_api_url
+    endpoint = cluster_config.api&.endpoint || master_host_ip
+    "https://#{endpoint}:6443"
+  end
+
   # @return [Boolean]
   def admin_exists?
     kube_client.api('beta.kontena.io/v1').resource('users').get('admin')
@@ -133,9 +145,9 @@ Pharos.addon 'kontena-lens' do
   end
 
   # @param name [String]
-  # @param kubernetes_api_url [String]
+  # @param cluster_url [String]
   # @return [K8s::Resource]
-  def create_config(name, kubernetes_api_url)
+  def create_configmap(name, cluster_url)
     config = K8s::Resource.new(
       apiVersion: 'v1',
       kind: 'ConfigMap',
@@ -145,7 +157,7 @@ Pharos.addon 'kontena-lens' do
       },
       data: {
         clusterName: name,
-        clusterUrl: kubernetes_api_url
+        clusterUrl: cluster_url
       }
     )
     kube_client.api('v1').resource('configmaps').create_resource(config)
@@ -205,10 +217,12 @@ Pharos.addon 'kontena-lens' do
     nil
   end
 
-  # @param new_name [String]
+  # @param name [String]
+  # @param cluster_url [String]
   # @return [K8s::Resource]
-  def update_lens_name(new_name)
-    configmap.data.clusterName = new_name
+  def update_configmap(name, cluster_url)
+    configmap.data.clusterName = name
+    configmap.data.clusterUrl = cluster_url
     kube_client.api('v1').resource('configmaps', namespace: 'kontena-lens').update_resource(configmap)
   end
 

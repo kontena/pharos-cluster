@@ -22,10 +22,6 @@ variable "worker_size" {
   default = "2gb"
 }
 
-variable "data_volume_size" {
-  default = 100
-}
-
 variable "image" {
   default = "ubuntu-18-04-x64"
 }
@@ -40,7 +36,7 @@ resource "tls_private_key" "ssh_key" {
 }
 
 resource "local_file" "ssh_key" {
-  content     = "${tls_private_key.ssh_key.private_key_pem}"
+  sensitive_content     = "${tls_private_key.ssh_key.private_key_pem}"
   filename    = "ssh_key.pem"
   provisioner "local-exec" {
     command = "chmod 0600 ${local_file.ssh_key.filename}"
@@ -60,6 +56,7 @@ resource "digitalocean_droplet" "pharos_master" {
   size               = "${var.master_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
+  tags               = ["e2e", "airgap"]
 }
 
 resource "random_pet" "pharos_worker" {
@@ -77,19 +74,13 @@ resource "digitalocean_droplet" "pharos_worker" {
   size               = "${var.worker_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
+  tags               = ["e2e", "airgap"]
 }
 
-resource "digitalocean_volume" "pharos_storage" {
-  count                   = "${digitalocean_droplet.pharos_worker.count}"
-  region                  = "${var.region}"
-  name                    = "${element(digitalocean_droplet.pharos_worker.*.name, count.index)}"
-  size                    = "${var.data_volume_size}"
-}
-
-resource "digitalocean_volume_attachment" "pharos_storage" {
-  count                   = "${digitalocean_droplet.pharos_worker.count}"
-  droplet_id              = "${element(digitalocean_droplet.pharos_worker.*.id, count.index)}"
-  volume_id               = "${element(digitalocean_volume.pharos_storage.*.id, count.index)}"
+output "pharos_cluster" {
+  value = {
+    name = "${var.cluster_name}"
+  }
 }
 
 output "pharos_hosts" {
@@ -105,6 +96,15 @@ output "pharos_hosts" {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
       }
+
+      environment = {
+		"HTTP_PROXY" = "http://10.133.37.156:8888"
+		"HTTPS_PROXY" = "http://10.133.37.156:8888"
+		"http_proxy" = "http://10.133.37.156:8888"
+		"https_proxy" = "http://10.133.37.156:8888"
+		"NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+		"no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
+      }
     }
 
     workers = {
@@ -113,10 +113,24 @@ output "pharos_hosts" {
       role              = "worker"
       user              = "root"
       ssh_key_path      = "./ssh_key.pem"
+      bastion = {
+        address           = "${digitalocean_droplet.pharos_master.*.ipv4_address[0]}"
+        ssh_key_path      = "./ssh_key.pem"
+        user              = "root"
+      }
 
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
+      }
+
+      environment = {
+		"HTTP_PROXY" = "http://10.133.37.156:8888"
+		"HTTPS_PROXY" = "http://10.133.37.156:8888"
+		"http_proxy" = "http://10.133.37.156:8888"
+		"https_proxy" = "http://10.133.37.156:8888"
+		"NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+		"no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
       }
     }
   }

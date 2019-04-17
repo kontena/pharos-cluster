@@ -14,8 +14,11 @@ addons:
     enabled: true
   helm:
     enabled: true
+    charts:
+      - name: stable/redis
+        repo: https://kubernetes-charts.storage.googleapis.com/
   # TODO: fix cert-manager on travis
-  #cert-manager:
+  # cert-manager:
   #  enabled: true
   #  issuer:
   #    name: letsencrypt-staging

@@ -18,13 +18,23 @@ module Pharos
         @host.configurer.configure_firewalld
 
         logger.info { 'Configuring firewalld rules ...' }
+
         write_config('services/pharos-master.xml', pharos_master_service) if @host.master?
         write_config('services/pharos-worker.xml', pharos_worker_service)
         write_config('ipsets/pharos.xml', pharos_ipset)
+
+        return unless firewalld_reload?
+
+        cluster_context['reload-iptables'] = true unless @host.new?
+        logger.info { 'Reloading firewalld ...' }
         exec_script(
           'configure-firewalld.sh',
           ROLE: @host.role
         )
+      end
+
+      def firewalld_reload?
+        !!@firewalld_reload
       end
 
       def disable_firewalld
@@ -35,7 +45,11 @@ module Pharos
       # @param file [String]
       # @param contents [String]
       def write_config(file, contents)
-        transport.file(File.join('/etc/firewalld/', file)).write(contents)
+        remote_file = transport.file(File.join('/etc/firewalld/', file))
+        return if remote_file.exist? && remote_file.read.strip == contents.strip
+
+        @firewalld_reload = true
+        remote_file.write(contents)
       end
 
       # @return [Array<String>]

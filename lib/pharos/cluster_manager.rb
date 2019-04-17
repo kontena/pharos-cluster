@@ -58,8 +58,9 @@ module Pharos
     def gather_facts
       apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?))
       apply_phase(Phases::GatherFacts, config.hosts)
-      apply_phase(Phases::ConfigureClient, [config.master_host], optional: true)
+      apply_phase(Phases::ConfigureClient, [config.master_host])
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
+      apply_phase(Phases::ConfigureClusterName, %w(localhost))
     end
 
     def validate
@@ -74,10 +75,11 @@ module Pharos
     def apply_phases
       master_hosts = config.master_hosts
       master_only = [config.master_host]
+
       apply_phase(Phases::MigrateMaster, master_hosts)
       apply_phase(Phases::ConfigureHost, config.hosts)
       apply_phase(Phases::ConfigureFirewalld, config.hosts)
-      apply_phase(Phases::ConfigureClient, master_only, optional: true)
+      apply_phase(Phases::ConfigureClient, master_only)
 
       unless @config.etcd&.endpoints
         etcd_hosts = config.etcd_hosts
@@ -89,7 +91,7 @@ module Pharos
 
       apply_phase(Phases::ConfigureSecretsEncryption, master_hosts)
       apply_phase(Phases::SetupMaster, master_hosts)
-      apply_phase(Phases::UpgradeMaster, master_hosts) # requires optional early ConfigureClient
+      apply_phase(Phases::UpgradeMaster, master_hosts)
 
       apply_phase(Phases::MigrateWorker, config.worker_hosts)
       apply_phase(Phases::ConfigureKubelet, config.hosts)
@@ -97,11 +99,13 @@ module Pharos
       apply_phase(Phases::PullMasterImages, master_hosts)
       apply_phase(Phases::ConfigureMaster, master_hosts)
       apply_phase(Phases::ConfigureClient, master_only)
+      apply_phase(Phases::ReconfigureKubelet, config.hosts)
 
       # master is now configured and can be used
       # configure essential services
       apply_phase(Phases::ConfigurePriorityClasses, master_only)
       apply_phase(Phases::ConfigurePSP, master_only)
+      apply_phase(Phases::ConfigureCloudProvider, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
       apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'

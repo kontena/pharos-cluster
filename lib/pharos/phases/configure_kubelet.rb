@@ -10,6 +10,10 @@ module Pharos
       )
 
       register_component(
+        name: 'kubernetes-cni', version: Pharos::CNI_VERSION, license: 'Apache License 2.0'
+      )
+
+      register_component(
         name: 'coredns', version: Pharos::COREDNS_VERSION, license: 'Apache License 2.0'
       )
 
@@ -31,7 +35,6 @@ module Pharos
           logger.info { 'Configuring kubelet ...' }
         else
           logger.info { 'Reconfiguring kubelet ...' }
-          reconfigure_kubelet
         end
         ensure_dropin(build_systemd_dropin)
       end
@@ -63,6 +66,7 @@ module Pharos
         host_configurer.ensure_kubelet(
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          CNI_VERSION: Pharos::CNI_VERSION,
           ARCH: @host.cpu_arch.name,
           IMAGE_REPO: @config.image_repository
         )
@@ -84,6 +88,7 @@ module Pharos
         host_configurer.install_kube_packages(
           KUBE_VERSION: Pharos::KUBE_VERSION,
           KUBEADM_VERSION: Pharos::KUBEADM_VERSION,
+          CNI_VERSION: Pharos::CNI_VERSION,
           ARCH: @host.cpu_arch.name
         )
       end
@@ -126,23 +131,9 @@ module Pharos
         end
 
         args << "--pod-infra-container-image=#{@config.image_repository}/pause:3.1"
-        args << "--cloud-provider=#{@config.cloud.provider}" if @config.cloud
-        args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.config
+        args << "--cloud-provider=#{@config.cloud.resolve_provider}" if @config.cloud
+        args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.intree_provider? && @config.cloud&.config
         args
-      end
-
-      def reconfigure_kubelet
-        config = transport.file('/var/lib/kubelet/config.yaml')
-        unless config.exist?
-          logger.error "Cannot read existing configuration file, skipping reconfigure ..."
-          return
-        end
-        org_config = config.read
-        transport.exec!("sudo kubeadm upgrade node config --kubelet-version #{Pharos::KUBE_VERSION}")
-        new_config = config.read
-        return if new_config == org_config
-
-        transport.exec!("sudo systemctl restart kubelet")
       end
     end
   end

@@ -4,15 +4,14 @@ autoload :Base64, 'base64'
 autoload :SecureRandom, 'securerandom'
 autoload :YAML, 'yaml'
 autoload :JSON, 'json'
-autoload :RestClient, 'rest-client'
 autoload :Logger, 'logger'
 autoload :Rouge, 'rouge'
 autoload :K8s, 'k8s-client'
 autoload :Excon, 'excon'
-autoload :K8s, 'k8s-client'
 autoload :Open3, 'open3'
 autoload :Pathname, 'pathname'
 autoload :OpenSSL, 'openssl'
+autoload :Pastel, 'pastel'
 
 module TTY
   autoload :Prompt, 'tty-prompt'
@@ -34,7 +33,6 @@ module Pharos
   autoload :PhaseManager, 'pharos/phase_manager'
   autoload :Logging, 'pharos/logging'
   autoload :ClusterManager, 'pharos/cluster_manager'
-  autoload :Transport, 'pharos/transport'
 
   module Transport
     autoload :TransportFile, 'pharos/transport/transport_file'
@@ -64,7 +62,6 @@ module Pharos
   end
 
   module CoreExt
-    autoload :IPAddrLoopback, 'pharos/core-ext/ip_addr_loopback'
     autoload :DeepTransformKeys, 'pharos/core-ext/deep_transform_keys'
     autoload :StringCasing, 'pharos/core-ext/string_casing'
     autoload :Colorize, 'pharos/core-ext/colorize'
@@ -74,9 +71,8 @@ module Pharos
     autoload :JsonParser, 'pharos/terraform/json_parser'
   end
 
-  autoload :Configuration, 'pharos/configuration'
-
   module Configuration
+    autoload :Struct, 'pharos/configuration/struct'
     autoload :Host, 'pharos/configuration/host'
     autoload :Route, 'pharos/configuration/route'
     autoload :ResolvConf, 'pharos/configuration/resolv_conf'
@@ -92,3 +88,5 @@ module Pharos
     autoload :Configurer, 'pharos/host/configurer'
   end
 end
+
+Dir.glob(File.join(__dir__, '/cloud/*.rb')).each { |f| require(f) }

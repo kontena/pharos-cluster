@@ -6,8 +6,7 @@ module Pharos
   module Terraform
     class ApplyCommand < BaseCommand
       options :load_config
-      option "--var", "VAR", "set a variable in the terraform configuration.", multivalued: true
-      option "--var-file", "FILE", 'set variables in the terraform configuration from a file (default: terraform.tfvars or any .auto.tfvars)'
+
       option ['-f', '--force'], :flag, "force upgrade"
 
       def execute
@@ -23,9 +22,7 @@ module Pharos
 
       def tf_apply
         cmd = ["terraform", "apply"]
-        cmd << "-auto-approve" if yes?
-        cmd << "-var-file #{var_file}" if var_file
-        cmd += var_list.map { |var| "-var #{var}" } if var_list
+        cmd += common_tf_options
 
         run_cmd! cmd.join(' ')
       end

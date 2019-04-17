@@ -27,6 +27,11 @@
                             "foo": "bar"
                         }
                     ],
+                    "environment": [
+                        {
+                            "BAR": "baz"
+                        }
+                    ],
                     "private_address": [
                         "10.80.4.129",
                         "10.80.4.145",

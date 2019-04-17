@@ -43,6 +43,18 @@ module Pharos
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
       end
+
+      def self.addresses
+        @addresses ||= Set.new
+      end
+
+      predicate(:unique_address?) do |value|
+        if CustomPredicates.addresses.include?(value)
+          false
+        else
+          CustomPredicates.addresses << value
+        end
+      end
     end
 
     # @return [Dry::Validation::Schema]
@@ -50,12 +62,15 @@ module Pharos
       # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Params do
         configure do
+          CustomPredicates.addresses.clear
+
           def self.messages
             super.merge(
               en: {
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
-                  hostname_or_ip?: "is invalid"
+                  hostname_or_ip?: "is invalid",
+                  unique_address?: "is not unique"
                 }
               }
             )
@@ -66,7 +81,7 @@ module Pharos
           each do
             schema do
               predicates(CustomPredicates)
-              required(:address).filled(:str?, :hostname_or_ip?)
+              required(:address).filled(:str?, :hostname_or_ip?, :unique_address?)
               optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
@@ -80,17 +95,21 @@ module Pharos
               end
               optional(:user).filled
               optional(:ssh_key_path).filled
-              optional(:ssh_proxy_command).filled
+              optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
+              optional(:ssh_proxy_command).filled(:str?)
               optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
               optional(:bastion).schema do
                 required(:address).filled(:str?)
                 optional(:user).filled(:str?)
                 optional(:ssh_key_path).filled(:str?)
+                optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
+                optional(:ssh_proxy_command).filled(:str?)
               end
             end
           end
         end
+        optional(:name).filled(:str?)
         optional(:api).schema do
           optional(:endpoint).filled(:str?)
         end
@@ -99,6 +118,7 @@ module Pharos
           optional(:dns_replicas).filled(:int?, gt?: 0)
           optional(:service_cidr).filled(:str?)
           optional(:pod_network_cidr).filled(:str?)
+          optional(:node_local_dns_cache).filled(:bool?)
           optional(:firewalld).schema do
             required(:enabled).filled(:bool?)
             optional(:open_ports).filled do
@@ -123,6 +143,7 @@ module Pharos
             optional(:ipip_mode).filled(included_in?: %w(Always CrossSubnet Never))
             optional(:nat_outgoing).filled(:bool?)
             optional(:environment).filled(:hash?)
+            optional(:mtu).filled(:int?, gt?: 0)
           end
           optional(:custom).schema do
             required(:manifest_path).filled(:str?)
@@ -162,7 +183,7 @@ module Pharos
           end
         end
         optional(:cloud).schema do
-          required(:provider).filled(:str?)
+          required(:provider).filled(included_in?: (Pharos::Configuration::Cloud.providers + ['external']))
           optional(:config).filled(:str?)
         end
         optional(:audit).schema do
@@ -183,9 +204,11 @@ module Pharos
         optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
+          optional(:feature_gates).filled
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
+          optional(:feature_gates).filled
         end
         optional(:telemetry).schema do
           optional(:enabled).filled(:bool?)

@@ -35,5 +35,23 @@ describe Pharos::Kubeadm::KubeletConfig do
         expect(config['readOnlyPort']).to eq(10_255)
       end
     end
+
+    context 'with kubelet.feature_gates' do
+      let(:config) { Pharos::Config.new(
+        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
+        network: {},
+        kubelet: {
+          feature_gates: {
+            foo: true
+          }
+
+        }
+      ) }
+
+      it 'configures featureGates' do
+        config = subject.generate
+        expect(config['featureGates']).to eq({ foo: true })
+      end
+    end
   end
 end

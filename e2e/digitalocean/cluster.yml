@@ -1,7 +1,9 @@
 network:
   provider: weave
-  pod_network_cidr: 172.31.0.0/16
-  service_cidr: 172.32.0.0/16
+  pod_network_cidr: 172.30.0.0/16
+  service_cidr: 172.31.0.0/16
+  firewalld:
+    enabled: true
   weave:
     trusted_subnets:
       - "10.133.0.0/16"
@@ -25,7 +27,8 @@ addons:
     data_dir: /var/lib/kontena-storage
     storage:
       use_all_nodes: true
-      device_filter: ^sd[a-x]
+      directories:
+      - path: /mnt/data1
   cert-manager:
     enabled: true
     issuer:

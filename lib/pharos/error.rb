@@ -34,7 +34,7 @@ module Pharos
     end
 
     def message
-      "exec failed with code #{@exit_status}: #{@cmd}\n#{@output}"
+      "exec failed with code #{@exit_status}: #{@cmd}\n#{@output.gsub(/^/m, '  ')}"
     end
   end
 end

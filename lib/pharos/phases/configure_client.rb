@@ -7,15 +7,8 @@ module Pharos
 
       REMOTE_FILE = "/etc/kubernetes/admin.conf"
 
-      # @param optional [Boolean] skip if kubeconfig does not exist instead of failing
-      def initialize(host, optional: false, **options)
-        super(host, **options)
-
-        @optional = optional
-      end
-
       def call
-        return if @optional && !kubeconfig?
+        return unless kubeconfig?
 
         mutex.synchronize do
           return if cluster_context['kubeconfig']
@@ -23,7 +16,7 @@ module Pharos
           cluster_context['kubeconfig'] = kubeconfig
         end
 
-        client_prefetch unless @optional
+        client_prefetch
       end
 
       # @return [String]

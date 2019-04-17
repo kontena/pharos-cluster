@@ -7,6 +7,16 @@ module Pharos
     using Pharos::CoreExt::Colorize
     include Pharos::Logging
 
+    class Error < Pharos::Error
+      def initialize(errors)
+        @errors = errors
+      end
+
+      def to_s
+        "Phase failed on #{@errors.size} host#{'s' if @errors.size > 1}:\n#{YAML.dump(@errors).delete_prefix("---\n")}"
+      end
+    end
+
     RETRY_ERRORS = [
       OpenSSL::SSL::SSLError,
       Excon::Error,
@@ -34,15 +44,24 @@ module Pharos
       threads = phases.map { |phase|
         Thread.new do
           Thread.current.report_on_exception = false
-          Thread.current.abort_on_exception = true
-          Retry.perform(yield_object: phase, logger: logger, exceptions: RETRY_ERRORS, &block)
+          Retry.perform(yield_object: phase, logger: phase.logger, exceptions: RETRY_ERRORS, &block)
         end
-      }
+      end
+
+      sleep 0.1 until threads.none?(&:alive?)
+
+      # Thread status is false when terminated normally, nil when it terminated with exception
+      # rubocop:disable Lint/RescueException
+      errors = threads.select { |t| t.status.nil? }.map do |thread|
+        thread.value # raises the exception
+      rescue Exception => ex
+        { thread[:host] => { ex.class.name => ex.message } }
+      end
+      # rubocop:enable Lint/RescueException
+
+      raise Error, errors unless errors.empty?
+
       threads.map(&:value)
-    rescue StandardError
-      threads.map(&:kill)
-      sleep 0.5 until threads.all?(&:stop?)
-      raise
     end
 
     # @return [Pharos::Phase]
