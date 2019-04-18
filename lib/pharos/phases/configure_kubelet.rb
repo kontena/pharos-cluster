@@ -114,6 +114,11 @@ module Pharos
 
         options << "ExecStartPre=-/sbin/swapoff -a"
 
+        if @host.resolvconf.systemd_resolved_stub
+          logger.info { "Adding POSTROUTING SNAT rule for systemd-resolved stub" }
+          options << "ExecStartPre=/bin/sh -c '/sbin/iptables -C POSTROUTING -t nat -d 127.0.0.53 -o lo -m comment --comment \"SNAT for systemd-resolved\" -j SNAT --to-source 127.0.0.1 || /sbin/iptables -I POSTROUTING -t nat -d 127.0.0.53 -o lo -m comment --comment \"SNAT for systemd-resolved\" -j SNAT --to-source 127.0.0.1'"
+        end
+
         "[Service]\n#{options.join("\n")}\n"
       end
 
