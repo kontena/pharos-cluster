@@ -10,6 +10,7 @@ if [ "${CONTAINER_RUNTIME}" != "docker" ]; then
     sudo systemctl stop docker
     sudo systemctl disable docker
     sudo apt-get remove --purge docker-ce
+    sudo rm -f /var/run/dockershim.sock
 fi
 
 ssh-keygen -t rsa -f ~/.ssh/id_rsa_travis -N ""
