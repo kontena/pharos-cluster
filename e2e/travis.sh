@@ -38,6 +38,7 @@ echo "Checking that ingress-nginx is running:"
 (retry 30 pods_running "app=ingress-nginx" "ingress-nginx") || exit $?
 
 # Test re-up
+sudo rm -f /var/run/dockershim.sock # TODO: remove this
 bundle exec bin/pharos up -y -c cluster.yml
 # Test reset
 bundle exec bin/pharos reset -d -y -c cluster.yml
