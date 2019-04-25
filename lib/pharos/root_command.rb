@@ -6,6 +6,7 @@ require_relative 'version_command'
 require_relative 'kubeconfig_command'
 require_relative 'exec_command'
 require_relative 'terraform_command'
+require_relative 'init_command'
 
 module Pharos
   class RootCommand < Pharos::Command
@@ -16,6 +17,7 @@ module Pharos
     subcommand "reset", "reset cluster", ResetCommand
     subcommand %w(exec ssh), "run a command or an interactive session on a host", ExecCommand
     subcommand %w(tf terraform), "terraform specific commands", TerraformCommand
+    subcommand "init", "create an initial cluster configuration file", InitCommand
     subcommand "version", "show version information", VersionCommand
   end
 end

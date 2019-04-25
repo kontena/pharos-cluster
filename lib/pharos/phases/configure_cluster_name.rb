@@ -71,9 +71,13 @@ module Pharos
         return false if @config.name
         return nil if cluster_context['no-generate-name']
 
-        new_name = "#{ADJECTIVES.sample}-#{NOUNS.sample}-#{'%04d' % rand(9999)}"
+        new_name = random_name
         logger.info "Using generated random name #{new_name.magenta} as cluster name"
         new_name
+      end
+
+      def random_name
+        "#{ADJECTIVES.sample}-#{NOUNS.sample}-#{'%04d' % rand(9999)}"
       end
     end
   end
