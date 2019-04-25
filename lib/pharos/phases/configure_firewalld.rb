@@ -23,6 +23,9 @@ module Pharos
         write_config('services/pharos-worker.xml', pharos_worker_service)
         write_config('ipsets/pharos.xml', pharos_ipset)
 
+        # We need to call the reload script to disable masquerade
+        @firewalld_reload = true if masquerade_active?
+
         return unless firewalld_reload?
 
         cluster_context['reload-iptables'] = true unless @host.new?
@@ -98,6 +101,10 @@ module Pharos
           name: 'pharos',
           entries: trusted_addresses
         )
+      end
+
+      def masquerade_active?
+        transport.exec("firewall-cmd --query-masquerade > /dev/null 2>&1").success?
       end
     end
   end
