@@ -23,6 +23,12 @@ module Pharos
 
     option %w(-n --name), 'NAME', 'cluster name'
 
+    option %w(-e --env), 'KEY=VALUE', 'host environment variables (can be given multiple times)', multivalued: true do |kv_pair|
+      Hash[*kv_pair.split('=', 2)]
+    end
+
+    option %w(-i --ssh-key-path), 'PATH', 'ssh key path'
+
     def parse_host(host_str)
       user = host_str[/(.+?)@/, 1]
       address = host_str[/(?:.+?@)?([^:]+)/, 1]
@@ -37,20 +43,35 @@ module Pharos
 
       host_defaults: &host_defaults
         user: <%= host_defaults[:user] %>
+        <%- if host_defaults[:ssh_key_path] -%>
         ssh_key_path: <%= host_defaults[:ssh_key_path] %>
+        <%- else -%>
+        # ssh_key_path: ~/.ssh/id_rsa
+        <%- end -%>
         ssh_port: 22
+        <%- if host_defaults[:environment] -%>
+        environment:
+          <%- host_defaults[:environment].each do |key, value| -%>
+          <%= key %>: <%= value.inspect %>
+          <%- end -%>
+        <%- else -%>
         # environment:
         #   HTTP_PROXY: 192.168.0.1
-        <%- if bastion -%>
+        <%- end -%>
+        <%- if host_defaults[:bastion] -%>
         bastion:
-          address: <%= bastion[:address] %>
-          <%- if bastion[:user] -%>
-          user: <%= bastion[:user] %>
+          address: <%= host_defaults[:bastion][:address] %>
+          <%- if host_defaults[:bastion][:user] -%>
+          user: <%= host_defaults[:bastion][:user] %>
           <%- end -%>
-          <%- if bastion[:ssh_port] -%>
-          ssh_port: <%= bastion[:ssh_port] %>
+          <%- if host_defaults[:bastion][:ssh_port] -%>
+          ssh_port: <%= host_defaults[:bastion][:ssh_port] %>
           <%- end -%>
+          <%- if host_defaults[:ssh_key_path] -%>
+          ssh_key_path: <%= host_defaults[:ssh_key_path] %>
+          <%- else -%>
           # ssh_key_path: ~/.ssh/id_rsa
+          <%- end -%>
         <%- else -%>
         # bastion:
         #   address: 192.168.0.1
@@ -67,6 +88,8 @@ module Pharos
           <%- end -%>
           <%- if host[:private_address] -%>
           private_address: <%= host[:private_address] %>
+          <%- else -%>
+          # private_address: 10.0.0.1
           <%- end -%>
           <%- if host[:ssh_port] != host_defaults[:ssh_port] -%>
           ssh_port: <%= host[:ssh_port] %>
@@ -88,14 +111,16 @@ module Pharos
 
     def host_defaults
       {}.tap do |defaults|
-        defaults[:ssh_key_path] = '~/.ssh/id_rsa'
         defaults[:bastion] = bastion if bastion
         defaults[:user] = hosts.find { |h| h[:user] }&.fetch(:user) || ENV['USER'] || 'username'
+        defaults[:environment] = env_list.inject(:merge) unless env_list.empty?
+        defaults[:ssh_key_path] = ssh_key_path if ssh_key_path
       end
     end
 
     def hosts
       @hosts ||= [
+        # dummy example hosts
         { address: '10.0.0.1', private_address: '172.16.0.1', role: 'master', ssh_key_path: '~/.ssh/id_rsa' },
         { address: '10.0.0.2', private_address: '172.16.0.2', role: 'worker', ssh_key_path: '~/.ssh/id_rsa' }
       ]
@@ -113,7 +138,6 @@ module Pharos
       else
         Pharos::YamlFile.new(StringIO.new(PRESET_CFG)).erb_result(
           hosts: hosts,
-          bastion: bastion,
           host_defaults: host_defaults,
           name: name
         )
@@ -126,4 +150,3 @@ module Pharos
     end
   end
 end
-
