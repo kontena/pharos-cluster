@@ -4,15 +4,17 @@ module Pharos
   class InitCommand < Pharos::Command
     using Pharos::CoreExt::DeepTransformKeys
 
+    banner 'Create a Pharos cluster configuration'
+
     option %w(-c --config), 'FILE', 'output filename', default: 'cluster.yml', attribute_name: :config_file
     option '--defaults', :flag, 'include all configuration default values'
 
-    option %w(-m --master), 'HOST', 'master host [user@]address[:port]' do |master|
+    option %w(-m --master), 'HOST', 'master host [user@]address[:port] (can be given multiple times)' do |master|
       @hosts ||= []
       @hosts << parse_host(master).merge(role: 'master')
     end
 
-    option %w(-w --worker), 'HOST', 'worker host [user@]address[:port]' do |worker|
+    option %w(-w --worker), 'HOST', 'worker host [user@]address[:port] (can be given multiple times)' do |worker|
       @hosts ||= []
       @hosts << parse_host(worker).merge(role: 'worker')
     end
