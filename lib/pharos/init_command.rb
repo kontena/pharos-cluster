@@ -85,7 +85,7 @@ module Pharos
         <%- hosts.each do |host| -%>
         - <<: *host_defaults
           address: <%= host[:address] %>
-          <%- if host[:user] != host_defaults[:user] -%>
+          <%- if host[:user] && host[:user] != host_defaults[:user] -%>
           user: <%= host[:user] %>
           <%- end -%>
           <%- if host[:private_address] -%>
