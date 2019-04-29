@@ -28,7 +28,7 @@ module Pharos
 
       def call
         push_cloud_config if @config.cloud&.config
-        configure_kubelet_proxy if @host.role == 'worker'
+        configure_kubelet_proxy if @host.worker?
         configure_kube
 
         if host.new?
@@ -75,9 +75,9 @@ module Pharos
         )
 
         logger.info { 'Waiting for kubelet proxy to start ...' }
-        exec_script(
-          'wait-kubelet-proxy.sh'
-        )
+        Retry.perform(300, logger: logger) do
+          transport.exec!('bash -c "echo > /dev/tcp/localhost/6443"')
+        end
       end
 
       # @return [Array<String>]

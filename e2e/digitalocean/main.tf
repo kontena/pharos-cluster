@@ -94,6 +94,12 @@ output "pharos_cluster" {
   }
 }
 
+output "worker_up" {
+  value = {
+    address           = "${digitalocean_droplet.pharos_worker_up.*.ipv4_address}"
+  }
+}
+
 output "pharos_hosts" {
   value = {
     masters = {
@@ -142,19 +148,6 @@ output "pharos_hosts" {
         "https_proxy" = "http://10.133.37.156:8888"
         "NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
         "no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
-      }
-    }
-
-    worker_up = {
-      address           = "${digitalocean_droplet.pharos_worker_up.*.ipv4_address}"
-      private_address   = "${digitalocean_droplet.pharos_worker_up.*.ipv4_address_private}"
-      role              = "worker_up"
-      user              = "root"
-      ssh_key_path      = "./ssh_key.pem"
-
-      label = {
-        "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
-        "failure-domain.beta.kubernetes.io/region" = "${var.region}"
       }
     }
   }

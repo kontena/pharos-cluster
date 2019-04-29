@@ -32,5 +32,5 @@ pods_running() {
 
 node_online() {
   local -r hostname="$1"
-  kubectl get nodes | grep "$hostname" | grep -q Ready
+  kubectl get nodes | grep "$hostname" | grep -v NotReady | grep -q Ready
 }
