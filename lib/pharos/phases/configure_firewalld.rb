@@ -23,7 +23,7 @@ module Pharos
         write_config('services/pharos-worker.xml', pharos_worker_service)
         write_config('ipsets/pharos.xml', pharos_ipset)
 
-        # We need to call the reload script to disable masquerade
+        # Masquerade was enabled in the past, if it's still enabled we need to reload firewalld rules
         @firewalld_reload = true if masquerade_active?
 
         return unless firewalld_reload?
