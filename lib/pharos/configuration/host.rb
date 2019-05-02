@@ -94,7 +94,7 @@ module Pharos
       # @param cloud_provider [String, NilClass]
       # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
-        args = config&.kubelet&.extra_args || []
+        args = config&.kubelet&.extra_args.dup || []
 
         args << "--rotate-server-certificates"
 
