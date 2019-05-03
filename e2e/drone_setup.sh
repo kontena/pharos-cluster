@@ -1,6 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 set -ue
+
+if [[ $DRONE_COMMIT_MESSAGE != *"[cluster-e2e]"* ]]; then
+    echo "Commit message does not contain [cluster-e2e], skipping."
+    exit 0
+fi
 
 cd e2e/digitalocean
 terraform init

@@ -36,7 +36,7 @@ resource "tls_private_key" "ssh_key" {
 }
 
 resource "local_file" "ssh_key" {
-  content     = "${tls_private_key.ssh_key.private_key_pem}"
+  sensitive_content     = "${tls_private_key.ssh_key.private_key_pem}"
   filename    = "ssh_key.pem"
   provisioner "local-exec" {
     command = "chmod 0600 ${local_file.ssh_key.filename}"
@@ -56,7 +56,7 @@ resource "digitalocean_droplet" "pharos_master" {
   size               = "${var.master_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
-  tags               = ["e2e"]
+  tags               = ["e2e", "airgap"]
 }
 
 resource "random_pet" "pharos_worker" {
@@ -74,7 +74,7 @@ resource "digitalocean_droplet" "pharos_worker" {
   size               = "${var.worker_size}"
   private_networking = true
   ssh_keys           = ["${digitalocean_ssh_key.default.fingerprint}"]
-  tags               = ["e2e"]
+  tags               = ["e2e", "airgap"]
 }
 
 output "pharos_cluster" {
@@ -96,6 +96,15 @@ output "pharos_hosts" {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
       }
+
+      environment = {
+		"HTTP_PROXY" = "http://10.133.37.156:8888"
+		"HTTPS_PROXY" = "http://10.133.37.156:8888"
+		"http_proxy" = "http://10.133.37.156:8888"
+		"https_proxy" = "http://10.133.37.156:8888"
+		"NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+		"no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
+      }
     }
 
     workers = {
@@ -113,6 +122,15 @@ output "pharos_hosts" {
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
         "failure-domain.beta.kubernetes.io/region" = "${var.region}"
+      }
+
+      environment = {
+		"HTTP_PROXY" = "http://10.133.37.156:8888"
+		"HTTPS_PROXY" = "http://10.133.37.156:8888"
+		"http_proxy" = "http://10.133.37.156:8888"
+		"https_proxy" = "http://10.133.37.156:8888"
+		"NO_PROXY" = "localhost,0,1,2,3,4,5,6,7,8,9"
+		"no_proxy" = "localhost,0,1,2,3,4,5,6,7,8,9"
       }
     }
   }

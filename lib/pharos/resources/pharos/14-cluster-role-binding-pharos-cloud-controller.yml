@@ -1,0 +1,13 @@
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pharos-cloud-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pharos-cloud-controller
+subjects:
+- kind: ServiceAccount
+  name: pharos-cloud-controller # name used by providers/pharos for clientBuilder(...)
+  namespace: kube-system

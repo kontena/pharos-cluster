@@ -1,0 +1,248 @@
+kind: pipeline
+name: test
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: test-ruby
+    image: ruby:2.5
+    commands:
+      - gem install bundler -Nf
+      - bundle install --path bundler
+      - bundle exec rubocop --fail-level A -S --format c --parallel
+      - bundle exec rspec spec/
+      - PHAROS_NON_OSS=true bundle exec rspec spec/ non-oss/spec/
+  - name: test-shellcheck
+    image: koalaman/shellcheck-alpine:latest
+    commands:
+      - apk update && apk add bash
+      - bash -c 'shopt -s globstar; shellcheck **/*.sh'
+---
+kind: pipeline
+name: e2e-bionic
+depends_on:
+- test
+platform:
+  os: linux
+  arch: amd64
+steps:
+  # E2E steps
+  - name: setup-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - apk add --update bash
+      - ./e2e/drone_setup.sh ubuntu-18-04-x64
+    when:
+      event: [ push ]
+  - name: e2e
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  - name: teardown-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
+---
+kind: pipeline
+name: e2e-xenial
+depends_on:
+- e2e-bionic
+platform:
+  os: linux
+  arch: amd64
+steps:
+  # E2E steps
+  - name: setup-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - apk add --update bash
+      - ./e2e/drone_setup.sh ubuntu-16-04-x64
+    when:
+      event: [ push ]
+  - name: e2e
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  - name: teardown-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
+---
+kind: pipeline
+name: e2e-stretch
+depends_on:
+- e2e-xenial
+platform:
+  os: linux
+  arch: amd64
+steps:
+  # E2E steps
+  - name: setup-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - apk add --update bash
+      - ./e2e/drone_setup.sh debian-9-x64
+    when:
+      event: [ push ]
+  - name: e2e
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  - name: teardown-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
+---
+kind: pipeline
+name: e2e-centos
+depends_on:
+- e2e-bionic
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: setup-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - apk add --update bash
+      - ./e2e/drone_setup.sh centos-7-x64
+    when:
+      event: [ push ]
+  - name: e2e
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  - name: teardown-e2e
+    image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
+---
+kind: pipeline
+name: github-release
+depends_on:
+- e2e-bionic
+- e2e-centos
+- e2e-xenial
+- e2e-stretch
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: create_gh_release
+    image: ubuntu:xenial
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - ./build/drone/create_release.sh
+    when:
+      event: tag
+---
+kind: pipeline
+name: release-binary
+depends_on:
+- github-release
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: build_ubuntu
+    image: ubuntu:xenial
+    environment:
+      CPPFLAGS: "-P"
+      PHAROS_NON_OSS: "true"
+    commands:
+      - ./build/drone/ubuntu.sh
+    when:
+      event: tag
+  - name: release_binary
+    image: plugins/s3
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+    settings:
+      bucket: pharos-cluster-binaries
+      region: eu-west-1
+      source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}"
+      target: /
+    when:
+      event: tag
+---
+kind: pipeline
+name: release-oss-binary
+depends_on:
+- github-release
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: build_ubuntu
+    image: ubuntu:xenial
+    environment:
+      CPPFLAGS: "-P"
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - ./build/drone/ubuntu_oss.sh
+    when:
+      event: tag
+  - name: release_binary
+    image: plugins/s3
+    environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: aws_access_key_id
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: aws_secret_access_key
+    settings:
+      bucket: pharos-cluster-binaries
+      region: eu-west-1
+      source: "pharos-cluster-linux-amd64-${DRONE_TAG##v}+oss"
+      target: /
+    when:
+      event: tag

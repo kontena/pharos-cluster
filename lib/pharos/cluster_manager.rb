@@ -58,7 +58,7 @@ module Pharos
     def gather_facts
       apply_phase(Phases::ConnectSSH, config.hosts.reject(&:local?), parallel: true)
       apply_phase(Phases::GatherFacts, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false, optional: true)
+      apply_phase(Phases::ConfigureClient, [config.master_host], parallel: false)
       apply_phase(Phases::LoadClusterConfiguration, [config.master_host]) if config.master_host.master_sort_score.zero?
       apply_phase(Phases::ConfigureClusterName, %w(localhost))
     end
@@ -78,7 +78,7 @@ module Pharos
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureClient, master_only, parallel: false, optional: true)
+      apply_phase(Phases::ConfigureClient, master_only, parallel: false)
 
       unless @config.etcd&.endpoints
         etcd_hosts = config.etcd_hosts
@@ -90,7 +90,7 @@ module Pharos
 
       apply_phase(Phases::ConfigureSecretsEncryption, master_hosts, parallel: false)
       apply_phase(Phases::SetupMaster, master_hosts, parallel: true)
-      apply_phase(Phases::UpgradeMaster, master_hosts, parallel: false) # requires optional early ConfigureClient
+      apply_phase(Phases::UpgradeMaster, master_hosts, parallel: false)
 
       apply_phase(Phases::MigrateWorker, config.worker_hosts, parallel: true)
       apply_phase(Phases::ConfigureKubelet, config.hosts, parallel: true)
@@ -104,6 +104,7 @@ module Pharos
       # configure essential services
       apply_phase(Phases::ConfigurePriorityClasses, master_only)
       apply_phase(Phases::ConfigurePSP, master_only)
+      apply_phase(Phases::ConfigureCloudProvider, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
       apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'
       apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'
