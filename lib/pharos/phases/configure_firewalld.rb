@@ -28,7 +28,7 @@ module Pharos
 
         return unless firewalld_reload?
 
-        cluster_context['reload-iptables'] = true unless @host.new?
+        cluster_context['reload-iptables'] = true
         logger.info { 'Reloading firewalld ...' }
         exec_script(
           'configure-firewalld.sh',
