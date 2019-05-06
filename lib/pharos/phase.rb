@@ -106,7 +106,7 @@ module Pharos
 
     # @return [K8s::Client]
     def kube_client
-      cluster_context['kube_client'] || raise("Phase #{self.class.name} does not have a configured kube client")
+      cluster_context['kube_client'] || raise("No Kubernetes API client available")
     end
 
     # @param name [String]
