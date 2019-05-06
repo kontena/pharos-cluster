@@ -7,7 +7,7 @@ module Pharos
 
       def call
         mutex.synchronize do
-          logger.info { "Deleting node from kubernetes api ..." }
+          logger.info { "Deleting the node from Kubernetes API ..." }
           master_host.transport.exec!("kubectl delete node #{@host.hostname}")
         end
       rescue Pharos::ExecError => e
