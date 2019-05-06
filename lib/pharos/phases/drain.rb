@@ -10,8 +10,8 @@ module Pharos
           logger.info { "Draining ..." }
           master_host.transport.exec!("kubectl drain --grace-period=120 --force --timeout=5m --ignore-daemonsets --delete-local-data #{@host.hostname}")
         end
-      rescue Pharos::ExecError => ex
-        logger.error { "failed to drain node: #{ex.message}" }
+      rescue Pharos::ExecError => e
+        logger.error { "failed to drain node: #{e.message}" }
       end
     end
   end

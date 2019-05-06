@@ -41,7 +41,7 @@ module Pharos
     # @param phases [Array<Pharos::Phases::Base>]
     # @return [Array<...>]
     def run(phases, &block)
-      threads = phases.map { |phase|
+      threads = phases.map do |phase|
         Thread.new do
           Thread.current.report_on_exception = false
           Retry.perform(yield_object: phase, logger: phase.logger, exceptions: RETRY_ERRORS, &block)
@@ -54,8 +54,8 @@ module Pharos
       # rubocop:disable Lint/RescueException
       errors = threads.select { |t| t.status.nil? }.map do |thread|
         thread.value # raises the exception
-      rescue Exception => ex
-        { thread[:host] => { ex.class.name => ex.message } }
+      rescue Exception => e
+        { thread[:host] => { e.class.name => e.message } }
       end
       # rubocop:enable Lint/RescueException
 

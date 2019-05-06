@@ -10,8 +10,8 @@ module Pharos
           logger.info { "Deleting node from kubernetes api ..." }
           master_host.transport.exec!("kubectl delete node #{@host.hostname}")
         end
-      rescue Pharos::ExecError => ex
-        logger.error { "Failed to delete node: #{ex.message}" }
+      rescue Pharos::ExecError => e
+        logger.error { "Failed to delete node: #{e.message}" }
       end
     end
   end
