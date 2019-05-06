@@ -10,9 +10,8 @@ module Pharos
 
       attr_writer :host
 
-      # Returns true when all attributes of the instance match the hash. Extra keys in the hash will be ignored.
       # @param other [Hash]
-      # @return [Boolean]
+      # @return [Boolean] true when all attributes of the instance match the other
       def attributes_match?(other)
         attributes.all? { |key, value| other[key] == value }
       end
