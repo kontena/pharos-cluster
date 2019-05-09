@@ -10,7 +10,7 @@ require_relative "pharos/root_command"
 module Pharos
   CNI_VERSION = '0.7.5'
   COREDNS_VERSION = '1.2.6'
-  CRIO_VERSION = '1.13.4'
+  CRIO_VERSION = '1.13.6'
   DNS_NODE_CACHE_VERSION = '1.15.1'
   ETCD_VERSION = ENV.fetch('ETCD_VERSION') { '3.2.24' }
   KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.13.5' }
