@@ -10,7 +10,7 @@ if [ "${CONTAINER_RUNTIME}" != "docker" ]; then
     sudo systemctl stop docker
     sudo systemctl disable docker
     sudo apt-get remove --purge docker-ce
-    sudo rm -f /var/run/dockershim.sock
+    sudo rm -f /var/run/docker.sock
 fi
 
 ssh-keygen -t rsa -f ~/.ssh/id_rsa_travis -N ""
@@ -38,7 +38,6 @@ echo "Checking that ingress-nginx is running:"
 (retry 30 pods_running "app=ingress-nginx" "ingress-nginx") || exit $?
 
 # Test re-up
-sudo rm -f /var/run/dockershim.sock # TODO: remove this
 bundle exec bin/pharos up -y -c cluster.yml
 # Test reset
 bundle exec bin/pharos reset -d -y -c cluster.yml
