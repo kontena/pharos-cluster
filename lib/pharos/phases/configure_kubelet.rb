@@ -28,7 +28,7 @@ module Pharos
 
       def call
         push_cloud_config if @config.cloud&.config
-        configure_kubelet_proxy if @host.role == 'worker'
+        configure_kubelet_proxy if @host.worker?
         configure_kube
 
         if host.new?
@@ -55,6 +55,7 @@ module Pharos
       end
 
       def configure_kubelet_proxy
+        logger.info { 'Configuring kubelet proxy ...' }
         exec_script(
           'configure-kubelet-proxy.sh',
           KUBE_VERSION: Pharos::KUBE_VERSION,
@@ -63,6 +64,8 @@ module Pharos
           VERSION: Pharos::KUBELET_PROXY_VERSION,
           MASTER_HOSTS: master_addresses.join(',')
         )
+
+        logger.info { 'Configuring packages ...' }
         host_configurer.ensure_kubelet(
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           KUBE_VERSION: Pharos::KUBE_VERSION,
@@ -70,9 +73,11 @@ module Pharos
           ARCH: @host.cpu_arch.name,
           IMAGE_REPO: @config.image_repository
         )
-        exec_script(
-          'wait-kubelet-proxy.sh'
-        )
+
+        logger.info { 'Waiting for kubelet proxy to start ...' }
+        Retry.perform(300, logger: logger) do
+          transport.exec!('bash -c "echo > /dev/tcp/localhost/6443"')
+        end
       end
 
       # @return [Array<String>]
@@ -113,6 +118,11 @@ module Pharos
         end
 
         options << "ExecStartPre=-/sbin/swapoff -a"
+
+        if @host.resolvconf.systemd_resolved_stub
+          logger.info { "Adding POSTROUTING SNAT rule for systemd-resolved stub" }
+          options << "ExecStartPre=/bin/sh -c '/sbin/iptables -C POSTROUTING -t nat -d 127.0.0.53 -o lo -m comment --comment \"SNAT for systemd-resolved\" -j SNAT --to-source 127.0.0.1 || /sbin/iptables -I POSTROUTING -t nat -d 127.0.0.53 -o lo -m comment --comment \"SNAT for systemd-resolved\" -j SNAT --to-source 127.0.0.1'"
+        end
 
         "[Service]\n#{options.join("\n")}\n"
       end
