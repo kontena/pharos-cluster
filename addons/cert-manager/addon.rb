@@ -17,7 +17,7 @@ Pharos.addon 'cert-manager' do
   config {
     attribute :issuer, issuer
     attribute :ca_issuer, ca_issuer.default(proc { ca_issuer.new(enabled: true) })
-    attribute :extra_args, Pharos::Types::Array.default([])
+    attribute :extra_args, Pharos::Types::Array.default(proc { [] })
   }
 
   config_schema {
