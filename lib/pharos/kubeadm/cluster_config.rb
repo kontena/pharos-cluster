@@ -39,7 +39,6 @@ module Pharos
             'extraArgs' => {
               'profiling' => 'false', # CIS 1.1.8
               'kubelet-certificate-authority' => CA_FILE,
-              'repair-malformed-updates' => 'false', # CIS 1.1.9
               'tls-cipher-suites' => TLS_CIPHERS, # CIS 1.1.30
               'service-account-lookup' => 'true' # CIS 1.1.23
             },
