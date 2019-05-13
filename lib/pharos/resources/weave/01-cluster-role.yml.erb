@@ -26,6 +26,9 @@ rules:
   - apiGroups:
       - ''
     resources:
+    <% if flying_shuttle_enabled %>
+    - nodes
+    <% end -%>
     - nodes/status
     verbs:
     - patch

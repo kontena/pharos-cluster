@@ -3,6 +3,7 @@
 require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
+require_relative '../transport'
 
 require 'ipaddr'
 require 'resolv'
@@ -37,6 +38,8 @@ module Pharos
       end
 
       def local?
+        return false if ssh_key_path || user
+
         ip_address = Resolv.getaddress(address)
         IPAddr.new(ip_address).loopback?
       rescue Resolv::ResolvError, IPAddr::InvalidAddressError
@@ -79,6 +82,9 @@ module Pharos
         labels = @attributes[:labels] || {}
 
         labels['node-address.kontena.io/external-ip'] = address
+        internal_ip = private_address || private_interface_address
+        labels['node-address.kontena.io/internal-ip'] = internal_ip if internal_ip
+
         labels['node-role.kubernetes.io/worker'] = '' if worker? && !labels.find{ |k, _| k.to_s.start_with?("node-role.kubernetes.io") }
 
         labels
@@ -93,7 +99,7 @@ module Pharos
       # @param cloud_provider [String, NilClass]
       # @return [Array<String>]
       def kubelet_args(local_only: false, cloud_provider: nil)
-        args = []
+        args = config&.kubelet&.extra_args.dup || []
 
         args << "--rotate-server-certificates"
 

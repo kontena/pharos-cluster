@@ -16,6 +16,7 @@ module Pharos
       )
 
       def call
+        verify_version
         patch_deployment(
           'coredns',
           replicas: @config.dns_replicas,
@@ -29,6 +30,14 @@ module Pharos
           logger.info { "Removing node dns cache ..." }
           delete_stack(DNS_CACHE_STACK_NAME)
         end
+      end
+
+      def verify_version
+        deployment = kube_resource_client.get('coredns')
+        version = deployment.spec.template.spec.containers[0].image.split(':').last
+        return if version == Pharos::COREDNS_VERSION
+
+        raise Pharos::Error, "Invalid CoreDNS version #{version}, should be #{Pharos::COREDNS_VERSION}"
       end
 
       # @return [Integer]

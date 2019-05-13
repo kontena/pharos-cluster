@@ -39,7 +39,6 @@ module Pharos
             'extraArgs' => {
               'profiling' => 'false', # CIS 1.1.8
               'kubelet-certificate-authority' => CA_FILE,
-              'repair-malformed-updates' => 'false', # CIS 1.1.9
               'tls-cipher-suites' => TLS_CIPHERS, # CIS 1.1.30
               'service-account-lookup' => 'true' # CIS 1.1.23
             },
@@ -60,14 +59,21 @@ module Pharos
           }
         }
 
+        feature_gates = {}
         if @config.control_plane&.feature_gates
-          feature_gates = @config.control_plane.feature_gates.map{ |k, v| "#{k}=#{v}" }.join(',')
+          feature_gates = @config.control_plane.feature_gates
+        end
+        if @config.cloud&.outtree_provider?
+          feature_gates.merge!(@config.cloud.cloud_provider.feature_gates)
+        end
+        unless feature_gates.empty?
+          feature_gates = feature_gates.map{ |k, v| "#{k}=#{v}" }.join(',')
           config['apiServer']['extraArgs']['feature-gates'] = feature_gates
           config['scheduler']['extraArgs']['feature-gates'] = feature_gates
           config['controllerManager']['extraArgs']['feature-gates'] = feature_gates
         end
 
-        if @config.cloud && @config.cloud.provider != 'external'
+        if @config.cloud&.intree_provider?
           config['apiServer']['extraArgs']['cloud-provider'] = @config.cloud.provider
           config['controllerManager']['extraArgs']['cloud-provider'] = @config.cloud.provider
           if @config.cloud.config
@@ -133,11 +139,15 @@ module Pharos
 
       # @param config [Pharos::Config]
       def configure_internal_etcd(config)
+        # let's put locally running etcd peer first
+        # see: https://github.com/kubernetes/kubernetes/issues/72102
+        endpoints = ["https://localhost:2379"]
+        endpoints += @config.etcd_hosts.reject { |peer| peer == @host }.map { |h|
+          "https://#{@config.etcd_peer_address(h)}:2379"
+        }
         config['etcd'] = {
           'external' => {
-            'endpoints' => @config.etcd_hosts.map { |h|
-              "https://#{@config.etcd_peer_address(h)}:2379"
-            },
+            'endpoints' => endpoints,
             'certFile' => '/etc/pharos/pki/etcd/client.pem',
             'caFile' => '/etc/pharos/pki/ca.pem',
             'keyFile' => '/etc/pharos/pki/etcd/client-key.pem'

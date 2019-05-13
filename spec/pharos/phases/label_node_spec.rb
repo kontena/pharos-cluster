@@ -59,13 +59,14 @@ describe Pharos::Phases::LabelNode do
     context 'with labels' do
       let(:host) { Pharos::Configuration::Host.new(
         address: '192.0.2.2',
+        private_address: '10.0.0.1',
         labels: {foo: 'bar'},
       ) }
 
       it 'patches node' do
         expect(node).to receive(:merge).with(
           metadata: {
-            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2' },
+            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2', 'node-address.kontena.io/internal-ip' => '10.0.0.1' },
           },
         ).and_return(node)
 
@@ -100,6 +101,7 @@ describe Pharos::Phases::LabelNode do
     context 'with labels and taints' do
       let(:host) { Pharos::Configuration::Host.new(
         address: '192.0.2.2',
+        private_address: '10.0.0.1',
         labels: {foo: 'bar'},
         taints: [
           Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule'),
@@ -109,7 +111,7 @@ describe Pharos::Phases::LabelNode do
       it 'patches node twice' do
         expect(node).to receive(:merge).with(
           metadata: {
-            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2' },
+            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2', 'node-address.kontena.io/internal-ip' => '10.0.0.1' },
           },
         ).and_return(node)
         expect(node).to receive(:merge).with(

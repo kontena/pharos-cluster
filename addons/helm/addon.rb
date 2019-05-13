@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'helm' do
-  version '2.12.3'
+  version '2.12.3-1'
   license 'Apache License 2.0'
 
   LABEL_NAME = 'helm.kontena.io/chart'
@@ -55,7 +55,11 @@ Pharos.addon 'helm' do
     configmap = build_configmap(chart)
     job = build_job(chart, configmap)
     ensure_resource(configmap)
-    ensure_resource(job)
+    job = ensure_resource(job)
+    while job&.status&.succeeded.to_i.zero? && job&.status&.failed.to_i.zero?
+      sleep 1
+      job = fetch_resource(job)
+    end
   end
 
   # @param resource [K8s::Resource]

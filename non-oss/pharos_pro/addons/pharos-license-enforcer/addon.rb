@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'pharos-license-enforcer' do
-  version '0.3.0'
+  version '0.3.1'
   license 'Kontena License'
 
   enable!
@@ -35,7 +35,7 @@ Pharos.addon 'pharos-license-enforcer' do
       image: #{cluster_config.image_repository}/pharos-license-enforcer:#{self.class.version}
       args:
         - -interval
-        - 30s
+        - 60m
         - -kube-config
         - /etc/kubeconfig
       env:

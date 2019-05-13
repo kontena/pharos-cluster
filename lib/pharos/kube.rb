@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'k8s-client'
-
 module Pharos
   module Kube
     def self.init_logging!

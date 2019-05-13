@@ -18,13 +18,26 @@ module Pharos
         @host.configurer.configure_firewalld
 
         logger.info { 'Configuring firewalld rules ...' }
+
         write_config('services/pharos-master.xml', pharos_master_service) if @host.master?
         write_config('services/pharos-worker.xml', pharos_worker_service)
         write_config('ipsets/pharos.xml', pharos_ipset)
+
+        # Masquerade was enabled in the past, if it's still enabled we need to reload firewalld rules
+        @firewalld_reload = true if masquerade_active?
+
+        return unless firewalld_reload?
+
+        cluster_context['reload-iptables'] = true
+        logger.info { 'Reloading firewalld ...' }
         exec_script(
           'configure-firewalld.sh',
           ROLE: @host.role
         )
+      end
+
+      def firewalld_reload?
+        !!@firewalld_reload
       end
 
       def disable_firewalld
@@ -35,7 +48,11 @@ module Pharos
       # @param file [String]
       # @param contents [String]
       def write_config(file, contents)
-        transport.file(File.join('/etc/firewalld/', file)).write(contents)
+        remote_file = transport.file(File.join('/etc/firewalld/', file))
+        return if remote_file.exist? && remote_file.read.strip == contents.strip
+
+        @firewalld_reload = true
+        remote_file.write(contents)
       end
 
       # @return [Array<String>]
@@ -84,6 +101,10 @@ module Pharos
           name: 'pharos',
           entries: trusted_addresses
         )
+      end
+
+      def masquerade_active?
+        transport.exec("firewall-cmd --query-masquerade > /dev/null 2>&1").success?
       end
     end
   end
