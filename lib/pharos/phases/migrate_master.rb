@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'mixins/cluster_version'
+
 module Pharos
   module Phases
     class MigrateMaster < Pharos::Phase
