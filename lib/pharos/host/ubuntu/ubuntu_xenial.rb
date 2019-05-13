@@ -7,7 +7,7 @@ module Pharos
     class UbuntuXenial < Ubuntu
       register_config 'ubuntu', '16.04'
 
-      DOCKER_VERSION = '18.06.1'
+      DOCKER_VERSION = '18.09'
       CFSSL_VERSION = '1.2'
 
       register_component(
