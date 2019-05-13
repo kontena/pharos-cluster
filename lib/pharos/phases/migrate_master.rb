@@ -18,7 +18,7 @@ module Pharos
       end
 
       def migrate_from_2_3
-        logger.info "Triggering certificate refresh ..."
+        logger.info "Triggering etcd certificate refresh ..."
         cluster_context['recreate-etcd-certs'] = true
       end
     end
