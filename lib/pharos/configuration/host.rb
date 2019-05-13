@@ -32,7 +32,7 @@ module Pharos
         super
         labels['node-address.kontena.io/external-ip'] = address
         labels['node-address.kontena.io/internal-ip'] = private_address if private_address
-        labels["node-role.kubernetes.io/#{role}"] = '' unless labels.find{ |k, _| k.to_s.start_with?("node-role.kubernetes.io") }
+        labels["node-role.kubernetes.io/#{role}"] = '' unless role.nil? || labels.keys.find{ |k| k.to_s.start_with?("node-role.kubernetes.io") }
       end
 
       def private_interface_address=(address)

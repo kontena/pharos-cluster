@@ -12,14 +12,15 @@ describe Pharos::Configuration::Host do
 
   describe '#labels' do
     context 'for master' do
-      it 'returns external-ip only by default' do
+      it 'returns external-ip and node role only by default' do
         subject = described_class.new(
           address: '192.168.100.100',
           role: 'master',
           user: 'root'
         )
         expect(subject.labels).to eq({
-          'node-address.kontena.io/external-ip' => '192.168.100.100'
+          'node-address.kontena.io/external-ip' => '192.168.100.100',
+          'node-role.kubernetes.io/master' => ''
         })
       end
 
@@ -32,7 +33,8 @@ describe Pharos::Configuration::Host do
         )
         expect(subject.labels).to eq({
           'node-address.kontena.io/external-ip' => '192.168.100.100',
-          'node-address.kontena.io/internal-ip' => '10.0.0.1'
+          'node-address.kontena.io/internal-ip' => '10.0.0.1',
+          'node-role.kubernetes.io/master' => ''
         })
       end
 
@@ -48,7 +50,8 @@ describe Pharos::Configuration::Host do
 
         expect(subject.labels).to eq({
           'node-address.kontena.io/external-ip' => '192.168.100.100',
-          'node-address.kontena.io/internal-ip' => '10.1.2.3'
+          'node-address.kontena.io/internal-ip' => '10.1.2.3',
+          'node-role.kubernetes.io/master' => ''
         })
       end
 
