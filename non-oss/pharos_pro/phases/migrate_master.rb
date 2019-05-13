@@ -10,6 +10,7 @@ module Pharos
       title "Migrate master"
 
       def call
+        # rubocop:disable Style/GuardClause
         if existing_version == pharos_version
           logger.info 'Nothing to migrate.'
           return
@@ -24,6 +25,7 @@ module Pharos
           logger.info 'Triggering etcd certificate refresh ...'
           cluster_context['recreate-etcd-certs'] = true
         end
+        # rubocop:enable Style/GuardClause
       end
 
       def migrate_cluster_info
