@@ -5,16 +5,24 @@ require 'pharos/phases/mixins/cluster_version'
 module Pharos
   module Phases
     class MigrateMaster < Pharos::Phase
-      title "Migrate master"
-
       include Pharos::Phases::Mixins::ClusterVersion
+
+      title "Migrate master"
 
       def call
         if existing_version == pharos_version
           logger.info 'Nothing to migrate.'
-        elsif existing_version > build_version('1.0.0') && existing_version < build_version('2.3.0-alpha.1')
+          return
+        end
+
+        if existing_version > build_version('1.0.0') && existing_version < build_version('2.3.0-alpha.1')
           logger.info 'Migrating cluster info ...'
           migrate_cluster_info
+        end
+
+        if existing_version < build_version('2.4.0-alpha.0')
+          logger.info 'Triggering etcd certificate refresh ...'
+          cluster_context['recreate-etcd-certs'] = true
         end
       end
 
