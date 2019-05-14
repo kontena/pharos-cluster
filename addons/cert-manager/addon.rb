@@ -25,8 +25,9 @@ Pharos.addon 'cert-manager' do
       required(:name).filled(:str?)
       required(:email).filled(:str?)
       optional(:server).filled(:str?)
-      optional(:extra_args).each(:str?)
     }
+    
+    optional(:extra_args).each(:str?)
 
     optional(:ca_issuer).schema {
       optional(:enabled).filled(:bool?)
