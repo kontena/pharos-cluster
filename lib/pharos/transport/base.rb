@@ -16,9 +16,9 @@ module Pharos
         PATH: '$PATH'
       }.freeze
 
-      attr_reader :host
-
       include MonitorMixin
+
+      attr_reader :host
 
       # @param host [String]
       # @param opts [Hash]
