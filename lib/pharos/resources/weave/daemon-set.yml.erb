@@ -116,6 +116,12 @@ spec:
           resources:
             requests:
               cpu: 10m
+              memory: 20Mi
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: xtables-lock
+              mountPath: /run/xtables.lock
         <% end %>
       hostNetwork: true
       hostPID: true

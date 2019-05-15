@@ -8,31 +8,33 @@ module Pharos
       REMOTE_FILE = "/etc/kubernetes/admin.conf"
 
       def call
+        return if cluster_context['kube_client']
         return unless kubeconfig?
 
         mutex.synchronize do
-          return if cluster_context['kubeconfig']
-
-          cluster_context['kubeconfig'] = kubeconfig
+          if host.local?
+            cluster_context['kube_client'] ||= Pharos::Kube.client('localhost', k8s_config, 6443)
+          else
+            cluster_context['kube_client'] ||= Pharos::Kube.client('localhost', k8s_config, transport.forward(host.api_address, 6443))
+          end
         end
 
         client_prefetch
       end
 
+      def kubeconfig
+        @kubeconfig ||= transport.file(REMOTE_FILE)
+      end
+
       # @return [String]
       def kubeconfig?
-        transport.file(REMOTE_FILE).exist?
+        kubeconfig.exist?
       end
 
       # @return [K8s::Config]
-      def read_kubeconfig
-        transport.file(REMOTE_FILE).read
-      end
-
-      # @return [K8s::Config]
-      def kubeconfig
+      def k8s_config
         logger.info { "Fetching kubectl config ..." }
-        config = YAML.safe_load(read_kubeconfig)
+        config = YAML.safe_load(kubeconfig.read)
 
         logger.debug { "New config: #{config}" }
         K8s::Config.new(config)

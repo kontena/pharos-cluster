@@ -24,7 +24,7 @@ describe Pharos::AddonManager.addons['kontena-storage'] do
           'use_all_nodes' => true
         }
 
-      }, kube_client: double, cpu_arch: double, cluster_config: double)
+      }, cpu_arch: double, cluster_config: double, cluster_context: { 'kube_client' => double })
       resource = subject.build_cluster_resource
       expect(resource.spec.dataDirHostPath).to eq('/var/lib/foo')
       expect(resource.spec.storage.useAllNodes).to be_truthy
