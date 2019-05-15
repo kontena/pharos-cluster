@@ -31,7 +31,7 @@ module Pharos
 
       def configure_container_runtime
         logger.info "Configuring container runtime (#{@host.container_runtime}) packages ..."
-        host_configurer.configure_container_runtime
+        host_configurer.configure_container_runtime!
       end
     end
   end
