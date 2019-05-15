@@ -143,6 +143,7 @@ module Pharos
         args << "--pod-infra-container-image=#{@config.image_repository}/pause:3.1"
         args << "--cloud-provider=#{@config.cloud.resolve_provider}" if @config.cloud
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.intree_provider? && @config.cloud&.config
+
         args
       end
     end
