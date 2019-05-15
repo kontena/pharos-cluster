@@ -10,7 +10,7 @@ describe Pharos::AddonManager.addons['host-upgrades'] do
   let(:cpu_arch) { double(:cpu_arch ) }
 
   subject do
-    described_class.new({enabled: true}.merge(config), enabled: true, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: cluster_config)
+    described_class.new({enabled: true}.merge(config), enabled: true, cpu_arch: cpu_arch, cluster_config: cluster_config, cluster_context: { 'kube_client' => kube_client })
   end
 
   describe "#validate" do
