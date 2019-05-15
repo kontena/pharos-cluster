@@ -8,7 +8,7 @@ module Pharos
       on :remote_hosts
 
       def call
-        host.transport.connect
+        host.transport.connect unless host.transport.connected?
       end
     end
   end

@@ -108,7 +108,7 @@ module Pharos
       def exec_script(script, vars = {})
         transport.exec_script!(
           script,
-          env: vars,
+          env: (host.environment || {}).merge(vars),
           path: script_path(script)
         )
       end

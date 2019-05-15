@@ -33,6 +33,29 @@ module Pharos
       config = new(schema_data)
       config.data = raw_data.freeze
 
+      config.hosts.reject { |h| h.bastion.nil? }.each do |host_a|
+        host_b = config.hosts.find { |host| host_a.bastion.attributes_match?(host.attributes) }
+        next unless host_b
+
+        # Creating a new Pharos::Configuration::Bastion entry because otherwise it's an anonymous class
+        host_a.attributes[:bastion] = Pharos::Configuration::Bastion.new(host_a.bastion.attributes).tap { |bastion| bastion.host = host_b }
+
+        if host_a == host_b
+          raise Pharos::ConfigError, 'hosts' => { config.hosts.index(host_a) => ["host and its bastion point to the same address and port (#{host_a.address}:#{host_a.ssh_port})"] }
+        end
+
+        if host_b.bastion
+          raise Pharos::ConfigError, 'hosts' => { config.hosts.index(host_a) => ["multi-hop bastion not supported (#{host_a.address}:#{host_a.ssh_port} -> #{host_a.bastion.address}:#{host_a.bastion.ssh_port} -> #{host_b.bastion.address}:#{host_b.bastion.ssh_port}"] }
+        end
+      end
+
+      # de-duplicate bastions (if two hosts share an identical bastion, make it the same object to avoid multiple gateways)
+      config.hosts.reject { |h| h.bastion.nil? }.permutation(2) do |host_a, host_b|
+        if host_a.bastion.attributes == host_b.bastion.attributes && host_a.bastion.object_id != host_b.bastion.object_id
+          host_b.attributes[:bastion] = host_a.bastion
+        end
+      end
+
       # inject api_endpoint & config reference to each host object
       config.hosts.each do |host|
         host.api_endpoint = config.api&.endpoint
@@ -127,22 +150,6 @@ module Pharos
     # @return [Array<String>]
     def regions
       @regions ||= hosts.map(&:region).compact.uniq
-    end
-
-    # @param kubeconfig [Hash]
-    # @return [K8s::Client]
-    def kube_client(kubeconfig)
-      return @kube_client if @kube_client
-
-      if master_host.bastion.nil?
-        api_address = master_host.api_address
-        api_port = 6443
-      else
-        api_address = 'localhost'
-        api_port = master_host.bastion.host.transport.forward(master_host.api_address, 6443)
-      end
-
-      @kube_client = Pharos::Kube.client(api_address, kubeconfig, api_port)
     end
 
     # @param key [Symbol]
