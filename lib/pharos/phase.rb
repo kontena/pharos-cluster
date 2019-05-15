@@ -30,11 +30,11 @@ module Pharos
 
     def self.cleanup
       worker_pools.values.each do |pool|
-        unless pool.shutdown?
-          pool.shutdown
-          pool.wait_for_termination(10)
-          pool.kill unless pool.shutdown?
-        end
+        next if pool.shutdown?
+
+        pool.shutdown
+        pool.wait_for_termination(10)
+        pool.kill unless pool.shutdown?
       end
       worker_pools.clear
     end
@@ -162,7 +162,7 @@ module Pharos
     end
 
     # Blocks until work is done via pool of workers
-    def concurrent_work(name, size, &block)
+    def concurrent_work(name, size)
       size = 1 if size < 1
       result = nil
       error = nil
@@ -170,7 +170,7 @@ module Pharos
       worker_pool(name, size).post do
         begin
           result = yield
-        rescue Exception => e
+        rescue StandardError => e
           error = e
         end
         latch.count_down
