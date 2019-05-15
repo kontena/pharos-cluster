@@ -65,11 +65,15 @@ module Pharos
           @debug
         end
 
+        def thread_id
+          Thread.current.object_id.to_s(36)
+        end
+
         # @param cmd [String]
         # @return [IO] $stdout
         def debug_cmd(cmd)
           synchronize do
-            $stdout << @debug_prefix << "$ #{cmd}".cyan << "\n"
+            $stdout << @debug_prefix << thread_id << " $ #{cmd}".cyan << "\n"
           end
         end
 
@@ -79,7 +83,7 @@ module Pharos
           return if ENV["DEBUG_STDIN"].to_s.empty?
 
           synchronize do
-            $stdout << @debug_prefix << "< #{data}".green
+            $stdout << @debug_prefix << thread_id << " < #{data}".green
           end
         end
 
@@ -88,7 +92,7 @@ module Pharos
         def debug_stdout(data)
           synchronize do
             data.each_line do |line|
-              $stdout << @debug_prefix << line.dim
+              $stdout << @debug_prefix << thread_id << " " << line.dim
               $stdout << "\n" unless line.end_with?("\n")
             end
           end
@@ -99,7 +103,7 @@ module Pharos
         def debug_stderr(data)
           synchronize do
             data.each_line do |line|
-              $stdout << @debug_prefix << line.red
+              $stdout << @debug_prefix << thread_id << " " << line.red
               $stdout << "\n" unless line.end_with?("\n")
             end
           end
@@ -109,7 +113,7 @@ module Pharos
         # @return [IO] $stdout
         def debug_exit(exit_status)
           synchronize do
-            $stdout << @debug_prefix << "! #{exit_status}".yellow << "\n"
+            $stdout << @debug_prefix << thread_id << " ! #{exit_status}".yellow << "\n"
           end
         end
 

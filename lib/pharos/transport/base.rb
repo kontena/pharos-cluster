@@ -16,9 +16,9 @@ module Pharos
         PATH: '$PATH'
       }.freeze
 
-      include MonitorMixin
-
       attr_reader :host
+
+      include MonitorMixin
 
       # @param host [String]
       # @param opts [Hash]
@@ -49,14 +49,14 @@ module Pharos
       # @return [Pharos::Transport::Tempfile]
       # @yield [Pharos::Transport::Tempfile]
       def tempfile(prefix: "pharos", content: nil, &block)
-        synchronize { Pharos::Transport::Tempfile.new(self, prefix: prefix, content: content, &block) }
+        Pharos::Transport::Tempfile.new(self, prefix: prefix, content: content, &block)
       end
 
       # @param cmd [String] command to execute
       # @param options [Hash]
       # @return [Pharos::Command::Result]
       def exec(cmd, **options)
-        synchronize { command(cmd, **options).run }
+        command(cmd, **options).run
       end
 
       # @param cmd [String] command to execute
@@ -64,7 +64,7 @@ module Pharos
       # @raise [Pharos::ExecError]
       # @return [String] stdout
       def exec!(cmd, **options)
-        synchronize { command(cmd, **options).run!.stdout }
+        command(cmd, **options).run!.stdout
       end
 
       # @param name [String] name of script
