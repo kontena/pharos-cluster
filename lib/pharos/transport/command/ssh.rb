@@ -40,12 +40,9 @@ module Pharos
             end
           end
 
-          puts "WAITING FOR RESPONSE"
           @client.synchronize do
-            puts "WAITING FOR RESPONSE 2"
             response.wait
           end
-          puts "WAITING FOR RESPONSE 3"
 
           result
         rescue IOError
