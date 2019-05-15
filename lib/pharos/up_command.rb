@@ -96,11 +96,11 @@ module Pharos
         if context['unsafe_upgrade']
           if force?
             puts
-            puts "WARNING:".red + " using --force to attempt an unsafe upgrade, this might cause downtime."
+            puts "WARNING:".red + " using --force to attempt an unsafe upgrade to version #{Pharos.version}."
           else
             error_message = <<~ERROR_MSG
-              Upgrading to version #{Pharos.version} might cause downtime. You may force the upgrade by running
-              the command with --force or use the Kontena Pharos Pro version.
+              Upgrading to version #{Pharos.version} might not work (see https://www.pharos.sh/docs/upgrade.html).
+              You may force the upgrade by running the command with --force.
             ERROR_MSG
             signal_error error_message
           end

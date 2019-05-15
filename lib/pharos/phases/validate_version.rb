@@ -25,7 +25,7 @@ module Pharos
         cluster_version = build_version(cluster_version)
         raise "Downgrade not supported" if cluster_version > pharos_version
 
-        if requirement.satisfied_by?(cluster_version)
+        if requirement.satisfied_by?(cluster_version) || cluster_version.bump == pharos_version
           logger.info { "Valid cluster version detected: #{cluster_version}" }
         else
           logger.warn { "Invalid cluster version detected: #{cluster_version}" }
