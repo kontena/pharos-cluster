@@ -10,7 +10,7 @@ module Pharos
           logger.info "Configuring container runtime (#{@host.container_runtime}) packages ..."
           host_configurer.configure_container_runtime!
         else
-          concurrent_work('reconfigure_with_drain', (@config.hosts.size * 0.1).ceil ) do
+          concurrent_work('reconfigure_with_drain', (@config.hosts.size * 0.1).ceil) do
             logger.info "Reconfiguration of container runtime (#{@host.container_runtime}) might affect workloads, switching to a safe mode ..."
             reconfigure_with_drain
           end
@@ -34,12 +34,13 @@ module Pharos
 
         logger.info "Reconfiguring container runtime (#{@host.container_runtime}) packages ..."
         host_configurer.configure_container_runtime!
-        if master_healthy?
-          logger.info "Uncordoning node ..."
-          sleep 1 until master_host.transport.exec("kubectl uncordon #{@host.hostname}").success?
-          logger.info "Waiting for node to be ready ..."
-          sleep 10 until master_host.transport.exec("kubectl get nodes -o jsonpath=\"{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}\" | grep 'Ready=True'").success?
-        end
+
+        return unless master_healthy?
+
+        logger.info "Uncordoning node ..."
+        sleep 1 until master_host.transport.exec("kubectl uncordon #{@host.hostname}").success?
+        logger.info "Waiting for node to be ready ..."
+        sleep 10 until master_host.transport.exec("kubectl get nodes -o jsonpath=\"{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}\" | grep 'Ready=True'").success?
       end
 
       def drain_host
