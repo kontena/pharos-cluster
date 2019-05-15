@@ -66,7 +66,7 @@ module Pharos
         end
 
         def thread_id
-          Thread.current.object_id.to_s(36)
+          Thread.current.object_id.to_s(36).dim
         end
 
         # @param cmd [String]
