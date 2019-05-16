@@ -5,6 +5,8 @@ module Pharos
     class ConfigureHost < Pharos::Phase
       title "Configure hosts"
 
+      ROLLOUT_PERCENTAGE = 10
+
       def call
         unless @host.environment.nil? || @host.environment.empty?
           logger.info "Updating environment file ..."
@@ -34,11 +36,16 @@ module Pharos
           logger.info "Configuring container runtime (#{@host.container_runtime}) packages ..."
           host_configurer.configure_container_runtime!
         else
-          concurrent_work('reconfigure_with_drain', (@config.hosts.size * 0.1).ceil) do
+          concurrent_work('reconfigure_with_drain', rollout_concurrency) do
             logger.info "Reconfiguration of container runtime (#{@host.container_runtime}) might affect workloads, switching to a safe mode ..."
             reconfigure_with_drain
           end
         end
+      end
+
+      # @return [Integer]
+      def rollout_concurrency
+        (@config.hosts.size * ROLLOUT_PERCENTAGE / 100).ceil
       end
 
       def reconfigure_with_drain
