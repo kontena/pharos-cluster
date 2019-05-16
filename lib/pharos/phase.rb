@@ -162,24 +162,14 @@ module Pharos
     end
 
     # Blocks until work is done via pool of workers
-    def concurrent_work(name, size)
+    # @param name [String]
+    # @param size [Integer]
+    def concurrent_work(name, size, &block)
       size = 1 if size < 1
-      result = nil
-      error = nil
-      latch = Concurrent::CountDownLatch.new(1)
-      worker_pool(name, size).post do
-        begin
-          result = yield
-        rescue StandardError => e
-          error = e
-        end
-        latch.count_down
-      end
-      latch.wait
+      task = Concurrent::Future.execute(executor: worker_pool(name, size), &block)
+      raise(task.reason) if task.value.nil? && task.reason.is_a?(Exception)
 
-      raise error if error
-
-      result
+      task.value
     end
   end
 end
