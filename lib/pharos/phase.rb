@@ -164,7 +164,7 @@ module Pharos
     # Blocks until work is done via pool of workers
     # @param name [String]
     # @param size [Integer]
-    def concurrent_work(name, size, &block)
+    def throttled_work(name, size, &block)
       size = 1 if size < 1
       task = Concurrent::Future.execute(executor: worker_pool(name, size), &block)
       raise(task.reason) if task.value.nil? && task.reason.is_a?(Exception)
