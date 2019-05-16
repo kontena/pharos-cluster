@@ -71,7 +71,7 @@ module Pharos
         logger.info "Uncordoning node ..."
         sleep 1 until master_host.transport.exec("kubectl uncordon #{@host.hostname}").success?
         logger.info "Waiting for node to be ready ..."
-        sleep 10 until master_host.transport.exec("kubectl get nodes -o jsonpath=\"{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}\" | grep 'Ready=True'").success?
+        sleep 10 until master_host.transport.exec("kubectl get node #{@host.hostname} -o jsonpath=\"{range @.status.conditions[*]}{@.type}={@.status};{end}\" | grep 'Ready=True'").success?
       end
 
       def drain_host
