@@ -36,7 +36,7 @@ module Pharos
           logger.info "Configuring container runtime (#{@host.container_runtime}) packages ..."
           host_configurer.configure_container_runtime!
         else
-          concurrent_work('reconfigure_with_drain', rollout_concurrency) do
+          throttled_work('reconfigure_with_drain', rollout_concurrency) do
             logger.info "Reconfiguration of container runtime (#{@host.container_runtime}) might affect workloads, switching to a safe mode ..."
             reconfigure_with_drain
           end

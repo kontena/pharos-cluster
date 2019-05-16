@@ -25,9 +25,9 @@ describe Pharos::Phase do
     end
   end
 
-  describe '#concurrent_work' do
+  describe '#throttled_work' do
     it 'runs given block' do
-      value = subject.concurrent_work('foo', 2) do
+      value = subject.throttled_work('foo', 2) do
         'bar'
       end
       expect(value).to eq('bar')
@@ -35,7 +35,7 @@ describe Pharos::Phase do
 
     it 'raises re-raises exceptions' do
       expect {
-        subject.concurrent_work('foo', 2) do
+        subject.throttled_work('foo', 2) do
           raise 'bar'
         end
       }.to raise_error(StandardError)
