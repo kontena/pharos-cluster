@@ -57,8 +57,8 @@ describe "Pharos::Phases::ValidateVersion", if: Pharos.oss? do
     end
 
     it 'allows upgrade of one minor version' do
-      stub_const('Pharos::VERSION', '2.1.0')
-      expect{subject.validate_version('2.0.0')}.not_to change{cluster_context['unsafe_upgrade']}
+      stub_const('Pharos::VERSION', '2.1.2')
+      expect{subject.validate_version('2.0.1')}.not_to change{cluster_context['unsafe_upgrade']}
     end
 
     it 'does not allow upgrade of two minor version' do
