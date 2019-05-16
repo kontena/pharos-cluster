@@ -47,6 +47,11 @@ Pharos.addon 'cert-manager' do
   }
 
   install {
+    # Need to add label to kube-system NS to get webhook PKI in place properly
+    kube_system = kube_client.api('v1').resource('namespaces').get('kube-system')
+    kube_system.metadata.labels['certmanager.k8s.io/disable-validation'] = "true"
+    kube_client.api('v1').resource('namespaces').update_resource(kube_system)
+
     stack = kube_stack
 
     if config.ca_issuer&.enabled
