@@ -36,6 +36,10 @@ module Pharos
         end
 
         config['featureGates'] = feature_gates unless feature_gates.empty?
+
+        config['cpuCFSQuotaPeriod'] = @config&.kubelet&.cpu_cfs_quota_period if @config&.kubelet&.cpu_cfs_quota_period
+        config['cpuCFSQuota'] = !!@config&.kubelet&.cpu_cfs_quota
+
         config
       end
     end

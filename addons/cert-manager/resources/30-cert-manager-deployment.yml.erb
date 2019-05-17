@@ -25,6 +25,9 @@ spec:
           args:
           - --cluster-resource-namespace=$(POD_NAMESPACE)
           - --leader-election-namespace=$(POD_NAMESPACE)
+          <% config.extra_args.each do |arg| %>
+          - <%= arg %>
+          <% end %>
           ports:
           - containerPort: 9402
           env:

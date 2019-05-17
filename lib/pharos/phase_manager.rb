@@ -99,6 +99,7 @@ module Pharos
 
         phase.logger.info 'Completed phase in %<duration>.2fs' % { duration: Time.now - start }
       end
+      phase_class.cleanup
     end
   end
 end

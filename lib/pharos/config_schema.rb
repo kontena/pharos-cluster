@@ -206,6 +206,8 @@ module Pharos
           optional(:read_only_port).filled(:bool?)
           optional(:feature_gates).filled
           optional(:extra_args).each(type?: String)
+          optional(:cpu_cfs_quota).filled(:bool?)
+          optional(:cpu_cfs_quota_period).filled(:str?)
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
