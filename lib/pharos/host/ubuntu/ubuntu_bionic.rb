@@ -71,7 +71,7 @@ module Pharos
       def default_repositories
         [Pharos::Configuration::Repository.new(
           name: "pharos-kubernetes.list",
-          key: "https://bintray-pk.pharos.sh/?username=bintray",
+          key_url: "https://bintray-pk.pharos.sh/?username=bintray",
           contents: "deb https://dl.bintray.com/kontena/pharos-debian bionic main\n"
         )]
       end

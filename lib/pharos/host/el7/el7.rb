@@ -19,8 +19,6 @@ module Pharos
       def configure_repos
         host_repositories.each do |repo|
           repo_path = "/etc/yum.repos.d/#{repo.name}"
-          next if transport.file(repo_path).exist?
-
           transport.file(repo_path).write(repo.contents)
         end
         transport.exec!("sudo yum clean expire-cache")

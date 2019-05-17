@@ -53,9 +53,7 @@ module Pharos
       def configure_repos
         host_repositories.each do |repo|
           repo_path = "/etc/apt/sources.list.d/#{repo.name}"
-          next if transport.file(repo_path).exist?
-
-          transport.exec!("sudo curl -fsSL #{repo.key_url} | apt-key add -") if repo.key_url
+          transport.exec!("curl -fsSL #{repo.key_url} | sudo apt-key add -") if repo.key_url
           transport.file(repo_path).write(repo.contents)
         end
         transport.exec!("DEBIAN_FRONTEND=noninteractive sudo apt-get update -y")
