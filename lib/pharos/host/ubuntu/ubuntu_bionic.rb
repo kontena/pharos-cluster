@@ -7,7 +7,7 @@ module Pharos
     class UbuntuBionic < Ubuntu
       register_config 'ubuntu', '18.04'
 
-      DOCKER_VERSION = '18.06.1'
+      DOCKER_VERSION = '18.09'
       CFSSL_VERSION = '1.2'
 
       register_component(
@@ -57,7 +57,6 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
-          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
@@ -67,7 +66,6 @@ module Pharos
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
-          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end

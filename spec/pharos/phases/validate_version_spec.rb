@@ -56,8 +56,13 @@ describe "Pharos::Phases::ValidateVersion", if: Pharos.oss? do
       expect{subject.validate_version('2.0.1-alpha.1')}.to raise_error(RuntimeError, /Downgrade/)
     end
 
-    it 'does not allow upgrade to point-release' do
-      stub_const('Pharos::VERSION', '2.1.0')
+    it 'allows upgrade of one minor version' do
+      stub_const('Pharos::VERSION', '2.1.2')
+      expect{subject.validate_version('2.0.1')}.not_to change{cluster_context['unsafe_upgrade']}
+    end
+
+    it 'does not allow upgrade of two minor version' do
+      stub_const('Pharos::VERSION', '2.2.0')
       expect{subject.validate_version('2.0.0')}.to change{cluster_context['unsafe_upgrade']}
     end
   end

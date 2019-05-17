@@ -25,7 +25,7 @@ module Pharos
         cluster_version = build_version(cluster_version)
         raise "Downgrade not supported" if cluster_version > pharos_version
 
-        if requirement.satisfied_by?(cluster_version)
+        if valid_patch?(cluster_version) || valid_minor?(cluster_version)
           logger.info { "Valid cluster version detected: #{cluster_version}" }
         else
           logger.warn { "Invalid cluster version detected: #{cluster_version}" }
@@ -35,8 +35,20 @@ module Pharos
 
       private
 
+      # @param cluster_version [Gem::Version]
+      # @return [Boolean]
+      def valid_patch?(cluster_version)
+        patch_requirement.satisfied_by?(cluster_version)
+      end
+
+      # @param cluster_version [Gem::Version]
+      # @return [Boolean]
+      def valid_minor?(cluster_version)
+        cluster_version.bump.to_s == pharos_version.segments.first(2).join('.')
+      end
+
       # Returns a requirement like "~>", "1.3.0"  which will match >= 1.3.0 && < 1.4.0
-      def requirement
+      def patch_requirement
         Gem::Requirement.new('~>' + pharos_version.segments.first(2).join('.') + (pharos_version.prerelease? ? '.0-a' : '.0'))
       end
     end

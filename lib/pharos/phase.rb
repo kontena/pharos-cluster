@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'logger'
+require 'concurrent'
 
 module Pharos
   class Phase
@@ -20,6 +21,27 @@ module Pharos
 
     def self.register_component(component)
       Pharos::Phases.register_component(component)
+    end
+
+    # @return [Hash{String => Concurrent::FixedThreadPool}]
+    def self.worker_pools
+      @worker_pools ||= {}
+    end
+
+    def self.cleanup
+      worker_pools.values.each do |pool|
+        next if pool.shutdown?
+
+        pool.shutdown
+        pool.wait_for_termination(10)
+        pool.kill unless pool.shutdown?
+      end
+      worker_pools.clear
+    end
+
+    # @return [Mutex]
+    def self.mutex
+      @mutex ||= Mutex.new
     end
 
     attr_reader :cluster_context, :host
@@ -127,12 +149,25 @@ module Pharos
       Pharos::Kube::Stack.new(name).delete(kube_client)
     end
 
+    # @return [Mutex]
     def mutex
       self.class.mutex
     end
 
-    def self.mutex
-      @mutex ||= Mutex.new
+    # @return [Concurrent::FixedThreadPool]
+    def worker_pool(name, size)
+      self.class.worker_pools[name] ||= Concurrent::FixedThreadPool.new(size)
+    end
+
+    # Blocks until work is done via pool of workers
+    # @param name [String]
+    # @param size [Integer]
+    def throttled_work(name, size, &block)
+      size = 1 if size < 1
+      task = Concurrent::Future.execute(executor: worker_pool(name, size), &block)
+      raise(task.reason) if task.value.nil? && task.reason.is_a?(Exception)
+
+      task.value
     end
   end
 end
