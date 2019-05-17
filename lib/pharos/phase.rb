@@ -169,5 +169,15 @@ module Pharos
 
       task.value
     end
+
+    # @return [Concurrent::CyclicBarrier]
+    def self.checkpoint
+      @checkpoint ||= Concurrent::CyclicBarrier.new(Thread.main[:phase_hosts_count] || 1)
+    end
+
+    # @return [Concurrent::CyclicBarrier]
+    def checkpoint
+      self.class.checkpoint
+    end
   end
 end
