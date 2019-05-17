@@ -23,7 +23,7 @@ module Pharos
 
           transport.file(repo_path).write(repo.contents)
         end
-        transport.exec!("yum clean expire-cache")
+        transport.exec!("sudo yum clean expire-cache")
       end
 
       def default_repositories
