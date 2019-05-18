@@ -37,7 +37,7 @@ module Pharos
       def connect(**options)
         if bastion
           # wait for bastion host connection, otherwise we might get invalid session_factory
-          sleep 0.1 until bastion&.transport&.connected? && !bastion.transport&.disconnecting?
+          sleep 0.1 until bastion.transport && !bastion.transport.disconnecting?
           session_factory = bastion.transport
         else
           session_factory = Net::SSH
@@ -132,10 +132,10 @@ module Pharos
 
       def disconnect
         @disconnecting = true
-        no_active_locals = @session.forward.active_locals.empty?
+        no_active_locals = @session.forward.active_locals.size <= 1
         until no_active_locals
           synchronize do
-            no_active_locals = @session.forward.active_locals.size == 1
+            no_active_locals = @session.forward.active_locals.size <= 1
           end
           sleep 0.1
         end
