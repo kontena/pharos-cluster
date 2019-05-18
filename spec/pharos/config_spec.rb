@@ -83,6 +83,83 @@ describe Pharos::Config do
       end
     end
 
+    context 'host deduplication' do
+      context 'bastion to an existing host' do
+        let(:data) do
+          {
+            'hosts' => [
+              { 'address' => '10.0.0.1', 'role' => 'master', 'bastion' => { 'address' => '10.0.0.2' } },
+              { 'address' => '10.0.0.2', 'role' => 'master' }
+            ]
+          }
+        end
+
+        it 'makes the bastion.host a reference to an existing host' do
+          expect(subject.hosts.first.bastion.host.object_id == subject.hosts.last.object_id)
+        end
+      end
+
+      context 'multiple bastions to the same host' do
+        let(:data) do
+          {
+            'hosts' => [
+              { 'address' => '10.0.0.1', 'role' => 'master', 'bastion' => { 'address' => '10.0.0.3' } },
+              { 'address' => '10.0.0.2', 'role' => 'master', 'bastion' => { 'address' => '10.0.0.3' } }
+            ]
+          }
+        end
+
+        it 'makes the bastion.hosts refer to the same host object' do
+          expect(subject.hosts.first.bastion.host.object_id == subject.hosts.last.bastion.host.object_id)
+        end
+      end
+
+      context 'bastion to an existing host that itself uses a bastion' do
+        let(:data) do
+          {
+            'hosts' => [
+              { 'address' => '10.0.0.1', 'role' => 'master', 'bastion' => { 'address' => '10.0.0.2' } },
+              { 'address' => '10.0.0.2', 'role' => 'master', 'bastion' => { 'address' => '10.0.0.3' } }
+            ]
+          }
+        end
+
+        it 'detects a multi-hop bastion setup' do
+          expect{subject}.to raise_error(Pharos::ConfigError, /multi-hop/)
+        end
+      end
+
+      context 'bastion to the same host' do
+        context 'and same port' do
+          let(:data) do
+            {
+              'hosts' => [
+                { 'address' => '10.0.0.1', 'role' => 'master', 'bastion' => { 'address' => '10.0.0.1' } }
+              ]
+            }
+          end
+
+          it 'detects a config error' do
+            expect{subject}.to raise_error(Pharos::ConfigError, /same address and port/)
+          end
+        end
+
+        context 'but different port' do
+          let(:data) do
+            {
+              'hosts' => [
+                { 'address' => '10.0.0.1', 'role' => 'master', 'bastion' => { 'address' => '10.0.0.1', 'ssh_port' => 2222 } }
+              ]
+            }
+          end
+
+          it 'detects no problem' do
+            expect{subject}.not_to raise_error
+          end
+        end
+      end
+    end
+
     describe 'taints' do
       let(:data) { {
         'hosts' => [
