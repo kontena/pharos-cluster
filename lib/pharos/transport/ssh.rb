@@ -37,15 +37,14 @@ module Pharos
       def connect(**options)
         if bastion
           # wait for bastion host transport, otherwise we might get wrong session_factory
-          sleep 0.1 until bastion.transport && !bastion.transport.disconnecting?
+          sleep 0.1 until bastion.transport
           session_factory = bastion.transport
-          synchronizer = bastion.transport
         else
           session_factory = Net::SSH
-          synchronizer = self
         end
 
-        synchronizer.synchronize do
+        synchronize do
+          return if connected?
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           non_interactive = true
           begin
@@ -128,12 +127,7 @@ module Pharos
         synchronize { @session && !@session.closed? }
       end
 
-      def disconnecting?
-        synchronize { @disconnecting == true }
-      end
-
       def disconnect
-        @disconnecting = true
         no_active_locals = @session.forward.active_locals.size <= 1
         until no_active_locals
           synchronize do
@@ -148,8 +142,6 @@ module Pharos
           end
           @session&.close unless @session&.closed?
         end
-      ensure
-        @disconnecting = false
       end
 
       private
