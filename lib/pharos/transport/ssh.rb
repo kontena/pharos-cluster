@@ -36,14 +36,16 @@ module Pharos
       # @param options [Hash] see Net::SSH#start
       def connect(**options)
         if bastion
-          # wait for bastion host connection, otherwise we might get invalid session_factory
+          # wait for bastion host transport, otherwise we might get wrong session_factory
           sleep 0.1 until bastion.transport && !bastion.transport.disconnecting?
           session_factory = bastion.transport
+          synchronizer = bastion.transport
         else
           session_factory = Net::SSH
+          synchronizer = self
         end
 
-        synchronize do
+        synchronizer.synchronize do
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           non_interactive = true
           begin
