@@ -7,14 +7,7 @@ module Pharos
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
       attribute :ssh_port, Pharos::Types::Strict::Integer.default(22)
-
-      attr_writer :host
-
-      # @param other [Hash]
-      # @return [Boolean] true when all attributes of this instance match the input hash
-      def attributes_match?(other)
-        attributes.all? { |key, value| other[key] == value }
-      end
+      attribute :ssh_proxy_command, Pharos::Types::Strict::String
 
       def host
         @host ||= Host.new(attributes)
