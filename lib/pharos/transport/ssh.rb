@@ -35,13 +35,7 @@ module Pharos
 
       # @param options [Hash] see Net::SSH#start
       def connect(**options)
-        if bastion
-          # wait for bastion host connection, otherwise we might get invalid session_factory
-          sleep 0.1 until bastion.transport && !bastion.transport.disconnecting?
-          session_factory = bastion.transport
-        else
-          session_factory = Net::SSH
-        end
+        session_factory = bastion&.transport || Net::SSH
 
         synchronize do
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
@@ -87,8 +81,6 @@ module Pharos
       end
 
       # Starts a tunnel and calls Net::SSH.start
-      # Will be called only if host is using a bastion
-      #
       # @param host [String]
       # @param user [String]
       # @param options [Hash]
@@ -97,9 +89,6 @@ module Pharos
         Net::SSH.start('127.0.0.1', user, options.merge(port: forward(host, options[:port] || 22)))
       end
 
-      # Will be called only if transport is used as a bastion for other hosts
-      #
-      # @param local_port [Integer]
       def close(local_port)
         return unless connected?
 
@@ -121,28 +110,14 @@ module Pharos
         synchronize { @session && !@session.closed? }
       end
 
-      def disconnecting?
-        synchronize { @disconnecting == true }
-      end
-
       def disconnect
-        @disconnecting = true
-        no_active_locals = @session.forward.active_locals.size <= 1
-        until no_active_locals
-          synchronize do
-            no_active_locals = @session.forward.active_locals.size <= 1
-          end
-          sleep 0.1
-        end
         synchronize do
-          bastion&.transport&.close(@session.options[:port]) if bastion
+          bastion&.transport&.close(@session.options[:port]) if @session&.host == "127.0.0.1"
           @session&.forward&.active_locals&.each do |local_port, _host|
             @session&.forward&.cancel_local(local_port)
           end
           @session&.close unless @session&.closed?
         end
-      ensure
-        @disconnecting = false
       end
 
       private
