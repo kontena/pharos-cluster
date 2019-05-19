@@ -5,7 +5,7 @@ module Pharos
     class ConfigureWeave < Pharos::Phase
       title "Configure Weave network"
 
-      WEAVE_VERSION = '2.5.1'
+      WEAVE_VERSION = '2.5.2'
       WEAVE_FLYING_SHUTTLE_VERSION = '0.3.0'
 
       register_component(
