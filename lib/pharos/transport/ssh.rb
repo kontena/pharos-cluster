@@ -45,6 +45,7 @@ module Pharos
 
         synchronize do
           return if connected?
+
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           non_interactive = true
           begin
