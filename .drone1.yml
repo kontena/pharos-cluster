@@ -93,7 +93,7 @@ steps:
 kind: pipeline
 name: e2e-stretch
 depends_on:
-- e2e-xenial
+- e2e-bionic
 platform:
   os: linux
   arch: amd64
@@ -129,7 +129,7 @@ steps:
 kind: pipeline
 name: e2e-centos
 depends_on:
-- e2e-bionic
+- test
 platform:
   os: linux
   arch: amd64
