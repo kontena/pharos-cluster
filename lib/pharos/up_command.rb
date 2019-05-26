@@ -8,6 +8,7 @@ module Pharos
 
     option ['-n', '--name'], 'NAME', 'use as cluster name', attribute_name: :new_name
     option ['-f', '--force'], :flag, "force upgrade"
+    option ['--trust-hosts'], :flag, "remove hosts from ~/.ssh/known_hosts before connecting"
 
     def execute
       puts "==> KONTENA PHAROS v#{Pharos.version} (Kubernetes v#{Pharos::KUBE_VERSION})".bright_green
@@ -16,6 +17,11 @@ module Pharos
 
       config = load_config
       config.attributes[:name] = new_name if new_name
+      if trust_hosts?
+        config.hosts.each do |host|
+          `ssh-keygen -R #{host.address}`
+        end
+      end
 
       # set workdir to the same dir where config was loaded from
       # so that the certs etc. can be referenced more easily

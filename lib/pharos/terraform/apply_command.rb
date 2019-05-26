@@ -8,6 +8,7 @@ module Pharos
       options :load_config
 
       option ['-f', '--force'], :flag, "force upgrade"
+      option ['--trust-hosts'], :flag, "removes addresses from ~/.ssh/known_hosts before connecting"
 
       def execute
         tf_workspace
@@ -35,6 +36,7 @@ module Pharos
         cmd << ".#{workspace}.json"
         cmd << '-y' if yes?
         cmd << '--force' if force?
+        cmd << '--trust-hosts' if trust_hosts?
 
         Pharos::UpCommand.new('pharos').run(cmd)
       end
