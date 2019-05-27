@@ -1,9 +1,10 @@
 require 'pharos/phases/label_node'
 
 describe Pharos::Phases::LabelNode do
-  let(:master) { Pharos::Configuration::Host.new(address: '192.0.2.1') }
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.2', labels: { foo: 'bar' } ) }
-  let(:subject) { described_class.new(host) }
+  let(:config) { Pharos::Config.new(hosts: [host]) }
+
+  let(:subject) { described_class.new('localhost', config: config) }
 
   let(:kube_client) { instance_double(K8s::Client) }
   let(:kube_api_v1) { instance_double(K8s::APIClient) }
@@ -16,26 +17,33 @@ describe Pharos::Phases::LabelNode do
   end
 
   describe '#find_node' do
-    before(:each) do
-      allow(subject).to receive(:sleep)
-    end
-
     it 'finds node via hostname' do
       host.hostname = 'host-01'
-      allow(kube_nodes).to receive(:get).with('host-01').and_return([
-        K8s::Resource.new({
-          metadata: {
-            name: host.hostname
-          }
-        })
-      ])
-      expect(subject.find_node).not_to be_nil
+      expect(kube_nodes).to receive(:get).with('host-01').and_return(:node)
+      expect(subject.find_node(host)).to eq :node
+    end
+  end
+
+  describe '#host_patch_data' do
+    let(:taint) { Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule') }
+
+    it 'contains labels if host has labels' do
+      expect(subject.host_patch_data(Pharos::Configuration::Host.new(address: '10.0.0.1', labels: { 'foo' => 'bar' }))).to match hash_including(
+        metadata: { labels: { "foo" => "bar", "node-address.kontena.io/external-ip" => "10.0.0.1" } },
+      )
     end
 
-    it 'returns nil if node not found' do
-      host.hostname = 'host-01'
-      allow(kube_nodes).to receive(:get).with('host-01').and_raise(K8s::Error::NotFound.new('GET', '/asdf', 404, "Not Found", K8s::API::MetaV1::Status.new(metadata: {})))
-      expect(subject.find_node).to be_nil
+    it 'contains taints if host has taints' do
+      expect(subject.host_patch_data(Pharos::Configuration::Host.new(taints: [taint]))).to match hash_including(
+        spec: { taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ] }
+      )
+    end
+
+    it 'contains both if host has both' do
+      expect(subject.host_patch_data(Pharos::Configuration::Host.new(address: '10.0.0.1', labels: { 'foo'=> 'bar' }, taints: [taint]))).to match hash_including(
+        metadata: { labels: { "foo" => "bar", "node-address.kontena.io/external-ip" => "10.0.0.1" } },
+        spec: { taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ] }
+      )
     end
   end
 
@@ -43,53 +51,18 @@ describe Pharos::Phases::LabelNode do
     let(:node) { double(:kube_node, metadata: double(name: 'test')) }
 
     before do
-      allow(subject).to receive(:find_node).and_return(node)
-    end
-
-    context 'without kube node' do
-      before do
-        allow(subject).to receive(:find_node).and_return(nil)
-      end
-
-      it 'raises error if node not found' do
-        expect{subject.call}.to raise_error(Pharos::Error)
-      end
+      allow(subject).to receive(:find_node).with(host).and_return(node)
     end
 
     context 'with labels' do
       let(:host) { Pharos::Configuration::Host.new(
         address: '192.0.2.2',
-        private_address: '10.0.0.1',
-        labels: {foo: 'bar'},
+        labels: { "foo" => "bar" },
       ) }
 
       it 'patches node' do
         expect(node).to receive(:merge).with(
-          metadata: {
-            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2', 'node-address.kontena.io/internal-ip' => '10.0.0.1' },
-          },
-        ).and_return(node)
-
-        expect(kube_nodes).to receive(:update_resource).with(node)
-
-        subject.call
-      end
-    end
-
-    context 'with taints' do
-      let(:host) { Pharos::Configuration::Host.new(
-        address: '192.0.2.2',
-        taints: [
-          Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule'),
-        ]
-      ) }
-
-      it 'patches node' do
-        allow(subject).to receive(:patch_labels)
-        expect(node).to receive(:merge).with(
-          spec: {
-            taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ],
-          }
+          metadata: { labels: { "foo" => "bar", "node-address.kontena.io/external-ip" => "192.0.2.2" } },
         ).and_return(node)
 
         expect(kube_nodes).to receive(:update_resource).with(node)
@@ -99,28 +72,21 @@ describe Pharos::Phases::LabelNode do
     end
 
     context 'with labels and taints' do
-      let(:host) { Pharos::Configuration::Host.new(
-        address: '192.0.2.2',
-        private_address: '10.0.0.1',
-        labels: {foo: 'bar'},
-        taints: [
-          Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule'),
-        ]
-      ) }
+      let(:host) do
+        Pharos::Configuration::Host.new(
+          address: '192.0.2.2',
+          labels: { 'foo' => 'bar'},
+          taints: [ Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule') ]
+        )
+      end
 
-      it 'patches node twice' do
+      it 'patches both into node' do
         expect(node).to receive(:merge).with(
-          metadata: {
-            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2', 'node-address.kontena.io/internal-ip' => '10.0.0.1' },
-          },
-        ).and_return(node)
-        expect(node).to receive(:merge).with(
-          spec: {
-            taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ],
-          }
+          metadata: { labels: { "foo" => "bar", "node-address.kontena.io/external-ip" => "192.0.2.2" } },
+          spec: { taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ] }
         ).and_return(node)
 
-        expect(kube_nodes).to receive(:update_resource).with(node).twice
+        expect(kube_nodes).to receive(:update_resource).with(node)
 
         subject.call
       end
