@@ -1,14 +1,21 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: cert-manager
   namespace: kube-system
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: cert-manager
   template:
     metadata:
       labels:
         app: cert-manager
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9402'
     spec:
       serviceAccountName: cert-manager
       containers:
@@ -21,6 +28,8 @@ spec:
           <% config.extra_args.each do |arg| %>
           - <%= arg %>
           <% end %>
+          ports:
+          - containerPort: 9402
           env:
           - name: POD_NAMESPACE
             valueFrom:
