@@ -18,11 +18,11 @@ Pharos.addon('kontena-stats') do
 
   config {
     attribute :replicas, Pharos::Types::Integer.default(1)
-    attribute :tolerations, Pharos::Types::Array.default( Proc.new { [] } )
-    attribute :node_selector, Pharos::Types::Hash.default( Proc.new { {} } )
-    attribute :retention, Retention.default( Proc.new { Retention.new(time: '90d', size: '1GB') } )
+    attribute :tolerations, Pharos::Types::Array.default(proc { [] })
+    attribute :node_selector, Pharos::Types::Hash.default(proc { {} })
+    attribute :retention, Retention.default(proc { Retention.new(time: '90d', size: '1GB') })
     attribute :persistence, Persistence
-    attribute :alert_managers, Pharos::Types::Array.default( Proc.new { [] } )
+    attribute :alert_managers, Pharos::Types::Array.default(proc { [] })
   }
 
   config_schema {
