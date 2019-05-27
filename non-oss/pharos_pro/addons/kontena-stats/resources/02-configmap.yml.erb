@@ -8,13 +8,17 @@ data:
     # Global config
     global:
       scrape_interval: 15s
-
+    <% if config.alert_managers && !config.alert_managers.empty? %>
     # AlertManager
     alerting:
       alertmanagers:
       - static_configs:
         - targets:
-          - alertmanager:9093
+          <% alert_managers.each do |alert_manager| %>
+          - <%= alert_manager %>
+          <% end -%>
+
+    <% end -%>
 
     # Scrape configs for running Prometheus on a Kubernetes cluster.
     # This uses separate scrape configs for cluster components (i.e. API server, node)
