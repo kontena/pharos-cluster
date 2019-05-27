@@ -1,0 +1,41 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: cert-manager-webhook
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhook
+  template:
+    metadata:
+      labels:
+        app: webhook
+      annotations:
+    spec:
+      serviceAccountName: cert-manager-webhook
+      containers:
+        - name: webhook
+          image: "<%= image_repository %>/cert-manager-webhook:v<%= version %>"
+          imagePullPolicy: IfNotPresent
+          args:
+          - --v=12
+          - --secure-port=6443
+          - --tls-cert-file=/certs/tls.crt
+          - --tls-private-key-file=/certs/tls.key
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          resources:
+            {}
+            
+          volumeMounts:
+          - name: certs
+            mountPath: /certs
+      volumes:
+      - name: certs
+        secret:
+          secretName: cert-manager-webhook-webhook-tls

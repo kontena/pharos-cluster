@@ -6,7 +6,7 @@ module Pharos
       title "Open SSH connection"
 
       def call
-        host.transport.connect unless host.transport.connected?
+        host.transport.connect
       end
     end
   end
