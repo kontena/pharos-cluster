@@ -28,7 +28,7 @@ spec:
       hostPID: true
       containers:
       - name: node-exporter
-        image: <%= image_repository %>/prometheus-node-exporter:v0.17.0
+        image: <%= image_repository %>/prometheus-node-exporter:v<%= node_exporter_version %>
         args:
           - --path.procfs=/host/proc
           - --path.sysfs=/host/sys
