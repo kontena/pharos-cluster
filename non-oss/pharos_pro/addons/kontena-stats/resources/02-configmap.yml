@@ -147,6 +147,10 @@ data:
       - source_labels: [__meta_kubernetes_service_name]
         action: replace
         target_label: job
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_pod_node_name
+        target_label: kubernetes_node
 
     # Example scrape config for probing services via the Blackbox Exporter.
     #
