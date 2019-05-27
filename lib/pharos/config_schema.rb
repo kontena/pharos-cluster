@@ -43,6 +43,18 @@ module Pharos
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
       end
+
+      def self.addresses
+        @addresses ||= Set.new
+      end
+
+      predicate(:unique_address?) do |value|
+        if CustomPredicates.addresses.include?(value)
+          false
+        else
+          CustomPredicates.addresses << value
+        end
+      end
     end
 
     # @return [Dry::Validation::Schema]
@@ -50,12 +62,15 @@ module Pharos
       # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Params do
         configure do
+          CustomPredicates.addresses.clear
+
           def self.messages
             super.merge(
               en: {
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
-                  hostname_or_ip?: "is invalid"
+                  hostname_or_ip?: "is invalid",
+                  unique_address?: "is not unique"
                 }
               }
             )
@@ -66,7 +81,7 @@ module Pharos
           each do
             schema do
               predicates(CustomPredicates)
-              required(:address).filled(:str?, :hostname_or_ip?)
+              required(:address).filled(:str?, :hostname_or_ip?, :unique_address?)
               optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
@@ -168,7 +183,7 @@ module Pharos
           end
         end
         optional(:cloud).schema do
-          required(:provider).filled(:str?)
+          required(:provider).filled(included_in?: (Pharos::Configuration::Cloud.providers + ['external']))
           optional(:config).filled(:str?)
         end
         optional(:audit).schema do
@@ -190,6 +205,9 @@ module Pharos
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
           optional(:feature_gates).filled
+          optional(:extra_args).each(type?: String)
+          optional(:cpu_cfs_quota).filled(:bool?)
+          optional(:cpu_cfs_quota_period).filled(:str?)
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)

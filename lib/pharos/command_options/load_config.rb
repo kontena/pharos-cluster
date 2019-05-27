@@ -34,11 +34,7 @@ module Pharos
 
         # @return [K8s::Client]
         def kube_client
-          return @kube_client if @kube_client
-
-          signal_error 'no usable master for k8s api client' unless cluster_manager.context['kubeconfig']
-
-          @kube_client = load_config.kube_client(cluster_manager.context['kubeconfig'])
+          cluster_manager.context['kube_client'] || signal_error('no usable master for k8s api client')
         end
 
         private

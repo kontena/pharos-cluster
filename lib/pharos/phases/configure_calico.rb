@@ -5,7 +5,7 @@ module Pharos
     class ConfigureCalico < Pharos::Phase
       title "Configure Calico network"
 
-      CALICO_VERSION = '3.6.0'
+      CALICO_VERSION = '3.6.2'
 
       register_component(
         name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
@@ -60,6 +60,7 @@ module Pharos
           version: CALICO_VERSION,
           nat_outgoing: @config.network.calico&.nat_outgoing,
           firewalld_enabled: !!@config.network&.firewalld&.enabled,
+          reload_iptables: !!cluster_context['reload-iptables'],
           envs: @config.network.calico&.environment || {},
           metrics_enabled: metrics_enabled?,
           metrics_port: metrics_port,

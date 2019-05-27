@@ -72,7 +72,7 @@ module Pharos
   end
 
   module Configuration
-    autoload :Struct, 'pharos/configuration'
+    autoload :Struct, 'pharos/configuration/struct'
     autoload :Host, 'pharos/configuration/host'
     autoload :Route, 'pharos/configuration/route'
     autoload :ResolvConf, 'pharos/configuration/resolv_conf'
@@ -88,3 +88,5 @@ module Pharos
     autoload :Configurer, 'pharos/host/configurer'
   end
 end
+
+Dir.glob(File.join(__dir__, '/cloud/*.rb')).each { |f| require(f) }

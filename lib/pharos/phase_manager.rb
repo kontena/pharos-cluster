@@ -48,7 +48,7 @@ module Pharos
         end
       end
 
-      Thread.pass until threads.none?(&:alive?)
+      sleep 0.1 until threads.none?(&:alive?)
 
       # Thread status is false when terminated normally, nil when it terminated with exception
       # rubocop:disable Lint/RescueException
@@ -99,6 +99,7 @@ module Pharos
 
         phase.logger.info 'Completed phase in %<duration>.2fs' % { duration: Time.now - start }
       end
+      phase_class.cleanup
     end
   end
 end

@@ -29,6 +29,7 @@ spec:
         kontena.io/firewalld: "<%= firewalld_enabled %>"
     spec:
       hostNetwork: true
+      hostPID: true
       tolerations:
         # Make sure calico/node gets scheduled on all nodes.
         - effect: NoSchedule
@@ -44,6 +45,17 @@ spec:
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
       initContainers:
+        <% if firewalld_enabled && reload_iptables %>
+        # This container performs firewalld reload
+        - name: reload-firewalld
+          image: <%= image_repository %>/alpine:3.9
+          command: ["/bin/sh", "-c"]
+          env:
+            - name: TIMESTAMP
+              value: "<%= Time.now.to_f %>"
+          args:
+          - pkill -HUP firewalld
+        <% end %>
         # This container performs upgrade from host-local IPAM to calico-ipam.
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
@@ -93,6 +105,9 @@ spec:
                   key: veth_mtu
             # Prevents the container from sleeping forever.
             - name: SLEEP
+              value: "false"
+            # Prevents the container from updating installed CNI binaries
+            - name: UPDATE_CNI_BINARIES
               value: "false"
           volumeMounts:
             - mountPath: /host/opt/cni/bin

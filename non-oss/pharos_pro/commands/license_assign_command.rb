@@ -77,7 +77,7 @@ module Pharos
     end
 
     def subscription_token_request
-      logger.info "Exchanging license key for a subscription token" if $stdout.tty? && !print_subscription_token?
+      logger.info "Exchanging license key for a subscription token" if $stdout.tty? && !@cluster_id_given
 
       Excon.post(
         'https://get.pharos.sh/api/licenses/%<key>s/assign' % { key: license_key },

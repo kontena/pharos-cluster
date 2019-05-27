@@ -11,5 +11,5 @@ worker_size = "4gb"
 
 image = "ubuntu-18-04-x64"
 
-region = "fra1"
+region = "ams3"
 

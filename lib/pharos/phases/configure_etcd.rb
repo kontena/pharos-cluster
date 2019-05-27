@@ -14,7 +14,12 @@ module Pharos
       def call
         sync_ca
 
-        logger.info { 'Configuring etcd certs ...' }
+        if cluster_context['recreate-etcd-certs']
+          logger.info "Removing old certicates ..."
+          transport.exec!("sudo rm -f /etc/pharos/pki/etcd/server.pem /etc/pharos/pki/etcd/peer.pem /etc/pharos/pki/etcd/client.pem")
+        end
+
+        logger.info 'Configuring etcd certs ...'
         exec_script(
           'configure-etcd-certs.sh',
           PEER_IP: @config.etcd_peer_address(@host),
@@ -22,7 +27,7 @@ module Pharos
           ARCH: @host.cpu_arch.name
         )
 
-        logger.info { 'Configuring etcd ...' }
+        logger.info 'Configuring etcd ...'
         exec_script(
           'configure-etcd.sh',
           PEER_IP: @config.etcd_peer_address(@host),
@@ -39,10 +44,11 @@ module Pharos
         host_configurer.ensure_kubelet(
           ARCH: @host.cpu_arch.name,
           KUBE_VERSION: Pharos::KUBE_VERSION,
+          CNI_VERSION: Pharos::CNI_VERSION,
           KUBELET_ARGS: @host.kubelet_args(local_only: true).join(" "),
           IMAGE_REPO: @config.image_repository
         )
-        logger.info { 'Waiting for etcd to respond ...' }
+        logger.info 'Waiting for etcd to respond ...'
         exec_script(
           'wait-etcd.sh',
           PEER_IP: @config.etcd_peer_address(@host)

@@ -70,6 +70,18 @@ module Pharos
         abstract_method!
       end
 
+      def configure_container_runtime!
+        cleanup_needed = !custom_docker? && !configure_container_runtime_safe?
+        configure_container_runtime
+        return unless cleanup_needed
+
+        if docker?
+          cleanup_docker!
+        elsif crio?
+          cleanup_crio!
+        end
+      end
+
       def configure_container_runtime
         abstract_method!
       end
@@ -108,7 +120,7 @@ module Pharos
       def exec_script(script, vars = {})
         transport.exec_script!(
           script,
-          env: vars,
+          env: (host.environment || {}).merge(vars),
           path: script_path(script)
         )
       end
@@ -164,9 +176,6 @@ module Pharos
           "#{key}=\"#{val.shellescape}\""
         end
         host_env_file.write(new_content.join("\n") + "\n")
-        new_content.each do |kv_pair|
-          transport.exec!("export #{kv_pair}")
-        end
       end
 
       # @return [String, NilClass]
@@ -192,6 +201,14 @@ module Pharos
         transport.exec!("sudo crictl stopp $(crictl pods -q)")
         transport.exec!("sudo crictl rmp $(crictl pods -q)")
         transport.exec!("sudo crictl rmi $(crictl images -q)")
+      ensure
+        transport.exec!("sudo systemctl start kubelet")
+      end
+
+      def cleanup_docker!
+        transport.exec!("sudo systemctl stop kubelet")
+        transport.exec!("sudo docker stop $(docker ps -q)")
+        transport.exec!("sudo docker rm -f $(docker ps -a -q)")
       ensure
         transport.exec!("sudo systemctl start kubelet")
       end

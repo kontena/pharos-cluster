@@ -30,8 +30,15 @@ module Pharos
         if @config.kubelet&.read_only_port
           config['readOnlyPort'] = 10_255
         end
-        feature_gates = @config.kubelet&.feature_gates
-        config['featureGates'] = feature_gates if feature_gates
+        feature_gates = @config.kubelet&.feature_gates || {}
+        if @config.cloud&.outtree_provider?
+          feature_gates.merge!(@config.cloud.cloud_provider.feature_gates)
+        end
+
+        config['featureGates'] = feature_gates unless feature_gates.empty?
+
+        config['cpuCFSQuotaPeriod'] = @config&.kubelet&.cpu_cfs_quota_period if @config&.kubelet&.cpu_cfs_quota_period
+        config['cpuCFSQuota'] = !!@config&.kubelet&.cpu_cfs_quota
 
         config
       end
