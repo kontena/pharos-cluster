@@ -7,6 +7,9 @@ Pharos.addon 'kontena-lens' do
   version '1.5.1'
   license 'Kontena License'
   priority 10
+  depends_on [
+    'kontena-stats'
+  ]
 
   config_schema {
     optional(:name).filled(:str?)
