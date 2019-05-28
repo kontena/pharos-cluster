@@ -67,8 +67,31 @@ module Pharos
       end
     end
 
+    # @return [Hash]
+    def addons_with_deps
+      addons_hash = {}
+      @config.addons.each do |name, config|
+        addon_class = addon_classes.find { |a| a.addon_name == name }
+        raise UnknownAddon, "unknown addon: #{name}" if addon_class.nil?
+
+        addons_hash[name] = config
+      end
+
+      addons_hash.keys.each do |name|
+        addon_class = addon_classes.find { |a| a.addon_name == name }
+        addon_class.depends_on.reject { |n| addons_hash[n] }.each do |dep_name|
+          addon_class = addon_classes.find { |a| a.addon_name == dep_name }
+          raise UnknownAddon, "unknown addon dependency: #{name}" if addon_class.nil?
+
+          addons_hash[dep_name] = { enabled: true }
+        end
+      end
+
+      addons_hash
+    end
+
     def configs
-      @configs ||= @config.addons.sort_by { |name, _config|
+      @configs ||= addons_with_deps.sort_by { |name, _config|
         addon_class = addon_classes.find { |a| a.addon_name == name }
         raise UnknownAddon, "unknown addon: #{name}" if addon_class.nil?
 
