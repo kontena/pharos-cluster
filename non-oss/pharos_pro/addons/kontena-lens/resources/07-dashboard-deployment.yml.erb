@@ -32,6 +32,8 @@ spec:
               value: "<%=  user_management %>"
             - name: CHARTS_ENABLED
               value: "<%=  charts_enabled %>"
+            - name: KUBE_METRICS_URL
+              value: "http://prometheus.kontena-stats.svc.cluster.local"
           resources:
             requests:
               memory: "256Mi"
