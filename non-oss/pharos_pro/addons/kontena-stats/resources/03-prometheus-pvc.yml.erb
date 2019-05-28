@@ -1,0 +1,13 @@
+<% if config.persistence&.enabled %>
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: prometheus
+  namespace: kontena-stats
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: <%= prometheus_pvc_size %>
+<% end %>

@@ -116,6 +116,16 @@ module Pharos
         !!@enabled
       end
 
+      # @param depends_on [Array<String>]
+      # @return [Array<String>]
+      def depends_on(addons = nil)
+        if addons
+          @depends_on = addons
+        else
+          @depends_on ||= []
+        end
+      end
+
       def custom_type(&block)
         Class.new(Pharos::Addons::Struct, &block)
       end
