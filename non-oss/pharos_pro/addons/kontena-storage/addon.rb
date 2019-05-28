@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-storage' do
-  version '0.8.3+kontena.1'
+  version '0.9.3+kontena.1'
   license 'Kontena License'
 
   config_schema {
@@ -125,13 +125,19 @@ Pharos.addon 'kontena-storage' do
   # @return [K8s::Resource]
   def build_cluster_resource
     K8s::Resource.new(
-      apiVersion: 'ceph.rook.io/v1beta1',
-      kind: 'Cluster',
+      apiVersion: 'ceph.rook.io/v1',
+      kind: 'CephCluster',
       metadata: {
         name: 'kontena-storage',
         namespace: 'kontena-storage'
       },
       spec: {
+        cephVersion: {
+          image: 'ceph/ceph:v13.2.4-20190109'
+        },
+        mon: {
+          count: 3
+        },
         serviceAccount: 'kontena-storage-cluster',
         dataDirHostPath: config.data_dir,
         storage: {
@@ -139,7 +145,7 @@ Pharos.addon 'kontena-storage' do
           useAllDevices: false,
           deviceFilter: config.storage&.device_filter,
           directories: config.storage&.directories,
-          nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
+          nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) } || []
         },
         placement: (config.placement || {}).to_h.deep_transform_keys(&:camelback),
         resources: (config.resources || {}).to_h.deep_transform_keys(&:camelback),
