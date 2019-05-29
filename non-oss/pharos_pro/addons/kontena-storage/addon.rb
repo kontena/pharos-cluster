@@ -101,10 +101,22 @@ Pharos.addon 'kontena-storage' do
   install {
     set_defaults
     cluster = build_cluster_resource
-    apply_resources(
-      cluster: cluster.to_h.deep_transform_keys(&:to_s),
-      rook_version: self.class.version.split('+').first
-    )
+    if upgrade_from?('0.8')
+      storage_stack = kube_stack(
+        cluster: cluster.to_h.deep_transform_keys(&:to_s),
+        rook_version: rook_version
+      )
+      logger.info "Applying upgrade ..."
+      storage_stack.apply(kube_client, prune: false)
+      sleep 120 # TODO: fix me
+      logger.info "Cleaning up old configurations ..."
+      storage_stack.prune(kube_client)
+    else
+      apply_resources(
+        cluster: cluster.to_h.deep_transform_keys(&:to_s),
+        rook_version: rook_version
+      )
+    end
   }
 
   reset_host { |host|
@@ -122,6 +134,23 @@ Pharos.addon 'kontena-storage' do
     }
   end
 
+  # @return [String]
+  def rook_version
+    self.class.version.split('+').first
+  end
+
+  # @param version [String]
+  # @return [Boolean]
+  def upgrade_from?(version)
+    operator = kube_client.api('apps/v1beta1')
+                .resource('deployments', namespace: 'kontena-storage-system')
+                .get('kontena-storage-operator')
+
+    operator.spec.template.spec.containers.first.image.include?("rook-ceph:v#{version}")
+  rescue K8s::Error::NotFound
+    false
+  end
+
   # @return [K8s::Resource]
   def build_cluster_resource
     K8s::Resource.new(
@@ -133,7 +162,7 @@ Pharos.addon 'kontena-storage' do
       },
       spec: {
         cephVersion: {
-          image: 'ceph/ceph:v13.2.4-20190109'
+          image: 'docker.io/ceph/ceph:v13.2.4-20190109'
         },
         mon: {
           count: 3
