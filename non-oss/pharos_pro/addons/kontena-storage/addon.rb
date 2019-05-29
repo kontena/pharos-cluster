@@ -110,7 +110,7 @@ Pharos.addon 'kontena-storage' do
       storage_stack.apply(kube_client, prune: false)
       sleep 120 # TODO: fix me
       logger.info "Cleaning up old configurations ..."
-      storage_stack.prune(kube_client)
+      storage_stack.prune(kube_client, keep_resources: true)
     else
       apply_resources(
         cluster: cluster.to_h.deep_transform_keys(&:to_s),
