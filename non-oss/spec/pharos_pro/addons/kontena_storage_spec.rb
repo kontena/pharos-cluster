@@ -17,15 +17,19 @@ describe Pharos::AddonManager.addons['kontena-storage'] do
 
   describe '#build_cluster_resource' do
     it 'returns a cluster resource' do
-      subject = described_class.new({
-        'enabled' => true,
-        'data_dir' => '/var/lib/foo',
-        'storage' => {
-          'use_all_nodes' => true
-        }
-
-      }, cpu_arch: double, cluster_config: double, cluster_context: { 'kube_client' => double })
-      resource = subject.build_cluster_resource
+      subject = described_class.new(
+        {
+          'enabled' => true,
+          'data_dir' => '/var/lib/foo',
+          'storage' => {
+            'use_all_nodes' => true
+          }
+        },
+        cpu_arch: double,
+        cluster_config: double(image_repository: 'registry.pharos.sh/kontenapharos'),
+        cluster_context: { 'kube_client' => double }
+      )
+      resource = subject.build_cluster_resource('v13.3')
       expect(resource.spec.dataDirHostPath).to eq('/var/lib/foo')
       expect(resource.spec.storage.useAllNodes).to be_truthy
     end

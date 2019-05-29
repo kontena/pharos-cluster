@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-storage' do
-  version '0.8.3+kontena.1'
+  version '0.9.3+kontena.1'
+  ceph_version = '13.2.4-20190109'
   license 'Kontena License'
 
   config_schema {
@@ -100,11 +101,15 @@ Pharos.addon 'kontena-storage' do
 
   install {
     set_defaults
-    cluster = build_cluster_resource
-    apply_resources(
-      cluster: cluster.to_h.deep_transform_keys(&:to_s),
-      rook_version: self.class.version.split('+').first
-    )
+    cluster = build_cluster_resource(ceph_version)
+    if upgrade_from?('0.8')
+      upgrade_from_08(cluster, ceph_version)
+    else
+      apply_resources(
+        cluster: cluster.to_h.deep_transform_keys(&:to_s),
+        rook_version: rook_version
+      )
+    end
   }
 
   reset_host { |host|
@@ -122,16 +127,87 @@ Pharos.addon 'kontena-storage' do
     }
   end
 
+  # @return [String]
+  def rook_version
+    self.class.version.split('+').first
+  end
+
+  # @param cluster [K8s::Resource]
+  # @param ceph_version [String]
+  def upgrade_from_08(cluster, ceph_version)
+    storage_stack = kube_stack(
+      cluster: cluster.to_h.deep_transform_keys(&:to_s),
+      rook_version: rook_version
+    )
+    logger.info "Applying upgrade ..."
+    storage_stack.apply(kube_client, prune: false)
+
+    logger.info "Waiting for new operator ..."
+    wait_mgr_upgrade(ceph_version)
+
+    logger.info "Cleaning up old configurations ..."
+    storage_stack.prune(kube_client, keep_resources: true)
+    remove_old_mgr(ceph_version)
+  end
+
+  # Wait new ceph mgr replica set
+  #
+  # @param ceph_version [String]
+  def wait_mgr_upgrade(ceph_version)
+    rs_client = kube_client.api('extensions/v1beta1').resource('replicasets', namespace: 'kontena-storage')
+    upgraded = false
+    while !upgraded
+      upgraded = rs_client.list(labelSelector: 'app=rook-ceph-mgr').any? { |rs|
+        rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
+      }
+      sleep 1
+    end
+
+    true
+  end
+
+  # Remove old ceph mgr replica sets
+  #
+  # @param ceph_version [String]
+  def remove_old_mgr(ceph_version)
+    rs_client = kube_client.api('extensions/v1beta1').resource('replicasets', namespace: 'kontena-storage')
+    old_replicasets = rs_client.list(labelSelector: 'app=rook-ceph-mgr').reject do |rs|
+      rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
+    end
+    old_replicasets.each do |rs|
+      rs_client.delete_resource(rs, propagationPolicy: 'Background')
+    end
+  end
+
+  # @param version [String]
+  # @return [Boolean]
+  def upgrade_from?(version)
+    operator = kube_client.api('apps/v1beta1')
+                          .resource('deployments', namespace: 'kontena-storage-system')
+                          .get('kontena-storage-operator')
+
+    operator.spec.template.spec.containers.first.image.include?("rook-ceph:v#{version}")
+  rescue K8s::Error::NotFound
+    false
+  end
+
+  # @param ceph_version [String]
   # @return [K8s::Resource]
-  def build_cluster_resource
+  def build_cluster_resource(ceph_version)
     K8s::Resource.new(
-      apiVersion: 'ceph.rook.io/v1beta1',
-      kind: 'Cluster',
+      apiVersion: 'ceph.rook.io/v1',
+      kind: 'CephCluster',
       metadata: {
         name: 'kontena-storage',
         namespace: 'kontena-storage'
       },
       spec: {
+        cephVersion: {
+          image: "#{cluster_config.image_repository}/ceph:v#{ceph_version}"
+        },
+        mon: {
+          count: 3
+        },
         serviceAccount: 'kontena-storage-cluster',
         dataDirHostPath: config.data_dir,
         storage: {
@@ -139,7 +215,7 @@ Pharos.addon 'kontena-storage' do
           useAllDevices: false,
           deviceFilter: config.storage&.device_filter,
           directories: config.storage&.directories,
-          nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) }
+          nodes: config.storage&.nodes&.map { |n| n.to_h.deep_transform_keys(&:camelback) } || []
         },
         placement: (config.placement || {}).to_h.deep_transform_keys(&:camelback),
         resources: (config.resources || {}).to_h.deep_transform_keys(&:camelback),
