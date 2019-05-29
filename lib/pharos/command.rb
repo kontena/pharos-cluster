@@ -25,18 +25,19 @@ module Pharos
       super
     rescue Clamp::HelpWanted, Clamp::ExecutionError, Clamp::UsageError
       raise
-    rescue Errno::EPIPE => ex
+    rescue Errno::EPIPE => e
       raise if debug?
 
-      warn "ERROR: #{ex.class.name} : #{ex.message}" if $stdout.tty?
+      warn "ERROR: #{e.class.name} : #{e.message}" if $stdout.tty?
       exit 141
-    rescue Pharos::ConfigError => exc
-      warn "==> #{exc}"
+    rescue Pharos::ConfigError => e
+      warn "==> #{e}"
       exit 11
-    rescue StandardError => ex
+    rescue StandardError => e
+      Raven.capture_exception(e)
       raise if Pharos::Logging.debug?
 
-      signal_error "#{ex.class.name} : #{ex.message}"
+      signal_error "#{e.class.name} : #{e.message}"
     end
 
     option '--[no-]color', :flag, "colorize output", default: $stdout.tty?
