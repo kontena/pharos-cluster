@@ -74,7 +74,7 @@ ssh_userhost="root@${pharos_worker_host}"
 
 scp -o StrictHostKeyChecking=no -i "${ssh_key}" pharos-cluster*.gem "${ssh_userhost}:"
 
-ssh -o StrictHostKeyChecking=no -i "${ssh_key}" "${ssh_userhost}" -- "sudo bash -c '\
+ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i "${ssh_key}" "${ssh_userhost}" -- "sudo bash -c '\
   export http_proxy=http://10.133.37.156:8888 HTTP_PROXY=http://10.133.37.156:8888 https_proxy=http://10.133.37.156:8888 HTTPS_PROXY=http://10.133.37.156:8888;
   apt-get update && apt-get -y install ruby build-essential ruby-dev && \
   gem install --no-document pharos-cluster*.gem && \
@@ -87,7 +87,7 @@ join_command=$(pharos exec -c e2e/digitalocean/cluster.yml --tf-json e2e/digital
 
 echo "Running 'pharos worker up' on target host.."
 
-timeout 600 ssh -o StrictHostKeyChecking=no -i "${ssh_key}" "${ssh_userhost}" -- pharos worker up \
+timeout 600 ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i "${ssh_key}" "${ssh_userhost}" -- pharos worker up \
   --image-repository registry-tuusula.pharos.sh/kontenapharos \
   -e "HTTPS_PROXY=http://10.133.37.156:8888" \
   -e "HTTP_PROXY=http://10.133.37.156:8888" \
