@@ -203,7 +203,7 @@ Pharos.addon 'kontena-storage' do
       },
       spec: {
         cephVersion: {
-          image: "docker.io/ceph/ceph:v#{ceph_version}"
+          image: "#{cluster_config.image_repository}/ceph:v#{ceph_version}"
         },
         mon: {
           count: 3
