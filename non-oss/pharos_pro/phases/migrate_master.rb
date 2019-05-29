@@ -11,7 +11,7 @@ module Pharos
 
       def call
         # rubocop:disable Style/GuardClause
-        if existing_version == pharos_version
+        if existing_version == pharos_version || existing_version == build_version('0.0.1')
           logger.info 'Nothing to migrate.'
           return
         end
@@ -21,7 +21,7 @@ module Pharos
           migrate_cluster_info
         end
 
-        if existing_version < build_version('2.4.0-alpha.0')
+        if existing_version > build_version('2.0.0') && existing_version < build_version('2.4.0-alpha.0')
           logger.info 'Triggering etcd certificate refresh ...'
           recreate_etcd_certs
           logger.info 'Fixing tolerations ...'
