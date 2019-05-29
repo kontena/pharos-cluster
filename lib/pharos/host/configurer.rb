@@ -72,13 +72,19 @@ module Pharos
 
       def configure_container_runtime!
         cleanup_needed = !custom_docker? && !configure_container_runtime_safe?
-        configure_container_runtime
-        return unless cleanup_needed
+        unless cleanup_needed
+          configure_container_runtime
+          return
+        end
 
         if docker?
-          cleanup_docker!
+          cleanup_docker! do
+            configure_container_runtime
+          end
         elsif crio?
-          cleanup_crio!
+          cleanup_crio! do
+            configure_container_runtime
+          end
         end
       end
 
@@ -201,6 +207,7 @@ module Pharos
         transport.exec!("sudo crictl stopp $(crictl pods -q)")
         transport.exec!("sudo crictl rmp $(crictl pods -q)")
         transport.exec!("sudo crictl rmi $(crictl images -q)")
+        yield
       ensure
         transport.exec!("sudo systemctl start kubelet")
       end
@@ -209,6 +216,7 @@ module Pharos
         transport.exec!("sudo systemctl stop kubelet")
         transport.exec!("sudo docker stop $(docker ps -q)")
         transport.exec!("sudo docker rm -f $(docker ps -a -q)")
+        yield
       ensure
         transport.exec!("sudo systemctl start kubelet")
       end
