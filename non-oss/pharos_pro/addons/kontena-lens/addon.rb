@@ -65,7 +65,7 @@ Pharos.addon 'kontena-lens' do
     helm_repositories = config.charts&.repositories || [stable_helm_repo]
     tiller_version = '2.12.2'
     apply_resources(
-      node_selector: config.node_selector || {},
+      node_selector: config.node_selector&.to_h || {},
       host: host,
       email: tls_email,
       tls_enabled: tls_enabled?,
