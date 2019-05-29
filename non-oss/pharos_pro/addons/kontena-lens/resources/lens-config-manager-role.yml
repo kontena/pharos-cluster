@@ -16,3 +16,10 @@ rules:
       - secrets
     verbs:
       - '*'
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames:
+      - "license-enforcer"
+    verbs:
+    - get
+    - list
