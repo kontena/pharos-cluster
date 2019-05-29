@@ -85,7 +85,6 @@ module Pharos
             yield
           end
 
-          keep_running = true
           extra_time_start = nil
           kill_switch_engage = true
 
@@ -94,29 +93,29 @@ module Pharos
 
             sleep 0.1 unless extra_time_start
 
-            if kill_switch_engage && Time.now - start_time > @timeout
-              if !$stdin.tty?
-                warn "Command timeout reached"
-                thread.raise Timeout::Error
-                break
-              elsif extra_time_start.nil?
-                warn "Command timeout reached, to cancel automatic termination, press any key in 30 seconds"
-                extra_time_start = Time.now
-              end
+            next if !kill_switch_engage || Time.now - start_time < @timeout
 
-              if extra_time_start && Time.now - extra_time_start < 30
-                $stdin.noecho do
-                  $stdin.raw do
-                    if $stdin.wait_readable(0.1) && $stdin.getc
-                      kill_switch_engage = false
-                      puts "Automatic termination canceled"
-                    end
+            if !$stdin.tty?
+              warn "Command timeout reached"
+              thread.raise Timeout::Error
+              break
+            elsif extra_time_start.nil?
+              warn "Command timeout reached, to cancel automatic termination, press any key in 30 seconds"
+              extra_time_start = Time.now
+            end
+
+            if extra_time_start && Time.now - extra_time_start < 30
+              $stdin.noecho do
+                $stdin.raw do
+                  if $stdin.wait_readable(0.1) && $stdin.getc
+                    kill_switch_engage = false
+                    puts "Automatic termination canceled"
                   end
                 end
-              else
-                thread.raise Timeout::Error
-                break
               end
+            else
+              thread.raise Timeout::Error
+              break
             end
           end
 
