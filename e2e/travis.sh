@@ -24,7 +24,7 @@ envsubst < e2e/cluster.yml > cluster.yml
 bundle exec bin/pharos
 bundle exec bin/pharos -v
 bundle exec bin/pharos version
-bundle exec bin/pharos up -d -y -c cluster.yml
+bundle exec bin/pharos up -y -c cluster.yml
 bundle exec bin/pharos ssh --role master -c cluster.yml -- kubectl get nodes
 bundle exec bin/pharos kubeconfig -c cluster.yml > kubeconfig.e2e
 
