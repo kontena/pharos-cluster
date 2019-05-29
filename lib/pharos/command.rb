@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 require 'pry' if Gem.loaded_specs.key?('pry')
+require 'sentry-raven'
+
+Raven.configure do |config|
+  config.logger.level = Logger::FATAL
+  config.dsn = 'https://82e24db6400645f8b07262ba356d05c5:03d7c6502a48493c9354a0820f0546f0@sentry.io/1470318'
+end
 
 module Pharos
   class Command < Clamp::Command

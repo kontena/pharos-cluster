@@ -8,13 +8,6 @@ $LOAD_PATH.unshift lib_path unless $LOAD_PATH.include?(lib_path)
 
 STDOUT.sync = true
 
-require 'sentry-raven'
-
-Raven.configure do |config|
-  config.logger.level = Logger::FATAL
-  config.dsn = 'https://82e24db6400645f8b07262ba356d05c5:03d7c6502a48493c9354a0820f0546f0@sentry.io/1470318'
-end
-
 require 'pharos_cluster'
 
 Pharos::RootCommand.run
