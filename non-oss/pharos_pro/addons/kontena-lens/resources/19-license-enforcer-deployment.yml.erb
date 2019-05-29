@@ -15,6 +15,7 @@ spec:
         app: license-enforcer
     spec:
       serviceAccountName: license-enforcer
+      priorityClassName: pharos-cluster-critical
       tolerations:
       - key: node-role.kubernetes.io/master
       containers:
