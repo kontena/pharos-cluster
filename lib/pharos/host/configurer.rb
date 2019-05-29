@@ -71,7 +71,7 @@ module Pharos
       end
 
       def configure_container_runtime!
-        cleanup_needed = !custom_docker? && !configure_container_runtime_safe?
+        cleanup_needed = !host.new? && !custom_docker? && !configure_container_runtime_safe?
         unless cleanup_needed
           configure_container_runtime
           return
