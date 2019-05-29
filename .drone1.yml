@@ -20,8 +20,6 @@
 #---
 kind: pipeline
 name: e2e-bionic
-depends_on:
-- test
 platform:
   os: linux
   arch: amd64
