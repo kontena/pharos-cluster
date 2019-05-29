@@ -34,18 +34,16 @@ module Pharos
         resource_client = kube_client.api('extensions/v1beta1').resource('deployments', namespace: 'kontena-lens')
         resource_client.merge_patch(
           'redis',
-          {
-            spec: {
-              template: {
-                spec: {
-                  tolerations: [
-                    {
-                      effect: 'NoSchedule',
-                      operator: 'Exists',
-                      key: 'node-role.kubernetes.io/master'
-                    }
-                  ]
-                }
+          spec: {
+            template: {
+              spec: {
+                tolerations: [
+                  {
+                    effect: 'NoSchedule',
+                    operator: 'Exists',
+                    key: 'node-role.kubernetes.io/master'
+                  }
+                ]
               }
             }
           }
