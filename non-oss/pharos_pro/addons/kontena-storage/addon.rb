@@ -156,10 +156,11 @@ Pharos.addon 'kontena-storage' do
   def wait_mgr_upgrade(ceph_version)
     rs_client = kube_client.api('extensions/v1beta1').resource('replicasets', namespace: 'kontena-storage')
     upgraded = false
-    while !upgraded do
+    while !upgraded
       upgraded = rs_client.list(labelSelector: 'app=rook-ceph-mgr').any? { |rs|
         rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
       }
+      sleep 1
     end
 
     true
@@ -170,8 +171,8 @@ Pharos.addon 'kontena-storage' do
   # @param ceph_version [String]
   def remove_old_mgr(ceph_version)
     rs_client = kube_client.api('extensions/v1beta1').resource('replicasets', namespace: 'kontena-storage')
-    old_replicasets = rs_client.list(labelSelector: 'app=rook-ceph-mgr').select do |rs|
-      !rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
+    old_replicasets = rs_client.list(labelSelector: 'app=rook-ceph-mgr').reject do |rs|
+      rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
     end
     old_replicasets.each do |rs|
       rs_client.delete_resource(rs, propagationPolicy: 'Background')
@@ -182,8 +183,8 @@ Pharos.addon 'kontena-storage' do
   # @return [Boolean]
   def upgrade_from?(version)
     operator = kube_client.api('apps/v1beta1')
-                .resource('deployments', namespace: 'kontena-storage-system')
-                .get('kontena-storage-operator')
+                          .resource('deployments', namespace: 'kontena-storage-system')
+                          .get('kontena-storage-operator')
 
     operator.spec.template.spec.containers.first.image.include?("rook-ceph:v#{version}")
   rescue K8s::Error::NotFound
