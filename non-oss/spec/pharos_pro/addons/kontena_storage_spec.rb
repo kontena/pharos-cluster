@@ -25,7 +25,7 @@ describe Pharos::AddonManager.addons['kontena-storage'] do
         }
 
       }, cpu_arch: double, cluster_config: double, cluster_context: { 'kube_client' => double })
-      resource = subject.build_cluster_resource
+      resource = subject.build_cluster_resource('v13.3')
       expect(resource.spec.dataDirHostPath).to eq('/var/lib/foo')
       expect(resource.spec.storage.useAllNodes).to be_truthy
     end
