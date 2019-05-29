@@ -122,8 +122,8 @@ module Pharos
 
       private
 
-      def command(cmd, **options)
-        Pharos::Transport::Command::SSH.new(self, cmd, **options)
+      def command(cmd, timeout: 900, **options)
+        Pharos::Transport::Command::SSH.new(self, cmd, timeout: timeout, **options)
       end
 
       def ensure_event_loop
