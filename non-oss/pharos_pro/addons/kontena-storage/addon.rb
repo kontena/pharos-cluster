@@ -2,6 +2,7 @@
 
 Pharos.addon 'kontena-storage' do
   version '0.9.3+kontena.1'
+  ceph_version = '13.2.4-20190109'
   license 'Kontena License'
 
   config_schema {
@@ -100,17 +101,9 @@ Pharos.addon 'kontena-storage' do
 
   install {
     set_defaults
-    cluster = build_cluster_resource
+    cluster = build_cluster_resource(ceph_version)
     if upgrade_from?('0.8')
-      storage_stack = kube_stack(
-        cluster: cluster.to_h.deep_transform_keys(&:to_s),
-        rook_version: rook_version
-      )
-      logger.info "Applying upgrade ..."
-      storage_stack.apply(kube_client, prune: false)
-      sleep 120 # TODO: fix me
-      logger.info "Cleaning up old configurations ..."
-      storage_stack.prune(kube_client, keep_resources: true)
+      upgrade_from_08(cluster, ceph_version)
     else
       apply_resources(
         cluster: cluster.to_h.deep_transform_keys(&:to_s),
@@ -139,6 +132,52 @@ Pharos.addon 'kontena-storage' do
     self.class.version.split('+').first
   end
 
+  # @param cluster [K8s::Resource]
+  # @param ceph_version [String]
+  def upgrade_from_08(cluster, ceph_version)
+    storage_stack = kube_stack(
+      cluster: cluster.to_h.deep_transform_keys(&:to_s),
+      rook_version: rook_version
+    )
+    logger.info "Applying upgrade ..."
+    storage_stack.apply(kube_client, prune: false)
+
+    logger.info "Waiting for new operator ..."
+    wait_mgr_upgrade(ceph_version)
+
+    logger.info "Cleaning up old configurations ..."
+    storage_stack.prune(kube_client, keep_resources: true)
+    remove_old_mgr(ceph_version)
+  end
+
+  # Wait new ceph mgr replica set
+  #
+  # @param ceph_version [String]
+  def wait_mgr_upgrade(ceph_version)
+    rs_client = kube_client.api('extensions/v1beta1').resource('replicasets', namespace: 'kontena-storage')
+    upgraded = false
+    while !upgraded do
+      upgraded = rs_client.list(labelSelector: 'app=rook-ceph-mgr').any? { |rs|
+        rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
+      }
+    end
+
+    true
+  end
+
+  # Remove old ceph mgr replica sets
+  #
+  # @param ceph_version [String]
+  def remove_old_mgr(ceph_version)
+    rs_client = kube_client.api('extensions/v1beta1').resource('replicasets', namespace: 'kontena-storage')
+    old_replicasets = rs_client.list(labelSelector: 'app=rook-ceph-mgr').select do |rs|
+      !rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
+    end
+    old_replicasets.each do |rs|
+      rs_client.delete_resource(rs, propagationPolicy: 'Background')
+    end
+  end
+
   # @param version [String]
   # @return [Boolean]
   def upgrade_from?(version)
@@ -151,8 +190,9 @@ Pharos.addon 'kontena-storage' do
     false
   end
 
+  # @param ceph_version [String]
   # @return [K8s::Resource]
-  def build_cluster_resource
+  def build_cluster_resource(ceph_version)
     K8s::Resource.new(
       apiVersion: 'ceph.rook.io/v1',
       kind: 'CephCluster',
@@ -162,7 +202,7 @@ Pharos.addon 'kontena-storage' do
       },
       spec: {
         cephVersion: {
-          image: 'docker.io/ceph/ceph:v13.2.4-20190109'
+          image: "docker.io/ceph/ceph:v#{ceph_version}"
         },
         mon: {
           count: 3
