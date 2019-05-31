@@ -158,7 +158,7 @@ Pharos.addon 'kontena-storage' do
     upgraded = false
     while !upgraded
       upgraded = rs_client.list(labelSelector: 'app=rook-ceph-mgr').any? { |rs|
-        rs.spec.template.spec.containers.first.image.include?("ceph/ceph:v#{ceph_version}")
+        rs.spec.template.spec.containers.first.image.include?("/ceph:v#{ceph_version}")
       }
       sleep 1
     end
