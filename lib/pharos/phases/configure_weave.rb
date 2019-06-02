@@ -102,7 +102,7 @@ module Pharos
         known_peers = @config.network.weave&.known_peers
         return known_peers if known_peers
 
-        @config.hosts.map { |host| host.peer_address }
+        @config.hosts.map(&:peer_address)
       end
 
       # @return [Boolean]
