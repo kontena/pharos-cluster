@@ -204,9 +204,9 @@ module Pharos
 
       def cleanup_crio!
         transport.exec!("sudo systemctl stop kubelet")
-        transport.exec!("sudo crictl stopp $(crictl pods -q)")
-        transport.exec!("sudo crictl rmp $(crictl pods -q)")
-        transport.exec!("sudo crictl rmi $(crictl images -q)")
+        transport.exec!("sudo crictl stopp $(sudo crictl pods -q)")
+        transport.exec!("sudo crictl rmp $(sudo crictl pods -q)")
+        transport.exec!("sudo crictl rmi $(sudo crictl images -q)")
         yield
       ensure
         transport.exec!("sudo systemctl start kubelet")
@@ -214,8 +214,8 @@ module Pharos
 
       def cleanup_docker!
         transport.exec!("sudo systemctl stop kubelet")
-        transport.exec!("sudo docker stop $(docker ps -q)")
-        transport.exec!("sudo docker rm -f $(docker ps -a -q)")
+        transport.exec!("sudo docker stop $(sudo docker ps -q)")
+        transport.exec!("sudo docker rm -f $(sudo docker ps -a -q)")
         yield
       ensure
         transport.exec!("sudo systemctl start kubelet")
