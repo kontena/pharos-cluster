@@ -57,10 +57,6 @@ Pharos.addon 'cert-manager' do
 
     stack = kube_stack
 
-    insert_pos = stack.resources.find_index { |res|
-      res.kind == 'Service' && res.metadata.name == 'cert-manager-webhook'
-    }
-
     if config.ca_issuer&.enabled
       logger.info "Enabling kubernetes CA issuer ..."
       stack.resources << build_ca_secret
@@ -72,10 +68,12 @@ Pharos.addon 'cert-manager' do
     unless config.issuers.empty?
       logger.info "Applying issuers (this might take a moment) ..."
       issuers = []
-      config.issuers.each do |issuer|
-        issuers << K8s::Resource.new(issuer.merge({
-          apiVersion: "certmanager.k8s.io/v1alpha1"
-        }))
+      config.issuers.each do |i|
+        issuers << K8s::Resource.new(
+          i.merge(
+            apiVersion: "certmanager.k8s.io/v1alpha1"
+          )
+        )
       end
       issuers_stack = Pharos::Kube::Stack.new('cert-manager-issuers', issuers)
       Retry.perform(300, exceptions: [K8s::Error::InternalError]) do
