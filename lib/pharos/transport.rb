@@ -17,6 +17,7 @@ module Pharos
         opts[:port] = host.ssh_port
         opts[:keepalive] = true
         opts[:keepalive_interval] = 30
+        opts[:keepalive_maxcount] = 5
         SSH.new(host.address, user: host.user, **opts.merge(options))
       end
     end
