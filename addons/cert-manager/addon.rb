@@ -15,13 +15,15 @@ Pharos.addon 'cert-manager' do
   }
 
   config {
-    attribute :issuer, issuer
+    attribute :issuer, issuer # deprecated
     attribute :ca_issuer, ca_issuer.default(proc { ca_issuer.new(enabled: true) })
     attribute :extra_args, Pharos::Types::Array.default(proc { [] })
+    attribute :issuers, Pharos::Types::Array.default(proc { [] })
   }
 
   config_schema {
-    required(:issuer).schema {
+    optional(:issuers).each(:hash?)
+    optional(:issuer).schema {
       required(:name).filled(:str?)
       required(:email).filled(:str?)
       optional(:server).filled(:str?)
@@ -41,7 +43,7 @@ Pharos.addon 'cert-manager' do
     end
 
     validate(le_acme_v1: :issuer) do |i|
-      if i[:name] == 'letsencrypt' && i[:server].include?('acme-v01.api.letsencrypt.org')
+      if i && i[:name] == 'letsencrypt' && i[:server].include?('acme-v01.api.letsencrypt.org')
         false
       else
         true
@@ -55,46 +57,32 @@ Pharos.addon 'cert-manager' do
 
     stack = kube_stack
 
+    insert_pos = stack.resources.find_index { |res|
+      res.kind == 'Service' && res.metadata.name == 'cert-manager-webhook'
+    }
+
     if config.ca_issuer&.enabled
+      logger.info "Enabling kubernetes CA issuer ..."
       stack.resources << build_ca_secret
-      stack.resources << build_ca_issuer
+      config.issuers << build_ca_issuer.to_h
     end
 
     stack.apply(kube_client)
 
-    migrate_le_acme_issuers
-    migrate_le_acme_cluster_issuers
+    unless config.issuers.empty?
+      logger.info "Applying issuers (this might take a moment) ..."
+      issuers = []
+      config.issuers.each do |issuer|
+        issuers << K8s::Resource.new(issuer.merge({
+          apiVersion: "certmanager.k8s.io/v1alpha1"
+        }))
+      end
+      issuers_stack = Pharos::Kube::Stack.new('cert-manager-issuers', issuers)
+      Retry.perform(300, exceptions: [K8s::Error::InternalError]) do
+        issuers_stack.apply(kube_client)
+      end
+    end
   }
-
-  def patch_spec
-    {
-      acme: {
-        server: 'https://acme-v02.api.letsencrypt.org/directory'
-      }
-    }
-  end
-
-  def le_acme_v1_endpoint
-    'https://acme-v01.api.letsencrypt.org/directory'
-  end
-
-  def migrate_le_acme_issuers
-    kube_client.api('certmanager.k8s.io/v1alpha1').resource('issuers', namespace: nil).list.each do |issuer|
-      next unless issuer&.spec&.acme&.server == le_acme_v1_endpoint
-
-      rc = kube_client.client_for_resource(issuer, namespace: issuer.metadata.namespace)
-      rc.merge_patch(issuer.metadata.name, { spec: patch_spec }, namespace: issuer.metadata.namespace, strategic_merge: false)
-    end
-  end
-
-  def migrate_le_acme_cluster_issuers
-    kube_client.api('certmanager.k8s.io/v1alpha1').resource('clusterissuers', namespace: nil).list.each do |issuer|
-      next unless issuer&.spec&.acme&.server == le_acme_v1_endpoint
-
-      rc = kube_client.client_for_resource(issuer)
-      rc.merge_patch(issuer.metadata.name, { spec: patch_spec }, strategic_merge: false)
-    end
-  end
 
   def build_ca_issuer
     K8s::Resource.new(
