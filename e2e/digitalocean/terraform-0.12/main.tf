@@ -1,3 +1,7 @@
+terraform {
+  required_version = ">= 0.12"
+}
+
 variable "cluster_name" {
   default = "pharos"
 }
@@ -115,7 +119,7 @@ output "pharos_cluster" {
     hosts = [
       for host in concat(local.masters, local.workers)  : {
         address           = host.droplet.ipv4_address
-        address           = host.droplet.ipv4_address_private
+        private_address           = host.droplet.ipv4_address_private
         role              = host.role
         user              = "root"
         ssh_key_path      = "./ssh_key.pem"
