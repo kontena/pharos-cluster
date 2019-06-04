@@ -69,6 +69,7 @@ module Pharos
 
   module Terraform
     autoload :JsonParser, 'pharos/terraform/json_parser'
+    autoload :LegacyJsonParser, 'pharos/terraform/legacy_json_parser'
   end
 
   module Configuration
