@@ -30,6 +30,7 @@ steps:
   - name: setup-e2e
     image: docker.io/hashicorp/terraform:0.11.10
     environment:
+      WORKER_UP: "true"
       DIGITALOCEAN_TOKEN:
         from_secret: digitalocean_token
     commands:
@@ -45,6 +46,43 @@ steps:
       event: [ push ]
   - name: teardown-e2e
     image: docker.io/hashicorp/terraform:0.11.10
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - ./e2e/drone_teardown.sh
+    when:
+      event: [ push ]
+      status: [ failure, success ]
+---
+kind: pipeline
+name: e2e-bionic-tf-0.12
+depends_on:
+- test
+platform:
+  os: linux
+  arch: amd64
+steps:
+  # E2E steps
+  - name: setup-e2e
+    image: docker.io/hashicorp/terraform:0.12.0
+    environment:
+      DIGITALOCEAN_TOKEN:
+        from_secret: digitalocean_token
+    commands:
+      - apk add --update bash jq
+      - cp e2e/digitalocean/terraform-0.12/* e2e/digitalocean/
+      - ./e2e/drone_setup.sh ubuntu-18-04-x64
+    when:
+      event: [ push ]
+  - name: e2e
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone.sh
+    when:
+      event: [ push ]
+  - name: teardown-e2e
+    image: docker.io/hashicorp/terraform:0.12.10
     environment:
       DIGITALOCEAN_TOKEN:
         from_secret: digitalocean_token
