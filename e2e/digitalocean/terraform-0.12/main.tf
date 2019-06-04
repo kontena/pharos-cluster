@@ -73,7 +73,7 @@ resource "digitalocean_droplet" "pharos_worker" {
   size               = var.worker_size
   private_networking = true
   ssh_keys           = [digitalocean_ssh_key.default.fingerprint]
-  tags               = ["e2e", "airgap", ""]
+  tags               = ["e2e", "airgap"]
 }
 
 resource "digitalocean_droplet" "pharos_worker_up" {
