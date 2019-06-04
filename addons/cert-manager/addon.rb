@@ -15,24 +15,24 @@ Pharos.addon 'cert-manager' do
   }
 
   config {
-    attribute :issuer, issuer # deprecated
     attribute :ca_issuer, ca_issuer.default(proc { ca_issuer.new(enabled: true) })
     attribute :extra_args, Pharos::Types::Array.default(proc { [] })
     attribute :issuers, Pharos::Types::Array.default(proc { [] })
+    attribute :issuer, issuer # deprecated
   }
 
   config_schema {
     optional(:issuers).each(:hash?)
+    optional(:extra_args).each(:str?)
+    optional(:ca_issuer).schema {
+      optional(:enabled).filled(:bool?)
+    }
+
+    # deprecated
     optional(:issuer).schema {
       required(:name).filled(:str?)
       required(:email).filled(:str?)
       optional(:server).filled(:str?)
-    }
-
-    optional(:extra_args).each(:str?)
-
-    optional(:ca_issuer).schema {
-      optional(:enabled).filled(:bool?)
     }
 
     # Register custom error for LE Acme v1 endpoint validation
@@ -61,6 +61,11 @@ Pharos.addon 'cert-manager' do
       logger.info "Enabling kubernetes CA issuer ..."
       stack.resources << build_ca_secret
       config.issuers << build_ca_issuer.to_h
+    end
+
+    if config.issuer
+      logger.warn "Issuer config option is deprecated, use issuers instead."
+      config.issuers << build_legacy_issuer.to_h
     end
 
     stack.apply(kube_client)
@@ -109,6 +114,27 @@ Pharos.addon 'cert-manager' do
       data: {
         'tls.crt': Base64.strict_encode64(master_host.transport.file('/etc/kubernetes/pki/ca.crt').read),
         'tls.key': Base64.strict_encode64(master_host.transport.file('/etc/kubernetes/pki/ca.key').read)
+      }
+    )
+  end
+
+  def build_legacy_issuer
+    K8s::Resource.new(
+      apiVersion: "certmanager.k8s.io/v1alpha1",
+      kind: "Issuer",
+      metadata: {
+        name: config.issuer.name,
+        namespace: "default"
+      },
+      spec: {
+        acme: {
+          server: config.issuer.server,
+          email: config.issuer.email,
+          privateKeySecretRef: {
+            name: config.issuer.name
+          },
+          http01: {}
+        }
       }
     )
   end
