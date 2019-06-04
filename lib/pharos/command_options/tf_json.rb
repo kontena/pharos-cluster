@@ -35,7 +35,11 @@ module Pharos
           json = File.read(file)
           tf_parser = Pharos::Terraform::JsonParser.new(json)
           if tf_parser.valid?
-            config.deep_merge!(tf_parser.cluster)
+            config.deep_merge!(
+              tf_parser.cluster,
+              overwrite_arrays: false,
+              union_arrays: true
+            )
           else
             tf_parser = Pharos::Terraform::LegacyJsonParser.new(json)
             config['hosts'] ||= []
