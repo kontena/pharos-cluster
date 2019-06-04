@@ -107,7 +107,7 @@ locals {
   ]
   workers = [
     for host in digitalocean_droplet.pharos_worker : {
-      role              = "master"
+      role              = "worker"
       droplet           = host
     }
   ]
@@ -119,7 +119,7 @@ output "pharos_cluster" {
     hosts = [
       for host in concat(local.masters, local.workers)  : {
         address           = host.droplet.ipv4_address
-        private_address           = host.droplet.ipv4_address_private
+        private_address   = host.droplet.ipv4_address_private
         role              = host.role
         user              = "root"
         ssh_key_path      = "./ssh_key.pem"
