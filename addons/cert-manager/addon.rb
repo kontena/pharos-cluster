@@ -72,7 +72,13 @@ Pharos.addon 'cert-manager' do
 
     unless config.issuers.empty?
       logger.info "Applying issuers (this might take a moment) ..."
-      issuers = []
+      issuers = config.issuers.map do |i|
+        K8s::Resource.new(
+          i.merge(
+            apiVersion: "certmanager.k8s.io/v1alpha1"
+          )
+        )
+      end
       config.issuers.each do |i|
         issuers << K8s::Resource.new(
           i.merge(
