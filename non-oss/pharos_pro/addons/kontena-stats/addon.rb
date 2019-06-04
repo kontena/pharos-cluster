@@ -3,6 +3,7 @@
 Pharos.addon('kontena-stats') do
   prometheus_version = '2.9.2'
   node_exporter_version = '0.18.0'
+  kube_state_metrics_version = '1.6.0'
   version "#{prometheus_version}+kontena.1"
   license 'Kontena License'
   priority 9
@@ -43,7 +44,8 @@ Pharos.addon('kontena-stats') do
     apply_resources(
       prometheus_version: prometheus_version,
       prometheus_pvc_size: prometheus_pvc_size,
-      node_exporter_version: node_exporter_version
+      node_exporter_version: node_exporter_version,
+      kube_state_metrics_version: kube_state_metrics_version
     )
     if config.persistence&.enabled
       logger.info "Calculated PVC size: #{prometheus_pvc_size}"
