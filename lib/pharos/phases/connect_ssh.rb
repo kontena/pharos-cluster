@@ -6,7 +6,9 @@ module Pharos
       title "Open SSH connection"
 
       def call
-        host.transport.connect
+        Retry.perform(10, logger: logger, exceptions: [Net::SSH::Disconnect, Net::SSH::Timeout, Net::SSH::ConnectionTimeout]) do
+          host.transport.connect
+        end
       end
     end
   end
