@@ -18,7 +18,7 @@ done
 
 terraform output -json > tf.json
 
-if [ "$WORKER_UP" = "up" ]; then
+if [ "${WORKER_UP:-false}" = "up" ]; then
   jq ".worker_up.value.address[0]" tf.json | sed 's/"//g' > worker_up_address.txt
   jq ".pharos_hosts.value.masters[0].address[0]" tf.json | sed 's/"//g' > master_address.txt
 fi
