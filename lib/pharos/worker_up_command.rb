@@ -90,7 +90,7 @@ module Pharos
         image_repository: image_repository,
         network: Pharos::Configuration::Network.new,
         control_plane: Pharos::Configuration::ControlPlane.new(use_proxy: control_plane_proxy?),
-        cloud: Pharos::Configuration::Cloud.new(provider: cloud_provider)
+        cloud: cloud_provider.nil? ? nil : Pharos::Configuration::Cloud.new(provider: cloud_provider)
       )
     end
 
