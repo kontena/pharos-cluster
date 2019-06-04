@@ -79,13 +79,6 @@ Pharos.addon 'cert-manager' do
           )
         )
       end
-      config.issuers.each do |i|
-        issuers << K8s::Resource.new(
-          i.merge(
-            apiVersion: "certmanager.k8s.io/v1alpha1"
-          )
-        )
-      end
       issuers_stack = Pharos::Kube::Stack.new('cert-manager-issuers', issuers)
       Retry.perform(300, exceptions: [K8s::Error::InternalError]) do
         issuers_stack.apply(kube_client)
