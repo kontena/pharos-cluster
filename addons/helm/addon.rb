@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'helm' do
-  version '2.12.3-1'
+  version '2.13.1'
   license 'Apache License 2.0'
 
   LABEL_NAME = 'helm.kontena.io/chart'
