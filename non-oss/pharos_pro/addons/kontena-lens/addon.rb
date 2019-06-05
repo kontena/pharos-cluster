@@ -11,7 +11,15 @@ Pharos.addon 'kontena-lens' do
     'kontena-stats'
   ]
 
+  helm_api_version = '1.6.0-beta.1'
+  terminal_gateway_version = '1.6.0-beta.1'
+  terminal_version = '1.6.0-beta.1'
+  user_management_version = '1.6.0-beta.1'
+  resource_applier_version = '1.6.0-beta.1'
+  authenticator_version = '1.6.0-beta.1'
+  redis_version = '4-alpine'
   tiller_version = '2.13.1'
+  license_enforcer_version = 'latest'
 
   config_schema {
     optional(:name).filled(:str?)
@@ -66,12 +74,20 @@ Pharos.addon 'kontena-lens' do
     charts_enabled = config.charts&.enabled != false
     helm_repositories = config.charts&.repositories || [stable_helm_repo]
     apply_resources(
+      helm_api_version: helm_api_version,
+      terminal_gateway_version: terminal_gateway_version,
+      terminal_version: terminal_version,
+      user_management_version: user_management_version,
+      resource_applier_version: resource_applier_version,
+      authenticator_version: authenticator_version,
+      license_enforcer_version: license_enforcer_version,
+      redis_version: redis_version,
+      tiller_version: tiller_version,
       host: host,
       email: tls_email,
       tls_enabled: tls_enabled?,
       charts_enabled: charts_enabled,
       user_management: user_management_enabled?,
-      tiller_version: tiller_version,
       helm_repositories: helm_repositories.map{ |repo| "#{repo[:name]}=#{repo[:url]}" }.join(',')
     )
     protocol = tls_enabled? ? 'https' : 'http'

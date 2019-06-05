@@ -20,7 +20,7 @@ spec:
       - key: node-role.kubernetes.io/master
       containers:
       - name: enforcer
-        image: <%= image_repository %>/x-license-enforcer:latest
+        image: <%= image_repository %>/x-license-enforcer:<%= license_enforcer_version %>
         args:
           - -interval
           - 60s
