@@ -14,9 +14,9 @@ spec:
       labels:
         app: dashboard
     spec:
-      <%- unless node_selector.empty? -%>
+      <%- if config.node_selector -%>
       nodeSelector:
-      <%- node_selector.each do |key, value| -%>
+      <%- config.node_selector.to_h.each do |key, value| -%>
         <%= key %>: "<%= value %>"
       <%- end -%>
       <%- end -%>
