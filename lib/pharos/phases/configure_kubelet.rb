@@ -75,7 +75,7 @@ module Pharos
         )
 
         logger.info { 'Waiting for kubelet proxy to start ...' }
-        Retry.perform(300, logger: logger) do
+        Retry.perform(300, exceptions: [Pharos::ExecError]) do
           transport.exec!('bash -c "echo > /dev/tcp/localhost/6443"')
         end
       end
