@@ -20,7 +20,7 @@ spec:
         <%= key %>: "<%= value %>"
       <%- end -%>
       <%- end -%>
-      <%- unless config.tolerations.empty? -%>
+      <%- if config.tolerations -%>
       tolerations:
       <%- config.tolerations.each do |t| -%>
         -
