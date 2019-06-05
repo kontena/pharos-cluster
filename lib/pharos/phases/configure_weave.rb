@@ -97,9 +97,12 @@ module Pharos
         known_peers
       end
 
-      # @return [Array<String>, NilClass]
+      # @return [Array<String>]
       def known_peers
-        @config.network.weave&.known_peers
+        known_peers = @config.network.weave&.known_peers
+        return known_peers if known_peers
+
+        @config.hosts.map(&:peer_address)
       end
 
       # @return [Boolean]
