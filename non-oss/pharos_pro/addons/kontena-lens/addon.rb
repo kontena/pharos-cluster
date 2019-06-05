@@ -13,6 +13,8 @@ Pharos.addon 'kontena-lens' do
 
   config_schema {
     optional(:name).filled(:str?)
+    optional(:node_selector).filled(:hash?)
+    optional(:tolerations).each(:hash?)
     optional(:ingress).schema do
       optional(:host).filled(:str?)
       optional(:tls).schema do
