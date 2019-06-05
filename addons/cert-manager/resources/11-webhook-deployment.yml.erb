@@ -8,10 +8,12 @@ spec:
   selector:
     matchLabels:
       app: webhook
+      name: cert-manager-webhook
   template:
     metadata:
       labels:
         app: webhook
+        name: cert-manager-webhook
       annotations:
     spec:
       serviceAccountName: cert-manager-webhook
@@ -30,8 +32,9 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
           resources:
-            {}
-            
+            requests:
+              cpu: 10m
+              memory: 32Mi
           volumeMounts:
           - name: certs
             mountPath: /certs
