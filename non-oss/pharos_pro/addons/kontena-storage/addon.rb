@@ -208,7 +208,6 @@ Pharos.addon 'kontena-storage' do
         mon: {
           count: 3
         },
-        serviceAccount: 'kontena-storage-cluster',
         dataDirHostPath: config.data_dir,
         storage: {
           useAllNodes: config.storage&.use_all_nodes,
