@@ -131,6 +131,11 @@ module Pharos
       cluster_context['kube_client'] || raise("No Kubernetes API client available")
     end
 
+    # @return [Boolean] true if there's a configured kube_client available
+    def kube_client?
+      !!cluster_context['kube_client']
+    end
+
     # @param name [String]
     # @param vars [Hash]
     def kube_stack(name, **vars)
