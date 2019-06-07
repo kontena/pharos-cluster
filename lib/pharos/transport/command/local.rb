@@ -41,7 +41,7 @@ module Pharos
         # @return [Pharos::Transport::Command::Result]
         def run
           result.append(@source.nil? ? @cmd : "#{@cmd} < #{@source}", :cmd)
-          Open3.popen3(@cmd) do |stdin, stdout, stderr, wait_thr|
+          Open3.popen3(@client.host.environment, @cmd) do |stdin, stdout, stderr, wait_thr|
             unless stdin.closed?
               stdin.write(@stdin) if @stdin
               stdin.close

@@ -20,7 +20,7 @@ module Pharos
 
       attr_reader :host
 
-      # @param host [String]
+      # @param host [Pharos::Configuration::Host]
       # @param opts [Hash]
       def initialize(host, **opts)
         super()
