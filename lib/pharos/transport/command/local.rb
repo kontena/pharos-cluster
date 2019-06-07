@@ -14,7 +14,9 @@ module Pharos
         # @param source [String]
         def initialize(client, cmd, stdin: nil, source: nil)
           @client = client
-          @cmd = "env bash --noprofile --norc -x -c #{(cmd.is_a?(Array) ? cmd.join(' ') : cmd).shellescape}"
+          command = cmd.is_a?(Array) ? cmd.join(' ') : cmd.dup
+          command.gsub!(/^sudo /, 'sudo -E ')
+          @cmd = "env bash --noprofile --norc -x -c #{command.shellescape}"
           @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
           @source = source
           @result = Pharos::Transport::Command::Result.new(hostname)

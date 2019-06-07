@@ -10,6 +10,12 @@ module Pharos
       FULL_HOSTNAME_CLOUD_PROVIDERS = %w(aws vsphere).freeze
 
       def call
+        logger.debug do
+          transport.exec!('env')
+        end
+        logger.debug do
+          transport.exec!('sudo env')
+        end
         logger.info { "Checking sudo access ..." }
         check_sudo
         logger.info { "Gathering host facts ..." }
