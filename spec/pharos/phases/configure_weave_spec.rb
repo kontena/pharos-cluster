@@ -1,7 +1,14 @@
 require 'pharos/phases/configure_weave'
 
 describe Pharos::Phases::ConfigureWeave do
-  let(:config) { double(:config) }
+  let(:config) do
+    double(:config, hosts: [
+      Pharos::Configuration::Host.new(
+        address: '10.1.1.2'
+      )
+    ])
+  end
+
   subject { described_class.new(double, config: config) }
 
   describe '#configured_password', fakefs: true do
@@ -23,7 +30,7 @@ describe Pharos::Phases::ConfigureWeave do
     it 'returns nil if configmap does not exist and known_peers not set' do
       allow(config).to receive_message_chain('network.weave').and_return(nil)
       expect(subject).to receive_message_chain('kube_client.api.resource.get').and_raise(K8s::Error::NotFound.new(double, double, double, double))
-      expect(subject.initial_known_peers).to be_nil
+      expect(subject.initial_known_peers).to eq([config.hosts.first.address])
     end
 
     it 'returns known_peers if configmap does not exist' do

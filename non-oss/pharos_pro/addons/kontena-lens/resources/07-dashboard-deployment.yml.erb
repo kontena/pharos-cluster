@@ -14,6 +14,21 @@ spec:
       labels:
         app: dashboard
     spec:
+      <%- if config.node_selector -%>
+      nodeSelector:
+      <%- config.node_selector.to_h.each do |key, value| -%>
+        <%= key %>: "<%= value %>"
+      <%- end -%>
+      <%- end -%>
+      <%- if config.tolerations -%>
+      tolerations:
+      <%- config.tolerations.each do |t| -%>
+        -
+          <%- t.each do |k,v| -%>
+          <%= k %>: <%= v %>
+          <%- end -%>
+      <%- end -%>
+      <%- end -%>
       serviceAccountName: lens-operator
       priorityClassName: pharos-cluster-critical
       restartPolicy: Always
@@ -42,14 +57,14 @@ spec:
               memory: "512Mi"
               cpu: "200m"
         - name: terminal-gateway
-          image: <%= image_repository %>/lens-terminal-gateway:<%= version %>
+          image: <%= image_repository %>/lens-terminal-gateway:<%= terminal_gateway_version %>
           imagePullPolicy: Always
           env:
           - name: SHELL_DOCKER_IMAGE
           <%- if config&.shell&.image -%>
             value: <%= config.shell.image %>
           <%- else -%>
-            value: <%= image_repository %>/lens-terminal:<%= version %>
+            value: <%= image_repository %>/lens-terminal:<%= terminal_version %>
           <%- end -%>
           - name: NODE_SHELL_DOCKER_IMAGE
             value: <%= image_repository %>/alpine:3.9

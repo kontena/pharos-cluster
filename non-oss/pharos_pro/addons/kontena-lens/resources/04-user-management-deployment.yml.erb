@@ -21,7 +21,7 @@ spec:
       serviceAccountName: lens-operator
       priorityClassName: pharos-cluster-critical
       containers:
-        - image: <%= image_repository %>/lens-idp:<%= version %>
+        - image: <%= image_repository %>/lens-idp:<%= user_management_version %>
           name: user-management
           imagePullPolicy: Always
           env:
