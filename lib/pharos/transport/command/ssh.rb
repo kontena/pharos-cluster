@@ -18,7 +18,7 @@ module Pharos
           response = @client.session.open_channel do |channel|
             channel.env('LC_ALL', 'C.UTF-8')
 
-            @client.host.environment.each do |key, val|
+            @client.host.environment&.each do |key, val|
               channel.env(key, val)
             end
 
