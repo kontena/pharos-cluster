@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rbac-proxy
+  namespace: kontena-stats
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rbac-proxy
+    spec:
+      serviceAccountName: rbac-proxy
+      containers:
+      - name: kube-rbac-proxy
+        image: quay.io/brancz/kube-rbac-proxy:v0.4.0
+        args:
+        - "--insecure-listen-address=0.0.0.0:8080"
+        - "--upstream=http://localhost:8181/"
+        - "--config-file=/etc/kube-rbac-proxy/config.yaml"
+        - "--logtostderr=true"
+        - "--v=10"
+        ports:
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kube-rbac-proxy
+      - name: prom-label-enforcer
+        image: quay.io/coreos/prom-label-proxy:v0.1.0
+        imagePullPolicy: Always
+        args:
+        - "--insecure-listen-address=127.0.0.1:8181"
+        - "--upstream=http://prometheus.kontena-stats.svc.cluster.local/"
+        - "--label=kubernetes_namespace"
+      volumes:
+      - name: config
+        configMap:
+          name: rbac-proxy

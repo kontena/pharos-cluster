@@ -93,6 +93,11 @@ data:
       relabel_configs:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        target_label: kubernetes_namespace
 
 
     # Scrap etcd metrics from masters via etcd-scraper-proxy
@@ -145,9 +150,6 @@ data:
         replacement: $1:$2
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)
-      - source_labels: [__meta_kubernetes_namespace]
-        action: replace
-        target_label: kubernetes_namespace
       - source_labels: [__meta_kubernetes_service_name]
         action: replace
         target_label: job
@@ -155,6 +157,12 @@ data:
         source_labels:
         - __meta_kubernetes_pod_node_name
         target_label: kubernetes_node
+
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        target_label: kubernetes_namespace
 
     # Example scrape config for probing services via the Blackbox Exporter.
     #
@@ -183,10 +191,13 @@ data:
         target_label: instance
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)
-      - source_labels: [__meta_kubernetes_namespace]
-        target_label: kubernetes_namespace
       - source_labels: [__meta_kubernetes_service_name]
         target_label: job
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        target_label: kubernetes_namespace
 
     # Example scrape config for pods
     #
