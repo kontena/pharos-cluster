@@ -20,7 +20,7 @@ module Pharos
 
       attr_reader :host
 
-      # @param host [String]
+      # @param host [Pharos::Configuration::Host]
       # @param opts [Hash]
       def initialize(host, **opts)
         super()
@@ -68,18 +68,12 @@ module Pharos
       end
 
       # @param name [String] name of script
-      # @param env [Hash] environment variables hash
       # @param path [String] real path to file, defaults to script
       # @raise [Pharos::ExecError]
       # @return [String] stdout
-      def exec_script!(name, env: {}, path: nil, **options)
+      def exec_script!(name, path: nil, **options)
         script = ::File.read(path || name)
-        cmd = %w(sudo env -i -)
-
-        cmd.concat(EXPORT_ENVS.merge(env).map { |key, value| "#{key}=\"#{value}\"" })
-        cmd.concat(%w(bash --norc --noprofile -x -s))
-        logger.debug { "exec: #{cmd}" }
-        exec!(cmd, stdin: script, source: name, **options)
+        exec!(nil, stdin: script, source: name, **options)
       end
 
       # @param cmd [String] command to execute

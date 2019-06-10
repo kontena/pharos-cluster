@@ -21,7 +21,7 @@ module Pharos
         Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::DecryptError
       ].freeze
 
-      # @param host [String]
+      # @param host [Pharos::Configuration::Host]
       # @param opts [Hash]
       def initialize(host, **opts)
         super(host, opts)
@@ -41,7 +41,7 @@ module Pharos
           logger.debug { "connect: #{@user}@#{@host} (#{@opts})" }
           non_interactive = true
           begin
-            @session = session_factory.start(@host, @user, @opts.merge(options).merge(non_interactive: non_interactive))
+            @session = session_factory.start(@host.address, @user, @opts.merge(options).merge(non_interactive: non_interactive))
             logger.debug "Connected"
             class_mutex.unlock if class_mutex.locked? && class_mutex.owned?
           rescue *RETRY_CONNECTION_ERRORS => exc

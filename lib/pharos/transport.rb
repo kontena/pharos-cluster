@@ -7,7 +7,7 @@ module Pharos
   module Transport
     def self.for(host, **options)
       if host.local?
-        Local.new('localhost', **options)
+        Local.new(host, **options)
       else
         opts = {}
         opts[:keys] = [host.ssh_key_path] if host.ssh_key_path
@@ -19,7 +19,8 @@ module Pharos
         opts[:keepalive_interval] = 30
         opts[:keepalive_maxcount] = 5
         opts[:timeout] = 5
-        SSH.new(host.address, user: host.user, **opts.merge(options))
+        opts[:user] = host.user
+        SSH.new(host, **opts.merge(options))
       end
     end
   end

@@ -6,15 +6,44 @@ module Pharos
   module Transport
     module Command
       class Local
+        EXPORT_ENVS = {
+          http_proxy: '$http_proxy',
+          https_proxy: '$https_proxy',
+          no_proxy: '$no_proxy',
+          HTTP_PROXY: '$HTTP_PROXY',
+          HTTPS_PROXY: '$HTTPS_PROXY',
+          NO_PROXY: '$NO_PROXY',
+          FTP_PROXY: '$FTP_PROXY',
+          PATH: '$PATH'
+        }.freeze
+
         attr_reader :cmd, :result
 
         # @param client [Pharos::Transport::Local] client instance
         # @param cmd [String,Array<String>] command to execute
+        # @param env [Hash] environment variables hash
         # @param stdin [String,IO] attach string or stream to command STDIN
         # @param source [String]
-        def initialize(client, cmd, stdin: nil, source: nil)
+        def initialize(client, cmd, stdin: nil, source: nil, env: {})
           @client = client
-          @cmd = "env bash --noprofile --norc -x -c #{(cmd.is_a?(Array) ? cmd.join(' ') : cmd).shellescape}"
+
+          cmd_parts = %w(env -i -)
+          cmd_parts.insert(0, 'sudo') if cmd.nil?
+
+          cmd_parts.concat(EXPORT_ENVS.merge(@client.host.environment || {}).merge(env).map { |key, value| "#{key}=\"#{value}\"" })
+          cmd_parts.concat(%w(bash --norc --noprofile -x))
+
+          if cmd
+            cmd_parts << '-c'
+            command = cmd.is_a?(Array) ? cmd.join(' ') : cmd.dup
+            command.insert(0, 'sudo() { $(which sudo) -E "$@"; }; export -f sudo;')
+            cmd_parts << command.shellescape
+          end
+
+          cmd_parts << '-s' if stdin
+
+          @cmd = cmd_parts.join(' ')
+
           @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
           @source = source
           @result = Pharos::Transport::Command::Result.new(hostname)
