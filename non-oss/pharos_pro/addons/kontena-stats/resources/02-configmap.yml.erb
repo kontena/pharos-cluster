@@ -157,10 +157,7 @@ data:
         source_labels:
         - __meta_kubernetes_pod_node_name
         target_label: kubernetes_node
-
-      metric_relabel_configs:
-      - source_labels:
-          - namespace
+      - source_labels: [__meta_kubernetes_namespace]
         action: replace
         target_label: kubernetes_namespace
 
