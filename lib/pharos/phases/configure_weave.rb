@@ -6,7 +6,7 @@ module Pharos
       title "Configure Weave network"
 
       WEAVE_VERSION = '2.5.2'
-      WEAVE_FLYING_SHUTTLE_VERSION = '0.3.0'
+      WEAVE_FLYING_SHUTTLE_VERSION = '0.3.1'
 
       register_component(
         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',
@@ -97,9 +97,12 @@ module Pharos
         known_peers
       end
 
-      # @return [Array<String>, NilClass]
+      # @return [Array<String>]
       def known_peers
-        @config.network.weave&.known_peers
+        known_peers = @config.network.weave&.known_peers
+        return known_peers if known_peers
+
+        @config.hosts.map(&:peer_address)
       end
 
       # @return [Boolean]

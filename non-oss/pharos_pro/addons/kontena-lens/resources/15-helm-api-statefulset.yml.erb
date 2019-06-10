@@ -19,7 +19,7 @@ spec:
       securityContext:
         fsGroup: 1000
       containers:
-        - image: <%= image_repository %>/helm-api:<%= version %>
+        - image: <%= image_repository %>/helm-api:<%= helm_api_version %>
           name: api
           env:
           - name: TILLER_NAMESPACE
