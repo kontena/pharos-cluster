@@ -13,7 +13,7 @@ spec:
       serviceAccountName: rbac-proxy
       containers:
       - name: kube-rbac-proxy
-        image: quay.io/brancz/kube-rbac-proxy:v0.4.0
+        image: <%= image_repository %>/prometheus-kube-rbac-proxy:v<%= kube_rbac_proxy_version %>
         args:
         - "--insecure-listen-address=0.0.0.0:8080"
         - "--upstream=http://localhost:8181/"
@@ -27,7 +27,7 @@ spec:
         - name: config
           mountPath: /etc/kube-rbac-proxy
       - name: prom-label-enforcer
-        image: quay.io/coreos/prom-label-proxy:v0.1.0
+        image: <%= image_repository %>/prometheus-prom-label-proxy:v<%= prom_label_proxy_version %>
         imagePullPolicy: Always
         args:
         - "--insecure-listen-address=127.0.0.1:8181"
