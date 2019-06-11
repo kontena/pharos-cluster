@@ -17,7 +17,7 @@ module Pharos
           @client = client
           @source = source
           @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
-          @env = { 'PATH' => '$PATH' }.merge(@client.host.environment&.transform_keys(&:to_s) || {}).merge(env.transform_keys(&:to_s))
+          @env = { 'PATH' => '$PATH', 'HOME' => '$HOME' }.merge(@client.host.environment&.transform_keys(&:to_s) || {}).merge(env.transform_keys(&:to_s))
 
           cmd = cmd.join(' ') if cmd.is_a?(Array)
 
