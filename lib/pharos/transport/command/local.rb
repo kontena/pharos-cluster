@@ -30,6 +30,8 @@ module Pharos
           @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
           @env = EXPORT_ENVS.merge(@client.host.environment || {}).merge(env)
 
+          cmd = cmd.join(' ') if cmd.is_a?(Array)
+
           cmd_parts = ['env', '-i', *envs_array, 'bash', '--norc', '--noprofile', '-x']
 
           if cmd.nil?
