@@ -6,17 +6,6 @@ module Pharos
   module Transport
     module Command
       class Local
-        EXPORT_ENVS = {
-          http_proxy: '$http_proxy',
-          https_proxy: '$https_proxy',
-          no_proxy: '$no_proxy',
-          HTTP_PROXY: '$HTTP_PROXY',
-          HTTPS_PROXY: '$HTTPS_PROXY',
-          NO_PROXY: '$NO_PROXY',
-          FTP_PROXY: '$FTP_PROXY',
-          PATH: '$PATH'
-        }.freeze
-
         attr_reader :cmd, :result, :env
 
         # @param client [Pharos::Transport::Local] client instance
@@ -28,7 +17,7 @@ module Pharos
           @client = client
           @source = source
           @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
-          @env = EXPORT_ENVS.merge(@client.host.environment || {}).merge(env)
+          @env = { 'PATH' => '$PATH' }.merge(@client.host.environment&.transform_keys(&:to_s) || {}).merge(env.transform_keys(&:to_s))
 
           cmd = cmd.join(' ') if cmd.is_a?(Array)
 
