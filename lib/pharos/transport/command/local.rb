@@ -17,7 +17,7 @@ module Pharos
           PATH: '$PATH'
         }.freeze
 
-        attr_reader :cmd, :result
+        attr_reader :cmd, :result, :env
 
         # @param client [Pharos::Transport::Local] client instance
         # @param cmd [String,Array<String>] command to execute
@@ -26,26 +26,22 @@ module Pharos
         # @param source [String]
         def initialize(client, cmd, stdin: nil, source: nil, env: {})
           @client = client
+          @source = source
+          @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
+          @env = EXPORT_ENVS.merge(@client.host.environment || {}).merge(env)
 
-          cmd_parts = %w(env -i -)
-          cmd_parts.insert(0, 'sudo') if cmd.nil?
+          cmd_parts = ['env', '-i', *envs_array, 'bash', '--norc', '--noprofile', '-x']
 
-          cmd_parts.concat(EXPORT_ENVS.merge(@client.host.environment || {}).merge(env).map { |key, value| "#{key}=\"#{value}\"" })
-          cmd_parts.concat(%w(bash --norc --noprofile -x))
-
-          if cmd
-            cmd_parts << '-c'
-            command = cmd.is_a?(Array) ? cmd.join(' ') : cmd.dup
-            command.insert(0, 'sudo() { $(which sudo) -E "$@"; }; export -f sudo;')
-            cmd_parts << command.shellescape
+          if cmd.nil?
+            cmd_parts.insert(0, 'sudo')
+          else
+            cmd_parts.concat(['-c', "sudo() { $(which sudo) -E \"$@\"; }; export -f sudo; #{cmd}".shellescape])
           end
 
-          cmd_parts << '-s' if stdin
+          cmd_parts << '-s' unless stdin.nil?
 
           @cmd = cmd_parts.join(' ')
 
-          @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
-          @source = source
           @result = Pharos::Transport::Command::Result.new(hostname)
           freeze
         end
@@ -96,6 +92,13 @@ module Pharos
             result.exit_status = wait_thr.value.exitstatus
           end
           result
+        end
+
+        private
+
+        # @return [Array<String>]
+        def envs_array
+          env.map { |k, v| "#{k}=\"#{v}\"" }
         end
       end
     end
