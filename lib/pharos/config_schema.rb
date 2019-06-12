@@ -44,6 +44,10 @@ module Pharos
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
       end
 
+      predicate(:file_exist?) do |value|
+        File.exist?(File.expand_path(value))
+      end
+
       def self.addresses
         @addresses ||= Set.new
       end
@@ -71,7 +75,7 @@ module Pharos
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
                   unique_address?: "is not unique",
-                  host_ssh_key_path: "file does not exist"
+                  file_exist?: "file does not exist %{ssh_key_path}"
                 }
               }
             )
@@ -95,23 +99,17 @@ module Pharos
                 end
               end
               optional(:user).filled
-              optional(:ssh_key_path).filled
+              optional(:ssh_key_path).filled(:str?, :file_exist?)
               optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
               optional(:ssh_proxy_command).filled(:str?)
               optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
               optional(:bastion).schema do
                 required(:address).filled(:str?)
-                optional(:user).filled(:str?)
+                optional(:user).filled(:str?, :file_exist?)
                 optional(:ssh_key_path).filled(:str?)
                 optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
                 optional(:ssh_proxy_command).filled(:str?)
-                validate(host_ssh_key_path: [:ssh_key_path]) do |ssh_key_path|
-                  ssh_key_path.nil? ? true : File.exist?(File.expand_path(ssh_key_path))
-                end
-              end
-              validate(host_ssh_key_path: [:ssh_key_path]) do |ssh_key_path|
-                ssh_key_path.nil? ? true : File.exist?(File.expand_path(ssh_key_path))
               end
             end
           end
