@@ -33,7 +33,7 @@ module Pharos
           puts("==> Importing configuration from Terraform ...".green) if $stdout.tty?
 
           json = File.read(file)
-          tf_parser = Pharos::Terraform::JsonParser.new(json)
+          tf_parser = Pharos::Terraform::JsonParser.new(json, file)
           if tf_parser.valid?
             config.deep_merge!(
               tf_parser.cluster,
@@ -41,7 +41,7 @@ module Pharos
               union_arrays: true
             )
           else
-            tf_parser = Pharos::Terraform::LegacyJsonParser.new(json)
+            tf_parser = Pharos::Terraform::LegacyJsonParser.new(json, file)
             config['hosts'] ||= []
             config['api'] ||= {}
             config['addons'] ||= {}
@@ -55,7 +55,21 @@ module Pharos
             end
           end
 
-          config
+          config['hosts'].each do |host|
+            if host[:ssh_key_path]
+              unless File.exist?(host[:ssh_key_path])
+                expanded = File.expand_path(host[:ssh_key_path])
+                host[:ssh_key_path] = File.exist?(expanded) ? expanded : File.join(File.dirname(file), host[:ssh_key_path])
+              end
+            end
+
+            next unless host.dig(:bastion, :ssh_key_path)
+
+            unless File.exist?(host[:bastion][:ssh_key_path])
+              expanded = File.expand_path(host[:bastion][:ssh_key_path])
+              host[:ssh_key_path] = File.exist?(expanded) ? expanded : File.join(File.dirname(file), host[:bastion][:ssh_key_path])
+            end
+          end
         end
       end
     end

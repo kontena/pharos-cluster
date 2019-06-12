@@ -70,7 +70,8 @@ module Pharos
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
-                  unique_address?: "is not unique"
+                  unique_address?: "is not unique",
+                  host_ssh_key_path: "file does not exist"
                 }
               }
             )
@@ -105,6 +106,12 @@ module Pharos
                 optional(:ssh_key_path).filled(:str?)
                 optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
                 optional(:ssh_proxy_command).filled(:str?)
+                validate(host_ssh_key_path: [:ssh_key_path]) do |ssh_key_path|
+                  ssh_key_path.nil? ? true : File.exist?(File.expand_path(ssh_key_path))
+                end
+              end
+              validate(host_ssh_key_path: [:ssh_key_path]) do |ssh_key_path|
+                ssh_key_path.nil? ? true : File.exist?(File.expand_path(ssh_key_path))
               end
             end
           end
