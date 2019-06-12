@@ -75,7 +75,7 @@ module Pharos
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
                   unique_address?: "is not unique",
-                  file_exist?: "file does not exist %{ssh_key_path}"
+                  file_exist?: "file does not exist %{value}"
                 }
               }
             )
@@ -106,8 +106,8 @@ module Pharos
               optional(:environment).filled
               optional(:bastion).schema do
                 required(:address).filled(:str?)
-                optional(:user).filled(:str?, :file_exist?)
-                optional(:ssh_key_path).filled(:str?)
+                optional(:user).filled(:str?)
+                optional(:ssh_key_path).filled(:str?, :file_exist?)
                 optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
                 optional(:ssh_proxy_command).filled(:str?)
               end
