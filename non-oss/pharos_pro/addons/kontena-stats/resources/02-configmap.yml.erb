@@ -160,6 +160,12 @@ data:
       - source_labels: [__meta_kubernetes_namespace]
         action: replace
         target_label: kubernetes_namespace
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        regex: (.+)
+        target_label: kubernetes_namespace
 
     # Example scrape config for probing services via the Blackbox Exporter.
     #
