@@ -17,7 +17,7 @@ module Pharos
           @client = client
           @source = source
           @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
-          @env = { 'PATH' => '$PATH', 'HOME' => '$HOME', 'KUBECONFIG' => '$KUBECONFIG' }.merge(@client.host.environment&.transform_keys(&:to_s) || {}).merge(env.transform_keys(&:to_s))
+          @env = export_envs.merge(@client.host.environment&.transform_keys(&:to_s) || {}).merge(env.transform_keys(&:to_s))
 
           cmd = cmd.join(' ') if cmd.is_a?(Array)
 
@@ -86,6 +86,13 @@ module Pharos
         end
 
         private
+
+        # @return [Hash]
+        def export_envs
+          %w(PATH HOME KUBECONFIG USER).map do |key|
+            [key, "\"$#{key}\""]
+          end.to_h
+        end
 
         # @return [Array<String>]
         def envs_array
