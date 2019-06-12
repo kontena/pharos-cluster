@@ -11,12 +11,12 @@ Pharos.addon 'kontena-lens' do
     'kontena-stats'
   ]
 
-  helm_api_version = '1.6.0-beta.1'
-  terminal_gateway_version = '1.6.0-beta.1'
-  terminal_version = '1.6.0-beta.1'
-  user_management_version = '1.5.1'
-  resource_applier_version = '1.5.1'
-  authenticator_version = '1.5.1'
+  helm_api_version = '1.6.0'
+  terminal_gateway_version = '1.6.0'
+  terminal_version = '1.6.0'
+  user_management_version = '1.6.0'
+  resource_applier_version = '1.6.0'
+  authenticator_version = '1.6.+'
   redis_version = '4-alpine'
   tiller_version = '2.13.1'
   license_enforcer_version = '0.1.1'
