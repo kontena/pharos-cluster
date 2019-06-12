@@ -7,16 +7,14 @@ module Pharos
   module Terraform
     class LegacyJsonParser
       # @param json [String]
-      # @param path [String]
-      def initialize(json, path)
+      def initialize(json)
         @json = json
-        @path = path
       end
 
       def data
         @data ||= JSON.parse(@json)
       rescue JSON::ParserError => ex
-        raise ParserError, ex.message + "in '#{path}'"
+        raise ParserError, ex.message
       end
 
       # @return [Array<Hash>]

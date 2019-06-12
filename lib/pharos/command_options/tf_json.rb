@@ -33,7 +33,7 @@ module Pharos
           puts("==> Importing configuration from Terraform ...".green) if $stdout.tty?
 
           json = File.read(file)
-          tf_parser = Pharos::Terraform::JsonParser.new(json, file)
+          tf_parser = Pharos::Terraform::JsonParser.new(json)
           if tf_parser.valid?
             config.deep_merge!(
               tf_parser.cluster,
@@ -41,7 +41,7 @@ module Pharos
               union_arrays: true
             )
           else
-            tf_parser = Pharos::Terraform::LegacyJsonParser.new(json, file)
+            tf_parser = Pharos::Terraform::LegacyJsonParser.new(json)
             config['hosts'] ||= []
             config['api'] ||= {}
             config['addons'] ||= {}
