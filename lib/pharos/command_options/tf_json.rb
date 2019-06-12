@@ -56,19 +56,11 @@ module Pharos
           end
 
           config['hosts'].each do |host|
-            if host[:ssh_key_path]
-              unless File.exist?(host[:ssh_key_path])
-                host[:ssh_key_path] = File.join(File.dirname(file), host[:ssh_key_path])
-              end
-              host[:ssh_key_path] = File.expand_path(host[:ssh_key_path])
-            end
+            host[:ssh_key_path] = File.absolute_path(host[:ssh_key_path]) if host[:ssh_key_path]
 
             next unless host.dig(:bastion, :ssh_key_path)
 
-            unless File.exist?(host[:bastion][:ssh_key_path])
-              host[:ssh_key_path] = File.join(File.dirname(file), host[:bastion][:ssh_key_path])
-            end
-            host[:bastion][:ssh_key_path] = File.expand_path(host[:bastion][:ssh_key_path])
+            host[:bastion][:ssh_key_path] = File.absolute_path(host[:bastion][:ssh_key_path])
           end
         end
       end
