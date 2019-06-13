@@ -44,15 +44,17 @@ module Pharos
               )
             else
               tf_parser = Pharos::Terraform::LegacyJsonParser.new(json)
-              config[:hosts] ||= []
-              config[:api] ||= {}
-              config[:addons] ||= {}
-              config[:hosts].concat(tf_parser.hosts)
-              config[:api].merge!(tf_parser.api) if tf_parser.api
-              config[:name] ||= tf_parser.cluster_name if tf_parser.cluster_name
-              config[:addons].each do |name, conf|
-                if addon_config = tf_parser.addons[name]
-                  conf.merge!(addon_config)
+              config['hosts'] ||= []
+              config['api'] ||= {}
+              config['addons'] ||= {}
+              config['hosts'].concat(tf_parser.hosts)
+              config['api'].merge!(tf_parser.api) if tf_parser.api
+              config['name'] ||= tf_parser.cluster_name if tf_parser.cluster_name
+              tf_parser.addons.each do |name, conf|
+                if config['addons'][name]
+                  config['addons'][name].merge!(conf)
+                else
+                  config['addons'][name] = conf
                 end
               end
             end
