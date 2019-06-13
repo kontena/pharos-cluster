@@ -57,14 +57,14 @@ module Pharos
               end
             end
 
-            config.deep_symbolize_keys!
+            config.deep_stringify_keys!
 
-            config[:hosts].each do |host|
-              host[:ssh_key_path] = File.expand_path(host[:ssh_key_path]) if host[:ssh_key_path]
+            config['hosts'].each do |host|
+              host['ssh_key_path'] = File.expand_path(host['ssh_key_path']) if host['ssh_key_path']
 
-              next unless host.dig(:bastion, :ssh_key_path)
+              next unless host.dig('bastion', 'ssh_key_path')
 
-              host[:bastion][:ssh_key_path] = File.expand_path(host[:bastion][:ssh_key_path])
+              host['bastion']['ssh_key_path'] = File.expand_path(host['bastion']['ssh_key_path'])
             end
           end
         end
