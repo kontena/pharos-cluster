@@ -75,6 +75,8 @@ data:
       relabel_configs:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
+      - replacement: 'kontena-stats'
+        target_label: kubernetes_namespace
 
     # Scrape config for Kubelet cAdvisor. Explore metrics from a node by
     # scraping kubelet (127.0.0.1:10250/metrics/cadvisor).
@@ -93,6 +95,11 @@ data:
       relabel_configs:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        target_label: kubernetes_namespace
 
 
     # Scrap etcd metrics from masters via etcd-scraper-proxy
@@ -145,9 +152,6 @@ data:
         replacement: $1:$2
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)
-      - source_labels: [__meta_kubernetes_namespace]
-        action: replace
-        target_label: kubernetes_namespace
       - source_labels: [__meta_kubernetes_service_name]
         action: replace
         target_label: job
@@ -155,6 +159,15 @@ data:
         source_labels:
         - __meta_kubernetes_pod_node_name
         target_label: kubernetes_node
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        regex: (.+)
+        target_label: kubernetes_namespace
 
     # Example scrape config for probing services via the Blackbox Exporter.
     #
@@ -183,10 +196,14 @@ data:
         target_label: instance
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)
-      - source_labels: [__meta_kubernetes_namespace]
-        target_label: kubernetes_namespace
       - source_labels: [__meta_kubernetes_service_name]
         target_label: job
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        regex: (.+)
+        target_label: kubernetes_namespace
 
     # Example scrape config for pods
     #
@@ -223,6 +240,12 @@ data:
       - source_labels: [__meta_kubernetes_pod_name]
         action: replace
         target_label: kubernetes_pod_name
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        regex: (.+)
+        target_label: kubernetes_namespace
 
     # Rule files
     rule_files:

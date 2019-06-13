@@ -31,6 +31,8 @@ module Pharos
       filtered_hosts.map do |host|
         target = "#{host.user}@#{host.address}"
         puts "==> Opening a session to #{target} ..".green
+        host.transport.connect
+        puts "==> Starting an interactive session ..".green
         host.transport.interactive_session
       end
     end
