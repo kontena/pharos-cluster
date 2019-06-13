@@ -45,7 +45,7 @@ module Pharos
       end
 
       predicate(:file_exist?) do |value|
-        File.exist?(value)
+        File.exist?(File.expand_path(value))
       end
 
       def self.addresses
