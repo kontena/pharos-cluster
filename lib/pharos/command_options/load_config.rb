@@ -4,6 +4,7 @@ module Pharos
   module CommandOptions
     module LoadConfig
       using Pharos::CoreExt::Colorize
+      using Pharos::CoreExt::DeepTransformKeys
 
       def self.included(base)
         base.prepend(InstanceMethods)
@@ -56,7 +57,7 @@ module Pharos
 
           puts("==> Reading instructions ...".green) if $stdout.tty?
 
-          config_hash = config_yaml.load(ENV.to_h)
+          config_hash = config_yaml.load(ENV.to_h).deep_symbolize_keys
 
           load_external_config(config_hash)
 
