@@ -75,6 +75,8 @@ data:
       relabel_configs:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
+      - replacement: 'kontena-stats'
+        target_label: kubernetes_namespace
 
     # Scrape config for Kubelet cAdvisor. Explore metrics from a node by
     # scraping kubelet (127.0.0.1:10250/metrics/cadvisor).
@@ -200,6 +202,7 @@ data:
       - source_labels:
           - namespace
         action: replace
+        regex: (.+)
         target_label: kubernetes_namespace
 
     # Example scrape config for pods
@@ -237,6 +240,12 @@ data:
       - source_labels: [__meta_kubernetes_pod_name]
         action: replace
         target_label: kubernetes_pod_name
+      metric_relabel_configs:
+      - source_labels:
+          - namespace
+        action: replace
+        regex: (.+)
+        target_label: kubernetes_namespace
 
     # Rule files
     rule_files:
