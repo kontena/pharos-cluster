@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: prometheus-network-policy
+  namespace: kontena-stats
+spec:
+  policyTypes:
+  - Ingress
+  podSelector:
+    matchLabels:
+      name: prometheus
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: rbac-proxy
+    ports:
+    - protocol: TCP
+      port: 9090
