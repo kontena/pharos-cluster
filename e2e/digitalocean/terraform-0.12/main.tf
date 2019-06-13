@@ -122,7 +122,7 @@ output "pharos_cluster" {
         private_address   = host.droplet.ipv4_address_private
         role              = host.role
         user              = "root"
-        ssh_key_path      = "./ssh_key.pem"
+        ssh_key_path      = "${local_file.ssh_key.filename}"
 
         label = {
           "beta.kubernetes.io/instance-type"         = "${host.droplet.size}"

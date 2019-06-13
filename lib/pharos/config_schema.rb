@@ -45,7 +45,7 @@ module Pharos
       end
 
       predicate(:file_exist?) do |value|
-        File.exist?(File.expand_path(value))
+        File.exist?(value)
       end
 
       def self.addresses
@@ -75,7 +75,7 @@ module Pharos
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
                   unique_address?: "is not unique",
-                  file_exist?: "file does not exist %{value}"
+                  file_exist?: "file %{value} does not exist"
                 }
               }
             )
