@@ -57,7 +57,7 @@ module Pharos
 
           puts("==> Reading instructions ...".green) if $stdout.tty?
 
-          config_hash = config_yaml.load(ENV.to_h).deep_symbolize_keys
+          config_hash = config_yaml.load(ENV.to_h).deep_stringify_keys
 
           load_external_config(config_hash)
 
