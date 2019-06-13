@@ -56,7 +56,7 @@ module Pharos
               end
             end
 
-            config['hosts'].each do |host|
+            config[:hosts].each do |host|
               host[:ssh_key_path] = File.expand_path(host[:ssh_key_path]) if host[:ssh_key_path]
 
               next unless host.dig(:bastion, :ssh_key_path)
