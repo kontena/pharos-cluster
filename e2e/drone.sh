@@ -47,9 +47,9 @@ echo "Checking that kontena-lens is running:"
 timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 
 # Reboot test
-node_lines_before=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep Ready | grep -v NotReady | wc -l)
+node_lines_before=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep -v NotReady | grep -c Ready )
 timeout 300 pharos reboot -r worker -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
-node_lines_after=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep Ready | grep -v NotReady | wc -l)
+node_lines_after=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep -v NotReady | grep -c Ready )
 if [ "$node_lines_before" != "$node_lines_after" ]; then
   echo "Nodes online not equal after reboot"
   exit 1
