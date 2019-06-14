@@ -5,6 +5,11 @@ module Pharos
     def execute
       puts "Kontena Pharos:"
       puts "  - #{File.basename($PROGRAM_NAME)} version #{Pharos.version}"
+      puts "Ruby:"
+      puts "  - #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}"
+      puts "Rubygems:"
+      Gem.loaded_specs.map { |name, spec| "  - #{name} #{spec.version} (#{spec.licenses.join(', ')})" }.sort.each { |g| puts g }
+
       ClusterManager.new(Pharos::Config.new({})).load
 
       phases.each do |os, phases|
