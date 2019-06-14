@@ -70,6 +70,24 @@ module Pharos
         abstract_method!
       end
 
+      def configure_container_runtime!
+        cleanup_needed = !host.new? && !custom_docker? && !configure_container_runtime_safe?
+        unless cleanup_needed
+          configure_container_runtime
+          return
+        end
+
+        if docker?
+          cleanup_docker! do
+            configure_container_runtime
+          end
+        elsif crio?
+          cleanup_crio! do
+            configure_container_runtime
+          end
+        end
+      end
+
       def configure_container_runtime
         abstract_method!
       end
@@ -108,7 +126,7 @@ module Pharos
       def exec_script(script, vars = {})
         transport.exec_script!(
           script,
-          env: vars,
+          env: (host.environment || {}).merge(vars),
           path: script_path(script)
         )
       end
@@ -164,9 +182,6 @@ module Pharos
           "#{key}=\"#{val.shellescape}\""
         end
         host_env_file.write(new_content.join("\n") + "\n")
-        new_content.each do |kv_pair|
-          transport.exec!("export #{kv_pair}")
-        end
       end
 
       # @return [String, NilClass]
@@ -189,9 +204,19 @@ module Pharos
 
       def cleanup_crio!
         transport.exec!("sudo systemctl stop kubelet")
-        transport.exec!("sudo crictl stopp $(crictl pods -q)")
-        transport.exec!("sudo crictl rmp $(crictl pods -q)")
-        transport.exec!("sudo crictl rmi $(crictl images -q)")
+        transport.exec!("sudo crictl stopp $(sudo crictl pods -q)")
+        transport.exec!("sudo crictl rmp $(sudo crictl pods -q)")
+        transport.exec!("sudo crictl rmi $(sudo crictl images -q)")
+        yield
+      ensure
+        transport.exec!("sudo systemctl start kubelet")
+      end
+
+      def cleanup_docker!
+        transport.exec!("sudo systemctl stop kubelet")
+        transport.exec!("sudo docker stop $(sudo docker ps -q)")
+        transport.exec!("sudo docker rm -f $(sudo docker ps -a -q)")
+        yield
       ensure
         transport.exec!("sudo systemctl start kubelet")
       end

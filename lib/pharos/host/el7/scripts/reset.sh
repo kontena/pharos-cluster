@@ -21,7 +21,7 @@ fi
 
 kubeadm reset --force
 
-yum remove -y kubeadm kubelet kubectl docker cri-o
+yum remove -y kubeadm kubelet kubectl kubernetes-cni docker cri-o
 
 sudo rm -rf /etc/kubernetes \
     /etc/pharos \
@@ -44,6 +44,9 @@ sudo rm -rf /etc/kubernetes \
     /usr/local/bin/runc \
     /usr/local/bin/crictl \
     /usr/local/bin/pharos-kubeadm-*
+
+# reset versionlock
+echo '' | sudo tee /etc/yum/pluginconf.d/versionlock.list
 
 systemctl daemon-reload
 systemctl reset-failed

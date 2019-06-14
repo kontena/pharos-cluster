@@ -29,3 +29,8 @@ pods_running() {
     local -r namespace="$1"; shift
     kubectl get pods -n "$namespace" -l "$label" | grep Running
 }
+
+node_online() {
+  local -r hostname="$1"
+  kubectl get nodes | grep "$hostname" | grep -v NotReady | grep -q Ready
+}

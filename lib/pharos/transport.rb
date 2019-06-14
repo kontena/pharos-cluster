@@ -15,6 +15,10 @@ module Pharos
         opts[:proxy] = Net::SSH::Proxy::Command.new(host.ssh_proxy_command) if host.ssh_proxy_command
         opts[:bastion] = host.bastion if host.bastion
         opts[:port] = host.ssh_port
+        opts[:keepalive] = true
+        opts[:keepalive_interval] = 30
+        opts[:keepalive_maxcount] = 5
+        opts[:timeout] = 5
         SSH.new(host.address, user: host.user, **opts.merge(options))
       end
     end

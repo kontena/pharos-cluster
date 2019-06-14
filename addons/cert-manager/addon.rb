@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'cert-manager' do
-  version '0.5.2'
+  version '0.7.2'
   license 'Apache License 2.0'
 
   issuer = custom_type {
@@ -15,19 +15,24 @@ Pharos.addon 'cert-manager' do
   }
 
   config {
-    attribute :issuer, issuer
     attribute :ca_issuer, ca_issuer.default(proc { ca_issuer.new(enabled: true) })
+    attribute :extra_args, Pharos::Types::Array.default(proc { [] })
+    attribute :issuers, Pharos::Types::Array.default(proc { [] })
+    attribute :issuer, issuer # deprecated
   }
 
   config_schema {
-    required(:issuer).schema {
+    optional(:issuers).each(:hash?)
+    optional(:extra_args).each(:str?)
+    optional(:ca_issuer).schema {
+      optional(:enabled).filled(:bool?)
+    }
+
+    # deprecated
+    optional(:issuer).schema {
       required(:name).filled(:str?)
       required(:email).filled(:str?)
       optional(:server).filled(:str?)
-    }
-
-    optional(:ca_issuer).schema {
-      optional(:enabled).filled(:bool?)
     }
 
     # Register custom error for LE Acme v1 endpoint validation
@@ -38,7 +43,7 @@ Pharos.addon 'cert-manager' do
     end
 
     validate(le_acme_v1: :issuer) do |i|
-      if i[:name] == 'letsencrypt' && i[:server].include?('acme-v01.api.letsencrypt.org')
+      if i && i[:name] == 'letsencrypt' && i[:server].include?('acme-v01.api.letsencrypt.org')
         false
       else
         true
@@ -47,48 +52,39 @@ Pharos.addon 'cert-manager' do
   }
 
   install {
+    # Need to add label to kube-system NS to get webhook PKI in place properly
+    kube_client.api('v1').resource('namespaces').merge_patch('kube-system', metadata: { labels: { 'certmanager.k8s.io/disable-validation': "true" } })
+
     stack = kube_stack
 
     if config.ca_issuer&.enabled
+      logger.info "Enabling kubernetes CA issuer ..."
       stack.resources << build_ca_secret
-      stack.resources << build_ca_issuer
+      config.issuers << build_ca_issuer.to_h
+    end
+
+    if config.issuer
+      logger.warn "Issuer config option is deprecated, use issuers instead."
+      config.issuers << build_legacy_issuer.to_h
     end
 
     stack.apply(kube_client)
 
-    migrate_le_acme_issuers
-    migrate_le_acme_cluster_issuers
+    unless config.issuers.empty?
+      logger.info "Applying issuers (this might take a moment) ..."
+      issuers = config.issuers.map do |i|
+        K8s::Resource.new(
+          i.merge(
+            apiVersion: "certmanager.k8s.io/v1alpha1"
+          )
+        )
+      end
+      issuers_stack = Pharos::Kube::Stack.new('cert-manager-issuers', issuers)
+      Retry.perform(300, exceptions: [K8s::Error::InternalError]) do
+        issuers_stack.apply(kube_client)
+      end
+    end
   }
-
-  def patch_spec
-    {
-      acme: {
-        server: 'https://acme-v02.api.letsencrypt.org/directory'
-      }
-    }
-  end
-
-  def le_acme_v1_endpoint
-    'https://acme-v01.api.letsencrypt.org/directory'
-  end
-
-  def migrate_le_acme_issuers
-    kube_client.api('certmanager.k8s.io/v1alpha1').resource('issuers', namespace: nil).list.each do |issuer|
-      next unless issuer&.spec&.acme&.server == le_acme_v1_endpoint
-
-      rc = kube_client.client_for_resource(issuer, namespace: issuer.metadata.namespace)
-      rc.merge_patch(issuer.metadata.name, { spec: patch_spec }, namespace: issuer.metadata.namespace, strategic_merge: false)
-    end
-  end
-
-  def migrate_le_acme_cluster_issuers
-    kube_client.api('certmanager.k8s.io/v1alpha1').resource('clusterissuers', namespace: nil).list.each do |issuer|
-      next unless issuer&.spec&.acme&.server == le_acme_v1_endpoint
-
-      rc = kube_client.client_for_resource(issuer)
-      rc.merge_patch(issuer.metadata.name, { spec: patch_spec }, strategic_merge: false)
-    end
-  end
 
   def build_ca_issuer
     K8s::Resource.new(
@@ -117,6 +113,27 @@ Pharos.addon 'cert-manager' do
       data: {
         'tls.crt': Base64.strict_encode64(master_host.transport.file('/etc/kubernetes/pki/ca.crt').read),
         'tls.key': Base64.strict_encode64(master_host.transport.file('/etc/kubernetes/pki/ca.key').read)
+      }
+    )
+  end
+
+  def build_legacy_issuer
+    K8s::Resource.new(
+      apiVersion: "certmanager.k8s.io/v1alpha1",
+      kind: "Issuer",
+      metadata: {
+        name: config.issuer.name,
+        namespace: "default"
+      },
+      spec: {
+        acme: {
+          server: config.issuer.server,
+          email: config.issuer.email,
+          privateKeySecretRef: {
+            name: config.issuer.name
+          },
+          http01: {}
+        }
       }
     )
   end

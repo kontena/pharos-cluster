@@ -69,6 +69,7 @@ module Pharos
 
   module Terraform
     autoload :JsonParser, 'pharos/terraform/json_parser'
+    autoload :LegacyJsonParser, 'pharos/terraform/legacy_json_parser'
   end
 
   module Configuration
@@ -88,3 +89,5 @@ module Pharos
     autoload :Configurer, 'pharos/host/configurer'
   end
 end
+
+Dir.glob(File.join(__dir__, '/cloud/*.rb')).each { |f| require(f) }

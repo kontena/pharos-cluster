@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: license-enforcer
+  namespace: kontena-lens
+  labels:
+    app: license-enforcer
+spec:
+  selector:
+    matchLabels:
+      app: license-enforcer
+  template:
+    metadata:
+      labels:
+        app: license-enforcer
+    spec:
+      serviceAccountName: license-enforcer
+      priorityClassName: pharos-cluster-critical
+      tolerations:
+      - key: node-role.kubernetes.io/master
+      containers:
+      - name: enforcer
+        image: <%= image_repository %>/x-license-enforcer:<%= license_enforcer_version %>
+        args:
+          - -interval
+          - 60s
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: DEPLOYMENT_NAME
+            value: license-enforcer
+        resources:
+          limits:
+            memory: 20Mi
+            cpu: 200m
+          requests:
+            cpu: 100m
+            memory: 10Mi

@@ -17,7 +17,8 @@ if [ ! -e /etc/pharos/pki/ca-config.json ]; then
                 "usages": [
                     "signing",
                     "key encipherment",
-                    "server auth"
+                    "server auth",
+                    "client auth"
                 ]
             },
             "client": {

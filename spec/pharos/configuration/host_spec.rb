@@ -12,7 +12,7 @@ describe Pharos::Configuration::Host do
 
   describe '#labels' do
     context 'for master' do
-      it 'returns external-ip and role label by default' do
+      it 'returns external-ip only by default' do
         subject = described_class.new(
           address: '192.168.100.100',
           role: 'master',
@@ -20,6 +20,35 @@ describe Pharos::Configuration::Host do
         )
         expect(subject.labels).to eq({
           'node-address.kontena.io/external-ip' => '192.168.100.100'
+        })
+      end
+
+      it 'returns internal-ip if private_address configured' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          private_address: '10.0.0.1',
+          role: 'master',
+          user: 'root'
+        )
+        expect(subject.labels).to eq({
+          'node-address.kontena.io/external-ip' => '192.168.100.100',
+          'node-address.kontena.io/internal-ip' => '10.0.0.1'
+        })
+      end
+
+      it 'returns internal-ip if private_interface configured' do
+        subject = described_class.new(
+          address: '192.168.100.100',
+          private_interface: 'eth11',
+          role: 'master',
+          user: 'root'
+        )
+        # This is normally resolved in gather_facts phase
+        subject.private_interface_address = '10.1.2.3'
+
+        expect(subject.labels).to eq({
+          'node-address.kontena.io/external-ip' => '192.168.100.100',
+          'node-address.kontena.io/internal-ip' => '10.1.2.3'
         })
       end
 

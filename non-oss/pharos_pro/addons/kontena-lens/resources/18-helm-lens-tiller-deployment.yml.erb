@@ -21,7 +21,7 @@ spec:
           value: kontena-lens-tiller
         - name: TILLER_HISTORY_MAX
           value: "10"
-        image: <%= image_repository %>/tiller:v<%= tiller_version %>
+        image: <%= image_repository %>/pharos-helm-tiller:<%= tiller_version %>
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -30,7 +30,7 @@ spec:
           initialDelaySeconds: 1
           timeoutSeconds: 1
         name: tiller
-        command: ["/tiller"]
+        command: ["/usr/bin/tiller"]
         args: ["--listen=localhost:44134"]
         readinessProbe:
           httpGet:

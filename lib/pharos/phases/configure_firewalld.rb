@@ -23,9 +23,12 @@ module Pharos
         write_config('services/pharos-worker.xml', pharos_worker_service)
         write_config('ipsets/pharos.xml', pharos_ipset)
 
+        # Masquerade was enabled in the past, if it's still enabled we need to reload firewalld rules
+        @firewalld_reload = true if masquerade_active?
+
         return unless firewalld_reload?
 
-        cluster_context['reload-iptables'] = true unless @host.new?
+        cluster_context['reload-iptables'] = true
         logger.info { 'Reloading firewalld ...' }
         exec_script(
           'configure-firewalld.sh',
@@ -98,6 +101,10 @@ module Pharos
           name: 'pharos',
           entries: trusted_addresses
         )
+      end
+
+      def masquerade_active?
+        transport.exec("firewall-cmd --query-masquerade > /dev/null 2>&1").success?
       end
     end
   end

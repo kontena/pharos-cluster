@@ -8,7 +8,7 @@ if systemctl is-active --quiet kubelet; then
 fi
 
 mkdir -p /etc/systemd/system/kubelet.service.d
-    cat <<EOF >/etc/systemd/system/kubelet.service.d/05-pharos-kubelet.conf
+cat <<EOF >/etc/systemd/system/kubelet.service.d/05-pharos-kubelet.conf
 [Service]
 ExecStartPre=-/sbin/swapoff -a
 ExecStart=

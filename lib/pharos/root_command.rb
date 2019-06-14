@@ -7,12 +7,18 @@ require_relative 'version_command'
 require_relative 'kubeconfig_command'
 require_relative 'exec_command'
 require_relative 'terraform_command'
+require_relative 'worker_up_command'
 
 module Pharos
   class RootCommand < Pharos::Command
     banner "#{File.basename($PROGRAM_NAME)} - Kontena Pharos cluster manager"
 
     subcommand "up", "initialize/upgrade cluster", UpCommand
+
+    subcommand "worker", "worker node specific commands" do
+      subcommand "up", "initialize/upgrade a worker node", WorkerUpCommand
+    end
+
     subcommand "kubeconfig", "fetch admin kubeconfig file", KubeconfigCommand
     subcommand "reset", "reset cluster or nodes", ResetCommand
     subcommand "reboot", "reboot cluster or nodes", RebootCommand

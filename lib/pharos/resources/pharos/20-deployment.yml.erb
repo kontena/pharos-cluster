@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: pharos-cloud-controller
+  name: pharos-cloud-controller
+  namespace: kube-system
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: pharos-cloud-controller
+  template:
+    metadata:
+      labels:
+        k8s-app: pharos-cloud-controller
+    spec:
+      serviceAccountName: cloud-controller-manager
+      hostNetwork: true
+      containers:
+      - name: pharos-cloud-controller
+        image: <%= image_repository %>/pharos-cloud-controller:0.1.0
+        args:
+          - --cloud-provider=pharos
+          - --node-status-update-frequency=60s
+          - --allow-untagged-cloud
+          - --leader-elect=true
+          - --use-service-account-credentials
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+          requests:
+            cpu: 50m
+            memory: 30Mi
+      tolerations:
+      # this is required so CCM can bootstrap itself
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+        effect: NoSchedule
+      # this is to have the daemonset runnable on master nodes
+      # the taint may vary depending on your cluster setup
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      # this is to restrict CCM to only run on master nodes
+      nodeSelector:
+        node-role.kubernetes.io/master: ""

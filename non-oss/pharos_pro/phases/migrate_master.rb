@@ -5,17 +5,57 @@ require 'pharos/phases/mixins/cluster_version'
 module Pharos
   module Phases
     class MigrateMaster < Pharos::Phase
-      title "Migrate master"
-
       include Pharos::Phases::Mixins::ClusterVersion
 
+      title "Migrate master"
+
       def call
-        if existing_version == pharos_version
+        # rubocop:disable Style/GuardClause
+        if existing_version == pharos_version || existing_version == build_version('0.0.1')
           logger.info 'Nothing to migrate.'
-        elsif existing_version > build_version('1.0.0') && existing_version < build_version('2.3.0-alpha.1')
+          return
+        end
+
+        if existing_version > build_version('1.0.0') && existing_version < build_version('2.3.0-alpha.1')
           logger.info 'Migrating cluster info ...'
           migrate_cluster_info
         end
+
+        if existing_version > build_version('2.0.0') && existing_version < build_version('2.4.0-alpha.0')
+          logger.info 'Triggering etcd certificate refresh ...'
+          recreate_etcd_certs
+          logger.info 'Fixing tolerations ...'
+          fix_lens_redis_tolerations
+        end
+        # rubocop:enable Style/GuardClause
+      end
+
+      def fix_lens_redis_tolerations
+        resource_client = kube_client.api('extensions/v1beta1').resource('deployments', namespace: 'kontena-lens')
+        resource_client.merge_patch(
+          'redis',
+          spec: {
+            template: {
+              spec: {
+                tolerations: [
+                  {
+                    effect: 'NoSchedule',
+                    operator: 'Exists',
+                    key: 'node-role.kubernetes.io/master'
+                  }
+                ]
+              }
+            }
+          }
+        )
+        pod_client = kube_client.api('v1').resource('pods', namespace: 'kontena-lens')
+        pod_client.delete_collection(labelSelector: 'app=dashboard')
+      rescue K8s::Error::NotFound
+        logger.debug "kontena-lens redis not found"
+      end
+
+      def recreate_etcd_certs
+        cluster_context['recreate-etcd-certs'] = true
       end
 
       def migrate_cluster_info
