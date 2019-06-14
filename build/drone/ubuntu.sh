@@ -16,4 +16,4 @@ package="pharos-cluster-linux-amd64-${version}"
 mkdir -p /root/.pharos/build
 rubyc --openssl-dir=/etc/ssl -o "$package" -d /root/.pharos/build --make-args=--silent pharos
 rm -rf /root/.pharos/build
-./"$package" version
+./"$package" version -a

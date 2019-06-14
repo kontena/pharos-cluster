@@ -17,7 +17,7 @@ package="pharos-cluster-linux-amd64-${version}+oss"
 mkdir -p /root/.pharos/build
 rubyc --openssl-dir=/etc/ssl -o "$package" -d /root/.pharos/build --make-args=--silent pharos
 rm -rf /root/.pharos/build
-./"$package" version
+./"$package" version -a
 
 # ship to github
 curl -sL https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2 | tar -xjO > /usr/local/bin/github-release

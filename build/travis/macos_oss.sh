@@ -17,7 +17,7 @@ rm -rf non-oss/
 version=${TRAVIS_TAG#"v"}
 package="pharos-cluster-darwin-amd64-${version}+oss"
 rubyc --openssl-dir=/usr/local/etc/openssl -o "$package" --make-args=--silent pharos
-./"$package" version
+./"$package" version -a
 
 # ship to github
 curl -sL https://github.com/aktau/github-release/releases/download/v0.7.2/darwin-amd64-github-release.tar.bz2 | tar -xjO > /usr/local/bin/github-release
