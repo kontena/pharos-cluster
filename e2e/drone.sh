@@ -50,8 +50,8 @@ timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitaloc
 node_lines_before=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep Ready | grep -v NotReady | wc -l)
 timeout 300 pharos reboot -r worker -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 node_lines_after=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep Ready | grep -v NotReady | wc -l)
-if [ "$node_lines_before" != "$node_lines_after"]; then
-  echo "Nodes online not equal"
+if [ "$node_lines_before" != "$node_lines_after" ]; then
+  echo "Nodes online not equal after reboot"
   exit 1
 fi
 
