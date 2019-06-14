@@ -7,6 +7,9 @@ module Pharos
 
       EXPECTED_ERRORS = Pharos::Transport::SSH::RETRY_CONNECTION_ERRORS + [
         Net::SSH::Disconnect,
+        Net::SSH::ConnectionTimeout,
+        Net::SSH::Timeout,
+        Errno::EHOSTDOWN,
         Pharos::ExecError
       ].freeze
 
@@ -22,7 +25,6 @@ module Pharos
         logger.debug "Sending the reboot command .."
         transport.exec!('sudo nohup bash -c "sleep 5; shutdown -r now" &> /dev/null &')
         transport.disconnect
-        # logger.info "Scheduled a reboot in #{seconds} second#{'s' if seconds > 1}, waiting for reboot .."
         logger.debug { "Allowing the host some time to start the shutdown process .." }
         sleep 20
       end
