@@ -46,6 +46,15 @@ echo "Checking that kontena-lens is running:"
 # Rerun up to confirm that non-initial run goes through
 timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 
+# Reboot test
+node_lines_before=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep Ready | grep -v NotReady | wc -l)
+timeout 300 pharos reboot -r worker -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
+node_lines_after=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep Ready | grep -v NotReady | wc -l)
+if [ "$node_lines_before" != "$node_lines_after"]; then
+  echo "Nodes online not equal"
+  exit 1
+fi
+
 # Subcommand "pharos worker up" test
 
 if [ ! -f e2e/digitalocean/worker_up_address.txt ]; then
@@ -103,9 +112,3 @@ echo "Waiting for node to come online.."
 echo "Node is online:"
 kubectl get nodes "${worker_hostname}" -o wide
 
-timeout 300 pharos reboot -r worker -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
-
-echo "Waiting for node to come online.."
-(retry 30 node_online "${worker_hostname}") || exit $?
-echo "Node is online:"
-kubectl get nodes "${worker_hostname}" -o wide
