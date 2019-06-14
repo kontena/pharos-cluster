@@ -19,7 +19,7 @@ Pharos.addon 'kontena-lens' do
   authenticator_version = '1.6.0'
   redis_version = '4-alpine'
   tiller_version = '2.13.1'
-  license_enforcer_version = '0.1.1'
+  license_enforcer_version = '0.2.0'
 
   config_schema {
     optional(:name).filled(:str?)
