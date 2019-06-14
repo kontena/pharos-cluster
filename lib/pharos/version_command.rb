@@ -6,7 +6,7 @@ module Pharos
       puts "Kontena Pharos:"
       puts "  - #{File.basename($PROGRAM_NAME)} version #{Pharos.version}"
       puts "Ruby:"
-      puts "  - #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}"
+      puts "  - #{RUBY_DESCRIPTION} (Ruby, GPLv2, 2-clause BSD)"
       puts "Rubygems:"
       Gem.loaded_specs.map { |name, spec| "  - #{name} #{spec.version} (#{spec.licenses.join(', ')})" }.sort.each { |g| puts g }
 
