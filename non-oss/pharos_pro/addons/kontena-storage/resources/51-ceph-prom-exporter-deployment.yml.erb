@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ceph-prom-exporter
+  namespace: kontena-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ceph-prom-exporter
+  template:
+    metadata:
+      labels:
+        app: ceph-prom-exporter
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9292'
+    spec:
+      serviceAccountName: ceph-prom-exporter
+      containers:
+      - name: ceph-prom-exporter
+        image: "<%= image_repository %>/ceph-prom-exporter:0.1.0"
+        ports:
+          - containerPort: 9292
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100M
+          limits:
+            cpu: 200m
+            memory: 100M
