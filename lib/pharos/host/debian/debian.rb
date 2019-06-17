@@ -56,7 +56,7 @@ module Pharos
           transport.exec!("curl -fsSL #{repo.key_url} | sudo apt-key add -") if repo.key_url
           transport.file(repo_path).write(repo.contents)
         end
-        transport.exec!("DEBIAN_FRONTEND=noninteractive sudo apt-get update -y")
+        transport.exec!("DEBIAN_FRONTEND=noninteractive sudo -E apt-get update -y")
       end
     end
   end
