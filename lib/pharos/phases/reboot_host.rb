@@ -33,7 +33,6 @@ module Pharos
         logger.info "Reconnecting and waiting for kubelet to start .."
         Pharos::Retry.perform(1200, exceptions: EXPECTED_ERRORS, logger: logger) do
           transport.connect unless transport.connected?
-          sleep 5 # quite often ssh comes up for a short while as a teaser, only to disconnect immediately afterwards
           transport.exec!('systemctl is-active kubelet')
         end
         logger.debug "Connected"
