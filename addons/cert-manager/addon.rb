@@ -16,7 +16,7 @@ Pharos.addon 'cert-manager' do
 
   config {
     attribute :ca_issuer, feature_flag.default(proc { feature_flag.new(enabled: true) })
-    attribute :webhook, feature_flag.default(proc { feature_flag.new(enabled: false) })
+    attribute :webhook, feature_flag.default(proc { feature_flag.new(enabled: true) })
     attribute :extra_args, Pharos::Types::Array.default(proc { [] })
     attribute :issuers, Pharos::Types::Array.default(proc { [] })
     attribute :issuer, issuer # deprecated
