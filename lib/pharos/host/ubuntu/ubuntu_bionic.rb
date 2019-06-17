@@ -25,11 +25,6 @@ module Pharos
         enabled: proc { |c| !c.etcd&.endpoints }
       )
 
-      def configure_repos
-        exec_script("repos/pharos_bionic.sh")
-        exec_script('repos/update.sh')
-      end
-
       # @return [Array<String>]
       def kubelet_args
         kubelet_args = super
@@ -69,6 +64,14 @@ module Pharos
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
+      end
+
+      def default_repositories
+        [Pharos::Configuration::Repository.new(
+          name: "pharos-kubernetes.list",
+          key_url: "https://bintray-pk.pharos.sh/?username=bintray",
+          contents: "deb https://dl.bintray.com/kontena/pharos-debian bionic main\n"
+        )]
       end
     end
   end

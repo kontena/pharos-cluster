@@ -17,8 +17,26 @@ module Pharos
       end
 
       def configure_repos
-        exec_script('repos/pharos_centos7.sh')
-        exec_script('repos/update.sh')
+        host_repositories.each do |repo|
+          repo_path = "/etc/yum.repos.d/#{repo.name}"
+          transport.file(repo_path).write(repo.contents)
+        end
+        transport.exec!("sudo yum clean expire-cache")
+      end
+
+      def default_repositories
+        [Pharos::Configuration::Repository.new(
+          name: "kontena-pharos.repo",
+          contents: <<~CONTENTS
+            [kontena-pharos]
+            name=kontena-pharos
+            baseurl=https://dl.bintray.com/kontena/pharos-rpm
+            gpgcheck=0
+            repo_gpgcheck=1
+            enabled=1
+            gpgkey=https://bintray-pk.pharos.sh?username=bintray
+          CONTENTS
+        )]
       end
 
       def configure_netfilter
