@@ -29,6 +29,13 @@ spec:
       <%- end -%>
       <%- end -%>
       serviceAccountName: prometheus
+      initContainers:
+        - name: chown
+          image: <%= image_repository %>/alpine:3.9
+          command: ["chown", "-R", "65534:65534", "/var/lib/prometheus"]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/prometheus
       containers:
         - name: prometheus
           image: <%= image_repository %>/prometheus:v<%= prometheus_version %>
@@ -71,7 +78,7 @@ spec:
         - name: data
           <%- if config.persistence&.enabled -%>
           persistentVolumeClaim:
-          claimName: prometheus
+            claimName: prometheus
           <%- else -%>
           emptyDir: {}
           <%- end -%>
