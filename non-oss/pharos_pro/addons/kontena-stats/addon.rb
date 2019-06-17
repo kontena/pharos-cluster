@@ -15,7 +15,7 @@ Pharos.addon('kontena-stats') do
     attribute :size, Pharos::Types::String
   }
 
-  Persistence = custom_type {
+  FeatureFlag = custom_type {
     attribute :enabled, Pharos::Types::Bool
   }
 
@@ -24,7 +24,9 @@ Pharos.addon('kontena-stats') do
     attribute :tolerations, Pharos::Types::Array.default(proc { [] })
     attribute :node_selector, Pharos::Types::Hash.default(proc { {} })
     attribute :retention, Retention.default(proc { Retention.new(time: '90d', size: '1GB') })
-    attribute :persistence, Persistence
+    attribute :persistence, FeatureFlag.default(proc { FeatureFlag.new(enabled: true) })
+    attribute :node_exporter, FeatureFlag.default(proc { FeatureFlag.new(enabled: true) })
+    attribute :kube_state_metrics, FeatureFlag.default(proc { FeatureFlag.new(enabled: true) })
     attribute :alert_managers, Pharos::Types::Array.default(proc { [] })
   }
 
@@ -37,6 +39,12 @@ Pharos.addon('kontena-stats') do
       required(:size).filled(:str?)
     end
     optional(:persistence).schema do
+      required(:enabled).filled(:bool?)
+    end
+    optional(:node_exporter).schema do
+      required(:enabled).filled(:bool?)
+    end
+    optional(:kube_state_metrics).schema do
       required(:enabled).filled(:bool?)
     end
     optional(:alert_managers).each(:str?)
