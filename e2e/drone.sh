@@ -26,7 +26,7 @@ pharos license assign --help || exit $?
 pharos license inspect --help || exit $?
 
 # Test cluster bootstrapping
-timeout 600 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
+timeout 900 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 (pharos kubeconfig -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json > kubeconfig.e2e) || exit $?
 (pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide) || exit $?
 
@@ -44,7 +44,7 @@ echo "Checking that kontena-lens is running:"
 (retry 30 pods_running "app=dashboard" "kontena-lens") || exit $?
 
 # Rerun up to confirm that non-initial run goes through
-timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
+timeout 600 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 
 # Reboot test
 node_lines_before=$(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide | grep -v NotReady | grep -c Ready )
@@ -96,7 +96,7 @@ join_command=$(pharos exec -c e2e/digitalocean/cluster.yml --tf-json e2e/digital
 
 echo "Running 'pharos worker up' on target host.."
 
-timeout 600 ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i "${ssh_key}" "${ssh_userhost}" -- pharos worker up \
+timeout 900 ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i "${ssh_key}" "${ssh_userhost}" -- pharos worker up \
   --image-repository registry-tuusula.pharos.sh/kontenapharos \
   -e "HTTPS_PROXY=http://10.133.37.156:8888" \
   -e "HTTP_PROXY=http://10.133.37.156:8888" \
