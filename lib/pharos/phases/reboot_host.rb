@@ -32,6 +32,7 @@ module Pharos
       def reconnect
         logger.info "Reconnecting and waiting for kubelet to start .."
         Pharos::Retry.perform(1200, exceptions: EXPECTED_ERRORS, logger: logger) do
+          host.bastion.transport.connect if host.bastion && !host.bastion.transport.connected?
           transport.connect unless transport.connected?
           transport.exec!('systemctl is-active kubelet')
         end
