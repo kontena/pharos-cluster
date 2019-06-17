@@ -71,7 +71,7 @@ spec:
         - name: data
           <%- if config.persistence&.enabled -%>
           persistentVolumeClaim:
-          claimName: prometheus
+            claimName: prometheus
           <%- else -%>
           emptyDir: {}
           <%- end -%>
