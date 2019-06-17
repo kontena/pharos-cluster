@@ -5,7 +5,7 @@ module Pharos
     class RebootHost < Pharos::Phase
       title "Reboot hosts"
 
-      EXPECTED_ERRORS = Pharos::Transport::SSH::RETRY_CONNECTION_ERRORS + [
+      EXPECTED_ERRORS = [
         Net::SSH::Disconnect,
         Net::SSH::ConnectionTimeout,
         Net::SSH::Timeout,
