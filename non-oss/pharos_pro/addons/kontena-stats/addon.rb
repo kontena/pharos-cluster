@@ -24,7 +24,7 @@ Pharos.addon('kontena-stats') do
     attribute :tolerations, Pharos::Types::Array.default(proc { [] })
     attribute :node_selector, Pharos::Types::Hash.default(proc { {} })
     attribute :retention, Retention.default(proc { Retention.new(time: '90d', size: '1GB') })
-    attribute :persistence, FeatureFlag.default(proc { FeatureFlag.new(enabled: true) })
+    attribute :persistence, FeatureFlag.default(proc { FeatureFlag.new(enabled: false) })
     attribute :node_exporter, FeatureFlag.default(proc { FeatureFlag.new(enabled: true) })
     attribute :kube_state_metrics, FeatureFlag.default(proc { FeatureFlag.new(enabled: true) })
     attribute :alert_managers, Pharos::Types::Array.default(proc { [] })
