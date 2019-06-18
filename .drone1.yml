@@ -35,7 +35,7 @@ steps:
         from_secret: digitalocean_token
     commands:
       - apk add --update bash jq
-      - ./e2e/drone_setup.sh ubuntu-18-04-x64
+      - ./e2e/drone-steps/setup.sh ubuntu-18-04-x64
     when:
       event: [ push ]
   - name: e2e-smoketest
