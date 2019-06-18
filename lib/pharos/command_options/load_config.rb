@@ -46,7 +46,7 @@ module Pharos
           else
             cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
             signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil? && !tf_json
-            Pharos::YamlFile.new(cluster_config || '')
+            Pharos::YamlFile.new(cluster_config || StringIO.new(''))
           end
         end
 
