@@ -37,7 +37,7 @@ Pharos.addon 'ingress-nginx' do
   install {
     apply_resources(
       default_backend_image: config.default_backend['image'],
-      default_backend_replicas: default_backend_replicas,
+      default_backend_replicas: default_backend_replicas
     )
   }
 
