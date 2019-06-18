@@ -30,7 +30,4 @@ curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/
 chmod +x ./kubectl
 mv kubectl /usr/local/bin/
 
-gem build pharos-cluster.gemspec
-gem install pharos-cluster*.gem
-
 sleep 10

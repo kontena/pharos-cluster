@@ -14,6 +14,9 @@ source ./e2e/util.sh
 export KUBECONFIG=./kubeconfig.e2e
 export PHAROS_NON_OSS=true
 
+gem build pharos-cluster.gemspec
+gem install pharos-cluster*.gem
+
 # Subcommand "pharos worker up" test
 
 if [ ! -f e2e/digitalocean/worker_up_address.txt ]; then

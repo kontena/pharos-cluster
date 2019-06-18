@@ -14,6 +14,9 @@ source ./e2e/util.sh
 export KUBECONFIG=./kubeconfig.e2e
 export PHAROS_NON_OSS=true
 
+gem build pharos-cluster.gemspec
+gem install pharos-cluster*.gem
+
 # Test cluster bootstrapping
 timeout 700 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 (pharos kubeconfig -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json > kubeconfig.e2e) || exit $?

@@ -11,6 +11,9 @@ fi
 
 export PHAROS_NON_OSS=true
 
+gem build pharos-cluster.gemspec
+gem install pharos-cluster*.gem
+
 # Test that we can actually load everything
 pharos || exit $?
 pharos -v || exit $?
