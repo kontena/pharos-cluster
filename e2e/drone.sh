@@ -26,7 +26,7 @@ pharos license assign --help || exit $?
 pharos license inspect --help || exit $?
 
 # Test cluster bootstrapping
-timeout 600 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
+timeout 700 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 (pharos kubeconfig -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json > kubeconfig.e2e) || exit $?
 (pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide) || exit $?
 
@@ -75,8 +75,8 @@ ssh_userhost="root@${pharos_worker_host}"
 scp -o StrictHostKeyChecking=no -i "${ssh_key}" pharos-cluster*.gem "${ssh_userhost}:"
 
 ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i "${ssh_key}" "${ssh_userhost}" -- "sudo bash -c '\
-  export http_proxy=http://10.133.37.156:8888 HTTP_PROXY=http://10.133.37.156:8888 https_proxy=http://10.133.37.156:8888 HTTPS_PROXY=http://10.133.37.156:8888;
-  apt-get update && apt-get -y install ruby build-essential ruby-dev && \
+  export http_proxy=http://10.133.37.156:8888 HTTP_PROXY=http://10.133.37.156:8888 https_proxy=http://10.133.37.156:8888 HTTPS_PROXY=http://10.133.37.156:8888 DEBIAN_FRONTEND=noninteractive;
+  apt-get update && apt-get -y -qq install ruby build-essential ruby-dev && \
   gem install --no-document pharos-cluster*.gem && \
   pharos --version'"
 
