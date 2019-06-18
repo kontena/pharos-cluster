@@ -25,4 +25,12 @@ if [ "${WORKER_UP_COUNT}" -gt "0" ]; then
   jq ".pharos_hosts.value.masters[0].address[0]" tf.json | sed 's/"//g' > master_address.txt
 fi
 
+echo "Downloading kubectl ..."
+curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mv kubectl /usr/local/bin/
+
+gem build pharos-cluster.gemspec
+gem install pharos-cluster*.gem
+
 sleep 10

@@ -14,22 +14,6 @@ source ./e2e/util.sh
 export KUBECONFIG=./kubeconfig.e2e
 export PHAROS_NON_OSS=true
 
-# Test cluster bootstrapping
-timeout 700 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
-(pharos kubeconfig -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json > kubeconfig.e2e) || exit $?
-(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- kubectl get nodes -o wide) || exit $?
-
-# Verify that workloads start running
-
-echo "Checking that ingress-nginx is running:"
-(retry 30 pods_running "app=ingress-nginx" "ingress-nginx") || exit $?
-
-echo "Checking that kontena-lens is running:"
-(retry 30 pods_running "app=dashboard" "kontena-lens") || exit $?
-
-# Rerun up to confirm that non-initial run goes through
-timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
-
 # Subcommand "pharos worker up" test
 
 if [ ! -f e2e/digitalocean/worker_up_address.txt ]; then
@@ -86,3 +70,4 @@ echo "Waiting for node to come online.."
 (retry 30 node_online "${worker_hostname}") || exit $?
 echo "Node is online:"
 kubectl get nodes "${worker_hostname}" -o wide
+

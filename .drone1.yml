@@ -38,10 +38,28 @@ steps:
       - ./e2e/drone_setup.sh ubuntu-18-04-x64
     when:
       event: [ push ]
-  - name: e2e
+  - name: e2e-smoketest
     image: ruby:2.5
     commands:
-      - ./e2e/drone.sh
+      - ./e2e/drone-steps/smoketest.sh
+    when:
+      event: [ push ]
+  - name: e2e-pharos-up
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone-steps/pharos_up.sh
+    when:
+      event: [ push ]
+  - name: e2e-pharos-reup
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone-steps/pharos_up.sh
+    when:
+      event: [ push ]
+  - name: e2e-pharos-worker-up
+    image: ruby:2.5
+    commands:
+      - ./e2e/drone-steps/pharos_worker_up.sh
     when:
       event: [ push ]
   - name: teardown-e2e
