@@ -4,6 +4,8 @@ network:
   service_cidr: 172.31.0.0/16
   firewalld:
     enabled: true
+    trusted_subnets:
+      - "10.133.0.0/16"
   weave:
     trusted_subnets:
       - "10.133.0.0/16"
