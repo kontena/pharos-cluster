@@ -27,10 +27,10 @@ retry() {
 pods_running() {
     local -r label="$1"; shift
     local -r namespace="$1"; shift
-    kubectl get pods -n "$namespace" -l "$label" | grep Running
+    ./kubectl get pods -n "$namespace" -l "$label" | grep Running
 }
 
 node_online() {
   local -r hostname="$1"
-  kubectl get nodes | grep "$hostname" | grep -v NotReady | grep -q Ready
+  ./kubectl get nodes | grep "$hostname" | grep -v NotReady | grep -q Ready
 }
