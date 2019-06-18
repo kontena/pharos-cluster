@@ -20,6 +20,7 @@ module Pharos
   class Addon
     using Pharos::CoreExt::Colorize
     using Pharos::CoreExt::DeepTransformKeys
+    using K8s::Util::HashDeepMerge
     include Pharos::Logging
 
     # return class for use as superclass in Dry::Validation.Params
@@ -102,6 +103,10 @@ module Pharos
 
       def config(&block)
         @config ||= Class.new(Pharos::Addons::Struct, &block)
+      end
+
+      def default_values(&block)
+        @default_values = block.call
       end
 
       def config?
@@ -188,10 +193,11 @@ module Pharos
 
       # @param config [Hash]
       def validate(config)
+        values = (@default_values || {}).deep_stringify_keys.deep_merge(config)
         if @schema
-          @schema.call(config)
+          @schema.call(values)
         else
-          validation {}.call(config)
+          validation {}.call(values)
         end
       end
     end
