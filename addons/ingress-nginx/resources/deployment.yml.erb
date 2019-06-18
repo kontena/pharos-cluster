@@ -1,4 +1,4 @@
-<% if config.type == 'LoadBalancer' %>
+<%- if config.kind == 'Deployment' -%>
 apiVersion: v1
 kind: Service
 metadata:
@@ -17,19 +17,26 @@ spec:
     name: https
   selector:
     app: ingress-nginx
+<%- end -%>
 ---
 apiVersion: extensions/v1beta1
-kind: Deployment
+kind: <%= config.kind %>
 metadata:
   name: nginx-ingress-controller
   namespace: ingress-nginx
 spec:
-  replicas: <%= config.replicas %>
+  <%- if config.kind == 'Deployment' -%>
+  replicas: <%= config.deployment.replicas %>
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  <%- end -%>
+  <%- if config.kind == 'DaemonSet' -%>
+  updateStrategy:
+    type: RollingUpdate
+  <%- end -%>
   selector:
     matchLabels:
       app: ingress-nginx
@@ -41,14 +48,17 @@ spec:
         prometheus.io/port: '10254'
         prometheus.io/scrape: 'true'
     spec:
-      <%- unless node_selector.empty? -%>
+      <%- if config.node_selector -%>
       nodeSelector:
-      <%- node_selector.each do |key, value| -%>
+      <%- config.node_selector.to_h.each do |key, value| -%>
         <%= key %>: "<%= value %>"
       <%- end -%>
       <%- end -%>
       serviceAccountName: nginx-ingress-serviceaccount
       priorityClassName: pharos-cluster-critical
+      <%- if config.kind == 'DaemonSet' -%>
+      hostNetwork: true
+      <%- end -%>
       <%- unless config.tolerations.empty? -%>
       tolerations:
       <%- config.tolerations.each do |t| -%>
@@ -131,4 +141,3 @@ spec:
             requests:
               cpu: 100m
               memory: 90Mi
-<% end %>
