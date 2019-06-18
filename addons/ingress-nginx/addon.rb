@@ -5,6 +5,8 @@ Pharos.addon 'ingress-nginx' do
   license 'Apache License 2.0'
 
   config {
+    attribute :type, Pharos::Types::String.default('DaemonSet')
+    attribute :replicas, Pharos::Types::Integer.default(2)
     attribute :configmap, Pharos::Types::Hash.default(
       'worker-shutdown-timeout' => '3600s' # keep connection/workers alive for 1 hour
     )
@@ -17,6 +19,8 @@ Pharos.addon 'ingress-nginx' do
   }
 
   config_schema {
+    optional(:type).filled(included_in?: ['DaemonSet', 'LoadBalancer'])
+    optional(:replicas).filled(:int?)
     optional(:configmap).filled(:hash?)
     optional(:node_selector).filled(:hash?)
     optional(:default_backend).schema {

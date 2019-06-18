@@ -1,12 +1,35 @@
-<% if config.type == 'DaemonSet' %>
+<% if config.type == 'LoadBalancer' %>
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+  labels:
+    app: ingress-nginx
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  - port: 443
+    targetPort: 443
+    name: https
+  selector:
+    app: ingress-nginx
+---
 apiVersion: extensions/v1beta1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: nginx-ingress-controller
   namespace: ingress-nginx
 spec:
-  updateStrategy:
+  replicas: <%= config.replicas %>
+  strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: ingress-nginx
@@ -26,7 +49,6 @@ spec:
       <%- end -%>
       serviceAccountName: nginx-ingress-serviceaccount
       priorityClassName: pharos-cluster-critical
-      hostNetwork: true
       <%- unless config.tolerations.empty? -%>
       tolerations:
       <%- config.tolerations.each do |t| -%>
@@ -36,6 +58,16 @@ spec:
           <%- end -%>
       <%- end -%>
       <%- end -%>
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - ingress-nginx
+              topologyKey: "kubernetes.io/hostname"
       initContainers:
       - command:
         - sh
