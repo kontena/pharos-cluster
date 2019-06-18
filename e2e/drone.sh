@@ -44,7 +44,7 @@ echo "Checking that kontena-lens is running:"
 (retry 30 pods_running "app=dashboard" "kontena-lens") || exit $?
 
 # Rerun up to confirm that non-initial run goes through
-#timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
+timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 
 # Subcommand "pharos worker up" test
 
