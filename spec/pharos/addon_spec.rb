@@ -29,11 +29,9 @@ describe Pharos::Addon do
       version "0.2.2"
       license "MIT"
 
-      default_values do
-        {
-          bar: 'baz'
-        }
-      end
+      default_values(
+        bar: 'baz'
+      )
 
       config_schema {
         required(:foo).filled(:str?)

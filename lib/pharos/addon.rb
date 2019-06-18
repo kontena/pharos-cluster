@@ -105,8 +105,8 @@ module Pharos
         @config ||= Class.new(Pharos::Addons::Struct, &block)
       end
 
-      def default_values(&block)
-        @default_values = block.call
+      def default_values(values)
+        @default_values = values
       end
 
       def config?
