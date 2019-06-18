@@ -30,7 +30,7 @@ steps:
   - name: setup-e2e
     image: docker.io/hashicorp/terraform:0.11.10
     environment:
-      WORKER_UP_COUNT: "0"
+      WORKER_UP_COUNT: "1"
       DIGITALOCEAN_TOKEN:
         from_secret: digitalocean_token
     commands:
