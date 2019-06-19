@@ -24,6 +24,9 @@ Pharos.addon 'ingress-nginx' do
     optional(:deployment).schema do
       required(:replicas).filled(:int?)
     end
+    optional(:service).schema do
+      required(:external_traffic_policy).filled(included_in?: ['Cluster', 'Local'])
+    end
     optional(:replicas).filled(:int?)
     optional(:configmap).filled(:hash?)
     optional(:node_selector).filled(:hash?)

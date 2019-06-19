@@ -8,6 +8,9 @@ metadata:
     app: ingress-nginx
 spec:
   type: LoadBalancer
+  <%- if policy = config&.service&.external_traffic_policy -%>
+  externalTrafficPolicy: <%= policy %>
+  <%- end -%>
   ports:
   - port: 80
     targetPort: 80
