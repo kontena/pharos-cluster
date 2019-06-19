@@ -8,3 +8,4 @@ provisioner: ceph.rook.io/block
 parameters:
   pool: replicapool
   clusterNamespace: kontena-storage
+  fstype: xfs
