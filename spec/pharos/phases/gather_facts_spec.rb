@@ -134,7 +134,7 @@ describe Pharos::Phases::GatherFacts do
     ] }
 
     before do
-      allow(ssh).to receive(:exec!).with('sudo ip route').and_return(routes.join "\n" + "\n")
+      allow(ssh).to receive(:exec!).with('sudo ip route').and_return(routes.join("\n") + "\n")
     end
 
     it "returns valid routes" do

@@ -10,7 +10,9 @@ fi
 cd e2e/digitalocean
 terraform init
 
-until terraform apply -auto-approve -var "cluster_name=${DRONE_BUILD_NUMBER}-do" -var "image=$1"
+WORKER_UP_COUNT=${WORKER_UP_COUNT:-0}
+
+until terraform apply -auto-approve -var "cluster_name=${DRONE_BUILD_NUMBER}-do" -var "image=$1" -var "worker_up_count=${WORKER_UP_COUNT}"
 do
   echo "Apply failed... trying again in 5s"
   sleep 5
@@ -18,7 +20,7 @@ done
 
 terraform output -json > tf.json
 
-if [ "${WORKER_UP:-false}" = "up" ]; then
+if [ "${WORKER_UP_COUNT}" -gt "0" ]; then
   jq ".worker_up.value.address[0]" tf.json | sed 's/"//g' > worker_up_address.txt
   jq ".pharos_hosts.value.masters[0].address[0]" tf.json | sed 's/"//g' > master_address.txt
 fi

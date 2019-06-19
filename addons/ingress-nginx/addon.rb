@@ -4,35 +4,43 @@ Pharos.addon 'ingress-nginx' do
   version '0.23.0'
   license 'Apache License 2.0'
 
-  config {
-    attribute :configmap, Pharos::Types::Hash.default(
+  default_values(
+    kind: 'DaemonSet',
+    deployment: {
+      replicas: 2
+    },
+    configmap: {
       'worker-shutdown-timeout' => '3600s' # keep connection/workers alive for 1 hour
-    )
-    attribute :node_selector, Pharos::Types::Hash
-    attribute :default_backend, Pharos::Types::Hash.default(
+    },
+    default_backend: {
       'image' => 'registry.pharos.sh/kontenapharos/pharos-default-backend:0.0.3'
-    )
-    attribute :tolerations, Pharos::Types::Array.default([])
-    attribute :extra_args, Pharos::Types::Array.default([])
-  }
+    },
+    tolerations: [],
+    extra_args: []
+  )
 
-  config_schema {
+  config_schema do
+    optional(:kind).filled(included_in?: ['DaemonSet', 'Deployment'])
+    optional(:deployment).schema do
+      required(:replicas).filled(:int?)
+    end
+    optional(:service).schema do
+      required(:external_traffic_policy).filled(included_in?: ['Cluster', 'Local'])
+    end
+    optional(:replicas).filled(:int?)
     optional(:configmap).filled(:hash?)
     optional(:node_selector).filled(:hash?)
     optional(:default_backend).schema {
-      optional(:image).filled(:str?)
+      required(:image).filled(:str?)
     }
     optional(:tolerations).each(:hash?)
     optional(:extra_args).each(:str?)
-  }
+  end
 
   install {
     apply_resources(
-      configmap: config.configmap || {},
-      node_selector: config.node_selector || {},
       default_backend_image: config.default_backend['image'],
-      default_backend_replicas: default_backend_replicas,
-      extra_args: config.extra_args
+      default_backend_replicas: default_backend_replicas
     )
   }
 

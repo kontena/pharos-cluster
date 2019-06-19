@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: prometheus
   namespace: kontena-stats
@@ -13,9 +13,9 @@ spec:
       labels:
         name: prometheus
     spec:
-      <%- unless config.node_selector.empty? -%>
+      <%- if config.node_selector -%>
       nodeSelector:
-      <%- node_selector.each do |key, value| -%>
+      <%- node_selector.to_h.each do |key, value| -%>
         <%= key %>: <%= value %>
       <%- end -%>
       <%- end -%>
@@ -29,6 +29,13 @@ spec:
       <%- end -%>
       <%- end -%>
       serviceAccountName: prometheus
+      initContainers:
+        - name: chown
+          image: <%= image_repository %>/alpine:3.9
+          command: ["chown", "-R", "65534:65534", "/var/lib/prometheus"]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/prometheus
       containers:
         - name: prometheus
           image: <%= image_repository %>/prometheus:v<%= prometheus_version %>
@@ -38,6 +45,8 @@ spec:
             - --storage.tsdb.path=/var/lib/prometheus
             - --storage.tsdb.retention.time=<%= config.retention.time %>
             - --storage.tsdb.retention.size=<%= config.retention.size %>
+            - --storage.tsdb.min-block-duration=2h
+            - --storage.tsdb.max-block-duration=2h
           ports:
             - name: web
               containerPort: 9090
@@ -68,10 +77,18 @@ spec:
         - name: rules
           configMap:
             name: prometheus-rules
+        <%- unless config.persistence&.enabled -%>
         - name: data
-          <%- if config.persistence&.enabled -%>
-          persistentVolumeClaim:
-          claimName: prometheus
-          <%- else -%>
           emptyDir: {}
-          <%- end -%>
+        <%- end -%>
+  <%- if config.persistence&.enabled -%>
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: <%= config.persistence.size %>
+  <%- end -%>

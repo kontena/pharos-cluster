@@ -79,6 +79,7 @@ module Pharos
     autoload :ResolvConf, 'pharos/configuration/resolv_conf'
     autoload :Taint, 'pharos/configuration/taint'
     autoload :OsRelease, 'pharos/configuration/os_release'
+    autoload :Repository, 'pharos/configuration/repository'
   end
 
   module Etcd
