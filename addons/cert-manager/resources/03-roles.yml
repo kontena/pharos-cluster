@@ -120,6 +120,8 @@ subjects:
   name: cert-manager-webhook
   namespace: kube-system
 ---
+# apiserver gets the auth-delegator role to delegate auth decisions to
+# the core apiserver
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
