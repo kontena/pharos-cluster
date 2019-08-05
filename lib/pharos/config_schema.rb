@@ -38,6 +38,7 @@ module Pharos
       result[:hosts].each.with_index do |host, idx|
         duplicates = result[:hosts].select { |h| h[:address] == host[:address] && (h[:ssh_port] || 22) == (host[:ssh_port] || 22) }
         next if duplicates.size == 1
+
         messages[:hosts][idx] = { "address:ssh_port" => ["#{host[:address]}:#{host[:ssh_port] || 22} is not unique"] }
       end
 
