@@ -46,11 +46,11 @@ echo "Checking that kontena-lens is running:"
 # Rerun up to confirm that non-initial run goes through
 cat <<EOF >>e2e/digitalocean/cluster.yml
 api:
-  endpoint: "e2e-${DRONE_BUILD_NUMBER}-apiserver.kontena.rocks"
+  endpoint: "127-0-0-1.nip.io"
 EOF
 timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 echo "Checking that certificate has been updated:"
-(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- "timeout 3 openssl s_client -connect localhost:6443 | openssl x509 -noout -text |grep DNS:e2e-${DRONE_BUILD_NUMBER}-apiserver.kontena.rocks") || exit $?
+(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- "timeout 3 openssl s_client -connect localhost:6443 | openssl x509 -noout -text |grep DNS:127-0-0-1.nip.io") || exit $?
 
 # Subcommand "pharos worker up" test
 
