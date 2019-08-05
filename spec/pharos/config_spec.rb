@@ -46,17 +46,25 @@ describe Pharos::Config do
       end
     end
 
-    context 'non unique ip' do
+    context 'non unique ip but different ssh port' do
       let(:hosts) { [
-        { 'address' => ' 192.0.2.1', 'role' => 'master' },
-        { 'address' => ' 192.0.2.1', 'role' => 'worker' }
+        { 'address' => '192.0.2.1', 'role' => 'master', 'ssh_port' => 22 },
+        { 'address' => '192.0.2.1', 'role' => 'worker', 'ssh_port' => 8022 }
       ] }
-      it 'fails to load' do
+      it 'loads' do
+        expect{subject}.not_to raise_error
+      end
+    end
+
+    context 'non unique ip and same ssh port' do
+      let(:hosts) { [
+        { 'address' => '192.0.2.1', 'role' => 'master' },
+        { 'address' => '192.0.2.1', 'role' => 'worker', 'ssh_port' => 22 }
+      ] }
+      it 'loads' do
         expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
-          expect(exc.errors[:hosts]).to match hash_including(
-            0 => hash_including(address: array_including("is not unique")),
-            1 => hash_including(address: array_including("is not unique"))
-          )
+          expect(exc.errors[:hosts][0]['address:ssh_port'][0]).to eq '192.0.2.1:22 is not unique'
+          expect(exc.errors[:hosts][1]['address:ssh_port'][0]).to eq '192.0.2.1:22 is not unique'
         end
       end
     end

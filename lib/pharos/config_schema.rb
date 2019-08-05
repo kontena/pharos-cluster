@@ -34,6 +34,15 @@ module Pharos
       result = schema.call(DEFAULT_DATA.merge(data))
       raise Pharos::ConfigError, result.messages unless result.success?
 
+      messages = { hosts: {} }
+      result[:hosts].each.with_index do |host, idx|
+        duplicates = result[:hosts].select { |h| h[:address] == host[:address] && (h[:ssh_port] || 22) == (host[:ssh_port] || 22) }
+        next if duplicates.size == 1
+        messages[:hosts][idx] = { "address:ssh_port" => ["#{host[:address]}:#{host[:ssh_port] || 22} is not unique"] }
+      end
+
+      raise Pharos::ConfigError, messages unless messages[:hosts].empty?
+
       result.to_h
     end
 
@@ -43,18 +52,6 @@ module Pharos
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
       end
-
-      def self.addresses
-        @addresses ||= Set.new
-      end
-
-      predicate(:unique_address?) do |value|
-        if CustomPredicates.addresses.include?(value)
-          false
-        else
-          CustomPredicates.addresses << value
-        end
-      end
     end
 
     # @return [Dry::Validation::Schema]
@@ -62,15 +59,12 @@ module Pharos
       # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Params do
         configure do
-          CustomPredicates.addresses.clear
-
           def self.messages
             super.merge(
               en: {
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
-                  hostname_or_ip?: "is invalid",
-                  unique_address?: "is not unique"
+                  hostname_or_ip?: "is invalid"
                 }
               }
             )
@@ -81,7 +75,7 @@ module Pharos
           each do
             schema do
               predicates(CustomPredicates)
-              required(:address).filled(:str?, :hostname_or_ip?, :unique_address?)
+              required(:address).filled(:str?, :hostname_or_ip?)
               optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
