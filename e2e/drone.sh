@@ -50,7 +50,7 @@ api:
 EOF
 timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 echo "Checking that certificate has been updated:"
-(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- timeout 3 openssl s_client -connect localhost:6443 | openssl x509 -noout -text |grep DNS:e2e-${DRONE_BUILD_NUMBER}-apiserver.kontena.rocks) || exit $?
+(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- "timeout 3 openssl s_client -connect localhost:6443 | openssl x509 -noout -text |grep DNS:e2e-${DRONE_BUILD_NUMBER}-apiserver.kontena.rocks") || exit $?
 
 # Subcommand "pharos worker up" test
 
