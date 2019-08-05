@@ -44,7 +44,7 @@ module Pharos
       end
 
       def validate_unique_hostnames
-        duplicates = @config.hosts.reject { |h| h.address == @host.address }.select { |h| h.hostname == @host.hostname && h.ssh_port == @host.ssh_port }
+        duplicates = @config.hosts.reject { |h| h.address == @host.address && h.ssh_port == @host.ssh_port }.select { |h| h.hostname == @host.hostname }
         return if duplicates.empty?
 
         raise Pharos::InvalidHostError, "Duplicate hostname #{@host.hostname} for hosts #{duplicates.map { |h| "#{h.address}:#{h.ssh_port}" }.join(',')}"
