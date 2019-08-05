@@ -22,7 +22,7 @@ spec:
       serviceAccountName: ceph-prom-exporter
       containers:
       - name: ceph-prom-exporter
-        image: "<%= image_repository %>/ceph-prom-exporter:0.2.0"
+        image: "<%= image_repository %>/ceph-prom-exporter:0.3.0"
         ports:
           - containerPort: 9292
         resources:
