@@ -159,6 +159,19 @@ describe Pharos::Phases::ValidateHost do
       it 'raises if duplicates' do
         expect{ subject.validate_unique_hostnames }.to raise_error(Pharos::InvalidHostError, "Duplicate hostname foo for hosts 192.0.2.2:22,192.0.2.3:22")
       end
+
+      context 'with ssh port forwards' do
+        before do
+          config.hosts[0].attributes[:address] = '192.0.2.2'
+          config.hosts[1].attributes[:address] = '192.0.2.2'
+          config.hosts[0].attributes[:ssh_port] = 8022
+          config.hosts[1].attributes[:ssh_port] = 22
+        end
+
+        it 'raises if duplicates' do
+          expect{ subject.validate_unique_hostnames }.to raise_error(Pharos::InvalidHostError, "Duplicate hostname foo for hosts 192.0.2.2:22,192.0.2.3:22")
+        end
+      end
     end
   end
 
