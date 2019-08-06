@@ -87,7 +87,7 @@ describe Pharos::Command do
 
     it 'displays error message instead of backtrace' do
       expect{subject.run('pharos', [])}.to exit_with_error.status(11).and output(
-        "==> Invalid configuration:\n---\n:hosts:\n- must be filled\n- size cannot be less than 1\n"
+        "==> Invalid configuration:\n---\n:hosts:\n- must be filled\n- duplicate address:ssh_port\n- size cannot be less than 1\n"
       ).to_stderr
     end
   end
