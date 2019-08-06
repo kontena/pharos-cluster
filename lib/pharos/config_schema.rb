@@ -60,7 +60,7 @@ module Pharos
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
-                  file_exist?: "file %{value} does not exist"
+                  file_exist?: "file %{value} does not exist",
                   unique_addresses?: "duplicate address:ssh_port"
                 }
               }
