@@ -56,15 +56,14 @@ describe Pharos::Config do
       end
     end
 
-    context 'non unique ip and same ssh port' do
+    context 'non unique ip and ssh port' do
       let(:hosts) { [
         { 'address' => '192.0.2.1', 'role' => 'master' },
         { 'address' => '192.0.2.1', 'role' => 'worker', 'ssh_port' => 22 }
       ] }
       it 'loads' do
         expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
-          expect(exc.errors[:hosts][0]['address:ssh_port'][0]).to eq '192.0.2.1:22 is not unique'
-          expect(exc.errors[:hosts][1]['address:ssh_port'][0]).to eq '192.0.2.1:22 is not unique'
+          expect(exc.errors[:hosts]).to match array_including('duplicate address:ssh_port')
         end
       end
     end

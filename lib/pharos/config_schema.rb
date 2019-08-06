@@ -34,16 +34,6 @@ module Pharos
       result = schema.call(DEFAULT_DATA.merge(data))
       raise Pharos::ConfigError, result.messages unless result.success?
 
-      messages = { hosts: {} }
-      result[:hosts].each.with_index do |host, idx|
-        duplicates = result[:hosts].select { |h| h[:address] == host[:address] && (h[:ssh_port] || 22) == (host[:ssh_port] || 22) }
-        next if duplicates.size == 1
-
-        messages[:hosts][idx] = { "address:ssh_port" => ["#{host[:address]}:#{host[:ssh_port] || 22} is not unique"] }
-      end
-
-      raise Pharos::ConfigError, messages unless messages[:hosts].empty?
-
       result.to_h
     end
 
@@ -52,6 +42,10 @@ module Pharos
 
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
+      end
+
+      predicate(:unique_addresses?) do |hosts|
+        hosts.size < 2 || hosts.group_by { |h| "#{h[:address]}:#{h[:ssh_port] || 22}" }.size == hosts.size
       end
     end
 
@@ -65,14 +59,17 @@ module Pharos
               en: {
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
-                  hostname_or_ip?: "is invalid"
+                  hostname_or_ip?: "is invalid",
+                  unique_addresses?: "duplicate address:ssh_port"
                 }
               }
             )
           end
         end
 
-        required(:hosts).filled(min_size?: 1) do
+        predicates(CustomPredicates)
+
+        required(:hosts).filled(:unique_addresses?, min_size?: 1) do
           each do
             schema do
               predicates(CustomPredicates)
@@ -111,6 +108,7 @@ module Pharos
             end
           end
         end
+
         optional(:name).filled(:str?)
         optional(:api).schema do
           optional(:endpoint).filled(:str?)
