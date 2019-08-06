@@ -37,15 +37,11 @@ module Pharos
       result.to_h
     end
 
-    module CustomPredicates
+    module HostPredicates
       include Dry::Logic::Predicates
 
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
-      end
-
-      predicate(:unique_addresses?) do |hosts|
-        hosts.size < 2 || hosts.group_by { |h| "#{h[:address]}:#{h[:ssh_port] || 22}" }.size == hosts.size
       end
     end
 
@@ -65,14 +61,16 @@ module Pharos
               }
             )
           end
-        end
 
-        predicates(CustomPredicates)
+          def unique_addresses?(hosts)
+            hosts.size < 2 || hosts.group_by { |h| "#{h[:address]}:#{h[:ssh_port] || 22}" }.size == hosts.size
+          end
+        end
 
         required(:hosts).filled(:unique_addresses?, min_size?: 1) do
           each do
             schema do
-              predicates(CustomPredicates)
+              predicates(HostPredicates)
               required(:address).filled(:str?, :hostname_or_ip?)
               optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
@@ -92,7 +90,8 @@ module Pharos
               optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
               optional(:bastion).schema do
-                required(:address).filled(:str?)
+                predicates(HostPredicates)
+                required(:address).filled(:str?, :hostname_or_ip?)
                 optional(:user).filled(:str?)
                 optional(:ssh_key_path).filled(:str?)
                 optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
