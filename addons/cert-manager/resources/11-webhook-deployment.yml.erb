@@ -1,3 +1,4 @@
+<% if config.webhook.enabled %>
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
@@ -14,7 +15,6 @@ spec:
       labels:
         app: webhook
         name: cert-manager-webhook
-      annotations:
     spec:
       serviceAccountName: cert-manager-webhook
       containers:
@@ -42,3 +42,4 @@ spec:
       - name: certs
         secret:
           secretName: cert-manager-webhook-webhook-tls
+<% end %>

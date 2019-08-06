@@ -25,7 +25,7 @@ rules:
 - apiGroups: [""]
   resources: ["secrets"]
   resourceNames:
-    - pharos-license
+    - lens-license
   verbs:
     - get
     - update
@@ -34,6 +34,12 @@ rules:
   resources: ["configmaps"]
   resourceNames:
     - "cluster-info"
+  verbs:
+    - get
+- apiGroups: [""]
+  resources: ["namespaces"]
+  resourceNames:
+    - "kontena-lens"
   verbs:
     - get
 ---

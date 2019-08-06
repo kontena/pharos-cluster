@@ -6,27 +6,29 @@ Pharos.addon('kontena-stats') do
   kube_state_metrics_version = '1.6.0'
   kube_rbac_proxy_version = '0.4.0'
   prom_label_proxy_version = '0.1.0'
-  version "#{prometheus_version}+kontena.1"
+  version "#{prometheus_version}+kontena.2"
   license 'Kontena License'
   priority 9
 
-  Retention = custom_type {
-    attribute :time, Pharos::Types::String
-    attribute :size, Pharos::Types::String
-  }
-
-  Persistence = custom_type {
-    attribute :enabled, Pharos::Types::Bool
-  }
-
-  config {
-    attribute :replicas, Pharos::Types::Integer.default(1)
-    attribute :tolerations, Pharos::Types::Array.default(proc { [] })
-    attribute :node_selector, Pharos::Types::Hash.default(proc { {} })
-    attribute :retention, Retention.default(proc { Retention.new(time: '90d', size: '1GB') })
-    attribute :persistence, Persistence
-    attribute :alert_managers, Pharos::Types::Array.default(proc { [] })
-  }
+  default_values(
+    replicas: 1,
+    tolerations: [],
+    retention: {
+      time: '30d',
+      size: '1GB'
+    },
+    persistence: {
+      enabled: false,
+      size: '5Gi'
+    },
+    node_exporter: {
+      enabled: true
+    },
+    kube_state_metrics: {
+      enabled: true
+    },
+    alert_managers: []
+  )
 
   config_schema {
     optional(:replicas).filled(:int?)
@@ -38,6 +40,13 @@ Pharos.addon('kontena-stats') do
     end
     optional(:persistence).schema do
       required(:enabled).filled(:bool?)
+      optional(:size).filled(:str?)
+    end
+    optional(:node_exporter).schema do
+      required(:enabled).filled(:bool?)
+    end
+    optional(:kube_state_metrics).schema do
+      required(:enabled).filled(:bool?)
     end
     optional(:alert_managers).each(:str?)
   }
@@ -45,22 +54,10 @@ Pharos.addon('kontena-stats') do
   install {
     apply_resources(
       prometheus_version: prometheus_version,
-      prometheus_pvc_size: prometheus_pvc_size,
       node_exporter_version: node_exporter_version,
       kube_state_metrics_version: kube_state_metrics_version,
       kube_rbac_proxy_version: kube_rbac_proxy_version,
       prom_label_proxy_version: prom_label_proxy_version
     )
-    if config.persistence&.enabled
-      logger.info "Calculated PVC size: #{prometheus_pvc_size}"
-    end
   }
-
-  # @return [String]
-  def prometheus_pvc_size
-    size, unit = config.retention.size.match(/^(\d+)(.+)/).captures
-    size = (size.to_i * 1.25).ceil
-    unit = unit.gsub(/B$/, 'i')
-    "#{size}#{unit}"
-  end
 end

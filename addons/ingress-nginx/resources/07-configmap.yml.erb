@@ -6,6 +6,6 @@ metadata:
   labels:
     app: ingress-nginx
 data:
-  <% configmap.each do |k, v| %>
+  <% config.configmap.to_h.each do |k, v| %>
   <%= k %>: "<%= v %>"
   <% end %>

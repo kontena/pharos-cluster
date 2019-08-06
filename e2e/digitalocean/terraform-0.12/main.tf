@@ -18,6 +18,10 @@ variable "worker_count" {
   default = 5
 }
 
+variable "worker_up_count" {
+  default = 0
+}
+
 variable "master_size" {
   default = "2gb"
 }

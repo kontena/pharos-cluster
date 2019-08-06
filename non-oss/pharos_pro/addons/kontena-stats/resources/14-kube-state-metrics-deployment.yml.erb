@@ -1,3 +1,4 @@
+<% if config.kube_state_metrics.enabled %>
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,3 +34,4 @@ spec:
           limits:
             cpu: 100m
             memory: 150Mi
+<% end %>

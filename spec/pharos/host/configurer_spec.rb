@@ -204,4 +204,32 @@ hooks_dir_path = "/usr/share/containers/oci/hooks.d"
       expect(subject.current_crio_cgroup_manager).to eq('foobar')
     end
   end
+
+  describe '#host_repositories' do
+
+    default_repos = [Pharos::Configuration::Repository.new(name: "default_repo")]
+
+    it 'returns default repos for empty host repos' do
+      allow(host).to receive(:repositories).and_return([])
+
+      expect(subject).to receive(:default_repositories).and_return(default_repos)
+
+      expect(subject.host_repositories[0].name).to eq("default_repo")
+    end
+
+    it 'returns default repos for nil host repos' do
+      allow(host).to receive(:repositories).and_return(nil)
+
+      expect(subject).to receive(:default_repositories).and_return(default_repos)
+
+      expect(subject.host_repositories[0].name).to eq("default_repo")
+    end
+
+    it 'returns default repos for host' do
+      allow(host).to receive(:repositories).and_return([Pharos::Configuration::Repository.new(name: "bar")])
+
+
+      expect(subject.host_repositories[0].name).to eq("bar")
+    end
+  end
 end
