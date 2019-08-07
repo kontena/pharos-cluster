@@ -32,7 +32,7 @@ describe Pharos::Phases::ConfigureClient do
   describe '#call' do
     it 'loads kubeconfig from master and configures kubeclient through port forwarding' do
       expect(remote_file).to receive(:read).and_return('content')
-      expect(transport).to receive(:forward).with('10.10.10.2', 6443).and_return(1234)
+      expect(transport).to receive(:forward).with('localhost', 6443).and_return(1234)
       expect(Pharos::Kube).to receive(:client).with('localhost', k8s_config, 1234).and_return(kubeclient)
       expect{subject.call}.to change{cluster_context}.from({}).to(hash_including('kube_client' => kubeclient))
     end

@@ -55,6 +55,14 @@ if [ "$node_lines_before" != "$node_lines_after" ]; then
   exit 1
 fi
 
+cat <<EOF >>e2e/digitalocean/cluster.yml
+api:
+  endpoint: "127-0-0-1.nip.io"
+EOF
+timeout 300 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
+echo "Checking that certificate has been updated:"
+(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- "timeout 3 openssl s_client -connect localhost:6443 | openssl x509 -noout -text |grep DNS:127-0-0-1.nip.io") || exit $?
+
 # Subcommand "pharos worker up" test
 
 if [ ! -f e2e/digitalocean/worker_up_address.txt ]; then
