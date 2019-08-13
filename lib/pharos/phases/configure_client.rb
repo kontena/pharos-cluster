@@ -41,8 +41,8 @@ module Pharos
       # prefetch client resources to warm up caches
       def client_prefetch
         kube_client.apis(prefetch_resources: true)
-      rescue Excon::Error::Socket => ex
-        logger.warn "Encountered #{ex.class.name} : #{ex.message}"
+      rescue Excon::Error::Certificate => e
+        logger.warn "Encountered #{e.class.name} : #{e.message}"
       end
     end
   end
