@@ -18,12 +18,12 @@ module Pharos
       def config
         @config ||= yaml_content || {
           'apiVersion' => 'v1',
+          'kind' => 'Config',
           'clusters' => [],
           'contexts' => [],
-          'current-context' => nil,
-          'kind' => 'Config',
+          'users' => [],
           'preferences' => {},
-          'users' => []
+          'current-context' => nil
         }
       end
       alias to_h config
@@ -31,7 +31,7 @@ module Pharos
       # Convert to YAML
       # @return [String]
       def dump
-        YAML.dump(config)
+        YAML.dump(JSON.parse(JSON.dump(config))) # dereference to get rid of *1 &1 etc in output
       end
       alias to_s dump
 
