@@ -5,14 +5,15 @@ metadata:
   namespace: kontena-stats
   annotations:
     prometheus.io/scrape: 'true'
+    prometheus.io/port: '80'
 spec:
   type: ClusterIP
   clusterIP: None
   selector:
-    name: node-exporter
+    name: node-exporter-proxy
     phase: prod
   ports:
     - name: metrics
       protocol: TCP
       port: 80
-      targetPort: 9100
+      targetPort: 80
