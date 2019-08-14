@@ -27,7 +27,7 @@ module Pharos
 
       def validate
         # Validates that "kubectl" without sudo or setting KUBECONFIG / --kubeconfig works on the host
-        transport.exec!('kubectl get -n kube-system serviceaccount/pharos-admin')
+        transport.exec!("kubectl get -n kube-system serviceaccount/#{ADMIN_USER}")
       end
 
       def config_file
