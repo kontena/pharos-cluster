@@ -45,23 +45,6 @@ describe Pharos::Phases::LabelNode do
         spec: { taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ] }
       )
     end
-
-    context 'with labels' do
-      let(:host) { Pharos::Configuration::Host.new(
-        address: '192.0.2.2',
-        private_address: '10.0.0.1',
-        role: 'master',
-        labels: {foo: 'bar'},
-      ) }
-
-      it 'patches node' do
-        expect(node).to receive(:merge).with(
-          metadata: {
-            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2', 'node-address.kontena.io/internal-ip' => '10.0.0.1', 'node-role.kubernetes.io/master' => '' },
-          },
-        ).and_return(node)
-      end
-    end
   end
 
   describe '#call' do
@@ -89,22 +72,15 @@ describe Pharos::Phases::LabelNode do
     end
 
     context 'with labels and taints' do
-      let(:host) { Pharos::Configuration::Host.new(
-        address: '192.0.2.2',
-        private_address: '10.0.0.1',
-        labels: {foo: 'bar'},
-        role: 'master',
-        taints: [
-          Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule'),
-        ]
-      ) }
+      let(:host) do
+        Pharos::Configuration::Host.new(
+          address: '192.0.2.2',
+          labels: { 'foo' => 'bar'},
+          taints: [ Pharos::Configuration::Taint.new(key: 'node-role.kubernetes.io/master', effect: 'NoSchedule') ]
+        )
+      end
 
-      it 'patches node twice' do
-        expect(node).to receive(:merge).with(
-          metadata: {
-            labels: { :foo => 'bar', 'node-address.kontena.io/external-ip' => '192.0.2.2', 'node-address.kontena.io/internal-ip' => '10.0.0.1', 'node-role.kubernetes.io/master' => '' },
-          },
-        ).and_return(node)
+      it 'patches both into node' do
         expect(node).to receive(:merge).with(
           metadata: { labels: { "foo" => "bar", "node-address.kontena.io/external-ip" => "192.0.2.2" } },
           spec: { taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ] }
