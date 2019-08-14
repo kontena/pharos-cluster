@@ -12,7 +12,9 @@ module Pharos
       # @param path [String]
       def initialize(client, path, expand: false)
         @client = client
-        @path = expand ? self.class.new(client, path).readlink(escape: false, canonicalize: true) : path
+        @path = path
+        @path = readlink(escape: false, canonicalize: true) if expand
+
         freeze
       end
 
