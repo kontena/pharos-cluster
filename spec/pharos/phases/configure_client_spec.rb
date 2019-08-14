@@ -23,7 +23,8 @@ describe Pharos::Phases::ConfigureClient do
   before(:each) do
     allow(host).to receive(:master_sort_score).and_return(0)
     allow(host).to receive(:transport).and_return(transport)
-    allow(transport).to receive(:file).with('/etc/kubernetes/admin.conf', expand: true).and_return(remote_file)
+    allow(transport).to receive(:file).with('~/.kube/config', expand: true).and_return(double(exist?: false))
+    allow(transport).to receive(:file).with('/etc/kubernetes/admin.conf').and_return(remote_file)
     allow(remote_file).to receive(:exist?).and_return(true)
     allow(kubeclient).to receive(:apis)
     allow(K8s::Config).to receive(:new).and_return(k8s_config)
