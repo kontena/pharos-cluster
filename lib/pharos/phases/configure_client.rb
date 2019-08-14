@@ -21,7 +21,11 @@ module Pharos
       end
 
       def kubeconfig
-        @kubeconfig ||= transport.file(REMOTE_FILE)
+        @kubeconfig ||= user_config.exist? ? user_config : transport.file(REMOTE_FILE)
+      end
+
+      def user_config
+        @user_config ||= transport.file('~/.kube/config', expand: true)
       end
 
       # @return [String]
