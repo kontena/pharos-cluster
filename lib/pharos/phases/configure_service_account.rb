@@ -26,6 +26,7 @@ module Pharos
       end
 
       def validate
+        # Validates that "kubectl" without sudo or setting KUBECONFIG / --kubeconfig works on the host
         transport.exec!('kubectl get -n kube-system serviceaccount/pharos-admin')
       end
 
@@ -33,12 +34,14 @@ module Pharos
         @config_file ||= transport.file(File.join(home_kube_dir.path, 'config'))
       end
 
+      # Get a real path to ~/.kube and mkdir + chmod it unless exists
       def home_kube_dir
         transport.file('~/.kube', expand: true).tap do |dir|
           transport.exec!("mkdir '#{dir}' && chmod 0700 '#{dir}") unless dir.exist?
         end
       end
 
+      # Sudo used because /etc/kubernetes/admin.conf is not user-readable
       def create_service_account
         transport.exec!("sudo kubectl get #{KUBECONFIG_PARAM} -n kube-system serviceaccount/#{ADMIN_USER} || sudo kubectl #{KUBECONFIG_PARAM} -n kube-system create serviceaccount #{ADMIN_USER}")
       end
@@ -95,6 +98,7 @@ module Pharos
 
       # @return [String]
       def certificate_authority_data
+        # --flatten expands relative paths, --minify cleans out everything but the stuff needed by current_context
         transport.exec!("sudo kubectl config view #{KUBECONFIG_PARAM} --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}'")
       end
     end
