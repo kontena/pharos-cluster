@@ -4,6 +4,8 @@ network:
   service_cidr: 172.31.0.0/16
   firewalld:
     enabled: true
+    trusted_subnets:
+      - "10.133.0.0/16"
   weave:
     trusted_subnets:
       - "10.133.0.0/16"
@@ -31,6 +33,8 @@ addons:
       - path: /mnt/data1
   cert-manager:
     enabled: true
+    webhook:
+      enabled: false
     issuer:
       name: letsencrypt-staging
       server: https://acme-staging-v02.api.letsencrypt.org/directory

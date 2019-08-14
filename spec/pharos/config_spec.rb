@@ -46,17 +46,24 @@ describe Pharos::Config do
       end
     end
 
-    context 'non unique ip' do
+    context 'non unique ip but different ssh port' do
       let(:hosts) { [
-        { 'address' => ' 192.0.2.1', 'role' => 'master' },
-        { 'address' => ' 192.0.2.1', 'role' => 'worker' }
+        { 'address' => '192.0.2.1', 'role' => 'master', 'ssh_port' => 22 },
+        { 'address' => '192.0.2.1', 'role' => 'worker', 'ssh_port' => 8022 }
       ] }
-      it 'fails to load' do
+      it 'loads' do
+        expect{subject}.not_to raise_error
+      end
+    end
+
+    context 'non unique ip and ssh port' do
+      let(:hosts) { [
+        { 'address' => '192.0.2.1', 'role' => 'master' },
+        { 'address' => '192.0.2.1', 'role' => 'worker', 'ssh_port' => 22 }
+      ] }
+      it 'loads' do
         expect{subject}.to raise_error(Pharos::ConfigError) do |exc|
-          expect(exc.errors[:hosts]).to match hash_including(
-            0 => hash_including(address: array_including("is not unique")),
-            1 => hash_including(address: array_including("is not unique"))
-          )
+          expect(exc.errors[:hosts]).to match array_including('duplicate address:ssh_port')
         end
       end
     end
@@ -184,38 +191,6 @@ describe Pharos::Config do
           expect(Net::SSH).to receive(:start).with('192.0.2.3', 'bastion', hash_including(port: 4567)).and_return(forward_session)
           expect(Net::SSH).to receive(:start).with('127.0.0.1', 'test', hash_including(port: 9999))
           subject.hosts.first.transport.connect
-        end
-      end
-    end
-
-    context 'kube_client' do
-      let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'role' => 'master' } ] } }
-      let(:kubeconfig) { {}  }
-
-      it 'creates a kube client' do
-        expect(Pharos::Kube).to receive(:client).with('192.0.2.1',kubeconfig, 6443)
-        subject.kube_client(kubeconfig)
-      end
-
-      context 'with bastion host' do
-        let(:master) { Pharos::Configuration::Host.new('address' => '192.0.2.1', 'role' => 'master', 'bastion' => { 'address' => '192.0.2.2', 'user' => 'bastion' }) }
-        let(:data) { { 'hosts' => [ { 'address' => '192.0.2.1', 'role' => 'master', 'bastion' => { 'address' => '192.0.2.2', 'user' => 'bastion' } } ] } }
-        let(:bastion) { Pharos::Configuration::Bastion.new('address' => '192.0.2.2', 'user' => 'bastion') }
-        let(:bastion_host) { instance_double(Pharos::Configuration::Host) }
-        let(:ssh) { instance_double(Pharos::Transport::SSH) }
-
-        before do
-          allow(subject).to receive(:master_host).and_return(master)
-          allow(master).to receive(:bastion).and_return(bastion)
-          allow(bastion).to receive(:host).and_return(bastion_host)
-          allow(bastion_host).to receive(:transport).and_return(ssh)
-          allow(master).to receive(:api_address).and_return('api.example.com')
-        end
-
-        it 'creates a kube client through ssh' do
-          expect(Pharos::Kube).to receive(:client).with('localhost', kubeconfig, 9999)
-          expect(ssh).to receive(:forward).with('api.example.com', 6443).and_return(9999)
-          subject.kube_client(kubeconfig)
         end
       end
     end

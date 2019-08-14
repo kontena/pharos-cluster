@@ -1,0 +1,146 @@
+<%- if config.kind == 'Deployment' -%>
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+  labels:
+    app: ingress-nginx
+spec:
+  type: LoadBalancer
+  <%- if policy = config&.service&.external_traffic_policy -%>
+  externalTrafficPolicy: <%= policy %>
+  <%- end -%>
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  - port: 443
+    targetPort: 443
+    name: https
+  selector:
+    app: ingress-nginx
+<%- end -%>
+---
+apiVersion: extensions/v1beta1
+kind: <%= config.kind %>
+metadata:
+  name: nginx-ingress-controller
+  namespace: ingress-nginx
+spec:
+  <%- if config.kind == 'Deployment' -%>
+  replicas: <%= config.deployment.replicas %>
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  <%- end -%>
+  <%- if config.kind == 'DaemonSet' -%>
+  updateStrategy:
+    type: RollingUpdate
+  <%- end -%>
+  selector:
+    matchLabels:
+      app: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app: ingress-nginx
+      annotations:
+        prometheus.io/port: '10254'
+        prometheus.io/scrape: 'true'
+    spec:
+      <%- if config.node_selector -%>
+      nodeSelector:
+      <%- config.node_selector.to_h.each do |key, value| -%>
+        <%= key %>: "<%= value %>"
+      <%- end -%>
+      <%- end -%>
+      serviceAccountName: nginx-ingress-serviceaccount
+      priorityClassName: pharos-cluster-critical
+      <%- if config.kind == 'DaemonSet' -%>
+      hostNetwork: true
+      <%- end -%>
+      <%- unless config.tolerations.empty? -%>
+      tolerations:
+      <%- config.tolerations.each do |t| -%>
+        -
+          <%- t.each do |k,v| -%>
+          <%= k %>: <%= v %>
+          <%- end -%>
+      <%- end -%>
+      <%- end -%>
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                      - ingress-nginx
+              topologyKey: "kubernetes.io/hostname"
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - sysctl -w net.core.somaxconn=32768; sysctl -w net.ipv4.ip_local_port_range="1024 65535"
+        image: "<%= image_repository %>/alpine:3.6"
+        imagePullPolicy: IfNotPresent
+        name: sysctl
+        securityContext:
+          privileged: true
+      containers:
+        - name: nginx-ingress-controller
+          image: <%= image_repository %>/nginx-ingress-controller:<%= version %>
+          args:
+            - /nginx-ingress-controller
+            - --default-backend-service=$(POD_NAMESPACE)/default-http-backend
+            - --configmap=$(POD_NAMESPACE)/nginx-configuration
+            - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
+            - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
+            - --annotations-prefix=nginx.ingress.kubernetes.io
+            <% config.extra_args.each do |arg| %>
+            - <%= arg %>
+            <% end %>
+          securityContext:
+            capabilities:
+                drop:
+                - ALL
+                add:
+                - NET_BIND_SERVICE
+            # www-data -> 33
+            runAsUser: 33
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 90Mi

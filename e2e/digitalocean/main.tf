@@ -14,6 +14,10 @@ variable "worker_count" {
   default = 5
 }
 
+variable "worker_up_count" {
+  default = 0
+}
+
 variable "master_size" {
   default = "2gb"
 }
@@ -78,7 +82,7 @@ resource "digitalocean_droplet" "pharos_worker" {
 }
 
 resource "digitalocean_droplet" "pharos_worker_up" {
-  count              = "1"
+  count              = "${var.worker_up_count}"
   image              = "${var.image}"
   name               = "${var.cluster_name}-worker-up"
   region             = "${var.region}"

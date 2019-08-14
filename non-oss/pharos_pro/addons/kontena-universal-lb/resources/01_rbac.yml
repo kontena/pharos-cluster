@@ -1,0 +1,53 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: akrobateo
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - replicasets
+  - nodes
+  verbs:
+  - list
+  - get
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - "*"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: akrobateo
+  namespace: kube-system
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: akrobateo
+subjects:
+- kind: ServiceAccount
+  name: akrobateo
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: akrobateo
+  apiGroup: rbac.authorization.k8s.io

@@ -20,6 +20,7 @@ module Pharos
   class Addon
     using Pharos::CoreExt::Colorize
     using Pharos::CoreExt::DeepTransformKeys
+    using K8s::Util::HashDeepMerge
     include Pharos::Logging
 
     # return class for use as superclass in Dry::Validation.Params
@@ -104,6 +105,10 @@ module Pharos
         @config ||= Class.new(Pharos::Addons::Struct, &block)
       end
 
+      def default_values(values = nil)
+        @default_values ||= values
+      end
+
       def config?
         !@config.nil?
       end
@@ -114,6 +119,16 @@ module Pharos
 
       def enabled?
         !!@enabled
+      end
+
+      # @param depends_on [Array<String>]
+      # @return [Array<String>]
+      def depends_on(addons = nil)
+        if addons
+          @depends_on = addons
+        else
+          @depends_on ||= []
+        end
       end
 
       def custom_type(&block)
@@ -178,27 +193,32 @@ module Pharos
 
       # @param config [Hash]
       def validate(config)
+        values = (@default_values || {}).deep_stringify_keys.deep_merge(config)
         if @schema
-          @schema.call(config)
+          @schema.call(values)
         else
-          validation {}.call(config)
+          validation {}.call(values)
         end
       end
     end
 
-    attr_reader :config, :cpu_arch, :cluster_config, :kube_client
+    attr_reader :config, :cpu_arch, :cluster_config, :cluster_context
 
     # @param config [Hash,Dry::Validation::Result]
     # @param enabled [Boolean]
-    # @param kube_client [K8s::Client]
     # @param cpu_arch [String, NilClass]
     # @param cluster_config [Pharos::Config, NilClass]
-    def initialize(config = nil, enabled: true, kube_client:, cpu_arch:, cluster_config:)
+    # @param cluster_context [Hash]
+    def initialize(config = nil, enabled: true, cpu_arch:, cluster_config:, cluster_context:)
       @config = self.class.config? ? self.class.config.new(config) : RecursiveOpenStruct.new(Hash(config))
       @enabled = enabled
-      @kube_client = kube_client
       @cpu_arch = cpu_arch
       @cluster_config = cluster_config
+      @cluster_context = cluster_context
+    end
+
+    def kube_client
+      cluster_context['kube_client']
     end
 
     def name

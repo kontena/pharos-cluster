@@ -27,7 +27,7 @@ spec:
       serviceAccountName: lens-operator
       priorityClassName: pharos-cluster-critical
       containers:
-        - image: <%= image_repository %>/lens-authenticator:<%= version %>
+        - image: <%= image_repository %>/lens-authenticator:<%= authenticator_version %>
           name: user-authenticator
           livenessProbe:
             httpGet:

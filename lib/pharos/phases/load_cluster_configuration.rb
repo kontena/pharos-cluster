@@ -6,7 +6,7 @@ module Pharos
       title "Load cluster configuration"
 
       def call
-        return unless cluster_context['kubeconfig']
+        return unless kube_client?
 
         logger.info { "Loading cluster configuration configmap ..." }
 

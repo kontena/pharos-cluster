@@ -21,11 +21,30 @@ describe Pharos::Addon do
     end
   end
 
+  let(:default_values_addon) do
+    Class.new(Pharos::Addon) do
+      self.addon_name = 'default-values'
+      self.addon_location = File.expand_path(File.join(__dir__, '..', 'fixtures', 'stacks', 'multidoc'))
+
+      version "0.2.2"
+      license "MIT"
+
+      default_values(
+        bar: 'baz'
+      )
+
+      config_schema {
+        required(:foo).filled(:str?)
+        optional(:bar).filled(:str?)
+      }
+    end
+  end
+
   let(:cpu_arch) { double(:cpu_arch) }
   let(:kube_client) { instance_double(K8s::Client) }
   let(:config) { {foo: 'bar'} }
 
-  subject { test_addon.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: double(image_repository: 'foo')) }
+  subject { test_addon.new(config, cpu_arch: cpu_arch, cluster_config: double(image_repository: 'foo'), cluster_context: { 'kube_client' => kube_client }) }
 
   describe ".addon_name" do
     it "returns configured name" do
@@ -134,7 +153,7 @@ describe Pharos::Addon do
           config.justatest
           apply_resources
         }
-      end.new(config, kube_client: kube_client, cpu_arch: cpu_arch, cluster_config: nil)
+      end.new(config, cluster_context: { 'kube_client' => kube_client }, cpu_arch: cpu_arch, cluster_config: nil)
     end
 
     let(:kube_stack) { double(:kube_stack) }
@@ -180,6 +199,17 @@ describe Pharos::Addon do
     it "sets post install message if message given" do
       subject.post_install_message('installed')
       expect(subject.post_install_message).to eq('installed')
+    end
+  end
+
+  context 'default values' do
+    let(:subject) { test_addon.new({}, cpu_arch: cpu_arch, cluster_config: double(image_repository: 'foo'), cluster_context: { 'kube_client' => kube_client }) }
+
+    describe '.validate' do
+      it 'sets default values' do
+        config = default_values_addon.validate({}).to_h
+        expect(config[:bar]).to eq('baz')
+      end
     end
   end
 end

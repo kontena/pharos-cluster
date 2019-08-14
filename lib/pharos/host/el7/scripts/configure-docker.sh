@@ -16,6 +16,7 @@ mkdir -p /etc/docker
 cat <<EOF >/etc/docker/daemon.json
 {
     "live-restore": true,
+    "bridge": "none",
     "iptables": false,
     "ip-masq": false,
     "insecure-registries": $INSECURE_REGISTRIES

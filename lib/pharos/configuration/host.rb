@@ -4,6 +4,7 @@ require_relative 'os_release'
 require_relative 'cpu_arch'
 require_relative 'bastion'
 require_relative '../transport'
+require_relative 'repository'
 
 require 'ipaddr'
 require 'resolv'
@@ -24,6 +25,7 @@ module Pharos
       attribute :container_runtime, Pharos::Types::Strict::String.default('docker')
       attribute :environment, Pharos::Types::Strict::Hash
       attribute :bastion, Pharos::Configuration::Bastion
+      attribute :repositories, Pharos::Types::Strict::Array.of(Pharos::Configuration::Repository)
 
       attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :resolvconf, :routes, :config
       attr_reader :private_interface_address

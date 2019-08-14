@@ -7,7 +7,7 @@ module Pharos
     class UbuntuXenial < Ubuntu
       register_config 'ubuntu', '16.04'
 
-      DOCKER_VERSION = '18.06.1'
+      DOCKER_VERSION = '18.09'
       CFSSL_VERSION = '1.2'
 
       register_component(
@@ -25,11 +25,6 @@ module Pharos
         enabled: proc { |c| !c.etcd&.endpoints }
       )
 
-      def configure_repos
-        exec_script("repos/pharos_xenial.sh")
-        exec_script('repos/update.sh')
-      end
-
       def configure_container_runtime
         if docker?
           exec_script(
@@ -44,7 +39,6 @@ module Pharos
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif crio?
-          can_pull = can_pull? # needs to be checked before configure
           exec_script(
             'configure-cri-o.sh',
             CRIO_VERSION: Pharos::CRIO_VERSION,
@@ -54,7 +48,6 @@ module Pharos
             IMAGE_REPO: config.image_repository,
             INSECURE_REGISTRIES: insecure_registries
           )
-          cleanup_crio! unless can_pull
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
@@ -65,6 +58,14 @@ module Pharos
           "reset.sh",
           CRIO_VERSION: CRIO_VERSION
         )
+      end
+
+      def default_repositories
+        [Pharos::Configuration::Repository.new(
+          name: "pharos-kubernetes.list",
+          key_url: "https://bintray-pk.pharos.sh/?username=bintray",
+          contents: "deb https://dl.bintray.com/kontena/pharos-debian xenial main\n"
+        )]
       end
     end
   end

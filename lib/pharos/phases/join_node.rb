@@ -20,8 +20,7 @@ module Pharos
           join_command << '--cri-socket /var/run/crio/crio.sock'
         end
         join_command << "--node-name #{@host.hostname}"
-        join_command << "--ignore-preflight-errors DirAvailable--etc-kubernetes-manifests"
-        join_command << "--ignore-preflight-errors SystemVerification" # kubeadm does not like fresh docker versions ...
+        join_command << "--ignore-preflight-errors all"
 
         transport.exec!('sudo ' + join_command.join(' '))
       end

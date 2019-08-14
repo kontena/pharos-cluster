@@ -12,3 +12,6 @@ rules:
 - apiGroups: ["*"]
   resources: ["*"]
   verbs: ["watch"]
+- apiGroups: ["authentication.k8s.io"]
+  resources: ["tokenreviews"]
+  verbs: ["create"]

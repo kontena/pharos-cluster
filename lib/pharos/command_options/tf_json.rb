@@ -4,6 +4,7 @@ module Pharos
   module CommandOptions
     module TfJson
       using Pharos::CoreExt::Colorize
+      using K8s::Util::HashDeepMerge
 
       def self.included(base)
         base.prepend(InstanceMethods)
@@ -31,18 +32,29 @@ module Pharos
         def load_terraform(file, config)
           puts("==> Importing configuration from Terraform ...".green) if $stdout.tty?
 
-          tf_parser = Pharos::Terraform::JsonParser.new(File.read(file))
-          config['hosts'] ||= []
-          config['api'] ||= {}
-          config['addons'] ||= {}
-          config['hosts'].concat(tf_parser.hosts)
-          config['api'].merge!(tf_parser.api) if tf_parser.api
-          config['name'] ||= tf_parser.cluster_name if tf_parser.cluster_name
-          config['addons'].each do |name, conf|
-            if addon_config = tf_parser.addons[name]
-              conf.merge!(addon_config)
+          json = File.read(file)
+          tf_parser = Pharos::Terraform::JsonParser.new(json)
+          if tf_parser.valid?
+            config.deep_merge!(
+              tf_parser.cluster,
+              overwrite_arrays: false,
+              union_arrays: true
+            )
+          else
+            tf_parser = Pharos::Terraform::LegacyJsonParser.new(json)
+            config['hosts'] ||= []
+            config['api'] ||= {}
+            config['addons'] ||= {}
+            config['hosts'].concat(tf_parser.hosts)
+            config['api'].merge!(tf_parser.api) if tf_parser.api
+            config['name'] ||= tf_parser.cluster_name if tf_parser.cluster_name
+            config['addons'].each do |name, conf|
+              if addon_config = tf_parser.addons[name]
+                conf.merge!(addon_config)
+              end
             end
           end
+
           config
         end
       end

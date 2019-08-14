@@ -5,7 +5,7 @@ module Pharos
     class ConfigureMetrics < Pharos::Phase
       title "Configure metrics"
 
-      METRICS_SERVER_VERSION = '0.3.1'
+      METRICS_SERVER_VERSION = '0.3.2'
 
       register_component(
         name: 'metrics-server', version: METRICS_SERVER_VERSION, license: 'Apache License 2.0'
