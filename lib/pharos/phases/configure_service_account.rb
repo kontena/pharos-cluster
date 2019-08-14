@@ -14,7 +14,6 @@ module Pharos
         logger.info "Creating cluster role binding"
         create_cluster_role_binding
 
-        logger.info "Building configuration"
         config = build_config
 
         if config_file.exist?
