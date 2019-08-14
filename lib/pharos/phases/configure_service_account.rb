@@ -53,7 +53,7 @@ module Pharos
       end
 
       def create_cluster_role_binding
-        transport.exec!("sudo kubectl get #{KUBECONFIG_PARAM} clusterrolebinding pharos-cluster-admin || sudo kubectl create #{KUBECONFIG_PARAM} clusterrolebinding pharos-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:#{ADMIN_USER}")
+        transport.exec!("sudo kubectl get #{KUBECONFIG_PARAM} -n kube-system clusterrolebinding/pharos-cluster-admin || sudo kubectl create #{KUBECONFIG_PARAM} -n kube-system clusterrolebinding pharos-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:#{ADMIN_USER}")
       end
 
       # @return token_name [String]
