@@ -37,12 +37,13 @@ module Pharos
       end
 
       # @param content [String]
+      # @param overwrite [Boolean] use force to overwrite target
       # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
-      def write(content)
+      def write(content, overwrite: false)
         tmp = temp_file_path.shellescape
         @client.exec!(
-          "cat > #{tmp} && (sudo mv #{tmp} #{escaped_path} || (rm #{tmp}; exit 1))",
+          "cat > #{tmp} && (sudo mv #{'-f ' if overwrite}#{tmp} #{escaped_path} || (rm -f #{tmp}; exit 1))",
           stdin: content
         )
       end
@@ -76,10 +77,11 @@ module Pharos
 
       # Moves the current file to target path
       # @param target [String]
+      # @param overwrite [Boolean] use force to overwrite target
       # @return [Pharos::Transport::Command::Result]
       # @raise [Pharos::ExecError]
-      def move(target)
-        @client.exec!("sudo mv #{@path} #{target.shellescape}")
+      def move(target, overwrite: false)
+        @client.exec!("sudo mv #{'-f ' if overwrite}#{@path} #{target.shellescape}")
       end
       alias mv move
 
@@ -100,10 +102,12 @@ module Pharos
         @client.exec!("sudo ln -s #{escaped_path} #{target.shellescape}")
       end
 
+      # @param escape [Boolean] escape file path
+      # @param canonicalize [Boolean] canonicalize by following every symlink in every component of the file name recursively; all but the last component must exist
       # @return [String, nil]
       # @raise [Pharos::ExecError]
-      def readlink
-        target = @client.exec!("readlink #{escaped_path} || echo").strip
+      def readlink(escape: true, canonicalize: false)
+        target = @client.exec!("readlink #{'-f ' if canonicalize}#{escape ? escaped_path : @path} || echo").strip
 
         return nil if target.empty?
 
