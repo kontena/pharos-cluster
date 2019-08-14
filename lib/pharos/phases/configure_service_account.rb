@@ -34,7 +34,7 @@ module Pharos
       end
 
       def home_kube_dir
-        transport.file(transport.file('~/.kube').readlink(escape: false, canonicalize: true)).tap do |dir|
+        transport.file('~/.kube', expand: true).tap do |dir|
           transport.exec!("mkdir '#{dir}' && chmod 0700 '#{dir}") unless dir.exist?
         end
       end

@@ -90,9 +90,10 @@ module Pharos
       end
 
       # @param path [String]
+      # @param (see Pharos::Transport::TransportFile#initialize)
       # @return [Pathname]
-      def file(path)
-        Pharos::Transport::TransportFile.new(self, path)
+      def file(path, **options)
+        Pharos::Transport::TransportFile.new(self, path, **options)
       end
 
       def closed?
