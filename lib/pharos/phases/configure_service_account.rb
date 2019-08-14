@@ -9,19 +9,25 @@ module Pharos
       KUBECONFIG_PARAM = '--kubeconfig=/etc/kubernetes/admin.conf'
 
       def call
+        logger.info "Creating service account"
         create_service_account
+        logger.info "Creating cluster role binding"
         create_cluster_role_binding
 
+        logger.info "Building configuration"
         config = build_config
 
         if config_file.exist?
+          logger.info "Merging existing configuration"
           existing_config = Pharos::Kube::Config.new(config_file.read)
           config << existing_config
         end
 
+        logger.info "Writing configuration file"
         config_file.write(config.dump, overwrite: true)
         config_file.chmod('0600')
 
+        logger.info "Validating that new configuration works"
         validate
       end
 
