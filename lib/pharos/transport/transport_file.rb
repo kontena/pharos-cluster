@@ -12,8 +12,7 @@ module Pharos
       # @param path [String]
       def initialize(client, path, expand: false)
         @client = client
-        @path = path.dup
-        @path.replace(readlink(escape: false, canonicalize: true)) if expand
+        @path = expand ? (self.class.new(path).readlink(escape: false, canonicalize: true) || path) : path
         @path.freeze
 
         freeze
