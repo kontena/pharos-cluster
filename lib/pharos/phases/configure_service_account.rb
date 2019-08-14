@@ -27,7 +27,7 @@ module Pharos
         config_file.write(config.dump, overwrite: true)
         config_file.chmod('0600')
 
-        logger.info transport.exec('cat ~/.kube/config')
+        logger.info transport.exec!('cat ~/.kube/config')
         logger.info "Validating that new configuration works"
         validate
       end
