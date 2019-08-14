@@ -13,7 +13,7 @@ module Pharos
       def initialize(client, path, expand: false)
         @client = client
         @path = path
-        @path = readlink(escape: false, canonicalize: true) if expand
+        @path.replace(readlink(escape: false, canonicalize: true)) if expand
 
         freeze
       end
