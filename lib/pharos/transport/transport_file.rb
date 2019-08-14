@@ -9,6 +9,7 @@ module Pharos
       attr_reader :path
       # Initializes an instance of a remote file
       # @param [Pharos::Transport::Base]
+      # @param expand [Boolean] when true, relative and special paths like ~/.kube or $HOME/xyz will be converted to real paths
       # @param path [String]
       def initialize(client, path, expand: false)
         @client = client
