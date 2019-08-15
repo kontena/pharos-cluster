@@ -25,10 +25,6 @@ pharos version || exit $?
 pharos license assign --help || exit $?
 pharos license inspect --help || exit $?
 
-# Display host env
-echo "Host env:"
-(pharos exec --role master -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json -- "env") || exit $?
-
 # Test cluster bootstrapping
 timeout 700 pharos up -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json || exit $?
 (pharos kubeconfig -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json > kubeconfig.e2e) || exit $?

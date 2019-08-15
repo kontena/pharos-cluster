@@ -22,18 +22,17 @@ module Pharos
           config << existing_config
         end
 
-        logger.info "Writing configuration file"
+        logger.info "Writing configuration file to #{config_file.path}"
         config_file.write(config.dump, overwrite: true)
         config_file.chmod('0600')
 
-        logger.info transport.exec!('cat ~/.kube/config')
         logger.info "Validating that new configuration works"
         validate
       end
 
       def validate
         # Validates that "kubectl" without sudo or setting KUBECONFIG / --kubeconfig works on the host
-        transport.exec!("kubectl get -n kube-system serviceaccount/#{ADMIN_USER}")
+        transport.exec!("kubectl get --kubeconfig=~/.kube/config -n kube-system serviceaccount/#{ADMIN_USER}")
       end
 
       def config_file
