@@ -32,7 +32,7 @@ module Pharos
 
       def validate
         # Validates that "kubectl" without sudo or setting KUBECONFIG / --kubeconfig works on the host
-        transport.exec!("kubectl get --kubeconfig=~/.kube/config -n kube-system serviceaccount/#{ADMIN_USER}")
+        transport.exec!("kubectl get --kubeconfig=/root/.kube/config -n kube-system serviceaccount/#{ADMIN_USER}")
       end
 
       def config_file
