@@ -16,6 +16,7 @@ module Pharos
     parameter 'JOIN_COMMAND', 'cluster join command (see note)', required: true do |join_command|
       signal_usage_error 'invalid --join-command' unless join_command.match?(/--token \S+/)
 
+      join_command = join_command.dup
       join_command.insert(0, 'kubeadm join ') unless join_command.include?('kubeadm join')
       join_command.delete_prefix('sudo ')
     end
