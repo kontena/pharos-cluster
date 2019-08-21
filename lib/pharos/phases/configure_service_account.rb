@@ -22,11 +22,10 @@ module Pharos
           config << existing_config
         end
 
-        logger.info "Writing configuration file to #{config_file.path}"
         config_file.write(config.dump, overwrite: true)
         config_file.chmod('0600')
 
-        logger.info "Validating that new configuration works"
+        logger.info "Testing new configuration"
         validate
       end
 
