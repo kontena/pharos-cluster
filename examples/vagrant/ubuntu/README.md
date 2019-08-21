@@ -7,7 +7,8 @@ Pharos Cluster Vagrant setup mainly for local testing.
 ```sh
 $ vagrant up
 $ pharos-cluster up
-$ export KUBECONFIG=~/.pharos/192.168.100.100
+$ mkdir ~/.kube && chmod 0700 ~/.kube
+$ pharos kubeconfig > ~/.kube/config
 $ kubectl get nodes
 ```
 
@@ -38,15 +39,15 @@ vagrant@host-00:~$ sudo docker run -d -v /vagrant/etcd_certs:/certs  -p 2379:237
 ```
 
 ```
-$ kupo up -c cluster-external-etcd.yml
-$ export KUBECONFIG=~/.kupo/192.168.100.100
+$ pharos up -c cluster-external-etcd.yml
+$ pharos kubeconfig -c cluster-external-etcd.yml > ~/.kube/config
 $ kubectl get nodes
 ```
 
 
 ## License
 
-Copyright (c) 2018 Kontena, Inc.
+Copyright (c) 2019 Kontena, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
