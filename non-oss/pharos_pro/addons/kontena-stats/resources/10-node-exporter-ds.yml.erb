@@ -70,4 +70,49 @@ spec:
         - name: root
           hostPath:
             path: /
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter-proxy
+  namespace: kontena-stats
+  labels:
+    component: node-exporter-proxy
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      component: node-exporter-proxy
+      phase: prod
+  template:
+    metadata:
+      labels:
+        component: node-exporter-proxy
+        phase: prod
+    spec:
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      containers:
+        - name: scraper
+          image: <%= image_repository %>/pharos-scraper-proxy:0.2.0
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+            limits:
+              cpu: 200m
+              memory: 20Mi
+          env:
+            - name: NODE_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: BACKEND_ADDRESS
+              value: "http://$(NODE_ADDRESS):9100/metrics"
 <% end %>
