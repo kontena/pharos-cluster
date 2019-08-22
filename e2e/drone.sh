@@ -108,3 +108,7 @@ echo "Waiting for node to come online.."
 (retry 30 node_online "${worker_hostname}") || exit $?
 echo "Node is online:"
 kubectl get nodes "${worker_hostname}" -o wide
+
+echo "Testing a worker reset.."
+timeout 700 pharos reset -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json --role worker --first
+
