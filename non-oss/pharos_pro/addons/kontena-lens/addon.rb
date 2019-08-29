@@ -4,7 +4,7 @@ require 'bcrypt'
 require 'json'
 
 Pharos.addon 'kontena-lens' do
-  version '1.6.1'
+  version '1.9.1'
   license 'Kontena License'
   priority 10
   depends_on [
@@ -12,10 +12,10 @@ Pharos.addon 'kontena-lens' do
   ]
 
   helm_api_version = '1.6.0'
-  terminal_gateway_version = '1.6.1'
+  terminal_gateway_version = '1.7.1'
   terminal_version = '1.6.0'
   user_management_version = '1.6.1'
-  resource_applier_version = '1.6.0'
+  resource_applier_version = '1.6.1'
   authenticator_version = '1.6.1'
   redis_version = '4-alpine'
   tiller_version = '2.13.1'
