@@ -6,7 +6,7 @@ module Pharos
       title "Validate hosts"
 
       def call
-        logger.info { "Validating host clock sync ..." }
+        logger.info { "Validating localhost and host clock sync ..." }
         check_clock
         logger.info { "Validating current role matches ..." }
         check_role
