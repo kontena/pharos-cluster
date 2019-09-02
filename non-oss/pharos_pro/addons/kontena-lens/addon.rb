@@ -14,7 +14,7 @@ Pharos.addon 'kontena-lens' do
   helm_api_version = '1.6.0'
   terminal_gateway_version = '1.7.1'
   terminal_version = '1.6.0'
-  user_management_version = '1.6.1'
+  user_management_version = '1.6.2'
   resource_applier_version = '1.6.1'
   authenticator_version = '1.6.1'
   redis_version = '4-alpine'
