@@ -16,7 +16,7 @@ module Pharos
       attribute :private_address, Pharos::Types::Strict::String.optional.default(nil)
       attribute :private_interface, Pharos::Types::Strict::String.optional.default(nil)
       attribute :role, Pharos::Types::Strict::String
-      attribute :labels, Pharos::Types::Strict::Hash
+      attribute :labels, Pharos::Types::Strict::Hash.default(proc { {} })
       attribute :taints, Pharos::Types::Strict::Array.of(Pharos::Configuration::Taint)
       attribute :user, Pharos::Types::Strict::String
       attribute :ssh_key_path, Pharos::Types::Strict::String
@@ -27,7 +27,20 @@ module Pharos
       attribute :bastion, Pharos::Configuration::Bastion
       attribute :repositories, Pharos::Types::Strict::Array.of(Pharos::Configuration::Repository)
 
-      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :private_interface_address, :resolvconf, :routes, :config
+      attr_accessor :os_release, :cpu_arch, :hostname, :api_endpoint, :resolvconf, :routes, :config
+      attr_reader :private_interface_address
+
+      def initialize(*_args)
+        super
+        labels['node-address.kontena.io/external-ip'] = address
+        labels['node-address.kontena.io/internal-ip'] = private_address if private_address
+        labels["node-role.kubernetes.io/#{role}"] = '' unless role.nil? || labels.keys.find{ |k| k.to_s.start_with?("node-role.kubernetes.io") }
+      end
+
+      def private_interface_address=(address)
+        labels['node-address.kontena.io/internal-ip'] ||= address
+        @private_interface_address = address
+      end
 
       def to_s
         short_hostname || address
@@ -77,19 +90,6 @@ module Pharos
       # @return [String]
       def region
         labels['failure-domain.beta.kubernetes.io/region'] || 'unknown'
-      end
-
-      # @return [Hash]
-      def labels
-        labels = @attributes[:labels] || {}
-
-        labels['node-address.kontena.io/external-ip'] = address
-        internal_ip = private_address || private_interface_address
-        labels['node-address.kontena.io/internal-ip'] = internal_ip if internal_ip
-
-        labels['node-role.kubernetes.io/worker'] = '' if worker? && !labels.find{ |k, _| k.to_s.start_with?("node-role.kubernetes.io") }
-
-        labels
       end
 
       # @return [Hash]
