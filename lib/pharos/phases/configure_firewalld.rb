@@ -5,6 +5,13 @@ module Pharos
     class ConfigureFirewalld < Pharos::Phase
       title "Configure firewalld"
 
+      PHAROS_FIREWALLD_VERSION = "0.1.0"
+
+      register_component(
+        name: 'pharos-firewalld', version: PHAROS_FIREWALLD_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.network&.firewalld&.enabled }
+      )
+
       def call
         if @config.network&.firewalld&.enabled
           configure_firewalld
@@ -19,6 +26,7 @@ module Pharos
         apply_stack(
           'firewalld',
           image_repository: @config.image_repository,
+          version: PHAROS_FIREWALLD_VERSION,
           services: {
             master: pharos_master_service,
             worker: pharos_worker_service

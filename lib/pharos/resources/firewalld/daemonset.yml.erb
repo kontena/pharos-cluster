@@ -27,7 +27,7 @@ spec:
       <%- end -%>
       containers:
         - name: firewalld
-          image: '<%= image_repository %>/pharos-firewalld:latest'
+          image: '<%= image_repository %>/pharos-firewalld:<%= version %>'
           env:
            - name: FIREWALLD_ROLE
              value: <%= role %>
