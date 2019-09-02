@@ -16,9 +16,7 @@ module Pharos
     end
 
     def reset_hosts
-      all_hosts = load_config.hosts.dup
-      load_config.hosts.keep_if { |h| filtered_hosts.include?(h) }
-      remaining_masters = all_hosts.select(&:master?) - load_config.hosts.select(&:master?)
+      remaining_masters = load_config.hosts.select(&:master?) - filtered_hosts.select(&:master?)
       if remaining_masters.empty?
         signal_error 'There would be no master hosts left in the cluster after the reset. Reset the whole cluster by running this command without host filters.'
       elsif filtered_hosts.size > 1

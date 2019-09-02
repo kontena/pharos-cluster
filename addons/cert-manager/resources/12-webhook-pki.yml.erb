@@ -1,3 +1,4 @@
+<% if config.webhook.enabled %>
 # Create a selfsigned Issuer, in order to create a root CA certificate for
 # signing webhook serving certificates
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -53,3 +54,4 @@ spec:
   - cert-manager-webhook
   - cert-manager-webhook.kube-system
   - cert-manager-webhook.kube-system.svc
+<% end %>

@@ -1,0 +1,8 @@
+hosts:
+  - address: 192.0.2.1
+    role: master
+    repositories:
+    - name: test
+      key_url: URL_TO_KEY
+      contents:  |
+        REPO_CONTENTS

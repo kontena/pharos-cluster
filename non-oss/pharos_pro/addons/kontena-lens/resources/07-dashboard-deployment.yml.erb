@@ -37,10 +37,14 @@ spec:
           name: dashboard
           imagePullPolicy: Always
           env:
-            - name: KUBE_KONTENA_URL
+            - name: KUBE_USERS_URL
               value: http://usermanagement:9999
             - name: KUBE_TERMINAL_URL
               value: http://localhost:9998
+            - name: KUBE_HELM_URL
+              value: "http://helmcharts:9292"
+            - name: KUBE_RESOURCE_APPLIER_URL
+              value: "http://k8s-resource-applier:9393"
             - name: REDIS_CLIENT_HOST
               value: redis
             - name: USER_MANAGEMENT_ENABLED
@@ -48,7 +52,7 @@ spec:
             - name: CHARTS_ENABLED
               value: "<%=  charts_enabled %>"
             - name: KUBE_METRICS_URL
-              value: "http://prometheus.kontena-stats.svc.cluster.local"
+              value: "http://rbac-proxy.kontena-stats.svc.cluster.local"
           resources:
             requests:
               memory: "256Mi"

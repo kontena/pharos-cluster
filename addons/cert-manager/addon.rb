@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Pharos.addon 'cert-manager' do
-  version '0.7.2'
+  version '0.8.1'
   license 'Apache License 2.0'
 
   issuer = custom_type {
@@ -10,12 +10,13 @@ Pharos.addon 'cert-manager' do
     attribute :email, Pharos::Types::String
   }
 
-  ca_issuer = custom_type {
-    attribute :enabled, Pharos::Types::Bool.default(true)
+  feature_flag = custom_type {
+    attribute :enabled, Pharos::Types::Bool
   }
 
   config {
-    attribute :ca_issuer, ca_issuer.default(proc { ca_issuer.new(enabled: true) })
+    attribute :ca_issuer, feature_flag.default(proc { feature_flag.new(enabled: true) })
+    attribute :webhook, feature_flag.default(proc { feature_flag.new(enabled: true) })
     attribute :extra_args, Pharos::Types::Array.default(proc { [] })
     attribute :issuers, Pharos::Types::Array.default(proc { [] })
     attribute :issuer, issuer # deprecated
@@ -25,7 +26,10 @@ Pharos.addon 'cert-manager' do
     optional(:issuers).each(:hash?)
     optional(:extra_args).each(:str?)
     optional(:ca_issuer).schema {
-      optional(:enabled).filled(:bool?)
+      required(:enabled).filled(:bool?)
+    }
+    optional(:webhook).schema {
+      required(:enabled).filled(:bool?)
     }
 
     # deprecated

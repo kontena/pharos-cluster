@@ -37,23 +37,11 @@ module Pharos
       result.to_h
     end
 
-    module CustomPredicates
+    module HostPredicates
       include Dry::Logic::Predicates
 
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
-      end
-
-      def self.addresses
-        @addresses ||= Set.new
-      end
-
-      predicate(:unique_address?) do |value|
-        if CustomPredicates.addresses.include?(value)
-          false
-        else
-          CustomPredicates.addresses << value
-        end
       end
     end
 
@@ -62,26 +50,28 @@ module Pharos
       # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Params do
         configure do
-          CustomPredicates.addresses.clear
-
           def self.messages
             super.merge(
               en: {
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
-                  unique_address?: "is not unique"
+                  unique_addresses?: "duplicate address:ssh_port"
                 }
               }
             )
           end
+
+          def unique_addresses?(hosts)
+            hosts.size < 2 || hosts.group_by { |h| "#{h[:address]}:#{h[:ssh_port] || 22}" }.size == hosts.size
+          end
         end
 
-        required(:hosts).filled(min_size?: 1) do
+        required(:hosts).filled(:unique_addresses?, min_size?: 1) do
           each do
             schema do
-              predicates(CustomPredicates)
-              required(:address).filled(:str?, :hostname_or_ip?, :unique_address?)
+              predicates(HostPredicates)
+              required(:address).filled(:str?, :hostname_or_ip?)
               optional(:private_address).filled(:str?, :hostname_or_ip?)
               optional(:private_interface).filled
               required(:role).filled(included_in?: ['master', 'worker'])
@@ -100,15 +90,24 @@ module Pharos
               optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
               optional(:environment).filled
               optional(:bastion).schema do
-                required(:address).filled(:str?)
+                predicates(HostPredicates)
+                required(:address).filled(:str?, :hostname_or_ip?)
                 optional(:user).filled(:str?)
                 optional(:ssh_key_path).filled(:str?)
                 optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
                 optional(:ssh_proxy_command).filled(:str?)
               end
+              optional(:repositories).each do
+                schema do
+                  required(:name).filled(:str?)
+                  required(:contents).filled(:str?)
+                  optional(:key_url).filled(:str?)
+                end
+              end
             end
           end
         end
+
         optional(:name).filled(:str?)
         optional(:api).schema do
           optional(:endpoint).filled(:str?)

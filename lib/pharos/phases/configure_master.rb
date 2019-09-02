@@ -21,15 +21,15 @@ module Pharos
       def call
         push_kube_certs(cluster_context['master-certs']) if cluster_context['master-certs']
 
-        logger.info { "Checking if Kubernetes control plane is already initialized ..." }
+        logger.info "Checking if Kubernetes control-plane is already initialized ..."
         if install?
-          logger.info { "Kubernetes control plane is not initialized." }
+          logger.info "Kubernetes control-plane is not initialized."
           install
           install_kubeconfig
         elsif !cluster_context['api_upgraded']
           reconfigure
         else
-          logger.info { "Kubernetes control plane is up to date." }
+          logger.info "Kubernetes control-plane (v#{Pharos::KUBE_VERSION}) is up to date."
         end
 
         cluster_context['master-certs'] = pull_kube_certs unless cluster_context['master-certs']
@@ -38,7 +38,7 @@ module Pharos
       def install
         cfg = kubeadm.generate_yaml_config
 
-        logger.info { "Initializing control plane (v#{Pharos::KUBE_VERSION}) ..." }
+        logger.info "Initializing Kubernetes control-plane (v#{Pharos::KUBE_VERSION}) ..."
         logger.debug { cfg }
 
         transport.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
@@ -49,7 +49,7 @@ module Pharos
           )
         end
 
-        logger.info { "Initialization of control plane succeeded!" }
+        logger.info "Initialization of Kubernetes control-plane succeeded!"
       end
 
       def install_kubeconfig
@@ -58,9 +58,14 @@ module Pharos
       end
 
       def reconfigure
-        replace_cert if replace_cert?
+        api_restart_needed = false
+        if replace_cert?
+          logger.info "Replacing Kubernetes apiserver cert ..."
+          replace_cert
+          api_restart_needed = true
+        end
 
-        logger.info { "Renewing control plane certificates ..." }
+        logger.info "Renewing Kubernetes control-plane certificates ..."
         transport.tempfile(content: kubeadm.cluster_config.generate.to_yaml, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
             'kubeadm-renew-certs.sh',
@@ -68,10 +73,14 @@ module Pharos
             UNSET_PROXY: @config.control_plane&.use_proxy ? 'false' : 'true'
           )
         end
+        if api_restart_needed
+          logger.info "Restarting Kubernetes apiserver for new certificates to take effect ..."
+          restart_apiserver
+        end
 
         cfg = kubeadm.generate_yaml_config
-        logger.info { "Reconfiguring control plane (v#{Pharos::KUBE_VERSION})..." }
-        logger.debug { cfg }
+        logger.info "Reconfiguring Kubernetes control-plane (v#{Pharos::KUBE_VERSION}) ..."
+        logger.debug cfg
 
         transport.tempfile(content: cfg, prefix: "kubeadm.cfg") do |tmp_file|
           exec_script(
@@ -132,7 +141,7 @@ module Pharos
           when 'IP Address'
             name
           else
-            logger.warn { "Unknown SAN in cert: #{san}" }
+            logger.warn "Unknown SAN in cert: #{san}"
             nil
           end
         }.compact
@@ -143,7 +152,7 @@ module Pharos
         cert = read_cert(APISERVER_CERT)
 
         if !cert
-          logger.debug { "apiserver cert does not yet exist, kubeadm will create it" }
+          logger.debug "apiserver cert does not yet exist, kubeadm will create it"
           return false
         end
 
@@ -153,19 +162,29 @@ module Pharos
         extra_sans = sans - kubeadm.cluster_config.build_extra_sans
 
         if missing_sans.empty?
-          logger.debug { "apiserver cert is up to update: #{sans}" }
+          logger.debug "apiserver cert is up to update: #{sans}"
           return false
         else
-          logger.debug { "apiserver cert is missing SANs: #{missing_sans} (extra: #{extra_sans})" }
+          logger.debug "apiserver cert is missing SANs: #{missing_sans} (extra: #{extra_sans})"
           return true
         end
       end
 
       def replace_cert
-        logger.info { "Replacing apiserver cert" }
-
         transport.file(APISERVER_CERT).rm
         transport.file(APISERVER_KEY).rm
+      end
+
+      # @return [Boolean]
+      def restart_apiserver
+        manifest = transport.file(File.join(KUBE_DIR, 'manifests', 'kube-apiserver.yaml'))
+        if manifest.exist?
+          manifest.rm
+          sleep 20 # kubelet fileCheckFrequency
+        end
+        true
+      rescue Pharos::ExecError
+        false
       end
     end
   end
