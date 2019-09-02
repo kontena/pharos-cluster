@@ -40,7 +40,10 @@ module Pharos
 
       # prefetch client resources to warm up caches
       def client_prefetch
+        logger.info "Populating client cache"
         kube_client.apis(prefetch_resources: true)
+      rescue Excon::Error::Certificate
+        logger.warn "Certificate validation failed"
       end
     end
   end
