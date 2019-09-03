@@ -77,7 +77,6 @@ module Pharos
       master_only = [config.master_host]
       apply_phase(Phases::MigrateMaster, master_hosts, parallel: true)
       apply_phase(Phases::ConfigureHost, config.hosts, parallel: true)
-      apply_phase(Phases::ConfigureFirewalld, config.hosts, parallel: true)
       apply_phase(Phases::ConfigureClient, master_only, parallel: false)
 
       unless @config.etcd&.endpoints
@@ -104,6 +103,7 @@ module Pharos
       # configure essential services
       apply_phase(Phases::ConfigurePriorityClasses, master_only)
       apply_phase(Phases::ConfigurePSP, master_only)
+      apply_phase(Phases::ConfigureFirewalld, master_only)
       apply_phase(Phases::ConfigureCloudProvider, master_only)
       apply_phase(Phases::ConfigureDNS, master_only)
       apply_phase(Phases::ConfigureWeave, master_only) if config.network.provider == 'weave'

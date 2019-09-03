@@ -5,6 +5,13 @@ module Pharos
     class ConfigureFirewalld < Pharos::Phase
       title "Configure firewalld"
 
+      PHAROS_FIREWALLD_VERSION = "0.1.0"
+
+      register_component(
+        name: 'pharos-firewalld', version: PHAROS_FIREWALLD_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.network&.firewalld&.enabled }
+      )
+
       def call
         if @config.network&.firewalld&.enabled
           configure_firewalld
@@ -14,35 +21,23 @@ module Pharos
       end
 
       def configure_firewalld
-        logger.info { 'Configuring firewalld packages ...' }
-        @host.configurer.configure_firewalld
+        logger.info { 'Configuring firewalld ...' }
 
-        logger.info { 'Configuring firewalld rules ...' }
-
-        write_config('services/pharos-master.xml', pharos_master_service) if @host.master?
-        write_config('services/pharos-worker.xml', pharos_worker_service)
-        write_config('ipsets/pharos.xml', pharos_ipset)
-
-        # Masquerade was enabled in the past, if it's still enabled we need to reload firewalld rules
-        @firewalld_reload = true if masquerade_active?
-
-        return unless firewalld_reload?
-
-        cluster_context['reload-iptables'] = true
-        logger.info { 'Reloading firewalld ...' }
-        exec_script(
-          'configure-firewalld.sh',
-          ROLE: @host.role
+        apply_stack(
+          'firewalld',
+          image_repository: @config.image_repository,
+          version: PHAROS_FIREWALLD_VERSION,
+          services: {
+            master: pharos_master_service,
+            worker: pharos_worker_service
+          },
+          ipset: pharos_ipset
         )
-      end
-
-      def firewalld_reload?
-        !!@firewalld_reload
       end
 
       def disable_firewalld
         logger.info { 'Firewalld not enabled, disabling ...' }
-        exec_script('disable-firewalld.sh')
+        delete_stack('firewalld')
       end
 
       # @param file [String]
@@ -60,7 +55,7 @@ module Pharos
         addresses = @config.hosts.flat_map { |host|
           [host.address, host.private_address, host.private_interface_address].compact.uniq
         }
-        addresses += [@config.network.pod_network_cidr, @config.network.service_cidr]
+        addresses += [@config.network.pod_network_cidr, @config.network.service_cidr, '127.0.0.1']
         addresses += @config.network.firewalld.trusted_subnets if @config.network.firewalld&.trusted_subnets
 
         addresses
@@ -101,10 +96,6 @@ module Pharos
           name: 'pharos',
           entries: trusted_addresses
         )
-      end
-
-      def masquerade_active?
-        transport.exec("firewall-cmd --query-masquerade > /dev/null 2>&1").success?
       end
     end
   end

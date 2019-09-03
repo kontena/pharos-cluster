@@ -1,0 +1,74 @@
+<% %w(master worker).each do |role| %>
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: pharos-firewalld-<%= role %>
+  labels:
+    name: pharos-firewalld-<%= role %>
+  namespace: kube-system
+spec:
+  template:
+    metadata:
+      labels:
+        name: pharos-firewalld-<%= role %>
+    spec:
+      <%- if role == 'master' -%>
+      nodeSelector:
+        node-role.kubernetes.io/master: ''
+      <%- else -%>
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: DoesNotExist
+      <%- end -%>
+      containers:
+        - name: firewalld
+          image: '<%= image_repository %>/pharos-firewalld:<%= version %>'
+          env:
+           - name: FIREWALLD_ROLE
+             value: <%= role %>
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: firewalld
+              mountPath: /etc/firewalld/configmap
+            - name: lib-modules
+              mountPath: /lib/modules
+            - name: xtables-lock
+              mountPath: /run/xtables.lock
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - kill -s RTMIN+3 1
+      hostNetwork: true
+      restartPolicy: Always
+      securityContext:
+        seLinuxOptions: {}
+      priorityClassName: system-node-critical
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      volumes:
+        - name: firewalld
+          configMap:
+            name: pharos-firewalld
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+  updateStrategy:
+    type: RollingUpdate
+<% end %>

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pharos-firewalld
+  namespace: kube-system
+data:
+  pharos-master.xml: <%= services[:master].dump %>
+  pharos-worker.xml: <%= services[:worker].dump %>
+  pharos.xml: <%= ipset.dump %>
+

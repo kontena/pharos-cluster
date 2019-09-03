@@ -59,8 +59,6 @@ module Pharos
           master_ip: master_host.peer_address,
           version: CALICO_VERSION,
           nat_outgoing: @config.network.calico&.nat_outgoing,
-          firewalld_enabled: !!@config.network&.firewalld&.enabled,
-          reload_iptables: !!cluster_context['reload-iptables'],
           envs: @config.network.calico&.environment || {},
           metrics_enabled: metrics_enabled?,
           metrics_port: metrics_port,
