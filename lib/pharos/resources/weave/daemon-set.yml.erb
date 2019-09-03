@@ -12,21 +12,7 @@ spec:
     metadata:
       labels:
         name: weave-net
-      annotations:
-        kontena.io/firewalld: "<%= firewalld_enabled %>"
     spec:
-      <% if firewalld_enabled && reload_iptables %>
-      initContainers:
-        # This container performs firewalld reload
-        - name: reload-firewalld
-          image: <%= image_repository %>/alpine:3.9
-          command: ["/bin/sh", "-c"]
-          env:
-            - name: TIMESTAMP
-              value: "<%= Time.now.to_f %>"
-          args:
-          - pkill -HUP firewalld
-      <% end %>
       containers:
         - name: weave
           command:
@@ -61,12 +47,20 @@ spec:
                   name: weave-passwd
                   key: weave-passwd
           image: '<%= image_repository %>/weave-kube:<%= version %>'
-          livenessProbe:
+          readinessProbe:
             httpGet:
               host: 127.0.0.1
               path: /status
               port: 6784
             initialDelaySeconds: 30
+          livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - iptables-save | grep -E -e '^-A WEAVE.+MASQUERADE$'
+              initialDelaySeconds: 60
+              periodSeconds: 60
           resources:
             requests:
               cpu: 10m
