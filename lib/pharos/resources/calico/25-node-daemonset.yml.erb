@@ -26,7 +26,6 @@ spec:
         # priority scheduling and that its resources are reserved
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        kontena.io/firewalld: "<%= firewalld_enabled %>"
     spec:
       hostNetwork: true
       hostPID: true
@@ -45,17 +44,6 @@ spec:
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
       initContainers:
-        <% if firewalld_enabled && reload_iptables %>
-        # This container performs firewalld reload
-        - name: reload-firewalld
-          image: <%= image_repository %>/alpine:3.9
-          command: ["/bin/sh", "-c"]
-          env:
-            - name: TIMESTAMP
-              value: "<%= Time.now.to_f %>"
-          args:
-          - pkill -HUP firewalld
-        <% end %>
         # This container performs upgrade from host-local IPAM to calico-ipam.
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
