@@ -5,7 +5,7 @@ metadata:
   name: kontena-storage-fs
 provisioner: ceph.com/cephfs
 parameters:
-    monitors: <%= config.pool.replicated.size.times.map { |i| "rook-ceph-mon#{i}:6790" }.join(',') %>
+    monitors: "rook-ceph-mon:6790"
     adminId: admin
     adminSecretName: rook-ceph-mon
     adminSecretNamespace: "kontena-storage"
