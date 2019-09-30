@@ -173,7 +173,7 @@ module Pharos
         when 2
           hook.call(old_config, new_config)
         when 3
-          HashDiff.diff(old_config, new_config).each do |changeset|
+          Hashdiff.diff(old_config, new_config).each do |changeset|
             case changeset.first
             when '-'
               hook.call(changeset[1], changeset[2], nil)
