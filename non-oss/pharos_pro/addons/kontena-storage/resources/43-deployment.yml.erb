@@ -23,6 +23,11 @@ spec:
         - "/usr/local/bin/cephfs-provisioner"
         args:
         - "-id=cephfs-provisioner-1"
+      - name: ep-updater
+        image: <%= image_repository %>/cephfs-service-updater:latest
+        env:
+        - name: ENDPOINT_NAME
+          value: rook-ceph-mon
       serviceAccount: cephfs-provisioner
       resources:
         requests:
