@@ -5,6 +5,8 @@ Pharos.addon 'kontena-storage' do
   ceph_version = '13.2.4-20190109'
   license 'Kontena License'
 
+  CEPHFS_MONITORS = "rook-ceph-mon.kontena-storage.svc.cluster.local:6790"
+
   config_schema {
     required(:data_dir).filled(:str?)
     required(:storage).schema do
@@ -102,12 +104,14 @@ Pharos.addon 'kontena-storage' do
   install {
     set_defaults
     cluster = build_cluster_resource(ceph_version)
+    ensure_correct_cephfs_sc
     if upgrade_from?('0.8')
       upgrade_from_08(cluster, ceph_version)
     else
       apply_resources(
         cluster: cluster.to_h.deep_transform_keys(&:to_s),
-        rook_version: rook_version
+        rook_version: rook_version,
+        cephfs_monitors: CEPHFS_MONITORS
       )
     end
   }
@@ -137,7 +141,8 @@ Pharos.addon 'kontena-storage' do
   def upgrade_from_08(cluster, ceph_version)
     storage_stack = kube_stack(
       cluster: cluster.to_h.deep_transform_keys(&:to_s),
-      rook_version: rook_version
+      rook_version: rook_version,
+      cephfs_monitors: CEPHFS_MONITORS
     )
     logger.info "Applying upgrade ..."
     storage_stack.apply(kube_client, prune: false)
@@ -189,6 +194,18 @@ Pharos.addon 'kontena-storage' do
     operator.spec.template.spec.containers.first.image.include?("rook-ceph:v#{version}")
   rescue K8s::Error::NotFound
     false
+  end
+
+  # @return [Boolean]
+  def ensure_correct_cephfs_sc
+    storage_class_client = kube_client.api('storage.k8s.io/v1').resource('storageclasses')
+    storage_class = storage_class_client.get('kontena-storage-fs')
+    return false if storage_class.parameters.monitors == CEPHFS_MONITORS
+
+    storage_class_client.delete('kontena-storage-fs')
+    return true
+  rescue K8s::Error::NotFound
+    return false
   end
 
   # @param ceph_version [String]

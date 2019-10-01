@@ -5,7 +5,7 @@ metadata:
   name: kontena-storage-fs
 provisioner: ceph.com/cephfs
 parameters:
-    monitors: "rook-ceph-mon.kontena-storage.svc.cluster.local:6790"
+    monitors: "<%= cephfs_monitors %>"
     adminId: admin
     adminSecretName: rook-ceph-mon
     adminSecretNamespace: "kontena-storage"
