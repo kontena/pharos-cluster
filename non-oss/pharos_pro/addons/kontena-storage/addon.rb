@@ -203,9 +203,10 @@ Pharos.addon 'kontena-storage' do
     return false if storage_class.parameters.monitors == CEPHFS_MONITORS
 
     storage_class_client.delete('kontena-storage-fs')
-    return true
+
+    true
   rescue K8s::Error::NotFound
-    return false
+    false
   end
 
   # @param ceph_version [String]
