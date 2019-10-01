@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cephfs-provisioner
-        image: "<%= image_repository %>/cephfs-provisioner:v2.1.0-k8s1.11"
+        image: "<%= image_repository %>/cephfs-provisioner:git-0399b029"
         env:
         - name: PROVISIONER_NAME
           value: ceph.com/cephfs
@@ -23,6 +23,11 @@ spec:
         - "/usr/local/bin/cephfs-provisioner"
         args:
         - "-id=cephfs-provisioner-1"
+      - name: ep-updater
+        image: <%= image_repository %>/cephfs-service-updater:latest
+        env:
+        - name: ENDPOINT_NAME
+          value: rook-ceph-mon
       serviceAccount: cephfs-provisioner
       resources:
         requests:
