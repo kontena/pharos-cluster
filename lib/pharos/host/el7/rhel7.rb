@@ -8,6 +8,7 @@ module Pharos
       register_config 'rhel', '7.4'
       register_config 'rhel', '7.5'
       register_config 'rhel', '7.6'
+      register_config 'rhel', '7.7'
 
       DOCKER_VERSION = '1.13.1'
       CFSSL_VERSION = '1.2'
