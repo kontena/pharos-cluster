@@ -256,7 +256,7 @@ module Pharos
 
         def register_config(name, version)
           os_release_opts = { id: name }
-          os_release_opts[version.is_a?(String) ? :version : :version_regex] = version
+          os_release_opts[version.is_a?(String) ? :version : :version_matcher] = version
 
           supported_os_releases << Pharos::Configuration::OsRelease.new(os_release_opts)
           Pharos::Host::Configurer.configurers << self

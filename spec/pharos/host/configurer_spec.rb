@@ -90,6 +90,34 @@ describe Pharos::Host::Configurer do
     end
   end
 
+  context 'with proc version matcher' do
+    let(:test_config_class) do
+      Class.new(described_class) do
+        register_config 'test', -> (v) { v.start_with?('7') }
+      end
+    end
+
+    it 'uses the matcher' do
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.0')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7abcd')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: 'abcd')
+        )
+      ).to be_nil
+    end
+  end
+
   describe '#update_env_file' do
     let(:host) { instance_double(Pharos::Configuration::Host) }
     let(:ssh) { instance_double(Pharos::Transport::SSH) }
