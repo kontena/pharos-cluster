@@ -90,10 +90,10 @@ describe Pharos::Host::Configurer do
     end
   end
 
-  context 'with proc version matcher' do
+  context 'with lambda version matcher' do
     let(:test_config_class) do
       Class.new(described_class) do
-        register_config 'test', -> (v) { v.start_with?('7') }
+        register_config 'test', -> v { Gem::Requirement.new('~> 7.4').satisfied_by?(Gem::Version.new(v)) }
       end
     end
 
@@ -101,18 +101,46 @@ describe Pharos::Host::Configurer do
       expect(
         described_class.for_os_release(
           Pharos::Configuration::OsRelease.new(id: 'test', version: '7.0')
+        )
+      ).to be_nil
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.4')
         ).new(host)
       ).to be_a test_config_class
 
       expect(
         described_class.for_os_release(
-          Pharos::Configuration::OsRelease.new(id: 'test', version: '7abcd')
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.9.5')
+        ).new(host)
+      ).to be_a test_config_class
+    end
+  end
+
+  context 'with range version matcher' do
+    let(:test_config_class) do
+      Class.new(described_class) do
+        register_config 'test', ("10".."100")
+      end
+    end
+
+    it 'uses the matcher' do
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '9')
+        )
+      ).to be_nil
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '11')
         ).new(host)
       ).to be_a test_config_class
 
       expect(
         described_class.for_os_release(
-          Pharos::Configuration::OsRelease.new(id: 'test', version: 'abcd')
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '101')
         )
       ).to be_nil
     end
