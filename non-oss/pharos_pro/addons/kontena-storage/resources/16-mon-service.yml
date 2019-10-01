@@ -13,6 +13,3 @@ spec:
     port: 6790
     protocol: TCP
     targetPort: 6790
-  selector:
-    app: rook-ceph-mon
-    mon_cluster: kontena-storage
