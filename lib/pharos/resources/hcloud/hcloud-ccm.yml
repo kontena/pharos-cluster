@@ -48,7 +48,7 @@ spec:
       - key: "node-role.kubernetes.io/master"
         effect: NoSchedule
       containers:
-      - image: hetznercloud/hcloud-cloud-controller-manager:v1.2.0
+      - image: docker.io/hetznercloud/hcloud-cloud-controller-manager:v1.2.0
         name: hcloud-cloud-controller-manager
         command:
         - "/bin/hcloud-cloud-controller-manager"
