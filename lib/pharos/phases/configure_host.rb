@@ -71,6 +71,7 @@ module Pharos
         logger.info "Uncordoning node ..."
         sleep 1 until master_host.transport.exec("kubectl uncordon #{@host.hostname}").success?
         logger.info "Waiting for node to be ready ..."
+        sleep 10 until @host.transport.exec("sudo crictl pods --namespace kube-system --name kube-proxy --state Ready | grep kube-proxy")
         sleep 10 until master_host.transport.exec("kubectl get node #{@host.hostname} -o jsonpath=\"{range @.status.conditions[*]}{@.type}={@.status};{end}\" | grep 'Ready=True'").success?
       end
 
