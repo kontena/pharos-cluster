@@ -1,4 +1,3 @@
-# The cluster role for managing the Rook CRDs
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -6,6 +5,20 @@ metadata:
   labels:
     operator: rook
     storage-backend: ceph
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      rbac.ceph.rook.io/aggregate-to-rook-ceph-global: "true"
+rules: []
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: kontena-storage-global-rules
+  labels:
+    operator: rook
+    storage-backend: ceph
+    rbac.ceph.rook.io/aggregate-to-rook-ceph-global: "true"
 rules:
 - apiGroups:
   - ""
@@ -26,6 +39,7 @@ rules:
     # PVs and PVCs are managed by the Rook provisioner
   - persistentvolumes
   - persistentvolumeclaims
+  - endpoints
   verbs:
   - get
   - list
@@ -65,11 +79,3 @@ rules:
   - "*"
   verbs:
   - "*"
-- apiGroups:
-  - policy
-  resourceNames:
-  - 00-pharos-privileged
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 Pharos.addon 'kontena-storage' do
-  version '0.9.3+kontena.1'
-  ceph_version = '13.2.4-20190109'
+  version '1.0.6+kontena.1'
+  ceph_version = '14.2.1-20190430'
   license 'Kontena License'
 
   CEPHFS_MONITORS = "rook-ceph-mon.kontena-storage.svc.cluster.local:6790"
@@ -107,6 +107,8 @@ Pharos.addon 'kontena-storage' do
     ensure_correct_cephfs_sc
     if upgrade_from?('0.8')
       upgrade_from_08(cluster, ceph_version)
+    elsif upgrade_from?('0.9')
+      upgrade_from_09(cluster, ceph_version)
     else
       apply_resources(
         cluster: cluster.to_h.deep_transform_keys(&:to_s),
@@ -134,6 +136,25 @@ Pharos.addon 'kontena-storage' do
   # @return [String]
   def rook_version
     self.class.version.split('+').first
+  end
+
+  # @param cluster [K8s::Resource]
+  # @param ceph_version [String]
+  def upgrade_from_09(cluster, ceph_version)
+    storage_stack = kube_stack(
+      cluster: cluster.to_h.deep_transform_keys(&:to_s),
+      rook_version: rook_version,
+      cephfs_monitors: CEPHFS_MONITORS
+    )
+    logger.info "Applying upgrade ..."
+    storage_stack.apply(kube_client, prune: false)
+
+    logger.info "Waiting for new operator ..."
+    wait_mgr_upgrade(ceph_version)
+
+    logger.info "Cleaning up old configurations ..."
+    storage_stack.prune(kube_client, keep_resources: true)
+    remove_old_mgr(ceph_version)
   end
 
   # @param cluster [K8s::Resource]

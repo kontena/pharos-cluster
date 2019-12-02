@@ -44,6 +44,10 @@ spec:
                   maximum: 9
                   minimum: 1
                   type: integer
+                preferredCount:
+                  maximum: 9
+                  minimum: 0
+                  type: integer
               required:
               - count
             network:
@@ -76,3 +80,7 @@ spec:
       type: string
       description: Current State
       JSONPath: .status.state
+    - name: Health
+      type: string
+      description: Ceph Health
+      JSONPath: .status.ceph.health
