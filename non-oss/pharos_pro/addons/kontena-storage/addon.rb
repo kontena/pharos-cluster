@@ -5,7 +5,7 @@ Pharos.addon 'kontena-storage' do
   ceph_version = '14.2.1-20190430'
   license 'Kontena License'
 
-  CEPHFS_MONITORS = "rook-ceph-mon.kontena-storage.svc.cluster.local:6790"
+  CEPHFS_MONITORS = "rook-ceph-mon.kontena-storage.svc.cluster.local:6789"
 
   config_schema {
     required(:data_dir).filled(:str?)

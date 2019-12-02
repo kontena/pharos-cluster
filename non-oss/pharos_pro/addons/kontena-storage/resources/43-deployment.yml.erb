@@ -28,6 +28,8 @@ spec:
         env:
         - name: ENDPOINT_NAME
           value: rook-ceph-mon
+        - name: ENDPOINT_PORT
+          value: "6789"
       serviceAccount: cephfs-provisioner
       resources:
         requests:

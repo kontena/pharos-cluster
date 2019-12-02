@@ -10,6 +10,6 @@ spec:
   clusterIP: None
   ports:
   - name: rook-ceph-mon
-    port: 6790
+    port: 6789
     protocol: TCP
-    targetPort: 6790
+    targetPort: 6789
