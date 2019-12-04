@@ -2,9 +2,19 @@
 
 module Pharos
   class VersionCommand < Pharos::Command
+    option %w(-a --all), :flag, "include ruby and rubygems versions"
+
     def execute
       puts "Kontena Pharos:"
       puts "  - #{File.basename($PROGRAM_NAME)} version #{Pharos.version}"
+
+      if all?
+        puts "Ruby:"
+        puts "  - #{RUBY_DESCRIPTION} (Ruby, GPLv2, 2-clause BSD)"
+        puts "Rubygems:"
+        Gem.loaded_specs.map { |name, spec| "  - #{name} #{spec.version} (#{spec.licenses.join(', ')})" }.sort.each { |g| puts g }
+      end
+
       ClusterManager.new(Pharos::Config.new({})).load
 
       phases.each do |os, phases|
