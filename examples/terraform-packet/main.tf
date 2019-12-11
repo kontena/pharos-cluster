@@ -38,10 +38,6 @@ variable "container_runtime" {
   default = "docker"
 }
 
-locals {
-  cluster_name = terraform.workspace
-}
-
 provider "packet" {
   auth_token = var.auth_token
 }
