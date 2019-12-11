@@ -4,8 +4,8 @@
 ## Prerequisities
 
 - Kontena Pharos [toolchain](https://www.pharos.sh/docs/install.html) installed locally
-- [Terraform](https://www.terraform.io/) installed locally
-- Packet.net credentials
+- [Terraform](https://www.terraform.io/) 0.12 installed locally
+- [Packet.com](https://packet.com) credentials
 
 ## Clone this repository
 
@@ -27,10 +27,10 @@ Edit `project_id` and `auth_token`. Optionally you can also configure number of 
 ## Create Cluster
 
 ```
-$ pharos tf apply
+$ pharos tf apply -y --trust-hosts
 ```
 
-This command will first execute Terraform to create the infrastructure, collects host information and passes this information back to `pharos`. Finally it will configure
+This command will first execute Terraform to create the infrastructure, collects host information and passes this information back to `pharos`. Finally it will configure Kontena Pharos cluster with ingress-nginx and kontena-storage addons enabled.
 
 ## Teardown Cluster
 
