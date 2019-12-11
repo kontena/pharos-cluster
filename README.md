@@ -9,7 +9,7 @@ Pharos Cluster is a [Kontena Pharos](https://pharos.sh) (Kubernetes distribution
 ## Installation
 
 ### chpharos
-The easiest way to install is to use the Kontena Pharos version switcher [chpharos](https://github.com/kontena/pharos-cluster).
+The easiest way to install is to use the Kontena Pharos version switcher [chpharos](https://github.com/kontena/chpharos).
 
 ```
 $ chpharos install latest
