@@ -105,7 +105,7 @@ output "pharos_cluster" {
     addons = {
       ingress-nginx = {
         enabled = true
-        kind: "Deployment"
+        kind: var.bgp_address_pool != "" ? "Deployment" : "DaemonSet"
       }
       kontena-network-lb = {
         enabled = var.bgp_address_pool != "" ? true : false
