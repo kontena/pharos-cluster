@@ -38,6 +38,10 @@ variable "container_runtime" {
   default = "docker"
 }
 
+variable "bgp_address_pool" {
+  default = ""
+}
+
 provider "packet" {
   auth_token = var.auth_token
 }
@@ -77,6 +81,12 @@ resource "packet_device" "pharos_worker" {
   tags             = ["worker"]
 }
 
+resource "packet_bgp_session" "pharos_bgb_session" {
+  count            = var.worker_count
+  device_id        = packet_device.pharos_worker[count.index].id
+  address_family   = "ipv4"
+}
+
 output "pharos_cluster" {
   value = {
     cloud = {
@@ -92,5 +102,51 @@ output "pharos_cluster" {
         container_runtime = "${var.container_runtime}"
       }
     ]
+    addons = {
+      ingress-nginx = {
+        enabled = true
+        kind: "Deployment"
+      }
+      kontena-network-lb = {
+        enabled = var.bgp_address_pool != "" ? true : false
+        address_pools = [
+          {
+            name = "default"
+            protocol = "bgp"
+            addresses = [var.bgp_address_pool]
+          }
+        ]
+        peers = [
+          for host in packet_device.pharos_worker : {
+            peer_address = host.network[2].gateway
+            peer_asn = 65530
+            my_asn = 65000
+            node_selectors = [
+              {
+                match-expression = [
+                  {
+                    key = "kubernetes.io/hostname"
+                    operator = "In"
+                    values = [host.hostname]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+      kontena-storage = {
+        enabled = true
+        data_dir = "/var/lib/kontena-storage"
+        storage = {
+          use_all_nodes = true
+          directories = [
+            {
+              path = "/mnt/data1"
+            }
+          ]
+        }
+      }
+    }
   }
 }

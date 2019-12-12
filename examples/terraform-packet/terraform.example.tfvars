@@ -15,3 +15,5 @@ worker_plan = "baremetal_0"
 worker_count = 3
 
 host_os = "ubuntu_18_04"
+
+bgp_address_pool = ""
