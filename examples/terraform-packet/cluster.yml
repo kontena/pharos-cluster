@@ -1,25 +1,4 @@
-cloud:
-  provider: external
 network:
   provider: calico
   pod_network_cidr: 172.31.0.0/16
   service_cidr: 172.32.0.0/16
-addons:
-  packet-ccm:
-    enabled: true
-  ingress-nginx:
-    enabled: true
-  helm:
-    enabled: true
-  kontena-lens:
-    enabled: true
-    name: packet-pharos
-    persistence:
-      enabled: true
-  kontena-storage:
-    enabled: true
-    data_dir: /var/lib/kontena-storage
-    storage:
-      use_all_nodes: true
-      directories:
-        - path: /mnt/data1
