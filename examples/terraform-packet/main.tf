@@ -82,7 +82,7 @@ resource "packet_device" "pharos_worker" {
 }
 
 resource "packet_bgp_session" "pharos_bgb_session" {
-  count            = var.worker_count
+  count            = var.bgp_address_pool != "" ? var.worker_count : 0
   device_id        = packet_device.pharos_worker[count.index].id
   address_family   = "ipv4"
 }
