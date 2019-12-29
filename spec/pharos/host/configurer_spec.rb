@@ -56,6 +56,96 @@ describe Pharos::Host::Configurer do
     end
   end
 
+  context 'with regex version matcher' do
+    let(:test_config_class) do
+      Class.new(described_class) do
+        register_config 'test', /^7\.[4-9]|\d{2,}/
+      end
+    end
+
+    it 'uses the matcher' do
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.3')
+        )
+      ).to be_nil
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.4')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.12')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '8.0')
+        )
+      ).to be_nil
+    end
+  end
+
+  context 'with lambda version matcher' do
+    let(:test_config_class) do
+      Class.new(described_class) do
+        register_config 'test', -> v { Gem::Requirement.new('~> 7.4').satisfied_by?(Gem::Version.new(v)) }
+      end
+    end
+
+    it 'uses the matcher' do
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.0')
+        )
+      ).to be_nil
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.4')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '7.9.5')
+        ).new(host)
+      ).to be_a test_config_class
+    end
+  end
+
+  context 'with range version matcher' do
+    let(:test_config_class) do
+      Class.new(described_class) do
+        register_config 'test', ("10".."100")
+      end
+    end
+
+    it 'uses the matcher' do
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '9')
+        )
+      ).to be_nil
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '11')
+        ).new(host)
+      ).to be_a test_config_class
+
+      expect(
+        described_class.for_os_release(
+          Pharos::Configuration::OsRelease.new(id: 'test', version: '101')
+        )
+      ).to be_nil
+    end
+  end
+
   describe '#update_env_file' do
     let(:host) { instance_double(Pharos::Configuration::Host) }
     let(:ssh) { instance_double(Pharos::Transport::SSH) }

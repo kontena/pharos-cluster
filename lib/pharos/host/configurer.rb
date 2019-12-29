@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'set'
+
 module Pharos
   module Host
     class Configurer
@@ -13,7 +15,7 @@ module Pharos
 
       # @return [Array]
       def self.configurers
-        @configurers ||= []
+        @configurers ||= Set.new
       end
 
       # @param [Pharos::Configuration::OsRelease]
@@ -249,11 +251,14 @@ module Pharos
         # @param [Pharos::Configuration::OsRelease]
         # @return [Boolean]
         def supported_os?(os_release)
-          supported_os_releases.any? { |release| release.id == os_release.id && release.version == os_release.version }
+          supported_os_releases.any? { |release| release == os_release }
         end
 
         def register_config(name, version)
-          supported_os_releases << Pharos::Configuration::OsRelease.new(id: name, version: version)
+          os_release_opts = { id: name }
+          os_release_opts[version.is_a?(String) ? :version : :version_matcher] = version
+
+          supported_os_releases << Pharos::Configuration::OsRelease.new(os_release_opts)
           Pharos::Host::Configurer.configurers << self
           self
         end
