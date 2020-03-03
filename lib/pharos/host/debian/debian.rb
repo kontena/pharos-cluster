@@ -16,7 +16,7 @@ module Pharos
       def configure_cfssl
         exec_script(
           'configure-cfssl.sh',
-          ARCH: host.cpu_arch.name
+          IMAGE: "docker.io/jakolehm/cfssl:0.1.1"
         )
       end
 

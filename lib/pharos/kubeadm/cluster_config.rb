@@ -30,7 +30,6 @@ module Pharos
           'kind' => 'ClusterConfiguration',
           'kubernetesVersion' => Pharos::KUBE_VERSION,
           'clusterName' => @config.name,
-          'imageRepository' => @config.image_repository,
           'networking' => {
             'serviceSubnet' => @config.network.service_cidr,
             'podSubnet' => @config.network.pod_network_cidr

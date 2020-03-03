@@ -2,7 +2,10 @@
 
 set -e
 
-mkdir -p /etc/pharos/pki/etcd
+# shellcheck disable=SC1091
+. /usr/local/share/pharos/util.sh
+
+mkdir -p /etc/pharos/pki
 if [ ! -e /etc/pharos/pki/ca-csr.json ]; then
     cat <<EOF >/etc/pharos/pki/ca-csr.json
 {
@@ -28,6 +31,6 @@ cd /etc/pharos/pki
 
 if [ ! -e ca.pem ]; then
     echo "Initializing Certificate Authority ..."
-    cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
+    /opt/pharos/bin/cfssl gencert -initca ca-csr.json | /opt/pharos/bin/cfssljson -bare ca -
 fi
 

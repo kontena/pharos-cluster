@@ -18,7 +18,7 @@ metadata:
 spec:
   priorityClassName: system-node-critical
   containers:
-    - image: ${IMAGE_REPO}/pharos-kubelet-proxy:${VERSION}
+    - image: ${IMAGE_REPO}/pharos-kubelet-proxy-amd64:${VERSION}
       name: proxy
       env:
       - name: KUBE_MASTERS

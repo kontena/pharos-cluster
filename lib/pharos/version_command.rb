@@ -14,10 +14,6 @@ module Pharos
           puts "  - #{c.name} #{c.version} (#{c.license})"
         end
       end
-      puts "Add-ons:"
-      addons.each do |name, c|
-        puts "  - #{name} #{c.version} (#{c.license})"
-      end
     end
 
     # @return [Array<Pharos::Phases::Component>]
@@ -28,11 +24,6 @@ module Pharos
           "#{c.os_release.id} #{c.os_release.version}"
         end
       }
-    end
-
-    # @return [Array<Pharos::Addon>]
-    def addons
-      Pharos::AddonManager.addons.sort_by { |name, _klass| name }
     end
   end
 end

@@ -23,20 +23,5 @@ describe Pharos::Kubeadm::InitConfig do
       config = subject.generate
       expect(config.dig('localAPIEndpoint', 'advertiseAddress')).to eq('private')
     end
-
-    context 'with cri-o configuration' do
-      let(:master) { Pharos::Configuration::Host.new(address: 'test', container_runtime: 'cri-o') }
-      let(:config) { Pharos::Config.new(
-        hosts: (1..config_hosts_count).map { |i| Pharos::Configuration::Host.new() },
-        network: {},
-        addons: {},
-        etcd: {}
-      ) }
-
-      it 'comes with proper etcd endpoint config' do
-        config = subject.generate
-        expect(config.dig('nodeRegistration', 'criSocket')).to eq('/var/run/crio/crio.sock')
-      end
-    end
   end
 end

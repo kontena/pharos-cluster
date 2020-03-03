@@ -72,7 +72,7 @@ module Pharos
 
       # @return [K8s::Resource]
       def kube_resource_client
-        kube_client.api('extensions/v1beta1').resource('deployments', namespace: 'kube-system')
+        kube_client.api('apps/v1').resource('deployments', namespace: 'kube-system')
       end
 
       # @param replicas [Integer]
@@ -123,7 +123,7 @@ module Pharos
         apply_stack(
           DNS_CACHE_STACK_NAME,
           version: Pharos::DNS_NODE_CACHE_VERSION,
-          image_repository: @config.image_repository,
+          image_repository: "k8s.gcr.io",
           nodelocal_dns: Pharos::Configuration::Network::CLUSTER_DNS,
           forward_target: dns_forward_target
         )

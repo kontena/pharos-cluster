@@ -31,18 +31,6 @@ describe Pharos::Host::UbuntuXenial do
       end
     end
 
-    context 'cri-o' do
-      it 'configures cri-o' do
-        allow(subject).to receive(:can_pull?).and_return(true)
-        allow(subject).to receive(:config).and_return(cluster_config)
-        allow(subject).to receive(:insecure_registries)
-        allow(subject).to receive(:docker?).and_return(false)
-        allow(subject).to receive(:crio?).and_return(true)
-        expect(subject).to receive(:exec_script).with('configure-cri-o.sh', anything)
-        subject.configure_container_runtime
-      end
-    end
-
     context 'unknown' do
       it 'raises error' do
         allow(host).to receive(:container_runtime).and_return('moby')

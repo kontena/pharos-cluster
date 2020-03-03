@@ -77,14 +77,10 @@ module Pharos
           return
         end
 
-        if docker?
-          cleanup_docker! do
-            configure_container_runtime
-          end
-        elsif crio?
-          cleanup_crio! do
-            configure_container_runtime
-          end
+        return unless docker?
+
+        cleanup_docker! do
+          configure_container_runtime
         end
       end
 
@@ -143,10 +139,6 @@ module Pharos
         )
       end
 
-      def crio?
-        host.crio?
-      end
-
       def docker?
         host.docker?
       end
@@ -160,12 +152,8 @@ module Pharos
       #
       # @return [String]
       def insecure_registries
-        if crio?
-          config.container_runtime.insecure_registries.map(&:inspect).join(",").inspect
-        else
-          # docker & custom docker
-          JSON.dump(config.container_runtime.insecure_registries).inspect
-        end
+        # docker & custom docker
+        JSON.dump(config.container_runtime.insecure_registries).inspect
       end
 
       # @return [Pharos::Transport::TransportFile]
@@ -196,32 +184,9 @@ module Pharos
         host_env_file.write(new_content.join("\n") + "\n")
       end
 
-      # @return [String, NilClass]
-      def current_crio_cgroup_manager
-        file = transport.file('/etc/crio/crio.conf')
-        return unless file.exist?
-
-        match = file.read.match(/^cgroup_manager = "(.+)"/)
-        return unless match
-
-        match[1]
-      end
-
       # @return [Boolean]
       def can_pull?
-        return true if current_crio_cgroup_manager.nil?
-
         transport.exec("sudo crictl pull #{config.image_repository}/pause:3.1").success?
-      end
-
-      def cleanup_crio!
-        transport.exec!("sudo systemctl stop kubelet")
-        transport.exec!("sudo crictl stopp $(sudo crictl pods -q)")
-        transport.exec!("sudo crictl rmp $(sudo crictl pods -q)")
-        transport.exec!("sudo crictl rmi $(sudo crictl images -q)")
-        yield
-      ensure
-        transport.exec!("sudo systemctl start kubelet")
       end
 
       def cleanup_docker!

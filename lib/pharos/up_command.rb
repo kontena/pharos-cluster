@@ -37,15 +37,10 @@ module Pharos
 
       manager = cluster_manager('force' => force?)
       show_component_versions(config)
-      show_addon_versions(manager)
-      manager.apply_addons_cluster_config_modifications
       prompt_continue(config, manager.context)
 
       puts "==> Starting to craft cluster ...".green
       manager.apply_phases
-
-      puts "==> Configuring addons ...".green
-      manager.apply_addons
 
       manager.save_config
 
@@ -73,13 +68,6 @@ module Pharos
           target = ""
         end
         puts "    #{c.name}: #{c.version}#{target}"
-      end
-    end
-
-    def show_addon_versions(manager)
-      puts "==> Using following addons:".green
-      manager.addon_manager.with_enabled_addons do |addon|
-        puts "    #{addon.addon_name}: #{addon.version}"
       end
     end
 

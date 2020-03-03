@@ -29,13 +29,13 @@ bundle exec bin/pharos ssh --role master -c cluster.yml -- kubectl get nodes
 bundle exec bin/pharos kubeconfig -c cluster.yml > kubeconfig.e2e
 
 # Verify that workloads start running
-curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kubectl
+curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.17.3/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 sudo mv kubectl /usr/local/bin/
 export KUBECONFIG=./kubeconfig.e2e
 
-echo "Checking that ingress-nginx is running:"
-(retry 30 pods_running "app=ingress-nginx" "ingress-nginx") || exit $?
+echo "Checking that metrics-server is running:"
+(retry 30 pods_running "k8s-app=metrics-server" "kube-system") || exit $?
 
 # Test re-up
 bundle exec bin/pharos up -y -c cluster.yml

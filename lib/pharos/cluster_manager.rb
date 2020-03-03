@@ -15,13 +15,6 @@ module Pharos
       ]
     end
 
-    def self.addon_dirs
-      @addon_dirs ||= [
-        File.join(__dir__, '..', '..', 'addons'),
-        File.join(Dir.pwd, 'pharos-addons')
-      ]
-    end
-
     # @param config [Pharos::Config]
     def initialize(config)
       @config = config
@@ -30,7 +23,7 @@ module Pharos
       }
     end
 
-    # @return [Pharos::AddonManager]
+    # @return [Pharos::PhaseManager]
     def phase_manager
       @phase_manager ||= Pharos::PhaseManager.new(
         config: @config,
@@ -38,20 +31,9 @@ module Pharos
       )
     end
 
-    # @return [Pharos::AddonManager]
-    def addon_manager
-      @addon_manager ||= Pharos::AddonManager.new(@config, @context)
-    end
-
-    # load phases/addons
+    # load phases
     def load
       Pharos::PhaseManager.load_phases(*self.class.phase_dirs)
-      addon_dirs = self.class.addon_dirs + @config.addon_paths.map { |d| File.join(Dir.pwd, d) }
-
-      addon_dirs.keep_if { |dir| File.exist?(dir) }
-      addon_dirs = addon_dirs.map { |dir| Pathname.new(dir).realpath.to_s }.uniq
-
-      Pharos::AddonManager.load_addons(*addon_dirs)
       Pharos::Host::Configurer.load_configurers
     end
 
@@ -64,8 +46,6 @@ module Pharos
     end
 
     def validate
-      apply_phase(Phases::UpgradeCheck, %w(localhost))
-      addon_manager.validate
       gather_facts
       apply_phase(Phases::ValidateConfigurationChanges, %w(localhost)) if @context['previous-config']
       apply_phase(Phases::ValidateHost, config.hosts, parallel: true)
@@ -110,6 +90,7 @@ module Pharos
       apply_phase(Phases::ConfigureCalico, master_only) if config.network.provider == 'calico'
       apply_phase(Phases::ConfigureCustomNetwork, master_only) if config.network.provider == 'custom'
       apply_phase(Phases::ConfigureKubeletCsrApprover, master_only)
+      apply_phase(Phases::ConfigureHelmController, master_only)
       apply_phase(Phases::ConfigureBootstrap, master_only) # using `kubeadm token`, not the kube API
 
       apply_phase(Phases::JoinNode, config.worker_hosts, parallel: true)
@@ -117,7 +98,6 @@ module Pharos
 
       # configure services that need workers
       apply_phase(Phases::ConfigureMetrics, master_only)
-      apply_phase(Phases::ConfigureTelemetry, master_only)
     end
 
     # @param hosts [Array<Pharos::Configuration::Host>]
@@ -127,24 +107,7 @@ module Pharos
         apply_phase(Phases::Drain, hosts, parallel: false)
         apply_phase(Phases::DeleteHost, hosts, parallel: false)
       end
-      addon_manager.each do |addon|
-        next unless addon.enabled?
-
-        puts "==> Resetting addon #{addon.name}".cyan
-        hosts.each do |host|
-          addon.apply_reset_host(host)
-        end
-      end
       apply_phase(Phases::ResetHost, hosts, parallel: true)
-    end
-
-    def apply_addons_cluster_config_modifications
-      addon_manager.each do |addon|
-        addon.apply_modify_cluster_config if addon.enabled?
-      rescue Pharos::Error => e
-        error_msg = "#{addon.name} => " + e.message
-        raise Pharos::AddonManager::InvalidConfig, error_msg
-      end
     end
 
     # @param phase_class [Pharos::Phase]
@@ -155,15 +118,6 @@ module Pharos
       puts "==> #{phase_class.title} @ #{hosts.join(' ')}".cyan
 
       phase_manager.apply(phase_class, hosts, **options)
-    end
-
-    def apply_addons
-      addon_manager.each do |addon|
-        puts "==> #{addon.enabled? ? 'Enabling' : 'Disabling'} addon #{addon.name}".cyan
-
-        addon.apply
-        post_install_messages[addon.name] = addon.post_install_message if addon.post_install_message
-      end
     end
 
     def post_install_messages

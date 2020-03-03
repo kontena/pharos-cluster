@@ -2,5 +2,5 @@
 
 set -e
 
-export DEBIAN_FRONTEND=noninteractive
-apt-get install -y golang-cfssl
+ctr -n pharos image pull "${IMAGE}"
+ctr -n pharos install --path /opt/pharos --replace "${IMAGE}"

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-controller
+  namespace: kube-system
+  labels:
+    app: helm-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helm-controller
+  template:
+    metadata:
+      labels:
+        app: helm-controller
+    spec:
+      serviceAccountName: helm-controller
+      containers:
+        - name: helm-controller
+          image: docker.io/rancher/helm-controller:v0.4.1
+          command: ["helm-controller"]
+          args: ["--namespace", "kube-system"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 24Mi

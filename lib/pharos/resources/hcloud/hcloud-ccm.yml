@@ -18,12 +18,15 @@ subjects:
   name: cloud-controller-manager
   namespace: kube-system
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hcloud-cloud-controller-manager
   namespace: kube-system
 spec:
+  selector:
+    matchLabels:
+      app: hcloud-cloud-controller-manager
   replicas: 1
   revisionHistoryLimit: 2
   template:
@@ -48,7 +51,7 @@ spec:
       - key: "node-role.kubernetes.io/master"
         effect: NoSchedule
       containers:
-      - image: docker.io/hetznercloud/hcloud-cloud-controller-manager:v1.2.0
+      - image: docker.io/hetznercloud/hcloud-cloud-controller-manager:v1.5.1
         name: hcloud-cloud-controller-manager
         command:
         - "/bin/hcloud-cloud-controller-manager"

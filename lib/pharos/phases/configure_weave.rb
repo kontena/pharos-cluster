@@ -5,7 +5,7 @@ module Pharos
     class ConfigureWeave < Pharos::Phase
       title "Configure Weave network"
 
-      WEAVE_VERSION = '2.5.2'
+      WEAVE_VERSION = '2.6.0'
       WEAVE_FLYING_SHUTTLE_VERSION = '0.3.1'
 
       register_component(
@@ -56,7 +56,7 @@ module Pharos
         logger.info { "Configuring overlay network ..." }
         apply_stack(
           'weave',
-          image_repository: @config.image_repository,
+          image_repository: "docker.io/weaveworks",
           extra_args: extra_args,
           ipalloc_range: @config.network.pod_network_cidr,
           arch: @host.cpu_arch,

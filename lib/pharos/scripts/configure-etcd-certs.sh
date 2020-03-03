@@ -2,6 +2,9 @@
 
 set -e
 
+# shellcheck disable=SC1091
+. /usr/local/share/pharos/util.sh
+
 mkdir -p /etc/pharos/pki/etcd
 
 if [ ! -e /etc/pharos/pki/ca-config.json ]; then
@@ -69,18 +72,19 @@ fi
 
 cd /etc/pharos/pki/etcd
 
-if [ ! -e server.pem ]; then
+if [ ! -e ./server.pem ]; then
     echo "Generating etcd server certificates ..."
-    cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server ../config.json | cfssljson -bare server
+    /opt/pharos/bin/cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server ../config.json | /opt/pharos/bin/cfssljson -bare server
 fi
 
-if [ ! -e peer.pem ]; then
+echo "Checking peer certificate..."
+if [ ! -e ./peer.pem ]; then
     echo "Generating etcd peer certificates ..."
-    cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer ../config.json | cfssljson -bare peer
+    /opt/pharos/bin/cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer ../config.json | /opt/pharos/bin/cfssljson -bare peer
 fi
 
-if [ ! -e client.pem ]; then
+if [ ! -e ./client.pem ]; then
     echo "Generating etcd client certificates ..."
-    cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=client ../config.json | cfssljson -bare client
+    /opt/pharos/bin/cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=client ../config.json | /opt/pharos/bin/cfssljson -bare client
 fi
 
