@@ -58,6 +58,7 @@ module Pharos
     attribute :admission_plugins, Types::Coercible::Array.of(Pharos::Configuration::AdmissionPlugin)
     attribute :container_runtime, Pharos::Configuration::ContainerRuntime
     attribute :name, Pharos::Types::String
+    attribute :manifests, Types::Coercible::Array.of(Pharos::Types::String)
 
     attr_accessor :data
 

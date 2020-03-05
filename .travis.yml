@@ -13,7 +13,7 @@ stages:
 jobs:
   include:
     - stage: e2e
-      name: "e2e: docker with weave"
+      name: "e2e: xenial docker with weave"
       script: ./e2e/travis.sh
       rvm: 2.5.4
       dist: xenial
@@ -21,7 +21,7 @@ jobs:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=weave
     - stage: e2e
-      name: "e2e: docker with calico"
+      name: "e2e: xenial docker with calico"
       script: ./e2e/travis.sh
       rvm: 2.5.4
       dist: xenial
@@ -29,7 +29,7 @@ jobs:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=calico
     - stage: e2e
-      name: "e2e: docker with weave"
+      name: "e2e: bionic docker with weave"
       script: ./e2e/travis.sh
       rvm: 2.5.4
       dist: bionic
@@ -37,7 +37,7 @@ jobs:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=weave
     - stage: e2e
-      name: "e2e: docker with calico"
+      name: "e2e: bionic bdocker with calico"
       script: ./e2e/travis.sh
       rvm: 2.5.4
       dist: bionic

@@ -98,6 +98,8 @@ module Pharos
 
       # configure services that need workers
       apply_phase(Phases::ConfigureMetrics, master_only)
+
+      apply_phase(Phases::ApplyManifests, master_only)
     end
 
     # @param hosts [Array<Pharos::Configuration::Host>]
