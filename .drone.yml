@@ -1,0 +1,55 @@
+kind: pipeline
+name: test
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: test-ruby
+    image: ruby:2.5
+    commands:
+      - gem install bundler -Nf
+      - bundle install --path bundler
+      - bundle exec rubocop --fail-level A -S --format c --parallel
+      - bundle exec rspec spec/
+  - name: test-shellcheck
+    image: koalaman/shellcheck-alpine:latest
+    commands:
+      - apk update && apk add bash
+      - bash -c 'shopt -s globstar; shellcheck **/*.sh'
+---
+kind: pipeline
+name: github-release
+depends_on:
+- test
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: create_gh_release
+    image: ubuntu:xenial
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - ./build/drone/create_release.sh
+    when:
+      event: tag
+---
+kind: pipeline
+name: release-oss-binary
+depends_on:
+- github-release
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: build_ubuntu
+    image: ubuntu:xenial
+    environment:
+      CPPFLAGS: "-P"
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - ./build/drone/ubuntu.sh
+    when:
+      event: tag

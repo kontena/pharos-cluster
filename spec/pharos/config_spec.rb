@@ -378,23 +378,6 @@ describe Pharos::Config do
     end
   end
 
-  describe 'addons' do
-    it 'returns empty addons by default' do
-      expect(subject.addons).to eq({})
-    end
-
-    context 'with an empty hash' do
-      let(:data) { {
-        'hosts' => hosts,
-        'addons' => {},
-      } }
-
-      it 'returns empty addons' do
-        expect(subject.addons).to eq({})
-      end
-    end
-  end
-
   describe 'admission_plugins' do
     it 'returns empty plugins by default' do
       expect(subject.admission_plugins).to be_nil

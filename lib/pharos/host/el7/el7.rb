@@ -3,7 +3,7 @@
 module Pharos
   module Host
     class El7 < Configurer
-      DOCKER_VERSION = '1.13.1'
+      DOCKER_VERSION = '19.03.6'
       CFSSL_VERSION = '1.2'
 
       # @param path [Array]
@@ -25,18 +25,31 @@ module Pharos
       end
 
       def default_repositories
-        [Pharos::Configuration::Repository.new(
-          name: "kontena-pharos.repo",
-          contents: <<~CONTENTS
-            [kontena-pharos]
-            name=kontena-pharos
-            baseurl=https://dl.bintray.com/kontena/pharos-rpm
-            gpgcheck=0
-            repo_gpgcheck=1
-            enabled=1
-            gpgkey=https://bintray-pk.pharos.sh?username=bintray
-          CONTENTS
-        )]
+        [
+          Pharos::Configuration::Repository.new(
+            name: "kontena-pharos.repo",
+            contents: <<~CONTENTS
+              [kubernetes]
+              name=Kubernetes
+              baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+              enabled=1
+              gpgcheck=1
+              repo_gpgcheck=1
+              gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+            CONTENTS
+          ),
+          Pharos::Configuration::Repository.new(
+            name: "docker-ce.repo",
+            contents: <<~CONTENTS
+              [docker-ce]
+              name=Docker CE Stable
+              baseurl=https://download.docker.com/linux/centos/7/$basearch/stable
+              enabled=1
+              gpgcheck=1
+              gpgkey=https://download.docker.com/linux/centos/gpg
+            CONTENTS
+          )
+        ]
       end
 
       def configure_netfilter
@@ -46,13 +59,13 @@ module Pharos
       def configure_cfssl
         exec_script(
           'configure-cfssl.sh',
-          ARCH: host.cpu_arch.name
+          IMAGE: "docker.io/jakolehm/cfssl:0.1.1"
         )
       end
 
       # @return [Array<String>]
       def kubelet_args
-        ['--cgroup-driver=systemd']
+        ['--cgroup-driver=cgroupfs']
       end
 
       # @return [String] repository name to use with --enable-repo yum option
@@ -73,15 +86,6 @@ module Pharos
             'configure-docker.sh',
             INSECURE_REGISTRIES: insecure_registries
           )
-        elsif crio?
-          exec_script(
-            'configure-cri-o.sh',
-            CRIO_VERSION: Pharos::CRIO_VERSION,
-            CRIO_STREAM_ADDRESS: '127.0.0.1',
-            CPU_ARCH: host.cpu_arch.name,
-            IMAGE_REPO: config.image_repository,
-            INSECURE_REGISTRIES: insecure_registries
-          )
         else
           raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
         end
@@ -91,12 +95,8 @@ module Pharos
         return true if custom_docker?
 
         if docker?
-          return true if transport.exec("rpm -qi docker").error? # docker not installed
-          return true if transport.exec("rpm -qi docker-#{DOCKER_VERSION}").success?
-        elsif crio?
-          bin_exist = transport.file('/usr/local/bin/crio').exist?
-          return true if transport.exec("rpm -qi cri-o").error? && !bin_exist # cri-o not installed
-          return true if transport.exec("rpm -qi cri-o-#{Pharos::CRIO_VERSION}").success?
+          return true if transport.exec("rpm -qi docker-ce").error? # docker not installed
+          return true if transport.exec("rpm -qi docker-ce-#{DOCKER_VERSION}").success?
         end
 
         false

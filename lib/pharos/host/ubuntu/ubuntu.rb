@@ -3,6 +3,9 @@
 module Pharos
   module Host
     class Ubuntu < Configurer
+      DOCKER_VERSION = '19.03'
+      CFSSL_VERSION = '1.4'
+
       def install_essentials
         exec_script('configure-essentials.sh')
       end
@@ -14,7 +17,7 @@ module Pharos
       def configure_cfssl
         exec_script(
           'configure-cfssl.sh',
-          ARCH: host.cpu_arch.name
+          IMAGE: "docker.io/jakolehm/cfssl:0.1.1"
         )
       end
 
@@ -56,21 +59,9 @@ module Pharos
         return true if custom_docker?
 
         if docker?
-          result = transport.exec("dpkg-query --show docker.io")
+          result = transport.exec("dpkg-query --show docker-ce")
           return true if result.error? # docker not installed
-          return true if result.stdout.split("\t")[1].to_s.start_with?(docker_version)
-        elsif crio?
-          result = transport.exec("dpkg-query --show cri-o")
-          bin_path = '/usr/local/bin/crio'
-          bin_exist = transport.file(bin_path).exist?
-          if result.error? && bin_exist
-            # upgrade from 1.3.x
-            result = transport.exec("#{bin_path} -v")
-            return true if result.stdout.match?(/crio version #{Pharos::CRIO_VERSION}/)
-          else
-            return true if result.error? # cri-o not installed
-            return true if result.stdout.split("\t")[1].to_s.start_with?(Pharos::CRIO_VERSION)
-          end
+          return true if result.stdout.split("\t")[1].to_s.start_with?("5:" + docker_version)
         end
 
         false

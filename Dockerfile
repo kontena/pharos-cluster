@@ -1,11 +1,11 @@
-FROM ruby:2.4.3
+FROM ruby:2.5
 
 WORKDIR /app
 
 COPY Gemfile Gemfile.lock *.gemspec ./
 COPY lib/pharos/version.rb ./lib/pharos/
-RUN bundle install
+RUN bundle install --without test --without development
 
 COPY . .
 
-CMD ["./bin/pharos-cluster"]
+ENTRYPOINT ["./bin/pharos-cluster"]

@@ -5,7 +5,7 @@ module Pharos
     class ConfigureCalico < Pharos::Phase
       title "Configure Calico network"
 
-      CALICO_VERSION = '3.6.2'
+      CALICO_VERSION = '3.6.5'
 
       register_component(
         name: 'calico-node', version: CALICO_VERSION, license: 'Apache License 2.0',
@@ -52,7 +52,7 @@ module Pharos
         logger.info { "Configuring network ..." }
         apply_stack(
           'calico',
-          image_repository: @config.image_repository,
+          image_repository: "docker.io/calico",
           ipv4_pool_cidr: @config.network.pod_network_cidr,
           ipip_mode: @config.network.calico&.ipip_mode || 'Always',
           ipip_enabled: @config.network.calico&.ipip_mode != 'Never',

@@ -2,7 +2,7 @@
 # as the Calico CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
 kind: DaemonSet
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: calico-node
   namespace: kube-system
@@ -48,7 +48,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: <%= image_repository %>/calico-cni:v<%= version %>
+          image: <%= image_repository %>/cni:v<%= version %>
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -68,7 +68,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: <%= image_repository %>/calico-cni:v<%= version %>
+          image: <%= image_repository %>/cni:v<%= version %>
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -107,7 +107,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: <%= image_repository %>/calico-node:v<%= version %>
+          image: <%= image_repository %>/node:v<%= version %>
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE

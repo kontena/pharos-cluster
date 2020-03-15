@@ -105,12 +105,6 @@ module Pharos
 
         args << "--rotate-server-certificates"
 
-        if crio?
-          args << '--container-runtime=remote'
-          args << '--runtime-request-timeout=15m'
-          args << '--container-runtime-endpoint=/var/run/crio/crio.sock' # see: https://github.com/kubernetes/kubernetes/issues/71712
-        end
-
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
           args << "--address=127.0.0.1"
@@ -122,10 +116,6 @@ module Pharos
         args += configurer.kubelet_args
 
         args
-      end
-
-      def crio?
-        container_runtime == 'cri-o'
       end
 
       def docker?

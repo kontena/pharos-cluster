@@ -5,10 +5,6 @@ require "pharos/version"
 
 files = Dir['README.md', 'LICENSE', 'licenses/*', 'bin/*', 'lib/**/*', 'addons/**/*']
 require_paths = ['lib']
-if ENV['PHAROS_NON_OSS'] == 'true'
-  files += Dir['non-oss/**/*']
-  require_paths << 'non-oss'
-end
 
 Gem::Specification.new do |spec|
   spec.name          = "pharos-cluster"

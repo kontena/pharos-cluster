@@ -44,7 +44,7 @@ module Pharos
       @mutex ||= Mutex.new
     end
 
-    attr_reader :cluster_context, :host
+    attr_reader :cluster_context, :host, :config
 
     # @param host [Pharos::Configuration::Host]
     # @param config [Pharos::Config]

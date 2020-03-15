@@ -27,8 +27,7 @@ module Pharos
             'cluster.yml' => data.to_yaml,
             'pharos-version' => Pharos.version,
             'pharos-components.yml' => components.to_yaml,
-            'pharos-cluster-name' => @config.name,
-            'pharos-addons.yml' => addons.to_yaml
+            'pharos-cluster-name' => @config.name
           }
         )
       end
@@ -41,10 +40,6 @@ module Pharos
 
       def components
         Pharos::Phases.components_for_config(@config).sort_by(&:name).map { |c| c.to_h.deep_stringify_keys }
-      end
-
-      def addons
-        Pharos::AddonManager.addon_classes.map(&:to_h).select { |a| @config.addons.dig(a[:name], 'enabled') }.map(&:deep_stringify_keys)
       end
     end
   end

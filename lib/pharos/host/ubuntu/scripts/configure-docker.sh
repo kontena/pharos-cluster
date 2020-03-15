@@ -16,7 +16,6 @@ mkdir -p /etc/docker
 cat <<EOF >/etc/docker/daemon.json
 {
     "storage-driver": "overlay2",
-    "live-restore": true,
     "bridge": "none",
     "iptables": false,
     "ip-masq": false,
@@ -29,16 +28,12 @@ cat <<EOF >/etc/docker/daemon.json
 }
 EOF
 
-debconf-set-selections <<EOF
-docker.io docker.io/restart boolean true
-EOF
-
 export DEBIAN_FRONTEND=noninteractive
 
 apt-mark unhold "$DOCKER_PACKAGE" || echo "Nothing to unhold"
-if dpkg -l docker.io ; then
-    apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION*" || echo "Cannot install specific version, keeping the current one"
+if dpkg -l docker-ce ; then
+    apt-get install -y "$DOCKER_PACKAGE=5:$DOCKER_VERSION*" || echo "Cannot install specific version, keeping the current one"
 else
-    apt-get install -y "$DOCKER_PACKAGE=$DOCKER_VERSION*"
+    apt-get install -y "$DOCKER_PACKAGE=5:$DOCKER_VERSION*"
 fi
 apt-mark hold "$DOCKER_PACKAGE"

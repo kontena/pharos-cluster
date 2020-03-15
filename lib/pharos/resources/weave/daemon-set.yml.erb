@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: weave-net
@@ -6,6 +6,9 @@ metadata:
     name: weave-net
   namespace: kube-system
 spec:
+  selector:
+    matchLabels:
+      name: weave-net
   # Wait 5 seconds to let pod connect before rolling next pod
   minReadySeconds: 5
   template:
@@ -106,7 +109,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: '<%= image_repository %>/weave-flying-shuttle:<%= flying_shuttle_version %>'
+          image: 'docker.io/kontenapharos/weave-flying-shuttle:<%= flying_shuttle_version %>'
           resources:
             requests:
               cpu: 10m

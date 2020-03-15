@@ -4,6 +4,8 @@ set -e
 
 # shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
+# shellcheck disable=SC1091
+. /usr/local/share/pharos/el7.sh
 
 configure_container_runtime_proxy "docker"
 
@@ -15,7 +17,6 @@ fi
 mkdir -p /etc/docker
 cat <<EOF >/etc/docker/daemon.json
 {
-    "live-restore": true,
     "bridge": "none",
     "iptables": false,
     "ip-masq": false,
@@ -23,7 +24,7 @@ cat <<EOF >/etc/docker/daemon.json
 }
 EOF
 
-yum install --enablerepo="${DOCKER_REPO_NAME}" -y "docker-${DOCKER_VERSION}"
+yum_install_with_lock "docker-ce" "${DOCKER_VERSION}"
 
 if ! systemctl is-active --quiet docker; then
     systemctl enable docker

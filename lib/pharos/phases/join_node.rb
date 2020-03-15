@@ -16,9 +16,6 @@ module Pharos
 
         logger.info { "Joining host to the master ..." }
         join_command = cluster_context['join-command'].split(' ')
-        if @host.container_runtime == 'cri-o'
-          join_command << '--cri-socket /var/run/crio/crio.sock'
-        end
         join_command << "--node-name #{@host.hostname}"
         join_command << "--ignore-preflight-errors all"
 

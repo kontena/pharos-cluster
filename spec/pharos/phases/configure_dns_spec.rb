@@ -10,7 +10,6 @@ describe Pharos::Phases::ConfigureDNS do
       network: {
         dns_replicas: config_dns_replicas,
       },
-      addons: {},
       etcd: {}
   ) }
   let(:cpu_arch) { double(:cpu_arch, name: 'amd64') }
@@ -142,7 +141,7 @@ describe Pharos::Phases::ConfigureDNS do
     let(:kube_resource_client) { instance_double(K8s::ResourceClient) }
 
     let(:resource) { K8s::Resource.new(
-      apiVersion: 'extensions/v1beta1',
+      apiVersion: 'apps/v1',
       kind: 'Deployment',
       metadata: {
         name: 'kube-dns',
@@ -155,7 +154,7 @@ describe Pharos::Phases::ConfigureDNS do
 
     before do
       allow(subject).to receive(:kube_client).and_return(kube_client)
-      allow(kube_client).to receive(:api).with('extensions/v1beta1').and_return(kube_api_client)
+      allow(kube_client).to receive(:api).with('apps/v1').and_return(kube_api_client)
       allow(kube_api_client).to receive(:resource).with('deployments', namespace: 'kube-system').and_return(kube_resource_client)
     end
 

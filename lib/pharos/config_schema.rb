@@ -87,7 +87,7 @@ module Pharos
               optional(:ssh_key_path).filled
               optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
               optional(:ssh_proxy_command).filled(:str?)
-              optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'cri-o'])
+              optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker'])
               optional(:environment).filled
               optional(:bastion).schema do
                 predicates(HostPredicates)
@@ -199,8 +199,6 @@ module Pharos
         optional(:kube_proxy).schema do
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
         end
-        optional(:addon_paths).each(type?: String)
-        optional(:addons).value(type?: Hash)
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
           optional(:feature_gates).filled
@@ -212,10 +210,6 @@ module Pharos
           optional(:use_proxy).filled(:bool?)
           optional(:feature_gates).filled
         end
-        optional(:telemetry).schema do
-          optional(:enabled).filled(:bool?)
-        end
-        optional(:image_repository).filled(:str?)
         optional(:pod_security_policy).schema do
           optional(:default_policy).filled(:str?)
         end
@@ -230,6 +224,7 @@ module Pharos
         optional(:container_runtime).schema do
           optional(:insecure_registries).each(type?: String)
         end
+        optional(:manifests).each(type?: String)
 
         validate(network_dns_replicas: [:network, :hosts]) do |network, hosts|
           if network && network[:dns_replicas]
