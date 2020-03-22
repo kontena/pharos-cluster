@@ -5,15 +5,3 @@ network:
   weave:
     trusted_subnets:
       - "10.133.0.0/16"
-addons:
-  ingress-nginx:
-    enabled: true
-  helm:
-    enabled: true
-  kontena-lens:
-    enabled: true
-    name: pharos-do
-    persistence:
-      enabled: true
-  do-csi:
-    enabled: true

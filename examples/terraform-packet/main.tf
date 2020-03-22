@@ -102,51 +102,5 @@ output "pharos_cluster" {
         container_runtime = "${var.container_runtime}"
       }
     ]
-    addons = {
-      ingress-nginx = {
-        enabled = true
-        kind: var.bgp_address_pool != "" ? "Deployment" : "DaemonSet"
-      }
-      kontena-network-lb = {
-        enabled = var.bgp_address_pool != "" ? true : false
-        address_pools = [
-          {
-            name = "default"
-            protocol = "bgp"
-            addresses = [var.bgp_address_pool]
-          }
-        ]
-        peers = [
-          for host in packet_device.pharos_worker : {
-            peer_address = host.network[2].gateway
-            peer_asn = 65530
-            my_asn = 65000
-            node_selectors = [
-              {
-                match-expression = [
-                  {
-                    key = "kubernetes.io/hostname"
-                    operator = "In"
-                    values = [host.hostname]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-      kontena-storage = {
-        enabled = true
-        data_dir = "/var/lib/kontena-storage"
-        storage = {
-          use_all_nodes = true
-          directories = [
-            {
-              path = "/mnt/data1"
-            }
-          ]
-        }
-      }
-    }
   }
 }

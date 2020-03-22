@@ -4,6 +4,3 @@ network:
   service_cidr: 172.32.0.0/16
   custom:
     manifest_path: ./flannel/
-addons:
-  ingress-nginx:
-    enabled: true
