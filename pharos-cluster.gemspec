@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "Kontena Pharos cluster manager"
   spec.homepage      = "https://github.com/kontena/pharos-cluster"
-  spec.license       = ENV['PHAROS_NON_OSS'] == 'true' ? "Nonstandard" : "Apache-2.0"
+  spec.license       = "Apache-2.0"
 
   spec.files         = files
   spec.bindir        = "bin"
