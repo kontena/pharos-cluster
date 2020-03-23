@@ -23,7 +23,7 @@ $ pharos --help
 
 ## Usage
 
-See [documentation](https://pharos.sh/docs/).
+See [documentation](https://docs.k8spharos.dev/).
 
 ## Further Information
 
