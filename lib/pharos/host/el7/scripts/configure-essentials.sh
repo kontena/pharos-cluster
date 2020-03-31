@@ -28,10 +28,10 @@ if ! rpm -qi yum-plugin-versionlock ; then
     yum install -y yum-plugin-versionlock
 fi
 
-if [ -f "/etc/redhat-release" ]; then
-  subscription-manager repos --enable=rhel-7-server-extras-rpms
-else
+if [ -f "/etc/centos-release" ]; then
   yum-config-manager --enable extras
+else
+  subscription-manager repos --enable=rhel-7-server-extras-rpms
 fi
 
 if ! rpm -qi chrony ; then
