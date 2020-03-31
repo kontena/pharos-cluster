@@ -3,7 +3,7 @@
 module Pharos
   module Host
     class El7 < Configurer
-      DOCKER_VERSION = '19.03.6'
+      DOCKER_VERSION = '19.03.8'
       CFSSL_VERSION = '1.2'
 
       # @param path [Array]
@@ -78,7 +78,6 @@ module Pharos
           exec_script(
             'configure-docker.sh',
             DOCKER_VERSION: DOCKER_VERSION,
-            DOCKER_REPO_NAME: docker_repo_name,
             INSECURE_REGISTRIES: insecure_registries
           )
         elsif custom_docker?

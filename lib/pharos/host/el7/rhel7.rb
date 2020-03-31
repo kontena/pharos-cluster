@@ -4,8 +4,12 @@ require_relative 'el7'
 
 module Pharos
   module Host
-    class Centos7 < El7
-      register_config 'centos', '7'
+    class Rhel7 < El7
+      register_config 'rhel', '7.4'
+      register_config 'rhel', '7.5'
+      register_config 'rhel', '7.6'
+      register_config 'rhel', '7.7'
+      register_config 'rhel', '7.8'
 
       register_component(
         name: 'docker', version: DOCKER_VERSION, license: 'Apache License 2.0',

@@ -20,8 +20,18 @@ yum_install_with_lock() {
 EOF
 chmod +x /usr/local/share/pharos/el7.sh
 
+if ! rpm -qi yum-utils ; then
+    yum install -y yum-utils
+fi
+
 if ! rpm -qi yum-plugin-versionlock ; then
     yum install -y yum-plugin-versionlock
+fi
+
+if [ -f "/etc/redhat-release" ]; then
+  subscription-manager repos --enable=rhel-7-server-extras-rpms
+else
+  yum-config-manager --enable extras
 fi
 
 if ! rpm -qi chrony ; then
