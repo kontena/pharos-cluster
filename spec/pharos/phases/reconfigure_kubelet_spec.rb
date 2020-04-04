@@ -36,7 +36,7 @@ describe Pharos::Phases::ReconfigureKubelet do
 
     it 'upgrades kubelet config from configmap' do
       allow(ssh).to receive(:file).with('/var/lib/kubelet/config.yaml').and_return(double(:exist? => true, :read => 'config'))
-      expect(ssh).to receive(:exec!).with("sudo kubeadm upgrade node config --kubelet-version #{Pharos::KUBE_VERSION}")
+      expect(ssh).to receive(:exec!).with("sudo kubeadm upgrade node phase kubelet-config --kubelet-version #{Pharos::KUBE_VERSION}")
       subject.reconfigure_kubelet
     end
 
@@ -45,7 +45,7 @@ describe Pharos::Phases::ReconfigureKubelet do
         kubelet_config = double(:exist? => true)
         allow(kubelet_config).to receive(:read).and_return('foo', 'bar') # config has been updated between reads
         allow(ssh).to receive(:file).with('/var/lib/kubelet/config.yaml').and_return(kubelet_config)
-        allow(ssh).to receive(:exec!).with("sudo kubeadm upgrade node config --kubelet-version #{Pharos::KUBE_VERSION}")
+        allow(ssh).to receive(:exec!).with("sudo kubeadm upgrade node phase kubelet-config --kubelet-version #{Pharos::KUBE_VERSION}")
 
         expect(ssh).to receive(:exec!).with('sudo systemctl restart kubelet')
         subject.reconfigure_kubelet
