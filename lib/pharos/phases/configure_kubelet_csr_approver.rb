@@ -5,7 +5,7 @@ module Pharos
     class ConfigureKubeletCsrApprover < Pharos::Phase
       title "Configure kubelet csr auto-approver"
 
-      RUBBER_STAMP_VERSION = '0.1.0'
+      RUBBER_STAMP_VERSION = '0.3.1'
 
       register_component(
         name: 'kubelet-rubber-stamp', version: RUBBER_STAMP_VERSION, license: 'Apache License 2.0'

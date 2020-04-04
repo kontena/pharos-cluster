@@ -19,7 +19,7 @@ module Pharos
           return
         end
         org_config = config.read
-        transport.exec!("sudo kubeadm upgrade node config --kubelet-version #{Pharos::KUBE_VERSION}")
+        transport.exec!("sudo kubeadm upgrade node phase kubelet-config --kubelet-version #{Pharos::KUBE_VERSION}")
         new_config = config.read
         return if new_config == org_config
 
