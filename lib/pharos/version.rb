@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Pharos
-  VERSION = "3.0.0"
+  VERSION = "3.1.0"
 
   def self.version
     VERSION
