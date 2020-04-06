@@ -29,15 +29,24 @@ bundle exec bin/pharos ssh --role master -c cluster.yml -- kubectl get nodes
 bundle exec bin/pharos kubeconfig -c cluster.yml > kubeconfig.e2e
 
 # Verify that workloads start running
-curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.17.3/bin/linux/amd64/kubectl
+curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 sudo mv kubectl /usr/local/bin/
 export KUBECONFIG=./kubeconfig.e2e
 
-echo "Checking that metrics-server is running:"
+echo "==> Check that metrics-server is running:"
 (retry 30 pods_running "k8s-app=metrics-server" "kube-system") || exit $?
 
-# Test re-up
+echo "==> Test with sonobuoy"
+curl -L https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.18.0/sonobuoy_0.18.0_linux_amd64.tar.gz | tar xzv
+chmox +x ./sonobuoy
+./sonobuoy run --mode quick --timeout 600 --wait
+
+echo "==> Test re-up"
 bundle exec bin/pharos up -y -c cluster.yml
-# Test reset
-bundle exec bin/pharos reset -d -y -c cluster.yml
+
+echo "==> Test reset"
+bundle exec bin/pharos reset -y -c cluster.yml
+
+echo "==> Test up after reset"
+bundle exec bin/pharos up -y -c cluster.yml
