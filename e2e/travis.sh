@@ -39,7 +39,7 @@ echo "==> Check that metrics-server is running:"
 
 echo "==> Test with sonobuoy"
 curl -L https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.18.0/sonobuoy_0.18.0_linux_amd64.tar.gz | tar xzv
-chmox +x ./sonobuoy
+chmod +x ./sonobuoy
 ./sonobuoy run --mode quick --timeout 600 --wait
 
 echo "==> Test re-up"
