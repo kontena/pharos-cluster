@@ -47,6 +47,3 @@ bundle exec bin/pharos up -y -c cluster.yml
 
 echo "==> Test reset"
 bundle exec bin/pharos reset -y -c cluster.yml
-
-echo "==> Test up after reset"
-bundle exec bin/pharos up -y -c cluster.yml
