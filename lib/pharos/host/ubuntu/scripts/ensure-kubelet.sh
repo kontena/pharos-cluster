@@ -19,3 +19,8 @@ export DEBIAN_FRONTEND=noninteractive
 apt-mark unhold kubelet kubernetes-cni || echo "Nothing to unhold"
 apt-get install -y "kubelet=${KUBE_VERSION}-00" "kubernetes-cni=${CNI_VERSION}-00"
 apt-mark hold kubelet kubernetes-cni
+
+if ! systemctl is-active --quiet kubelet; then
+    systemctl enable kubelet
+    systemctl start kubelet
+fi

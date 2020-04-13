@@ -1,0 +1,38 @@
+cluster:
+  name: pharos
+  privateKey: ~/.ssh/id_rsa_travis
+machines:
+- count: 1
+  backend: docker
+  spec:
+    image: $FOOTLOOSE_IMAGE # quay.io/footloose/ubuntu18.04
+    name: master%d
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
+    - type: volume
+      destination: /var/lib/kubelet
+    - type: volume
+      destination: /var/lib/containerd
+    portMappings:
+    - containerPort: 22
+      hostPort: 9022
+    - containerPort: 6443
+      hostPort: 6443
+- count: 1
+  backend: docker
+  spec:
+    image: $FOOTLOOSE_IMAGE # quay.io/footloose/ubuntu18.04
+    name: worker%d
+    privileged: true
+    volumes:
+    - type: volume
+      destination: /var/lib/docker
+    - type: volume
+      destination: /var/lib/kubelet
+    - type: volume
+      destination: /var/lib/containerd
+    portMappings:
+    - containerPort: 22
+      hostPort: 9022

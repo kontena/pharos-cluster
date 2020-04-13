@@ -37,3 +37,13 @@ else
     apt-get install -y "$DOCKER_PACKAGE=5:$DOCKER_VERSION*"
 fi
 apt-mark hold "$DOCKER_PACKAGE"
+
+if ! systemctl is-active --quiet containerd; then
+    systemctl enable containerd
+    systemctl start containerd
+fi
+
+if ! systemctl is-active --quiet docker; then
+    systemctl enable docker
+    systemctl start docker
+fi

@@ -30,6 +30,12 @@ module Pharos
         if @config.kubelet&.read_only_port
           config['readOnlyPort'] = 10_255
         end
+        if @config.kubelet&.system_reserved
+          config['systemReserved'] = @config.kubelet.system_reserved
+        end
+        if @config.kubelet&.kube_reserved
+          config['kubeReserved'] = @config.kubelet.kube_reserved
+        end
         feature_gates = @config.kubelet&.feature_gates || {}
         if @config.cloud&.outtree_provider?
           feature_gates.merge!(@config.cloud.cloud_provider.feature_gates)

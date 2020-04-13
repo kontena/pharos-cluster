@@ -11,7 +11,10 @@ module Pharos
       'network' => {},
       'authentication' => {},
       'kube_proxy' => {},
-      'kubelet' => {},
+      'kubelet' => {
+        'system_reserved' => { 'cpu' => '50m', 'memory' => '50Mi' },
+        'kube_reserved' => { 'cpu' => '100m', 'memory' => '200Mi' },
+      },
       'telemetry' => {},
       'pod_security_policy' => {},
       'addon_paths' => [],
@@ -198,6 +201,7 @@ module Pharos
         end
         optional(:kube_proxy).schema do
           optional(:mode).filled(included_in?: %w(userspace iptables ipvs))
+          optional(:conntrack).filled
         end
         optional(:kubelet).schema do
           optional(:read_only_port).filled(:bool?)
@@ -205,6 +209,8 @@ module Pharos
           optional(:extra_args).each(type?: String)
           optional(:cpu_cfs_quota).filled(:bool?)
           optional(:cpu_cfs_quota_period).filled(:str?)
+          optional(:system_reserved).filled
+          optional(:kube_reserved).filled
         end
         optional(:control_plane).schema do
           optional(:use_proxy).filled(:bool?)
