@@ -13,7 +13,7 @@ module Pharos
       'kube_proxy' => {},
       'kubelet' => {
         'system_reserved' => { 'cpu' => '50m', 'memory' => '50Mi' },
-        'kube_reserved' => { 'cpu' => '100m', 'memory' => '200Mi' },
+        'kube_reserved' => { 'cpu' => '100m', 'memory' => '200Mi' }
       },
       'telemetry' => {},
       'pod_security_policy' => {},
