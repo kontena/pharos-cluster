@@ -2,7 +2,7 @@
 
 set -e
 
-if cat /proc/1/environ | grep "container=docker" ; then
+if grep "container=docker" /proc/1/environ ; then
   exit 0
 fi
 
