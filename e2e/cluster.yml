@@ -6,7 +6,6 @@ hosts:
     role: master
     ssh_key_path: ~/.ssh/id_rsa_travis
     container_runtime: $CONTAINER_RUNTIME
-    taints: []
   - address: 127.0.0.1
     private_interface: eth0
     ssh_port: 9023
@@ -14,6 +13,8 @@ hosts:
     role: worker
     ssh_key_path: ~/.ssh/id_rsa_travis
     container_runtime: $CONTAINER_RUNTIME
-    taints: []
 network:
   provider: $NETWORK_PROVIDER
+kube_proxy:
+  conntrack:
+    maxPerCore: 0
