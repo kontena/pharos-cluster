@@ -47,7 +47,7 @@ chmod +x ./sonobuoy
   ./sonobuoy logs -f
 )&
 logs_pid=$!
-./sonobuoy run --wait 600 --wait-output=Spinner --plugin-env=e2e.E2E_USE_GO_RUNNER=true '--e2e-focus=\[sig-network\].*\[Conformance\]' '--e2e-skip=\[Serial\]' --e2e-parallel=y
+./sonobuoy run --wait=600 --plugin-env=e2e.E2E_USE_GO_RUNNER=true '--e2e-focus=\[sig-network\].*\[Conformance\]' '--e2e-skip=\[Serial\]' --e2e-parallel=y
 kill $logs_pid
 results=$(./sonobuoy retrieve)
 ./sonobuoy results "${results}"
