@@ -42,9 +42,13 @@ echo "==> Checking that metrics-server is running:"
 echo "==> Test with sonobuoy"
 curl -L https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.18.0/sonobuoy_0.18.0_linux_amd64.tar.gz | tar xzv
 chmod +x ./sonobuoy
-sleep 30
-./sonobuoy run --wait-output=Spinner --plugin-env=e2e.E2E_USE_GO_RUNNER=true '--e2e-focus=\[sig-network\].*\[Conformance\]' '--e2e-skip=\[Serial\]' --e2e-parallel=y
-./sonobuoy logs -f
+(
+  sleep 30
+  ./sonobuoy logs -f
+)&
+logs_pid=$!
+./sonobuoy run --wait 600 --wait-output=Spinner --plugin-env=e2e.E2E_USE_GO_RUNNER=true '--e2e-focus=\[sig-network\].*\[Conformance\]' '--e2e-skip=\[Serial\]' --e2e-parallel=y
+kill $logs_pid
 results=$(./sonobuoy retrieve)
 ./sonobuoy results "${results}"
 ./sonobuoy status | grep -q -E ' +e2e +complete +passed +'
