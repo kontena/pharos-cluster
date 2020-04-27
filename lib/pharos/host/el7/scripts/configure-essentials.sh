@@ -62,6 +62,10 @@ if [[ $PATH != *local/bin* ]] || [[ $PATH != *usr/sbin* ]]; then
   lineinfile "^PATH=" "PATH=$PATH" "$env_file"
 fi
 
+if grep "container=docker" /proc/1/environ ; then
+  exit 0
+fi
+
 if ! (getenforce | grep -q "Disabled"); then
     setenforce 0 || true
     lineinfile "^SELINUX=" "SELINUX=permissive" "/etc/selinux/config"

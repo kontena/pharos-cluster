@@ -104,6 +104,7 @@ module Pharos
         args = config&.kubelet&.extra_args.dup || []
 
         args << "--rotate-server-certificates"
+        args << "--fail-swap-on=false"
 
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
