@@ -15,6 +15,8 @@ hosts:
     container_runtime: $CONTAINER_RUNTIME
 network:
   provider: $NETWORK_PROVIDER
+  pod_network_cidr: 172.20.0.0/16
+  service_cidr: 172.19.0.0/16
 kube_proxy:
   conntrack:
     maxPerCore: 0
