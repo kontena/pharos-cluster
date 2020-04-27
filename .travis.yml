@@ -16,6 +16,7 @@ jobs:
       name: "e2e: xenial docker with weave"
       script: ./e2e/travis.sh
       rvm: 2.5.4
+      dist: bionic
       env:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=weave
@@ -24,6 +25,7 @@ jobs:
       name: "e2e: xenial docker with calico"
       script: ./e2e/travis.sh
       rvm: 2.5.4
+      dist: bionic
       env:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=calico
@@ -32,6 +34,7 @@ jobs:
       name: "e2e: bionic docker with weave"
       script: ./e2e/travis.sh
       rvm: 2.5.4
+      dist: bionic
       env:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=weave
@@ -40,6 +43,7 @@ jobs:
       name: "e2e: bionic docker with calico"
       script: ./e2e/travis.sh
       rvm: 2.5.4
+      dist: bionic
       env:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=calico
@@ -48,6 +52,7 @@ jobs:
       name: "e2e: centos7 docker with weave"
       script: ./e2e/travis.sh
       rvm: 2.5.4
+      dist: bionic
       env:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=weave
@@ -56,6 +61,7 @@ jobs:
       name: "e2e: centos7 docker with calico"
       script: ./e2e/travis.sh
       rvm: 2.5.4
+      dist: bionic
       env:
         - CONTAINER_RUNTIME=docker
         - NETWORK_PROVIDER=calico
