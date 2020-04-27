@@ -131,17 +131,6 @@ describe Pharos::Phases::ConfigureKubelet do
       end
     end
 
-    context "with a systemd-resolved stub" do
-      let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
-          nameserver_localhost: true,
-          systemd_resolved_stub: true,
-      ) }
-
-      it "uses --resolv-conf" do
-        expect(subject.kubelet_extra_args).to include '--resolv-conf=/run/systemd/resolve/resolv.conf'
-      end
-    end
-
     context "with a non-systemd-resolved localhost resolver" do
       let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
           nameserver_localhost: true,

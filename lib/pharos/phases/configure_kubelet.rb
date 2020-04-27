@@ -119,11 +119,6 @@ module Pharos
 
         options << "ExecStartPre=-/sbin/swapoff -a"
 
-        if @host.resolvconf.systemd_resolved_stub
-          logger.info { "Adding POSTROUTING SNAT rule for systemd-resolved stub" }
-          options << "ExecStartPre=/bin/sh -c '/sbin/iptables -C POSTROUTING -t nat -d 127.0.0.53 -o lo -m comment --comment \"SNAT for systemd-resolved\" -j SNAT --to-source 127.0.0.1 || /sbin/iptables -I POSTROUTING -t nat -d 127.0.0.53 -o lo -m comment --comment \"SNAT for systemd-resolved\" -j SNAT --to-source 127.0.0.1'"
-        end
-
         "[Service]\n#{options.join("\n")}\n"
       end
 
@@ -132,11 +127,7 @@ module Pharos
         args = []
         args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
 
-        if @host.resolvconf.systemd_resolved_stub
-          # use upstream resolvers instead of systemd stub resolver at localhost for `dnsPolicy: Default` pods
-          # XXX: kubeadm also handles this?
-          args << '--resolv-conf=/run/systemd/resolve/resolv.conf'
-        elsif @host.resolvconf.nameserver_localhost
+        if @host.resolvconf.nameserver_localhost
           fail "Host has /etc/resolv.conf configured with localhost as a resolver"
         end
 
