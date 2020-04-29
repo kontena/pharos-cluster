@@ -17,6 +17,8 @@ network:
   provider: $NETWORK_PROVIDER
   pod_network_cidr: 172.20.0.0/16
   service_cidr: 172.19.0.0/16
+  calico:
+    ipip_mode: Never
 kube_proxy:
   conntrack:
     maxPerCore: 0
