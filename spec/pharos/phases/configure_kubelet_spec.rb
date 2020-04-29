@@ -54,7 +54,7 @@ describe Pharos::Phases::ConfigureKubelet do
       it "returns a systemd unit" do
         expect(subject.build_systemd_dropin).to eq <<~EOM
           [Service]
-          Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=docker.io/kontenapharos/pause:3.1'
+          Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --fail-swap-on=false --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=docker.io/kontenapharos/pause:3.1'
           ExecStartPre=-/sbin/swapoff -a
         EOM
       end
@@ -69,7 +69,7 @@ describe Pharos::Phases::ConfigureKubelet do
         it "returns a systemd unit" do
           expect(subject.build_systemd_dropin).to eq <<~EOM
             [Service]
-            Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=docker.io/kontenapharos/pause:3.1'
+            Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --fail-swap-on=false --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=docker.io/kontenapharos/pause:3.1'
             Environment='http_proxy=proxy.example.com'
             Environment='NO_PROXY=127.0.0.1'
             ExecStartPre=-/sbin/swapoff -a
@@ -81,7 +81,7 @@ describe Pharos::Phases::ConfigureKubelet do
         it "returns a systemd unit" do
           expect(subject.build_systemd_dropin).to eq <<~EOM
             [Service]
-            Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=docker.io/kontenapharos/pause:3.1'
+            Environment='KUBELET_EXTRA_ARGS=--rotate-server-certificates --fail-swap-on=false --node-ip=192.168.42.1 --hostname-override= --pod-infra-container-image=docker.io/kontenapharos/pause:3.1'
             ExecStartPre=-/sbin/swapoff -a
           EOM
         end
@@ -128,17 +128,6 @@ describe Pharos::Phases::ConfigureKubelet do
         expect(subject.kubelet_extra_args).not_to include(
           "--node-ip=#{host.peer_address}"
         )
-      end
-    end
-
-    context "with a systemd-resolved stub" do
-      let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
-          nameserver_localhost: true,
-          systemd_resolved_stub: true,
-      ) }
-
-      it "uses --resolv-conf" do
-        expect(subject.kubelet_extra_args).to include '--resolv-conf=/run/systemd/resolve/resolv.conf'
       end
     end
 

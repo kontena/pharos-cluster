@@ -121,6 +121,7 @@ spec:
               mountPath: /run/xtables.lock
         <% end %>
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       hostPID: true
       restartPolicy: Always
       securityContext:

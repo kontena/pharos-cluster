@@ -29,6 +29,7 @@ spec:
   - command:
     - etcd
     - --name=${PEER_NAME}
+    - --enable-v2=true
     - --cert-file=/etc/kubernetes/pki/etcd/server.pem
     - --key-file=/etc/kubernetes/pki/etcd/server-key.pem
     - --trusted-ca-file=/etc/kubernetes/pki/ca.pem

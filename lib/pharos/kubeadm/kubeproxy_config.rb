@@ -17,6 +17,9 @@ module Pharos
           'kind' => 'KubeProxyConfiguration',
           'mode' => @config.kube_proxy&.mode || 'iptables'
         }
+        if @config.kube_proxy&.conntrack
+          config['conntrack'] = @config.kube_proxy.conntrack
+        end
 
         config
       end

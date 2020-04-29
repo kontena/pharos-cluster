@@ -26,6 +26,11 @@ EOF
 
 yum_install_with_lock "docker-ce" "${DOCKER_VERSION}"
 
+if ! systemctl is-active --quiet containerd; then
+    systemctl enable containerd
+    systemctl start containerd
+fi
+
 if ! systemctl is-active --quiet docker; then
     systemctl enable docker
     systemctl start docker

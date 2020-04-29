@@ -1,10 +1,22 @@
 hosts:
   - address: 127.0.0.1
-    private_interface: ens4
-    user: travis
+    private_interface: eth0
+    ssh_port: 9022
+    user: root
     role: master
     ssh_key_path: ~/.ssh/id_rsa_travis
     container_runtime: $CONTAINER_RUNTIME
-    taints: []
+  - address: 127.0.0.1
+    private_interface: eth0
+    ssh_port: 9023
+    user: root
+    role: worker
+    ssh_key_path: ~/.ssh/id_rsa_travis
+    container_runtime: $CONTAINER_RUNTIME
 network:
   provider: $NETWORK_PROVIDER
+  pod_network_cidr: 172.20.0.0/16
+  service_cidr: 172.19.0.0/16
+kube_proxy:
+  conntrack:
+    maxPerCore: 0

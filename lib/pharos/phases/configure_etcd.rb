@@ -32,7 +32,7 @@ module Pharos
           'configure-etcd.sh',
           PEER_IP: @config.etcd_peer_address(@host),
           INITIAL_CLUSTER: initial_cluster.join(','),
-          IMAGE_REPO: @config.image_repository,
+          IMAGE_REPO: "k8s.gcr.io",
           ETCD_VERSION: Pharos::ETCD_VERSION,
           KUBE_VERSION: Pharos::KUBE_VERSION,
           ARCH: @host.cpu_arch.name,
