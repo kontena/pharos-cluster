@@ -32,7 +32,7 @@ bundle exec bin/pharos kubeconfig -c cluster.yml > kubeconfig.e2e
 export KUBECONFIG=./kubeconfig.e2e
 
 # Verify that workloads start running
-curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.17.3/bin/linux/amd64/kubectl
+curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 sudo mv kubectl /usr/local/bin/
 
@@ -55,5 +55,6 @@ results=$(./sonobuoy retrieve)
 
 # Test re-up
 bundle exec bin/pharos up -y -c cluster.yml
-# Test reset
-bundle exec bin/pharos reset -d -y -c cluster.yml
+
+echo "==> Test reset"
+bundle exec bin/pharos reset -y -c cluster.yml
