@@ -9,6 +9,7 @@ set -e
 
 yum_install_with_lock "kubectl" "$KUBE_VERSION"
 yum_install_with_lock "kubeadm" "$KUBE_VERSION"
+yum_install_with_lock "kubelet" "$KUBE_VERSION"
 
 if needs-restarting -s | grep -q kubelet.service ; then
     systemctl daemon-reload
