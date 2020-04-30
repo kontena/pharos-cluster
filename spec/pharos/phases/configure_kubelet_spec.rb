@@ -131,17 +131,6 @@ describe Pharos::Phases::ConfigureKubelet do
       end
     end
 
-    context "with a non-systemd-resolved localhost resolver" do
-      let(:host_resolvconf) { Pharos::Configuration::ResolvConf.new(
-          nameserver_localhost: true,
-          systemd_resolved_stub: false,
-      ) }
-
-      it "fails" do
-        expect{subject.kubelet_extra_args}.to raise_error 'Host has /etc/resolv.conf configured with localhost as a resolver'
-      end
-    end
-
     context "for a CentOS host" do
       let(:host_osrelease) { Pharos::Configuration::OsRelease.new(
         id: 'centos',

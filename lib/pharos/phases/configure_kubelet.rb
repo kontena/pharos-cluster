@@ -126,11 +126,6 @@ module Pharos
       def kubelet_extra_args
         args = []
         args += @host.kubelet_args(local_only: false, cloud_provider: @config.cloud&.provider)
-
-        if @host.resolvconf.nameserver_localhost
-          fail "Host has /etc/resolv.conf configured with localhost as a resolver"
-        end
-
         args << "--pod-infra-container-image=#{@config.image_repository}/pause:3.1"
         args << "--cloud-provider=#{@config.cloud.resolve_provider}" if @config.cloud
         args << "--cloud-config=#{CLOUD_CONFIG_FILE}" if @config.cloud&.intree_provider? && @config.cloud&.config
