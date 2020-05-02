@@ -6,7 +6,7 @@ metadata:
   namespace: kube-system
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
 rules:
@@ -71,8 +71,10 @@ rules:
       - globalnetworkpolicies
       - globalnetworksets
       - networkpolicies
+      - networksets
       - clusterinformations
       - hostendpoints
+      - blockaffinities
     verbs:
       - get
       - list
@@ -134,7 +136,7 @@ rules:
     verbs:
       - get
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: calico-node

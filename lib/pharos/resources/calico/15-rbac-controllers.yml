@@ -8,7 +8,7 @@ metadata:
 # Include a clusterrole for the kube-controllers component,
 # and bind it to the calico-kube-controllers serviceaccount.
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
 rules:
@@ -53,7 +53,7 @@ rules:
       - update
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
 roleRef:
