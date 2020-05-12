@@ -4,7 +4,7 @@ require_relative 'ubuntu'
 
 module Pharos
   module Host
-    class UbuntuBionic < Ubuntu
+    class UbuntuFocal < Ubuntu
       register_config 'ubuntu', '20.04'
 
       register_component(
