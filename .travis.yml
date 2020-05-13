@@ -24,7 +24,7 @@ jobs:
     - stage: e2e
       name: "e2e: focal docker with weave"
       script: ./e2e/travis.sh
-      rvm: 2.5.4
+      rvm: 2.7.1
       dist: focal
       env:
         - CONTAINER_RUNTIME=docker
