@@ -90,7 +90,7 @@ module Pharos
               optional(:ssh_key_path).filled
               optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
               optional(:ssh_proxy_command).filled(:str?)
-              optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker', 'containerd'])
+              optional(:container_runtime).filled(included_in?: %w(docker custom_docker containerd)
               optional(:environment).filled
               optional(:bastion).schema do
                 predicates(HostPredicates)
