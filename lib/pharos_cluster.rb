@@ -8,7 +8,7 @@ require_relative "pharos/error"
 require_relative "pharos/root_command"
 
 module Pharos
-  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.18.1' }
+  KUBE_VERSION = ENV.fetch('KUBE_VERSION') { '1.18.3' }
   CNI_VERSION = '0.7.5'
   COREDNS_VERSION = '1.6.7'
   DNS_NODE_CACHE_VERSION = '1.15.11'
