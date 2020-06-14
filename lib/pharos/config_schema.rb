@@ -239,7 +239,6 @@ module Pharos
           end
         end
       end
-      # rubocop:enable Lint/NestedMethodDefinition
     end
   end
 end
