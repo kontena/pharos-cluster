@@ -13,6 +13,11 @@ module Pharos
       )
 
       register_component(
+        name: 'containerd', version: CONTAINERD_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'containerd' } }
+      )
+
+      register_component(
         name: 'cfssl', version: CFSSL_VERSION, license: 'MIT',
         enabled: proc { |c| !c.etcd&.endpoints }
       )

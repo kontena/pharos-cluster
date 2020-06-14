@@ -106,6 +106,12 @@ module Pharos
         args << "--rotate-server-certificates"
         args << "--fail-swap-on=false"
 
+        if containerd?
+          args << '--container-runtime=remote'
+          args << '--runtime-request-timeout=15m'
+          args << '--container-runtime-endpoint=/var/run/containerd/containerd.sock' # see: https://github.com/kubernetes/kubernetes/issues/71712
+        end
+
         if local_only
           args << "--pod-manifest-path=/etc/kubernetes/manifests/"
           args << "--address=127.0.0.1"
@@ -125,6 +131,10 @@ module Pharos
 
       def custom_docker?
         container_runtime == 'custom_docker'
+      end
+
+      def containerd?
+        container_runtime == 'containerd'
       end
 
       def new?

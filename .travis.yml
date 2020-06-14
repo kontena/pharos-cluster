@@ -22,7 +22,25 @@ jobs:
         - NETWORK_PROVIDER=weave
         - FOOTLOOSE_IMAGE=quay.io/footloose/ubuntu18.04
     - stage: e2e
+      name: "e2e: bionic containerd with weave"
+      script: ./e2e/travis.sh
+      rvm: 2.5.4
+      dist: bionic
+      env:
+        - CONTAINER_RUNTIME=containerd
+        - NETWORK_PROVIDER=weave
+        - FOOTLOOSE_IMAGE=quay.io/footloose/ubuntu18.04
+    - stage: e2e
       name: "e2e: focal docker with weave"
+      script: ./e2e/travis.sh
+      rvm: 2.5.4
+      dist: bionic
+      env:
+        - CONTAINER_RUNTIME=docker
+        - NETWORK_PROVIDER=weave
+        - FOOTLOOSE_IMAGE=jakolehm/footloose-ubuntu20.04
+    - stage: e2e
+      name: "e2e: focal containerd with weave"
       script: ./e2e/travis.sh
       rvm: 2.5.4
       dist: bionic
