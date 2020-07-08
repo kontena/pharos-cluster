@@ -45,7 +45,7 @@ jobs:
       rvm: 2.5.4
       dist: bionic
       env:
-        - CONTAINER_RUNTIME=docker
+        - CONTAINER_RUNTIME=containerd
         - NETWORK_PROVIDER=weave
         - FOOTLOOSE_IMAGE=jakolehm/footloose-ubuntu20.04
     - stage: e2e
