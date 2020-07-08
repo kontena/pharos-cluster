@@ -52,7 +52,7 @@ module Pharos
     def self.build
       Dry::Validation.Params do
         configure do
-          def self.messages
+          def self.messages # rubocop:disable Lint/NestedMethodDefinition
             super.merge(
               en: {
                 errors: {
@@ -64,7 +64,7 @@ module Pharos
             )
           end
 
-          def unique_addresses?(hosts)
+          def unique_addresses?(hosts) # rubocop:disable Lint/NestedMethodDefinition
             hosts.size < 2 || hosts.group_by { |h| "#{h[:address]}:#{h[:ssh_port] || 22}" }.size == hosts.size
           end
         end
