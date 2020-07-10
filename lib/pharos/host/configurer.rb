@@ -147,6 +147,10 @@ module Pharos
         host.custom_docker?
       end
 
+      def containerd?
+        host.containerd?
+      end
+
       # Return stringified json array(ish) for insecure registries properly escaped for safe
       # passing to scripts via ENV.
       #

@@ -4,6 +4,7 @@ module Pharos
   module Host
     class Ubuntu < Configurer
       DOCKER_VERSION = '19.03'
+      CONTAINERD_VERSION = '1.2.13'
       CFSSL_VERSION = '1.4'
 
       def install_essentials
@@ -55,6 +56,30 @@ module Pharos
         self.class.const_get(:DOCKER_VERSION)
       end
 
+      def configure_container_runtime
+        if docker?
+          exec_script(
+            'configure-docker.sh',
+            DOCKER_PACKAGE: 'docker-ce',
+            DOCKER_VERSION: DOCKER_VERSION,
+            INSECURE_REGISTRIES: insecure_registries
+          )
+        elsif custom_docker?
+          exec_script(
+            'configure-docker.sh',
+            INSECURE_REGISTRIES: insecure_registries
+          )
+        elsif containerd?
+          exec_script(
+            'configure-containerd.sh',
+            CONTAINERD_VERSION: CONTAINERD_VERSION,
+            INSECURE_REGISTRIES: insecure_registries
+          )
+        else
+          raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
+        end
+      end
+
       def configure_container_runtime_safe?
         return true if custom_docker?
 
@@ -62,6 +87,8 @@ module Pharos
           result = transport.exec("dpkg-query --show docker-ce")
           return true if result.error? # docker not installed
           return true if result.stdout.split("\t")[1].to_s.start_with?("5:" + docker_version)
+        elsif containerd?
+          return true
         end
 
         false

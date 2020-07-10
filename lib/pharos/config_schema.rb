@@ -50,10 +50,9 @@ module Pharos
 
     # @return [Dry::Validation::Schema]
     def self.build
-      # rubocop:disable Lint/NestedMethodDefinition
       Dry::Validation.Params do
         configure do
-          def self.messages
+          def self.messages # rubocop:disable Lint/NestedMethodDefinition
             super.merge(
               en: {
                 errors: {
@@ -65,7 +64,7 @@ module Pharos
             )
           end
 
-          def unique_addresses?(hosts)
+          def unique_addresses?(hosts) # rubocop:disable Lint/NestedMethodDefinition
             hosts.size < 2 || hosts.group_by { |h| "#{h[:address]}:#{h[:ssh_port] || 22}" }.size == hosts.size
           end
         end
@@ -90,7 +89,7 @@ module Pharos
               optional(:ssh_key_path).filled
               optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
               optional(:ssh_proxy_command).filled(:str?)
-              optional(:container_runtime).filled(included_in?: ['docker', 'custom_docker'])
+              optional(:container_runtime).filled(included_in?: %w(docker custom_docker containerd))
               optional(:environment).filled
               optional(:bastion).schema do
                 predicates(HostPredicates)
@@ -240,7 +239,6 @@ module Pharos
           end
         end
       end
-      # rubocop:enable Lint/NestedMethodDefinition
     end
   end
 end

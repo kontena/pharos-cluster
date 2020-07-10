@@ -6,7 +6,7 @@ module Pharos
       title "Configure Weave network"
 
       WEAVE_VERSION = '2.6.2'
-      WEAVE_FLYING_SHUTTLE_VERSION = '0.3.1'
+      WEAVE_FLYING_SHUTTLE_VERSION = '0.3.2'
 
       register_component(
         name: 'weave-net', version: WEAVE_VERSION, license: 'Apache License 2.0',

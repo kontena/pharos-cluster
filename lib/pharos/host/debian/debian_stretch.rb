@@ -20,6 +20,11 @@ module Pharos
         enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'docker' } }
       )
 
+      register_component(
+        name: 'containerd', version: DOCKER_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'containerd' } }
+      )
+
       def configure_container_runtime
         if docker?
           exec_script(
@@ -31,6 +36,12 @@ module Pharos
         elsif custom_docker?
           exec_script(
             'configure-docker.sh',
+            INSECURE_REGISTRIES: insecure_registries
+          )
+        elsif containerd?
+          exec_script(
+            'configure-containerd.sh',
+            CONTAINERD_VERSION: CONTAINERD_VERSION,
             INSECURE_REGISTRIES: insecure_registries
           )
         else

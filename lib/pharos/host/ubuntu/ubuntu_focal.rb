@@ -13,6 +13,11 @@ module Pharos
       )
 
       register_component(
+        name: 'containerd', version: CONTAINERD_VERSION, license: 'Apache License 2.0',
+        enabled: proc { |c| c.hosts.any? { |h| h.container_runtime == 'containerd' } }
+      )
+
+      register_component(
         name: 'cfssl', version: CFSSL_VERSION, license: 'MIT',
         enabled: proc { |c| !c.etcd&.endpoints }
       )
@@ -22,24 +27,6 @@ module Pharos
         kubelet_args = super
 
         kubelet_args
-      end
-
-      def configure_container_runtime
-        if docker?
-          exec_script(
-            'configure-docker.sh',
-            DOCKER_PACKAGE: 'docker-ce',
-            DOCKER_VERSION: DOCKER_VERSION,
-            INSECURE_REGISTRIES: insecure_registries
-          )
-        elsif custom_docker?
-          exec_script(
-            'configure-docker.sh',
-            INSECURE_REGISTRIES: insecure_registries
-          )
-        else
-          raise Pharos::Error, "Unknown container runtime: #{host.container_runtime}"
-        end
       end
 
       def default_repositories
