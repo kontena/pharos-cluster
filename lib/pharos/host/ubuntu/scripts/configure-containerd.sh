@@ -16,7 +16,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 apt-mark unhold containerd.io || echo "Nothing to unhold"
 if dpkg -l docker-ce ; then
-    apt-get install -y "containerd.io=:$CONTAINERD_VERSION*" || echo "Cannot install specific version, keeping the current one"
+    apt-get install -y "containerd.io=$CONTAINERD_VERSION*" || echo "Cannot install specific version, keeping the current one"
 else
     apt-get install -y "containerd.io=$CONTAINERD_VERSION*"
 fi
