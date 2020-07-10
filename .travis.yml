@@ -76,6 +76,15 @@ jobs:
         - NETWORK_PROVIDER=weave
         - FOOTLOOSE_IMAGE=quay.io/footloose/centos7
     - stage: e2e
+      name: "e2e: centos7 containerd with weave"
+      script: ./e2e/travis.sh
+      rvm: 2.5.4
+      dist: bionic
+      env:
+        - CONTAINER_RUNTIME=containerd
+        - NETWORK_PROVIDER=weave
+        - FOOTLOOSE_IMAGE=quay.io/footloose/centos7
+    - stage: e2e
       name: "e2e: centos7 docker with calico"
       script: ./e2e/travis.sh
       rvm: 2.5.4
