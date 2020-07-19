@@ -12,7 +12,7 @@ if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
     apt-get install -y apt-transport-https software-properties-common
 fi
 
-apt-get install -y libseccomp
+apt-get install -y seccomp
 
 autoupgrade_file="/etc/apt/apt.conf.d/20auto-upgrades"
 if [ ! -f $autoupgrade_file ]; then
