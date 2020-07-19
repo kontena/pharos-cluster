@@ -5,11 +5,14 @@ set -e
 # shellcheck disable=SC1091
 . /usr/local/share/pharos/util.sh
 
+export DEBIAN_FRONTEND=noninteractive
+
 if ! dpkg -l apt-transport-https software-properties-common > /dev/null; then
-    export DEBIAN_FRONTEND=noninteractive
     apt-get update -y
     apt-get install -y apt-transport-https software-properties-common
 fi
+
+apt-get install -y libseccomp
 
 autoupgrade_file="/etc/apt/apt.conf.d/20auto-upgrades"
 if [ ! -f $autoupgrade_file ]; then
