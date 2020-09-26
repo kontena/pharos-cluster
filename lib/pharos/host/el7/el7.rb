@@ -4,7 +4,7 @@ module Pharos
   module Host
     class El7 < Configurer
       DOCKER_VERSION = '19.03.8'
-      CONTAINERD_VERSION = '1.2.13'
+      CONTAINERD_VERSION = '1.3.7'
       CFSSL_VERSION = '1.2'
 
       # @param path [Array]

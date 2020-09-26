@@ -9,6 +9,7 @@ module Pharos
 
       CFSSL_VERSION = '1.2'
       DOCKER_VERSION = '19.03'
+      CONTAINERD_VERSION = '1.3.7'
 
       register_component(
         name: 'cfssl', version: CFSSL_VERSION, license: 'MIT',
