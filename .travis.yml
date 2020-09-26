@@ -5,6 +5,9 @@ bundler_args: --without development
 before_install:
   - gem update --system
   - gem --version
+  - sudo apt-get update && sudo apt-get install -y libseccomp2
+  - sudo systemctl stop docker && sudo systemctl stop containerd
+  - sudo systemctl start containerd && sudo systemctl start docker
 stages:
   - name: e2e
     if: type IN (pull_request, cron)
