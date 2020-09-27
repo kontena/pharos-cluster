@@ -4,7 +4,7 @@ module Pharos
   module Host
     class Ubuntu < Configurer
       DOCKER_VERSION = '19.03'
-      CONTAINERD_VERSION = '1.2.13'
+      CONTAINERD_VERSION = '1.3.7'
       CFSSL_VERSION = '1.4'
 
       def install_essentials

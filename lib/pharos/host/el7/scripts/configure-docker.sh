@@ -24,6 +24,7 @@ cat <<EOF >/etc/docker/daemon.json
 }
 EOF
 
+yum_install_with_lock "containerd.io" "${CONTAINERD_VERSION}"
 yum_install_with_lock "docker-ce" "${DOCKER_VERSION}"
 
 if ! systemctl is-active --quiet containerd; then

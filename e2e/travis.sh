@@ -32,7 +32,7 @@ bundle exec bin/pharos kubeconfig -c cluster.yml > kubeconfig.e2e
 export KUBECONFIG=./kubeconfig.e2e
 
 # Verify that workloads start running
-curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
+curl -sLO https://storage.googleapis.com/kubernetes-release/release/v1.18.8/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 sudo mv kubectl /usr/local/bin/
 
@@ -40,7 +40,7 @@ echo "==> Checking that metrics-server is running:"
 (retry 30 pods_running "k8s-app=metrics-server" "kube-system") || exit $?
 
 echo "==> Test with sonobuoy"
-curl -L https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.18.0/sonobuoy_0.18.0_linux_amd64.tar.gz | tar xzv
+curl -L https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.18.4/sonobuoy_0.18.4_linux_amd64.tar.gz | tar xzv
 chmod +x ./sonobuoy
 (
   sleep 30
