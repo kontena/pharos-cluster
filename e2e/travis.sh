@@ -5,9 +5,6 @@ set -ue
 
 source ./e2e/util.sh
 
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-
 ssh-keygen -t rsa -f ~/.ssh/id_rsa_travis -N ""
 cat ~/.ssh/id_rsa_travis.pub > ~/.ssh/authorized_keys
 chmod 0600 ~/.ssh/authorized_keys
