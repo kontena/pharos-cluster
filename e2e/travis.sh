@@ -15,8 +15,8 @@ envsubst < e2e/cluster.yml > cluster.yml
 envsubst < e2e/footloose.yaml > footloose.yaml
 
 curl -sSL https://git.io/g-install | sh -s -- -y
-git clone https://github.com/jakolehm/footloose.git
-pushd footloose/
+git clone https://github.com/jakolehm/footloose.git footloose-src
+pushd footloose-src/
   make vendor
   make bin/footloose
   mv bin/footloose ../
