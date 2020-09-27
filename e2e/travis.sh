@@ -14,7 +14,11 @@ ifconfig
 envsubst < e2e/cluster.yml > cluster.yml
 envsubst < e2e/footloose.yaml > footloose.yaml
 
-curl -L https://github.com/weaveworks/footloose/releases/download/0.6.3/footloose-0.6.3-linux-x86_64 > ./footloose
+git clone https://github.com/jakolehm/footloose.git
+pushd footloose/
+  make binary
+  mv bin/footloose ../
+popd
 chmod +x ./footloose
 ./footloose create
 ./footloose ssh root@master0 -- 'apt-get install -y curl || yum install -y curl which openssh-clients'
