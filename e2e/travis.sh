@@ -16,6 +16,7 @@ envsubst < e2e/footloose.yaml > footloose.yaml
 
 git clone https://github.com/jakolehm/footloose.git
 pushd footloose/
+  make vendor
   make bin/footloose
   mv bin/footloose ../
 popd
