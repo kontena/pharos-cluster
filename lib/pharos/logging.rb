@@ -12,6 +12,10 @@ module Pharos
       @debug = true
     end
 
+    def self.no_debug!
+      @debug = false
+    end
+
     def self.format_exception(exc, severity = "ERROR")
       if !ENV['DEBUG'].to_s.empty? || severity == "DEBUG"
         backtrace = "\n    #{exc.backtrace.join("\n    ")}"
