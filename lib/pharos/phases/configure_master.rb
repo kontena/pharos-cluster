@@ -54,7 +54,6 @@ module Pharos
 
       def install_kubeconfig
         transport.exec!('install -m 0700 -d ~/.kube')
-        transport.exec!('sudo install -o $USER -m 0600 /etc/kubernetes/admin.conf ~/.kube/config')
       end
 
       def reconfigure
