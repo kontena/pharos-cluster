@@ -11,13 +11,13 @@ module Pharos
     banner "Opens SSH sessions to hosts in the Kontena Pharos cluster."
 
     def execute
-      if command_list.empty?
-        signal_usage_error 'interactive mode can not be used with a non-interactive terminal' unless $stdin.tty? && $stdout.tty?
-        run_interactive
-        exit 0
-      end
-
       Dir.chdir(config_yaml.dirname) do
+        if command_list.empty?
+          signal_usage_error 'interactive mode can not be used with a non-interactive terminal' unless $stdin.tty? && $stdout.tty?
+          run_interactive
+          exit 0
+        end
+
         filtered_hosts.each { |host| host.transport.connect }
 
         exit run_single(filtered_hosts.first) if filtered_hosts.size == 1

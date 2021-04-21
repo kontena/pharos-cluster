@@ -46,6 +46,10 @@ module Pharos
       predicate(:hostname_or_ip?) do |value|
         value.match?(/\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/) || value.match?(/\A[a-z0-9\-\.]+\z/)
       end
+
+      predicate(:file_exist?) do |value|
+        File.exist?(File.expand_path(value))
+      end
     end
 
     # @return [Dry::Validation::Schema]
@@ -58,6 +62,7 @@ module Pharos
                 errors: {
                   network_dns_replicas: "network.dns_replicas cannot be larger than the number of hosts",
                   hostname_or_ip?: "is invalid",
+                  file_exist?: "file %{value} does not exist",
                   unique_addresses?: "duplicate address:ssh_port"
                 }
               }
@@ -86,7 +91,7 @@ module Pharos
                 end
               end
               optional(:user).filled
-              optional(:ssh_key_path).filled
+              optional(:ssh_key_path).filled(:str?, :file_exist?)
               optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
               optional(:ssh_proxy_command).filled(:str?)
               optional(:container_runtime).filled(included_in?: %w(docker custom_docker containerd))
@@ -95,7 +100,7 @@ module Pharos
                 predicates(HostPredicates)
                 required(:address).filled(:str?, :hostname_or_ip?)
                 optional(:user).filled(:str?)
-                optional(:ssh_key_path).filled(:str?)
+                optional(:ssh_key_path).filled(:str?, :file_exist?)
                 optional(:ssh_port).filled(:int?, gt?: 0, lt?: 65_536)
                 optional(:ssh_proxy_command).filled(:str?)
               end

@@ -41,7 +41,7 @@ resource "tls_private_key" "ssh_key" {
 
 resource "local_file" "ssh_key" {
   sensitive_content     = "${tls_private_key.ssh_key.private_key_pem}"
-  filename    = "ssh_key.pem"
+  filename    = "${path.module}/ssh_key.pem"
   provisioner "local-exec" {
     command = "chmod 0600 ${local_file.ssh_key.filename}"
   }
@@ -111,7 +111,7 @@ output "pharos_hosts" {
       private_address   = "${digitalocean_droplet.pharos_master.*.ipv4_address_private}"
       role              = "master"
       user              = "root"
-      ssh_key_path      = "./ssh_key.pem"
+      ssh_key_path      = "${local_file.ssh_key.filename}"
 
       label = {
         "beta.kubernetes.io/instance-type"         = "${var.worker_size}"
@@ -133,10 +133,10 @@ output "pharos_hosts" {
       private_address   = "${digitalocean_droplet.pharos_worker.*.ipv4_address_private}"
       role              = "worker"
       user              = "root"
-      ssh_key_path      = "./ssh_key.pem"
+      ssh_key_path      = "${local_file.ssh_key.filename}"
       bastion = {
         address           = "${digitalocean_droplet.pharos_master.*.ipv4_address[0]}"
-        ssh_key_path      = "./ssh_key.pem"
+        ssh_key_path      = "${local_file.ssh_key.filename}"
         user              = "root"
       }
 

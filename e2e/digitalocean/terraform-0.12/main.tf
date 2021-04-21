@@ -44,7 +44,7 @@ resource "tls_private_key" "ssh_key" {
 
 resource "local_file" "ssh_key" {
   sensitive_content = tls_private_key.ssh_key.private_key_pem
-  filename          = "ssh_key.pem"
+  filename          = "${path.module}/ssh_key.pem"
   provisioner "local-exec" {
     command = "chmod 0600 ${local_file.ssh_key.filename}"
   }
@@ -126,7 +126,7 @@ output "pharos_cluster" {
         private_address   = host.droplet.ipv4_address_private
         role              = host.role
         user              = "root"
-        ssh_key_path      = "./ssh_key.pem"
+        ssh_key_path      = "${local_file.ssh_key.filename}"
 
         label = {
           "beta.kubernetes.io/instance-type"         = "${host.droplet.size}"
