@@ -45,8 +45,8 @@ module Pharos
             Pharos::YamlFile.new($stdin, force_erb: true, override_filename: '<stdin>')
           else
             cluster_config = Dir.glob('cluster.{yml,yml.erb}').first
-            signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil?
-            Pharos::YamlFile.new(cluster_config)
+            signal_usage_error 'File does not exist: cluster.yml' if cluster_config.nil? && tf_json.nil?
+            Pharos::YamlFile.new(cluster_config || StringIO.new(''))
           end
         end
 
