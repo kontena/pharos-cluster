@@ -27,7 +27,8 @@ bundle exec bin/pharos
 bundle exec bin/pharos -v
 bundle exec bin/pharos version
 bundle exec bin/pharos up -y -c cluster.yml
-bundle exec bin/pharos ssh --role master -c cluster.yml -- kubectl get nodes
+bundle exec bin/pharos ssh --role master -c cluster.yml -- env
+bundle exec bin/pharos ssh --role master -c cluster.yml -- NO_PROXY=localhost,0,1,2,3,4,5,6,7,8,9 kubectl get nodes
 bundle exec bin/pharos kubeconfig -c cluster.yml > kubeconfig.e2e
 export KUBECONFIG=./kubeconfig.e2e
 

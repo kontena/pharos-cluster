@@ -11,9 +11,6 @@ module Pharos
         unless @host.environment.nil? || @host.environment.empty?
           logger.info "Updating environment file ..."
           host_configurer.update_env_file
-          logger.info "Reconnecting ..."
-          @host.transport.disconnect
-          @host.transport.connect
         end
 
         logger.info "Configuring script helpers ..."

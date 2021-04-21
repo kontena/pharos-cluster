@@ -107,8 +107,7 @@ timeout 600 ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -i "${ssh_
 echo "Waiting for node to come online.."
 (retry 30 node_online "${worker_hostname}") || exit $?
 echo "Node is online:"
-kubectl get nodes "${worker_hostname}" -o wide
+HTTP_PROXY=http://10.133.37.157:8888 HTTPS_PROXY=http://10.133.37.157:8888 http_proxy=http://10.133.37.157:8888 https_proxy=http://10.133.37.157:8888 NO_PROXY=localhost,0,1,2,3,4,5,6,7,8,9 kubectl get nodes "${worker_hostname}" -o wide
 
 echo "Testing a worker reset.."
 timeout 700 pharos reset -y -c e2e/digitalocean/cluster.yml --tf-json e2e/digitalocean/tf.json --role worker --first
-

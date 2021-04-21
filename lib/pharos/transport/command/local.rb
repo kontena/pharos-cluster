@@ -6,17 +6,33 @@ module Pharos
   module Transport
     module Command
       class Local
-        attr_reader :cmd, :result
+        attr_reader :cmd, :result, :env
 
         # @param client [Pharos::Transport::Local] client instance
         # @param cmd [String,Array<String>] command to execute
+        # @param env [Hash] environment variables hash
         # @param stdin [String,IO] attach string or stream to command STDIN
         # @param source [String]
-        def initialize(client, cmd, stdin: nil, source: nil)
+        def initialize(client, cmd, stdin: nil, source: nil, env: {})
           @client = client
-          @cmd = "env bash --noprofile --norc -x -c #{(cmd.is_a?(Array) ? cmd.join(' ') : cmd).shellescape}"
-          @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
           @source = source
+          @stdin = stdin.respond_to?(:read) ? stdin.read : stdin
+          @env = export_envs.merge(@client.host.environment&.transform_keys(&:to_s) || {}).merge(env.transform_keys(&:to_s))
+
+          cmd = cmd.join(' ') if cmd.is_a?(Array)
+
+          cmd_parts = ['env', '-i', *envs_array, 'bash', '--norc', '--noprofile', '-x']
+
+          if cmd.nil?
+            cmd_parts.insert(0, 'sudo')
+          else
+            cmd_parts.concat(['-c', "sudo() { $(which sudo) -E \"$@\"; }; export -f sudo; #{cmd}".shellescape])
+          end
+
+          cmd_parts << '-s' unless stdin.nil?
+
+          @cmd = cmd_parts.join(' ')
+
           @result = Pharos::Transport::Command::Result.new(hostname)
           freeze
         end
@@ -67,6 +83,20 @@ module Pharos
             result.exit_status = wait_thr.value.exitstatus
           end
           result
+        end
+
+        private
+
+        # @return [Hash]
+        def export_envs
+          %w(PATH HOME KUBECONFIG USER).map do |key|
+            [key, "\"$#{key}\""]
+          end.to_h
+        end
+
+        # @return [Array<String>]
+        def envs_array
+          env.map { |k, v| "#{k}=\"#{v}\"" }
         end
       end
     end
