@@ -17,7 +17,11 @@ module Pharos
         backtrace = "\n    #{exc.backtrace.join("\n    ")}"
       end
 
-      "Error: #{exc.message.strip}#{backtrace}"
+      if exc.is_a?(Excon::Errors::CertificateError)
+        "Error: #{exc.message.lines.first[/(.+?\))/, 1]}#{backtrace}"
+      else
+        "Error: #{exc.message.strip}#{backtrace}"
+      end
     end
 
     def self.log_level

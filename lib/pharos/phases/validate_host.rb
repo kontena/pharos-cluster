@@ -6,6 +6,8 @@ module Pharos
       title "Validate hosts"
 
       def call
+        logger.info { "Validating localhost and host clock sync ..." }
+        check_clock
         logger.info { "Validating current role matches ..." }
         check_role
         logger.info { "Validating distro and version ..." }
@@ -20,6 +22,15 @@ module Pharos
         validate_localhost_resolve
         logger.info { "Validating peer address ..." }
         validate_peer_address
+      end
+
+      def check_clock
+        local_time = Time.now.to_i
+        server_time = transport.exec!('date +%s').to_i
+
+        return if (server_time - local_time).abs < 60
+
+        logger.warn "Clock drift #{(server_time - local_time).abs} seconds - certificate validation may fail"
       end
 
       def check_distro_version
